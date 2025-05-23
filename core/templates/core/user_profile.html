@@ -1,0 +1,868 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load instance_of %}
+{% load custom_tags %}
+{% load markdownify %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row">
+    <!-- Sol Panel: Profil Kartı -->
+    <div class="col-md-3 mb-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          {% if user_profile.photo %}
+            <img src="{{ user_profile.photo.url }}" alt="Profil Fotoğrafı" class="rounded-circle img-fluid mb-3" style="max-width:150px;">
+          {% else %}
+            <img src="{% static 'imgs/default_profile.jpg' %}" alt="Profil Fotoğrafı" class="rounded-circle img-fluid mb-3" style="max-width:150px;">
+          {% endif %}
+          <h4 class="card-title mb-1">{{ profile_user.username }}</h4>
+          <p class="mb-3"><strong>{{ follower_count }}</strong> Takipçi | <strong>{{ following_count }}</strong> Takip Edilen</p>
+          <hr>
+          {% if is_own_profile %}
+            <div class="d-grid gap-2">
+              <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#profilePhotoModal">
+                Profil Fotosunu Güncelle
+              </button>
+              <a href="{% url 'password_change' %}" class="btn btn-outline-secondary btn-sm">Şifreyi Değiştir</a>
+              <a href="{% url 'user_settings' %}" class="btn btn-outline-secondary btn-sm">Ayarlar</a>
+              <a href="{% url 'download_entries_json' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry’lerimi (JSON) İndir</a>
+              <a href="{% url 'download_entries_xlsx' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry’lerimi (Excel) İndir</a>
+              <a href="{% url 'download_entries_docx' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry’lerimi (Word) İndir</a>
+            </div>
+          {% else %}
+            {% if request.user.is_authenticated %}
+              {% if is_following %}
+                <form action="{% url 'unfollow_user' profile_user.username %}" method="post" class="mb-2">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-secondary btn-sm w-100">Takibi Bırak</button>
+                </form>
+              {% else %}
+                <form action="{% url 'follow_user' profile_user.username %}" method="post" class="mb-2">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-secondary btn-sm w-100">Takip Et</button>
+                </form>
+              {% endif %}
+              <a href="{% url 'message_detail' profile_user.username %}" class="btn btn-outline-secondary btn-sm w-100">Mesaj Gönder</a>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sağ Panel: Profil Sekmeleri -->
+    <div class="col-md-9">
+      {% if pinned_entry and pinned_entry.answer %}
+      <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+          <h6 class="mb-0">
+            <a href="{% url 'question_detail' pinned_entry.answer.question.id %}" class="text-decoration-none">
+              {{ pinned_entry.answer.question.question_text }}
+            </a>
+          </h6>
+        </div>
+        <div class="card-body">
+          {% if pinned_entry.answer.answer_text|length > 500 %}
+            <div id="answer-summary-{{ pinned_entry.answer.id }}" class="mb-2">
+              {{ pinned_entry.answer.answer_text|slice:":500"|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link }}...
+            </div>
+            <div id="answer-full-{{ pinned_entry.answer.id }}" class="mb-2" style="display: none;">
+              {{ pinned_entry.answer.answer_text|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link }}
+            </div>
+            <a href="#" class="read-more" data-answer-id="{{ pinned_entry.answer.id }}">Tümünü Göster</a>
+          {% else %}
+            <div>
+              {{ pinned_entry.answer.answer_text|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link }}
+            </div>
+          {% endif %}
+        </div>
+        {% if is_own_profile %}
+        <div class="card-footer text-end">
+          <form action="{% url 'unpin_entry' %}" method="post" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger">Sabitlenmiş Girdiyi Kaldır</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+      {% else %}
+        <p class="mb-4">Sabitlenmiş içerik bulunamadı.</p>
+      {% endif %}
+      
+      <!-- Sekme Menüsü -->
+      <ul class="nav nav-tabs" id="profileTab" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'girdiler' %}active{% endif %}" 
+             href="?tab=girdiler">
+            Girdiler
+          </a>
+        </li>
+        {% if is_own_profile %}
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'davetler' %}active{% endif %}" 
+             href="?tab=davetler">
+            Davetler
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'davet_aagac' %}active{% endif %}" 
+             href="?tab=davet_aagac">
+            Davet Ağaç
+          </a>
+        </li>
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'kelimeler' %}active{% endif %}" 
+             href="?tab=kelimeler">
+            Kelimeler
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'istatistikler' %}active{% endif %}" 
+             href="?tab=istatistikler">
+            İstatistikler
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'tanimlar' %}active{% endif %}" 
+             href="?tab=tanimlar">
+            Tanımlarım
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'kaynaklarim' %}active{% endif %}" 
+             href="?tab=kaynaklarim">
+            Kaynaklarım
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'kaydedilenler' %}active{% endif %}" 
+             href="?tab=kaydedilenler">
+            Kaydedilenler
+          </a>
+        </li>
+      </ul>
+      
+      
+      <!-- Sekme İçerikleri -->
+      <div class="tab-content p-3 border border-top-0" id="profileTabContent">
+        <!-- Sorular Sekmesi -->
+
+        {% if is_own_profile %}
+        <!-- Davetler Sekmesi -->
+        <div class="tab-pane fade {% if active_tab == 'davetler' %}show active{% endif %}" id="davetler" role="tabpanel" aria-labelledby="davetler-tab">
+          <div class="mt-3">
+            <h5>Davetlerim</h5>
+            <p>Gönderilen Davetiye Sayısı: {{ total_invitations }}</p>
+            <p>Kullanılan Davetiye Sayısı: {{ used_invitations }}</p>
+            <p>Kalan Davetiye Sayısı: {{ remaining_invitations }}</p>
+            {% if remaining_invitations > 0 %}
+              <form action="{% url 'create_invitation' %}" method="post" class="mb-3">
+                {% csrf_token %}
+                <div class="input-group">
+                  <input type="number" name="quota_granted" min="1" max="{{ remaining_invitations }}" value="1" class="form-control" style="max-width:100px;" required>
+                  <button type="submit" class="btn btn-primary btn-sm">Davetiye Oluştur</button>
+                </div>
+                <input type="hidden" name="tab" value="davetler">
+              </form>
+            {% else %}
+              <p>Davetiye kotanız dolmuştur.</p>
+            {% endif %}
+            <table class="table table-sm custom-table">
+              <thead>
+                <tr>
+                  <th>Kod</th>
+                  <th>Gönderildiği Tarih</th>
+                  <th>Verilen Kota</th>
+                  <th>Kullanıldı mı?</th>
+                  <th>Kullanan Kullanıcı</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for invite in invitations %}
+                  <tr>
+                    <td>{{ invite.code }}</td>
+                    <td>{{ invite.created_at|date:"d M Y H:i" }}</td>
+                    <td>{{ invite.quota_granted }}</td>
+                    <td>{% if invite.is_used %}Evet{% else %}Hayır{% endif %}</td>
+                    <td>{% if invite.used_by %}{{ invite.used_by.username }}{% else %}-{% endif %}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="5">Henüz davetiye gönderilmedi.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Davet Ağaç Sekmesi -->
+        <div class="tab-pane fade {% if active_tab == 'davet_aagac' %}show active{% endif %}" id="davet_aagac" role="tabpanel" aria-labelledby="davet-aagac-tab">
+          <h5>Davet Ağaç</h5>
+          {% if invitation_tree %}
+            <div class="invitation-tree">
+              <ul class="list-unstyled">
+                {% for node in invitation_tree %}
+                  {% include 'core/invitation_node.html' with node=node %}
+                {% endfor %}
+              </ul>
+            </div>
+          {% else %}
+            <p>Henüz davetiye gönderilmedi.</p>
+          {% endif %}
+        </div>
+        {% endif %}
+        
+        <div class="tab-pane fade {% if active_tab == 'girdiler' %}show active{% endif %}" id="girdiler" role="tabpanel" aria-labelledby="girdiler-tab">
+          <div class="mt-3">
+            <div class="mb-3">
+              <input type="text" id="answersSearchInput" class="form-control" placeholder="Yanıt/başlık içinde ara...">
+            </div>
+            <div id="answersList">
+              {% for answer in answers %}
+                <div class="card mb-3 shadow-sm border-0">
+                  <div class="card-body">
+                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+                      <div>
+                        <a href="{% url 'question_detail' answer.question.id %}" class="fw-bold text-decoration-none">
+                          {{ answer.question.question_text }}
+                        </a>
+                        <span class="text-muted ms-2 small">({{ answer.created_at|date:"d M Y H:i" }})</span>
+                      </div>
+                      {% if answer.user == request.user %}
+                        <form action="{% url 'delete_answer' answer.id %}" method="post" class="ms-md-3 mt-2 mt-md-0 d-inline">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-sm btn-outline-danger"
+                                  onclick="return confirm('Bu yanıtı silmek istediğinize emin misiniz?');">
+                            Sil
+                          </button>
+                        </form>
+                      {% endif %}
+                    </div>
+                    <div class="mt-2">
+                      <a href="{% url 'single_answer' answer.question.id answer.id %}" class="text-body text-decoration-none">
+                        {{ answer.answer_text|truncatewords_html:40|safe }}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              {% empty %}
+                <p>Henüz girdiniz yok.</p>
+              {% endfor %}
+            </div>
+            {% if answers and answers.paginator.num_pages > 1 %}
+              <nav aria-label="Girdiler Sayfaları">
+                <ul class="pagination custom-pagination">
+                  {% if answers.has_previous %}
+                    <li class="page-item">
+                      <a class="page-link" href="?answer_page={{ answers.previous_page_number }}&tab=girdiler" aria-label="Önceki">&laquo;</a>
+                    </li>
+                  {% else %}
+                    <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                  {% endif %}
+                  <li class="page-item">
+                    <select class="form-select" id="answerPageSelect" style="width: auto; display: inline-block; margin-left: 5px;">
+                      {% for num in answers.paginator.page_range %}
+                        <option value="{{ num }}" {% if answers.number == num %} selected {% endif %}>{{ num }}</option>
+                      {% endfor %}
+                    </select>
+                  </li>
+                  {% if answers.has_next %}
+                    <li class="page-item">
+                      <a class="page-link" href="?answer_page={{ answers.next_page_number }}&tab=girdiler" aria-label="Sonraki">&raquo;</a>
+                    </li>
+                  {% else %}
+                    <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                  {% endif %}
+                </ul>
+              </nav>
+              <script>
+                document.getElementById('answerPageSelect').addEventListener('change', function() {
+                  var selectedPage = this.value;
+                  window.location.href = "?answer_page=" + selectedPage + "&tab=girdiler";
+                });
+              </script>
+            {% endif %}
+          </div>
+        </div>
+        
+        
+        
+        <!-- Kelimeler Sekmesi -->
+        <div class="tab-pane fade {% if active_tab == 'kelimeler' %}show active{% endif %}" id="kelimeler" role="tabpanel" aria-labelledby="kelimeler-tab">
+          <div class="mt-3 row">
+            <div class="col-md-6">
+              <h5>En Çok Kullandığınız Kelimeler</h5>
+              {% if top_words %}
+                <ol class="ps-3">
+                  {% for word, count in top_words %}
+                    <li>{{ word }}: {{ count }}</li>
+                  {% endfor %}
+                </ol>
+              {% else %}
+                <p>Gösterilecek kelime yok.</p>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              {% if is_own_profile %}
+                <h5>Kelime Arama</h5>
+                <form method="get" action="">
+                  <input type="hidden" name="tab" value="kelimeler">
+                  <input type="hidden" name="exclude_words" value="{{ exclude_words }}">
+                  <div class="input-group mb-2">
+                    <input type="text" name="search_word" class="form-control" placeholder="Kelimeyi girin" value="{{ search_word }}">
+                    <button class="btn btn-primary btn-sm" type="submit">Ara</button>
+                  </div>
+                </form>
+                {% if search_word %}
+                  <p>"{{ search_word }}" kelimesini {{ search_word_count }} kez kullandınız.</p>
+                {% endif %}
+                <h5>Kelime Çıkar</h5>
+                <form method="get" action="">
+                  <input type="hidden" name="tab" value="kelimeler">
+                  <input type="hidden" name="exclude_words" value="{{ exclude_words }}">
+                  <div class="input-group mb-2">
+                    <input type="text" name="exclude_word" class="form-control" placeholder="Çıkarmak istediğiniz kelimeyi girin">
+                    <button class="btn btn-secondary btn-sm" type="submit">Çıkar</button>
+                  </div>
+                </form>
+              {% endif %}
+              <h5>Çıkarılmış Kelimeler</h5>
+              {% if exclude_words_list %}
+                <div class="d-flex flex-wrap gap-2">
+                  {% for word in exclude_words_list %}
+                    <div class="badge bg-secondary d-flex align-items-center">
+                      <span class="text-white">{{ word }}</span>
+                      {% if is_own_profile %}
+                        <form method="get" action="" class="d-inline ms-1">
+                          <input type="hidden" name="tab" value="kelimeler">
+                          <input type="hidden" name="exclude_words" value="{{ exclude_words }}">
+                          <button type="submit" name="include_word" value="{{ word }}" class="btn btn-sm btn-link p-0 text-white" title="Geri Al">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                          </button>
+                        </form>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <p>Bu bölümü sadece kullanıcının kendisi görebilir.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- İstatistikler Sekmesi -->
+        <div class="tab-pane fade {% if active_tab == 'istatistikler' %}show active{% endif %}" id="istatistikler" role="tabpanel" aria-labelledby="istatistikler-tab">
+          <div class="mt-3">
+            <h5>İstatistikler</h5>
+            <p>Toplam Upvotes: {{ total_upvotes }}</p>
+            <p>Toplam Downvotes: {{ total_downvotes }}</p>
+            <p>Toplam Kaydedilme Sayısı: {{ total_saves }}</p>
+            <h6>En Çok Upvote Alan Girdi:</h6>
+            {% if most_upvoted_entry %}
+              {% if most_upvoted_entry|instance_of:'Question' %}
+                <p>Soru:
+                  <a href="{% url 'question_detail' most_upvoted_entry.id %}" class="text-decoration-none">
+                    {{ most_upvoted_entry.question_text }}
+                  </a>
+                  ({{ most_upvoted_entry.upvotes }} upvotes)
+                </p>
+              {% elif most_upvoted_entry|instance_of:'Answer' %}
+                <p>Yanıt:
+                  <a href="{% url 'question_detail' most_upvoted_entry.question.id %}" class="text-decoration-none">
+                    {{ most_upvoted_entry.question.question_text }}
+                  </a>
+                  ({{ most_upvoted_entry.upvotes }} upvotes)
+                </p>
+              {% endif %}
+            {% else %}
+              <p>Henüz upvote alan bir girdi yok.</p>
+            {% endif %}
+            <h6>En Çok Downvote Alan Girdi:</h6>
+            {% if most_downvoted_entry %}
+              {% if most_downvoted_entry|instance_of:'Question' %}
+                <p>Soru:
+                  <a href="{% url 'question_detail' most_downvoted_entry.id %}" class="text-decoration-none">
+                    {{ most_downvoted_entry.question_text }}
+                  </a>
+                  ({{ most_downvoted_entry.downvotes }} downvotes)
+                </p>
+              {% elif most_downvoted_entry|instance_of:'Answer' %}
+                <p>Yanıt:
+                  <a href="{% url 'question_detail' most_downvoted_entry.question.id %}" class="text-decoration-none">
+                    {{ most_downvoted_entry.question.question_text }}
+                  </a>
+                  ({{ most_downvoted_entry.downvotes }} downvotes)
+                </p>
+              {% endif %}
+            {% else %}
+              <p>Henüz downvote alan bir girdi yok.</p>
+            {% endif %}
+            <h6>En Çok Kaydedilen Girdi:</h6>
+            {% if most_saved_entry %}
+              {% if most_saved_entry|instance_of:'Question' %}
+                <p>Soru:
+                  <a href="{% url 'question_detail' most_saved_entry.id %}" class="text-decoration-none">
+                    {{ most_saved_entry.question_text }}
+                  </a>
+                </p>
+              {% elif most_saved_entry|instance_of:'Answer' %}
+                <p>Yanıt:
+                  <a href="{% url 'question_detail' most_saved_entry.question.id %}" class="text-decoration-none">
+                    {{ most_saved_entry.question.question_text }}
+                  </a>
+                </p>
+              {% endif %}
+            {% else %}
+              <p>Henüz kaydedilen bir girdi yok.</p>
+            {% endif %}
+          </div>
+        </div>
+        <!-- Tanımlarım Sekmesi -->
+          <div class="tab-pane fade {% if active_tab == 'tanimlar' %}show active{% endif %}" id="tanimlar" role="tabpanel" aria-labelledby="tanimlar-tab">
+            <div class="mt-3">
+              <h5>Tanımlarım</h5>
+              <!-- Arama Formu -->
+              <form method="get" action="">
+                <input type="hidden" name="tab" value="tanimlar">
+                <div class="input-group mb-3">
+                  <input type="text" name="q" id="definitionsSearchInput" class="form-control" placeholder="Tanım arayın..." value="{{ request.GET.q }}">
+                  <button type="submit" class="btn btn-primary">Ara</button>
+                </div>
+              </form>
+              <table class="table custom-table table-sm">
+                <thead>
+                  <tr>
+                    <th>Kelime (Başlık/Soru)</th>
+                    <th>Tanım İçeriği</th>
+                    <th style="width: 180px;">İşlemler</th>
+                  </tr>
+                </thead>
+                <tbody id="definitionsTbody">
+                  {% for definition in definitions_page.object_list %}
+                    <tr>
+                      <td>
+                        <a href="{% url 'question_detail' definition.question.id %}" class="text-decoration-none">
+                          {{ definition.question.question_text }}
+                        </a>
+                      </td>
+                      <td>{{ definition.definition_text|truncatewords:25 }}</td>
+                      <td>
+                        <a href="{% url 'edit_definition' definition.id %}?tab=tanimlar" class="btn btn-sm btn-primary">Düzenle</a>
+                        <form action="{% url 'delete_definition' definition.id %}?tab=tanimlar" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Bu tanımı silmek istediğinize emin misiniz?');">Sil</button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {% if definitions_page and definitions_page.paginator.num_pages > 1 %}
+                {% include 'core/pagination.html' with page_obj=definitions_page page_param='d_page' active_tab='tanimlar' %}
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Kaynaklarım Sekmesi -->
+          <div class="tab-pane fade {% if active_tab == 'kaynaklarim' %}show active{% endif %}" id="kaynaklarim" role="tabpanel" aria-labelledby="kaynaklarim-tab">
+            <div class="mt-3">
+              <h5>Kaynaklarım</h5>
+              <!-- Arama Formu -->
+              <form method="get" action="" id="referencesSearchForm">
+                <input type="hidden" name="tab" value="kaynaklarim">
+                <div class="input-group mb-3">
+                  <input type="text" name="q" id="referencesSearchInput" class="form-control" placeholder="Kaynak arayın..." value="{{ request.GET.q }}">
+                  <button type="submit" class="btn btn-primary">Ara</button>
+                </div>
+              </form>
+              <div id="referencesContainer">
+                {% if references_page.object_list %}
+                  <table class="table custom-table">
+                    <thead>
+                      <tr>
+                        <th>Yazar Soyadı</th>
+                        <th>Yazar Adı</th>
+                        <th>Yıl</th>
+                        <th>Ek Bilgiler</th>
+                        <th>Kısaltma</th>
+                        <th>Kullanım Sayısı</th>
+                        <th>İşlemler</th>
+                      </tr>
+                    </thead>
+                    <tbody id="referencesTbody">
+                      {% for ref in references_page.object_list %}
+                        <tr>
+                          <td>{{ ref.author_surname }}</td>
+                          <td>{{ ref.author_name }}</td>
+                          <td>{{ ref.year }}</td>
+                          <td>{{ ref.rest }}</td>
+                          <td>{{ ref.abbreviation }}</td>
+                          <td>{{ ref.get_usage_count }}</td>
+                          <td>
+                            <a href="{% url 'edit_reference' ref.id %}?tab=kaynaklarim" class="btn btn-sm btn-primary" title="Düzenle">
+                              <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <a href="{% url 'delete_reference' ref.id %}?tab=kaynaklarim" class="btn btn-sm btn-secondary" title="Sil">
+                              <i class="bi bi-trash"></i>
+                            </a>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                  {% if references_page and references_page.paginator.num_pages > 1 %}
+                    {% include 'core/pagination.html' with page_obj=references_page page_param='r_page' active_tab='kaynaklarim' %}
+                  {% endif %}
+                {% else %}
+                  <p>Henüz kaynak eklemediniz.</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+
+        <!-- Kaydedilenler Sekmesi -->
+        <div class="tab-pane fade {% if active_tab == 'kaydedilenler' %}show active{% endif %}" id="kaydedilenler" role="tabpanel" aria-labelledby="kaydedilenler-tab">
+          <div class="mt-3">
+            <h5>Kaydedilenler</h5>
+            <!-- Dinamik arama inputu -->
+            <div id="savedItemsContainer" class="mb-3">
+              <input type="text" id="savedItemsSearchInput" class="form-control" placeholder="Kaydedilenler içinde ara...">
+            </div>
+            <!-- Kaydedilen içeriklerin gösterileceği container -->
+            <div id="savedItemsList">
+              {% if saved_items_page and saved_items_page.object_list %}
+                {% for saved in saved_items_page.object_list %}
+                  {% if saved.type == 'question' %}
+                    {% with question_obj=saved.object %}
+                      <div class="mb-3 p-2 border rounded">
+                        <p><strong>Soru:</strong>
+                          <a href="{% url 'question_detail' question_obj.id %}" class="text-decoration-none">
+                            {{ question_obj.question_text|truncatewords:20 }}
+                          </a>
+                        </p>
+                        <a href="#" class="save-btn btn btn-sm btn-warning" data-content-type="question" data-object-id="{{ question_obj.id }}">
+                          Kaydetmeyi Kaldır
+                        </a>
+                      </div>
+                    {% endwith %}
+                  {% elif saved.type == 'answer' %}
+                    {% with answer_obj=saved.object %}
+                      <div class="mb-3 p-2 border rounded position-relative">
+                        <p><strong>Yanıt:</strong>
+                          <a href="{% url 'question_detail' answer_obj.question.id %}#answer-{{ answer_obj.id }}" class="text-decoration-none">
+                            {{ answer_obj.question.question_text|truncatewords:20 }}
+                          </a>
+                        </p>
+                        <a href="{% url 'single_answer' answer_obj.question.id answer_obj.id %}" class=" text-body text-decoration-none">
+                          {{ answer_obj.answer_text|truncatewords:20 }}
+                        </a>
+                        <div class="position-absolute top-0 end-0 me-2 mt-2">
+                          <a href="#" class="save-btn btn btn-sm btn-link icon-black-white" data-content-type="answer" data-object-id="{{ answer_obj.id }}" title="Kaydetmeyi kaldır">
+                            <i class="bi bi-bookmark-x fs-5"></i>
+                          </a>
+                        </div>
+                      </div>
+                    {% endwith %}
+                  {% endif %}
+                {% endfor %}
+              {% else %}
+                <p>Hiç kaydedilmiş soru veya yanıt yok.</p>
+              {% endif %}
+            </div>
+            {% if saved_items_page and saved_items_page.paginator.num_pages > 1 %}
+              {% include 'core/pagination.html' with page_obj=saved_items_page page_param='s_page' active_tab='kaydedilenler' %}
+            {% endif %}
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Profil Fotoğrafı Güncelleme Modal -->
+<div class="modal fade" id="profilePhotoModal" tabindex="-1" aria-labelledby="profilePhotoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" enctype="multipart/form-data" action="{% url 'update_profile_photo' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="profilePhotoModalLabel">Profil Fotoğrafını Güncelle</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center mb-3">
+            {% if user_profile.photo %}
+              <img id="current-profile-pic" src="{{ user_profile.photo.url }}" alt="Mevcut Fotoğraf" class="img-fluid rounded-circle" style="max-width:150px;">
+            {% else %}
+              <img id="current-profile-pic" src="{% static 'imgs/default_profile.jpg' %}" alt="Varsayılan Fotoğraf" class="img-fluid rounded-circle" style="max-width:150px;">
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label for="id_photo" class="form-label">Yeni Fotoğraf Seç (opsiyonel):</label>
+            <input type="file" name="photo" id="id_photo" class="form-control">
+          </div>
+          {% if user_profile.photo %}
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="remove_photo" value="true" id="removePhotoCheck">
+            <label class="form-check-label" for="removePhotoCheck">
+              Mevcut fotoğrafı kaldır (Varsayılan fotoğraf kullanılacak)
+            </label>
+          </div>
+          {% endif %}
+          <div class="text-center" id="new-photo-preview-container" style="display:none;">
+            <p>Yeni Seçilen Fotoğraf Önizlemesi:</p>
+            <img id="new-photo-preview" src="#" alt="Önizleme" class="img-fluid rounded-circle" style="max-width:150px;">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-primary">Güncelle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% include 'core/link_modal.html' %}
+{% include 'core/kaynak_ref.html' %}
+{% include 'core/reference_modal.html' %}
+
+{% if form and form.errors %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var modal = new bootstrap.Modal(document.getElementById('profilePhotoModal'));
+  modal.show();
+});
+</script>
+{% endif %}
+{% endblock content %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'js/answer_form.js' %}"></script>
+<script src="{% static 'js/vote_save.js' %}"></script>
+
+<script>
+  // 1. Ortak debounce fonksiyonu (çalışma sıklığını azaltmak için)
+  function debounce(func, delay) {
+    var timeout;
+    return function() {
+      var context = this, args = arguments;
+      clearTimeout(timeout);
+      timeout = setTimeout(function(){
+        func.apply(context, args);
+      }, delay);
+    };
+  }
+
+  // 2. Genel AJAX arama fonksiyonu (render callback ile)
+  function setupDynamicSearch(inputSelector, endpointUrl, targetSelector, renderFunction) {
+    $(inputSelector).on('keyup', debounce(function(){
+      var query = $(this).val();
+      $.ajax({
+        url: endpointUrl,
+        data: { q: query },
+        dataType: "json",
+        success: function(data) {
+          var container = $(targetSelector);
+          container.empty();
+          renderFunction(data, container);
+        }
+      });
+    }, 300));
+  }
+
+  // 3. Tanımlar için render fonksiyonu
+  function renderDefinitions(data, container) {
+    if(data.definitions && data.definitions.length > 0) {
+      // CSRF token'ı meta tag'dan alıyoruz:
+      var csrfToken = $('meta[name="csrf-token"]').attr('content');
+      $.each(data.definitions, function(i, def){
+        var row = '<tr>'+
+                    '<td>'+ def.question_text +'</td>'+
+                    '<td>'+ def.definition_text +'</td>'+
+                    '<td>'+
+                      '<a href="/edit_definition/'+ def.id + '/?tab=tanimlar" class="btn btn-sm btn-primary">Düzenle</a> '+
+                      '<form action="/delete_definition/'+ def.id + '/?tab=tanimlar" method="post" class="d-inline">'+
+                        '<input type="hidden" name="csrfmiddlewaretoken" value="'+ csrfToken +'">'+
+                        '<button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm(\'Bu tanımı silmek istediğinize emin misiniz?\');">Sil</button>'+
+                      '</form>'+
+                    '</td>'+
+                  '</tr>';
+        container.append(row);
+      });
+    } else {
+      container.append('<tr><td colspan="3">Sonuç bulunamadı.</td></tr>');
+    }
+  }
+
+  // 4. Kaynaklar için render fonksiyonu
+  function renderReferences(data, container) {
+    if(data.references && data.references.length > 0) {
+      $.each(data.references, function(i, ref){
+        var row = '<tr>'+
+                    '<td>'+ ref.author_surname +'</td>'+
+                    '<td>'+ ref.author_name +'</td>'+
+                    '<td>'+ ref.year +'</td>'+
+                    '<td>'+ ref.rest +'</td>'+
+                    '<td>'+ ref.abbreviation +'</td>'+
+                    '<td>'+(ref.usage_count || 0)+'</td>'+
+                    '<td>'+
+                      '<a href="/edit_reference/'+ ref.id + '/?tab=kaynaklarim" class="btn btn-sm btn-primary" title="Düzenle"><i class="bi bi-pencil-square"></i></a> '+
+                      '<a href="/delete_reference/'+ ref.id + '/?tab=kaynaklarim" class="btn btn-sm btn-secondary" title="Sil"><i class="bi bi-trash"></i></a>'+
+                    '</td>'+
+                  '</tr>';
+        container.append(row);
+      });
+    } else {
+      container.append('<tr><td colspan="3">Sonuç bulunamadı.</td></tr>');
+    }
+  }
+  
+  
+  function renderQuestions(data, container) {
+  if (data.questions && data.questions.length > 0) {
+    $.each(data.questions, function(i, question) {
+      var card = `
+        <div class="card mb-3 shadow-sm border-0">
+          <div class="card-body">
+            <a href="${question.detail_url}" class="fw-bold text-primary text-decoration-none">
+              ${question.question_text}
+            </a>
+          </div>
+        </div>
+      `;
+      container.append(card);
+    });
+  } else {
+    container.append('<p>Sonuç bulunamadı.</p>');
+  }
+}
+
+
+  // 5. Soru, yanıt ve kaydedilenler için render fonksiyonları
+  function renderAnswers(data, container) {
+  if (data.answers && data.answers.length > 0) {
+    $.each(data.answers, function(i, answer) {
+      var card = `
+        <div class="card mb-3 shadow-sm border-0">
+          <div class="card-body">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+              <div>
+                <a href="${answer.question_url}" class="fw-bold text-primary text-decoration-none">
+                  ${answer.question_text}
+                </a>
+                <span class="text-muted ms-2 small">(${answer.created_at})</span>
+              </div>
+            </div>
+            <div class="mt-2">
+              <a href="${answer.detail_url}" class="text-body text-decoration-none">
+                ${answer.answer_text}
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+      container.append(card);
+    });
+  } else {
+    container.append('<p>Sonuç bulunamadı.</p>');
+  }
+}
+
+
+  function renderSavedItems(data, container) {
+    if(data.saved_items && data.saved_items.length > 0) {
+      $.each(data.saved_items, function(i, item) {
+        container.append(
+          '<div class="mb-3"><a href="' + item.detail_url + '" class="text-decoration-none">' +
+          item.text +
+          '</a></div>'
+        );
+      });
+    } else {
+      container.append('<p>Sonuç bulunamadı.</p>');
+    }
+  }
+
+  // 6. Belirtilen inputlar için dinamik aramayı başlatıyoruz
+  $(document).ready(function(){
+    // Tanımlar ve kaynaklar için:
+    setupDynamicSearch('#definitionsSearchInput', "{% url 'get_user_definitions' %}", '#definitionsTbody', renderDefinitions);
+    setupDynamicSearch('#referencesSearchInput', "{% url 'get_references' %}", '#referencesTbody', renderReferences);
+    // Soru, yanıt ve kaydedilenler için (varsa diğer dinamik arama inputlarınız):
+    setupDynamicSearch('#questionsSearchInput', "{% url 'get_user_questions' %}", '#questionsList', renderQuestions);
+    setupDynamicSearch('#answersSearchInput', "{% url 'get_user_answers' %}", '#answersList', renderAnswers);
+    setupDynamicSearch('#savedItemsSearchInput', "{% url 'get_saved_items' %}", '#savedItemsList', renderSavedItems);
+  });
+
+  // 7. Sekme seçim ve URL güncelleme
+  document.addEventListener('DOMContentLoaded', function() {
+    var params = new URLSearchParams(window.location.search);
+    var initialTab = params.get('tab');
+    if (initialTab) {
+      var tabTriggerEl = document.querySelector('.nav-link[href="#' + initialTab + '"]');
+      if (tabTriggerEl) {
+        var tab = new bootstrap.Tab(tabTriggerEl);
+        tab.show();
+      }
+    }
+    var tabLinks = document.querySelectorAll('#profileTab .nav-link');
+    tabLinks.forEach(function(link) {
+      link.addEventListener('shown.bs.tab', function(e) {
+        var href = e.target.getAttribute('href');
+        var newTab = href.replace('#', '');
+        var newUrl = window.location.pathname + '?tab=' + newTab;
+        history.pushState({}, '', newUrl);
+      });
+    });
+  });
+
+  // 8. Profil fotoğrafı önizleme
+  var fileInput = document.getElementById('id_photo');
+  var previewContainer = document.getElementById('new-photo-preview-container');
+  var previewImage = document.getElementById('new-photo-preview');
+  if (fileInput) {
+    fileInput.addEventListener('change', function() {
+      var file = this.files[0];
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          previewContainer.style.display = 'block';
+          previewImage.src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+      } else {
+        previewContainer.style.display = 'none';
+        previewImage.src = '#';
+      }
+    });
+  }
+
+  // 9. Sabitlenmiş girdi "read-more" işlevi
+  var readMoreLinks = document.querySelectorAll('.read-more');
+  readMoreLinks.forEach(function(link) {
+    link.addEventListener('click', function(event) {
+      event.preventDefault();
+      var answerId = link.getAttribute('data-answer-id');
+      var summary = document.getElementById('answer-summary-' + answerId);
+      var fullText = document.getElementById('answer-full-' + answerId);
+      if (summary && fullText) {
+        if (summary.style.display === 'none') {
+          summary.style.display = 'block';
+          fullText.style.display = 'none';
+          link.textContent = 'Tümünü Göster';
+        } else {
+          summary.style.display = 'none';
+          fullText.style.display = 'block';
+          link.textContent = 'Daha az göster';
+        }
+      }
+    });
+  });
+</script>
+{% endblock extra_js %}
+

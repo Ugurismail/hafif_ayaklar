@@ -1,0 +1,476 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <!-- Meta Etiketleri -->
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CamiaF{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <!-- Özel CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    {% if user.is_authenticated %}
+    <style>
+        @import url("https://fonts.googleapis.com/css?family={{ user.userprofile.font_family|urlencode }}");
+      :root {
+        --secondary-button-background-color : {{ user.userprofile.secondary_button_background_color }};
+        --secondary-button-hover-background-color : {{ user.userprofile.secondary_button_hover_background_color }};
+        --secondary-button-text-color : {{ user.userprofile.secondary_button_text_color }};
+        --font-size: {{ user.userprofile.font_size }}px;
+
+        --message-bubble: {{ user.userprofile.message_bubble_color }};
+        --tbas-color: {{ user.userprofile.tbas_color }};
+        --background-color: {{ user.userprofile.background_color }};
+        --text-color: {{ user.userprofile.text_color }};
+        --header-background-color: {{ user.userprofile.header_background_color }};
+        --header-text-color: {{ user.userprofile.header_text_color }};
+        --link-color: {{ user.userprofile.link_color }};
+        --link-hover-color: {{ user.userprofile.link_hover_color }};
+        --button-background-color: {{ user.userprofile.button_background_color }};
+        --button-hover-background-color: {{ user.userprofile.button_hover_background_color }};
+        --button-text-color: {{ user.userprofile.button_text_color }};
+        --hover-background-color: {{ user.userprofile.hover_background_color }};
+        --icon-color: {{ user.userprofile.icon_color }};
+        --icon-hover-color: {{ user.userprofile.icon_hover_color }};
+        --answer-background-color: {{ user.userprofile.answer_background_color }};
+        --content-background-color: {{ user.userprofile.content_background_color }};
+        --tab-background-color: {{ user.userprofile.tab_background_color }};
+        --tab-text-color: {{ user.userprofile.tab_text_color }};
+        --tab-active-background-color: {{ user.userprofile.tab_active_background_color }};
+        --tab-active-text-color: {{ user.userprofile.tab_active_text_color }};
+        --dropdown-text-color: {{ user.userprofile.dropdown_text_color }};
+        --dropdown-hover-background-color: {{ user.userprofile.dropdown_hover_background_color }};
+        --dropdown-hover-text-color: {{ user.userprofile.dropdown_hover_text_color }};
+        --nav-link-hover-color: {{ user.userprofile.nav_link_hover_color }};
+        --nav-link-hover-bg: {{ user.userprofile.nav_link_hover_bg }};
+
+        --pagination-background-color: {{ user.userprofile.pagination_background_color }};
+        --pagination-text-color: {{ user.userprofile.pagination_text_color }};
+        /* --pagination-active-background-color: {{ user.userprofile.pagination_active_background_color }};
+        --pagination-active-text-color: {{ user.userprofile.pagination_active_text_color }}; */
+        --body-font-family: "{{ user.userprofile.font_family }}";
+        --yanit-card-background-color: {{ user.userprofile.yanit_card }}
+        
+        /* vs. diğer değişkenler */
+      }
+    </style>
+    {% endif %}
+    
+    <link rel="icon" href="{% static 'imgs/favicon.ico' %}" type="image/x-icon">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNavbar">
+        <div class="container-fluid">
+            <!-- Logo ve Marka -->
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'user_homepage' %}">
+                <img src="{% static 'imgs/logo.png' %}" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+                <span class="ms-2">HafifAyaklar</span>
+            </a>
+            <!-- Mobil için Toggle Butonu -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Menüyü Aç">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <!-- Navbar İçeriği -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                {% if user.is_authenticated %}
+                <form id="search-form" class="d-flex mx-auto" style="width: 400px;">
+                    {% csrf_token %}
+                    <input type="text" autocomplete="off" id="search-input" class="form-control" placeholder="Başlık/Soru ya da Kullanıcı Ara">
+                    <div id="search-results"></div>
+                    <button type="button" class="btn btn-outline-secondary ms-1" id="advancedSearchBtn" title="Gelişmiş Arama">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                </form>
+                {% endif %}
+                <!-- Sağ taraftaki Navbar Öğeleri -->
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                    <!-- Giriş Yapmış Kullanıcılar İçin Linkler -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'user_homepage' %}" title="Ana Sayfa"><i class="bi bi-house"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'question_map' %}" title="Harita"><i class="bi bi-diagram-3"></i></a>
+                    </li>
+                    <!-- Dropdown Menü -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="extraMenu" title="Müteferrik" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-umbrella-fill"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="extraMenu">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'profile' %}" title="Profil">
+                                    <i class="bi bi-person"></i>Profilim
+                                </a>                              
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'polls_home' %}">
+                                    <i class="bi bi-card-checklist"></i>Anketler
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'user_settings' %}">
+                                    <i class="bi bi-gear"></i>Renk Ayarları
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'site_statistics' %}">
+                                    <i class="bi bi-bar-chart"></i>Site İstatistikleri
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'user_list' %}">
+                                    <i class="bi bi-people"></i>Tüm Kullanıcılar
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="https://www.typingme.com/10-parmak-klavye-q/10-parmak-q.php">
+                                    <i class="bi bi-keyboard"></i>On Parmak
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{% url 'about' %}">
+                                    <i class="bi bi-info-circle"></i>Hakkında
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'logout' %}" title="Çıkış"><i class="bi bi-box-arrow-right"></i>Çıkış Yap</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="nav-link position-relative" href="{% url 'message_list' %}">
+                            {% if unread_message_count == 0 %}
+                                <i class="bi bi-envelope" id="message-icon"></i>
+                            {% elif unread_message_count > 0 %}
+                                <i class="msg bi bi-envelope" id="message-icon">
+                                    <span class=" position-absolute top-10 start-100 badge translate-middle">
+                                        {{ unread_message_count }}
+                                    </span>
+                                </i>
+
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% else %}
+                    <!-- Giriş Yapmamış Kullanıcılar İçin Linkler -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Giriş Yap</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'signup' %}">Kayıt Ol</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+<!-- Gelişmiş Arama Modal -->
+<div class="modal fade" id="advancedSearchModal" tabindex="-1" aria-labelledby="advancedSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="advancedSearchForm" method="get" action="{% url 'search' %}">
+          <!-- method="get" ve action="/search/" => direk GET parametresiyle search view'e gider -->
+          
+          <div class="modal-header">
+            <h5 class="modal-title" id="advancedSearchModalLabel">Gelişmiş Arama</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+          </div>
+          
+          <div class="modal-body">
+            <!-- Kullanıcı Adı -->
+            <div class="mb-3">
+              <label for="searchUser" class="form-label">Kullanıcı Adı</label>
+              <input type="text" class="form-control" id="searchUser" name="username" placeholder="ör. yigit">
+            </div>
+            
+            <!-- Tarih Aralığı -->
+            <div class="mb-3">
+              <label for="searchDateFrom" class="form-label">Başlangıç Tarihi</label>
+              <input type="date" class="form-control" id="searchDateFrom" name="date_from">
+            </div>
+            <div class="mb-3">
+              <label for="searchDateTo" class="form-label">Bitiş Tarihi</label>
+              <input type="date" class="form-control" id="searchDateTo" name="date_to">
+            </div>
+            
+            <!-- Metin Arama (Ek kelimeler) -->
+            <div class="mb-3">
+              <label for="searchKeywords" class="form-label">Metin İçinde Geçen Kelime(ler)</label>
+              <input type="text" class="form-control" id="searchKeywords" name="keywords" placeholder="ör. python django">
+            </div>
+            
+          </div> <!-- modal-body -->
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            <button type="submit" class="btn btn-primary">Ara</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+    <!-- İçerik -->
+    <div class="container-fluid" id="mainContent">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Yardım Butonu -->
+    <style>
+    .floating-help-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9998;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #6E8CA7;
+        color: #fff;
+        font-size: 24px;
+        text-align: center;
+        line-height: 50px;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    .floating-help-btn:hover {
+        background: #0056b3;
+    }
+    </style>
+
+    <div class="floating-help-btn" id="help-btn" >
+        ?
+    </div>
+        
+
+
+<!-- Toast -->
+<div class="position-fixed bottom-0 end-3 p-3" style="z-index: 9999;">
+    <div id="randomToast" 
+         class="toast fade"
+         role="alert" 
+         aria-live="assertive" 
+         aria-atomic="true" 
+         data-bs-autohide="true"
+         data-bs-delay="4000"
+         style="width: 350px;">
+         
+      <!-- Toast başlık kısmı -->
+      <div class="toast-header d-flex justify-content-between align-items-center">
+        <strong class="me-auto">Random Kutusu</strong>
+        
+        <!-- "Yeni cümle ekle" butonu -->
+        <button type="button"
+                class="btn btn-success btn-sm me-2"
+                id="addSentenceBtn"
+                data-bs-toggle="tooltip" 
+                data-bs-placement="top" 
+                title="Yeni cümle ekle">
+          <i class="bi bi-plus-lg"></i>
+        </button>
+  
+        <!-- Toast'ı kapatma butonu (varsayılana dokunmadık) -->
+        <button type="button" 
+                class="btn-close" 
+                data-bs-dismiss="toast" 
+                aria-label="Close">
+        </button>
+      </div>
+  
+      <!-- Toast gövdesi -->
+      <div class="toast-body d-flex justify-content-between align-items-center">
+        <!-- Rastgele cümle metni -->
+        <span id="randomSentenceText" class="me-2">
+          Cümle buraya gelecek...
+        </span>
+  
+        <!-- "Bir Daha Gösterme" (ignore) butonu (ilk başta gizli) -->
+        <button type="button" 
+                class="btn btn-link text-danger p-0" 
+                id="ignoreRandomBtn" 
+                style="display: none;" 
+                data-bs-toggle="tooltip" 
+                data-bs-placement="right" 
+                title="Bu cümleyi bir daha gösterme">
+          <i class="bi bi-eye-slash"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+
+    <!-- Modal -->
+    <div class="modal fade" id="addSentenceModal" tabindex="-1" aria-labelledby="addSentenceModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addSentenceModalLabel">Yeni Random Cümle Ekle</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+          </div>
+          <div class="modal-body">
+            <form id="addRandomSentenceForm">
+              <div class="mb-3">
+                <textarea name="sentence" class="form-control" rows="2" placeholder="Yeni random cümlenizi girin (max 280 karakter)"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary w-100">Ekle</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- jQuery'yi Bootstrap JS'den ÖNCE Dahil Edin -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Ana JavaScript dosyalarınız -->
+    <script src="{% static 'js/base.js' %}"></script>
+    <script src="{% static 'js/message_notifications.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
+    <!-- Navbar küçülme ve transparanlık efekti -->
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var navbar = document.getElementById('mainNavbar');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('navbar-shrink');
+                    navbar.classList.add('navbar-transparent');
+                } else {
+                    navbar.classList.remove('navbar-shrink');
+                    navbar.classList.remove('navbar-transparent');
+                }
+            });
+        });
+
+        $(document).ready(function() {
+    var toastEl = document.getElementById('randomToast');
+    var toast   = new bootstrap.Toast(toastEl);
+    var csrftoken = $('meta[name="csrf-token"]').attr('content');
+
+    // Rastgele cümleyi çeker
+    $('#help-btn').click(function() {
+        // help btn basılınca random cümle çek
+        $.ajax({
+            url: "{% url 'get_random_sentence' %}",
+            method: "GET",
+            success: function(data) {
+                // data = { id: xx, sentence: '...' }
+                $('#randomSentenceText').text(data.sentence);
+                
+                // Cümle id bilgisini butona set edelim ki ignore fonksiyonu bilebilsin
+                $('#ignoreRandomBtn').data('sentence-id', data.id);
+                // Butonu görünür yap
+                $('#ignoreRandomBtn').show();
+
+                toast.show();
+            }
+        });
+    });
+
+    // “+” butonuna basıldığında modal aç
+    $('#addSentenceBtn').click(function() {
+        var addModal = new bootstrap.Modal(document.getElementById('addSentenceModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+        addModal.show();
+    });
+
+    // Yeni cümle ekleme formu
+    $('#addRandomSentenceForm').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{% url 'add_random_sentence' %}",
+            method: "POST",
+            data: $(this).serialize(),
+            headers: {'X-CSRFToken': csrftoken},
+            success: function(data) {
+                if(data.status == 'success') {
+                    alert(data.message);
+                    $('#addRandomSentenceForm textarea[name="sentence"]').val('');
+                    var addModalEl = document.getElementById('addSentenceModal');
+                    var addModal   = bootstrap.Modal.getInstance(addModalEl);
+                    addModal.hide();
+                } else {
+                    let errorMsg = "Hata:\n";
+                    for (let field in data.errors) {
+                        data.errors[field].forEach((err) => {
+                            errorMsg += err.message + "\n";
+                        });
+                    }
+                    alert(errorMsg);
+                }
+            }
+        });
+    });
+
+    // “Bir Daha Gösterme” butonuna tıklayınca
+    $('#ignoreRandomBtn').click(function() {
+        const sentenceId = $(this).data('sentence-id');
+        if (!sentenceId) return;
+
+        $.ajax({
+            url: "{% url 'ignore_random_sentence' %}",
+            method: "POST",
+            data: { sentence_id: sentenceId },
+            headers: { 'X-CSRFToken': csrftoken },
+            success: function(data) {
+                if(data.status === 'success') {
+                    // İsteğe göre toast'ı kapatabilir, 
+                    // veya "Bu cümle bir daha gösterilmeyecek" mesajı verebilirsiniz.
+                    toast.hide();
+                    alert(data.message);
+                } else {
+                    alert(data.message || "Bir hata oluştu.");
+                }
+            }
+        });
+    });
+});
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+      })
+    });
+  </script>
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+          var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+          var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl);
+          });
+        });
+ </script>
+ <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Gelişmiş Arama Butonu => modal açma
+    const advancedBtn = document.getElementById('advancedSearchBtn');
+    const advModalEl  = document.getElementById('advancedSearchModal');
+    
+    if (advancedBtn && advModalEl) {
+        const advModal = new bootstrap.Modal(advModalEl);
+        advancedBtn.addEventListener('click', function() {
+            advModal.show();
+        });
+    }
+});
+ </script>
+</body>
+</html>

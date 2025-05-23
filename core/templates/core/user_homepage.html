@@ -1,0 +1,447 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load custom_tags %}
+{% load markdownify %}
+{% block title %}Ana Sayfa{% endblock %}
+{% block content %}
+<div class="container" id="naber">
+    <div class="row mt-5">
+        <!-- Left Column: All Questions -->
+        <div class="col-md-2" style="border-right: 1px solid #ccc;">
+            <h4>Tüm Sorular</h4>
+            <ul class="list-unstyled">
+                {% for question in all_questions %}
+                <li class="tbas-color baslik d-flex justify-content-between align-items-center mt-2">
+                    <a href="{% url 'question_detail' question.id %}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
+                        <span>{{ question.question_text }}</span> 
+                        <small class="">{{ question.answers_count }}</small>
+                    </a>
+                    
+                </li>
+                {% endfor %}
+            </ul>
+            {% include 'core/pagination.html' with page_obj=all_questions page_param='page' %}
+        </div>
+        <!-- Middle Column: Random Questions and Answers -->
+        <div class="col-md-8">
+            <h4>Rastgele Başlıklar</h4>
+            {% for answer in random_items %}
+            <div class="card mb-3 random-item-card">
+                <!-- Question Title -->
+                <div class="card-header">
+                    <a href="{% url 'question_detail' answer.question.id %}" class="text-decoration-none">
+                        {{ answer.question.question_text }}
+                    </a>
+                </div>
+                <!-- Answer Content -->
+                <div class="card-body">
+                    {% if answer.answer_text|length > 500 %}
+                    <!-- Kısaltılmış Yanıt -->
+                    <div class="answer-text" id="answer-summary-{{ answer.id }}">
+                        {{ answer.answer_text|slice:":500"|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+                    </div>
+                
+                    <!-- Tam Yanıt (başlangıçta gizli) -->
+                    <div class="answer-text" id="answer-full-{{ answer.id }}" style="display: none;">
+                        {{ answer.answer_text|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                    </div>
+                
+                    <!-- "Tümünü göster" / "Tamamını oku" linki -->
+                    <a href="#" class="read-more" data-answer-id="{{ answer.id }}">Tümünü Göster</a>
+                {% else %}
+                    <!-- 500 karakterden kısaysa doğrudan gösteriyoruz -->
+                    <div class="answer-text">
+                        {{ answer.answer_text|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                    </div>
+                {% endif %}
+                    <!-- Actions and User Info -->
+                    <div class="action d-flex justify-content-between align-items-center">
+                        <!-- Left: Voting and Save -->
+                        <div>
+                            <!-- Upvote Button and Count -->
+                            <a href="#" class="vote-btn me-1 {% if answer.user_vote_value == 1 %}voted-up{% endif %}"
+                            data-content-type="answer" data-object-id="{{ answer.id }}" data-value="1" title="Beğen">
+                                <i class="bi-chevron-up"></i>
+                            </a>
+                            <span class="icon-number" id="answer-upvotes-{{ answer.id }}">{{ answer.upvotes }}</span>
+                            <!-- Downvote Button and Count -->
+                            <a href="#" class="vote-btn ms-1 me-1 {% if answer.user_vote_value == -1 %}voted-down{% endif %}"
+                            data-content-type="answer" data-object-id="{{ answer.id }}" data-value="-1" title="Beğenme">
+                                <i class="bi-chevron-down"></i>
+                            </a>
+                            <span class="icon-number" id="answer-downvotes-{{ answer.id }}">{{ answer.downvotes }}</span>
+                            <!-- Save Button -->
+                            <a href="#" class="save-btn ms-2" data-content-type="answer" data-object-id="{{ answer.id }}" title="Kaydet">
+                                <i class="{% if answer.id in saved_answer_ids %}bi bi-bookmark-fill{% else %}bi bi-bookmark{% endif %}"></i>
+                            </a>
+                            <span class="icon-number">{{ answer_save_dict|get_item:answer.id }}</span>
+                            <!-- Edit and Delete Buttons (Only for Content Owner) -->
+                            {% if answer.user == request.user %}
+                                <a href="{% url 'edit_answer' answer.id %}" class="ms-2" title="Düzenle">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <!-- Silme Butonu -->
+                                <a href="#" class="ms-2 delete-answer-btn" 
+                                data-answer-id="{{ answer.id }}" 
+                                data-delete-url="{% url 'delete_answer' answer.id %}?next={{ request.path|urlencode }}"
+                                title="Sil" data-bs-toggle="modal" data-bs-target="#deleteAnswerModal">
+                                <i class="bi bi-trash"></i>
+                             </a>
+                            {% endif %}
+                        </div>
+                        <!-- Right: User Info and Date -->
+                        <div class="text-end">
+                            <small class=" me-2">
+                                <a class="action-user" href="{% url 'user_profile' answer.user.username %}">{{ answer.user.username }}</a>
+                                | {{ answer.created_at|date:"Y-m-d H:i" }}
+                                {% if answer.updated_at|date:"Y-m-d H:i:s" > answer.created_at|date:"Y-m-d H:i:s" %}
+                                    {% if answer.updated_at|date:"Y-m-d" == answer.created_at|date:"Y-m-d" %}
+                                        <!-- If the answer was updated on the same day, show only the time -->
+                                        ~ {{ answer.updated_at|date:"H:i" }}
+                                    {% else %}
+                                        <!-- If the answer was updated on a different day, show date and time -->
+                                        ~ {{ answer.updated_at|date:"Y-m-d H:i" }}
+                                    {% endif %}
+                                {% endif %}
+                            </small>
+                            <!-- Three Dots Menu -->
+                            <div class="dropdown d-inline">
+                                <a href="#" class="text-decoration-none" id="dropdownMenu{{ answer.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    &#8226;&#8226;&#8226;
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu{{ answer.id }}">
+                                    <li>
+                                        <a class="dropdown-item copy-link-btn" 
+                                        href="#" 
+                                        data-url="{% url 'single_answer' answer.question.id answer.id %}">
+                                       <i class="bi bi-link-45deg"></i> Linki Kopyala
+                                     </a>
+                                     
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item share-link" href="#" data-question-id="{{ answer.question.id }}" data-answer-id="{{ answer.id }}">
+                                            <i class="bi bi-share"></i> Paylaş
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <form action="{% url 'pin_entry' answer_id=answer.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bi bi-pin-angle"></i> Profil Sabitle
+                                            </button>
+                                        </form>
+                                        
+                                    </li>
+                                    <li><a class="dropdown-item" href="{% url 'send_message_from_answer' answer.id %}">
+                                        <i class="bi bi-envelope"></i> Mesaj Gönder
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <!-- Right Column: Your Starting Questions -->
+        <div class="col-md-2" style="border-left: 1px solid #ccc;">
+            <h5>Başlangıç Sorularınız</h5>
+            {% if starting_questions %}
+                <ul class="list-unstyled">
+                    {% for item in starting_questions %}
+                    <li class="text-decoration-none d-flex justify-content-between align-items-center mt-2">
+                        <a href="{% url 'question_detail' item.question.id %}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
+                            <span>{{ item.question.question_text }}</span> 
+                            <small>{{ item.total_subquestions }}</small>
+                        </a>
+                        
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Henüz başlangıç sorunuz yok.</p>
+            {% endif %}
+            <!-- "Başlangıç Sorusu Ekle" Butonu -->
+            <a href="{% url 'add_starting_question' %}" class="btn btn-primary mt-2 col-12">Başlangıç Sorusu Ekle</a>
+            {% include 'core/pagination.html' with page_obj=starting_questions page_param='starting_page' %}
+        </div>
+    </div>
+</div>
+
+<!-- Include Modals -->
+<!-- Delete Answer Modal -->
+<div class="modal fade" id="deleteAnswerModal" tabindex="-1" aria-labelledby="deleteAnswerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" id="delete-answer-form">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteAnswerModalLabel">Yanıtı Sil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bu yanıtı silmek istediğinizden emin misiniz?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Tanım Modal -->
+<div class="modal fade" id="definitionModal" tabindex="-1" aria-labelledby="definitionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <!-- Modal header -->
+        <div class="modal-header">
+          <h5 class="modal-title" id="definitionModalLabel">Tanım</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+        </div>
+  
+        <!-- Modal body with tabs -->
+        <div class="modal-body">
+          <ul class="nav nav-tabs" id="definitionTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="tanim-yap-tab" data-bs-toggle="tab" data-bs-target="#tanim-yap" type="button" role="tab" aria-controls="tanim-yap" aria-selected="true">Tanım Yap</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="tanim-bul-tab" data-bs-toggle="tab" data-bs-target="#tanim-bul" type="button" role="tab" aria-controls="tanim-bul" aria-selected="false">Tanım Bul</button>
+            </li>
+          </ul>
+          <div class="tab-content mt-3" id="definitionTabContent">
+            <!-- TAB 1: TANIM YAP -->
+            <div class="tab-pane fade show active" id="tanim-yap" role="tabpanel" aria-labelledby="tanim-yap-tab">
+              <form id="createDefinitionForm">
+                <div class="mb-3">
+                  <label for="definitionText" class="form-label">Tanım (max 1000 karakter):</label>
+                  <textarea class="form-control" id="definitionText" name="definition_text" rows="3" maxlength="1000"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+              </form>
+            </div>
+  
+            <!-- TAB 2: TANIM BUL -->
+            <div class="tab-pane fade" id="tanim-bul" role="tabpanel" aria-labelledby="tanim-bul-tab">
+              <div class="mb-3">
+                <label for="definitionSelect" class="form-label">Kayıtlı Tanımlarım</label>
+                <select id="definitionSelect" class="form-select">
+                  <option value="">Bir tanım seçiniz...</option>
+                  <!-- JavaScript ile doldurulacak -->
+                </select>
+              </div>
+              <button type="button" class="btn btn-success" id="insertDefinitionBtn">Tamam</button>
+            </div>
+          </div>
+        </div>
+  
+      </div>
+    </div>
+  </div>
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <!-- Modal Header and Body -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="shareModalLabel">Paylaş</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="list-group">
+          <li class="list-group-item">
+            <a href="#" id="shareTwitter" target="_blank">
+              <i class="bi bi-twitter"></i> X (Twitter) ile Paylaş
+            </a>
+          </li>
+          <li class="list-group-item">
+            <a href="#" id="shareFacebook" target="_blank">
+              <i class="bi bi-facebook"></i> Facebook ile Paylaş
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include 'core/link_modal.html' %}
+{% include 'core/reference_modal.html' %}
+{% include 'core/kaynak_ref.html' %}
+
+{% endblock %}
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tooltip'leri başlat
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'js/answer_form.js' %}"></script>
+<script src="{% static 'js/vote_save.js' %}"></script>
+
+<!-- Okuma, Kopyala, Paylaş, Sil ve Filtreleme İşlevleri -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Okuma (Read More) İşlevi
+    const readMoreLinks = document.querySelectorAll('.read-more');
+    readMoreLinks.forEach(function(link) {
+        link.addEventListener('click', function(event) {
+            event.preventDefault();
+            const answerId = this.getAttribute('data-answer-id');
+            const summary = document.getElementById('answer-summary-' + answerId);
+            const fullText = document.getElementById('answer-full-' + answerId);
+            if (!summary || !fullText) return;
+            if (summary.style.display === 'none') {
+                summary.style.display = 'block';
+                fullText.style.display = 'none';
+                this.textContent = 'Tamamını oku';
+            } else {
+                summary.style.display = 'none';
+                fullText.style.display = 'block';
+                this.textContent = 'Daha az göster';
+            }
+        });
+    });
+
+    // Link Kopyala İşlevi
+    $('.copy-link-btn').click(function(e) {
+        e.preventDefault();
+        var url = $(this).data('url');
+        var tempInput = $("<input>");
+        $("body").append(tempInput);
+        var absoluteLink = window.location.origin + url;
+        tempInput.val(absoluteLink).select();
+        document.execCommand("copy");
+        tempInput.remove();
+        alert("Link kopyalandı!");
+    });
+
+    // Paylaş İşlevi (Düzeltilmiş)
+    var currentAnswerId;
+    var currentQuestionId;
+    $('.share-link').click(function(e) {
+        e.preventDefault();
+        // Her share link elementinde data-question-id ve data-answer-id tanımlı olmalı
+        currentAnswerId = $(this).data('answer-id');
+        currentQuestionId = $(this).data('question-id');
+        $('#shareModal').modal('show');
+    });
+
+    $('#shareModal').on('shown.bs.modal', function () {
+        // URL desenimiz: /question/<question_id>/answer/<answer_id>/
+        var shareUrl = '/question/' + currentQuestionId + '/answer/' + currentAnswerId + '/';
+        var absoluteLink = window.location.origin + shareUrl;
+        var twitterUrl = "https://twitter.com/intent/tweet?url=" + encodeURIComponent(absoluteLink);
+        var facebookUrl = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(absoluteLink);
+        $('#shareTwitter').attr('href', twitterUrl);
+        $('#shareFacebook').attr('href', facebookUrl);
+    });
+
+    // Yanıt Silme İşlevi
+    var deleteAnswerBtns = document.querySelectorAll('.delete-answer-btn');
+    var deleteAnswerForm = document.getElementById('delete-answer-form');
+    deleteAnswerBtns.forEach(function(btn) {
+        btn.addEventListener('click', function(event) {
+            var answerId = this.getAttribute('data-answer-id');
+            deleteAnswerForm.action = "{% url 'delete_answer' 0 %}".replace('/0/', '/' + answerId + '/');
+        });
+    });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Popover'ları başlat
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl, { html: true, container: 'body' });
+    });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-expand: "auto-expand" sınıfına sahip textarea'ya odaklanınca genişlet
+    var textarea = document.querySelector('textarea.auto-expand');
+    if (textarea) {
+        textarea.addEventListener('focus', function() {
+            this.classList.add('expanded');
+        });
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm  = document.getElementById('filterForm');
+    const answersDiv  = document.getElementById('answersContainer');
+    const questionId  = document.getElementById('answer_form_question_id').value;
+
+    // Filtre formundaki input'lara change/keyup event ekle
+    filterForm.querySelectorAll('input').forEach(function(elem) {
+        if (elem.type === 'text') {
+            elem.addEventListener('keyup', doFilterAjax);
+        } else {
+            elem.addEventListener('change', doFilterAjax);
+        }
+    });
+
+    // "Uygula" butonuna basıldığında form submit'ini engelle
+    filterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        doFilterAjax();
+    });
+
+    function doFilterAjax() {
+        const formData = new FormData(filterForm);
+        const queryParams = new URLSearchParams(formData);
+        const url = `/question/${questionId}/filter_answers/?` + queryParams.toString();
+        fetch(url, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.text())
+        .then(htmlData => {
+            answersDiv.innerHTML = htmlData;
+            reinitReadMore();
+        })
+        .catch(err => {
+            console.error('Filtreleme hatası:', err);
+        });
+    }
+
+    function reinitReadMore() {
+        const readMoreLinks = answersDiv.querySelectorAll('.read-more');
+        readMoreLinks.forEach(function(link) {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                const answerId = this.getAttribute('data-answer-id');
+                const summary = document.getElementById('answer-summary-' + answerId);
+                const fullText = document.getElementById('answer-full-' + answerId);
+                if (!summary || !fullText) return;
+                if (summary.style.display === 'none') {
+                    summary.style.display = 'block';
+                    fullText.style.display = 'none';
+                    this.textContent = 'Tamamını oku';
+                } else {
+                    summary.style.display = 'none';
+                    fullText.style.display = 'block';
+                    this.textContent = 'Daha az göster';
+                }
+            });
+        });
+    }
+
+    reinitReadMore();
+});
+</script>
+{% endblock %}

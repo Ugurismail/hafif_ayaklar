@@ -1,0 +1,83 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-2">
+            <h4>Tüm Sorular</h4>
+            <ul class="list-unstyled">
+                {% for question in all_questions %}
+                <li class="tbas-color d-flex justify-content-between align-items-center mt-2 baslik">
+                    <a href="{% url 'question_detail' question.id %}"
+                      class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
+                        <span>{{ question.question_text }}</span>
+                        <small class="ms-2">{{ question.answers_count }}</small>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% include 'core/pagination.html' with page_obj=all_questions page_param='page' %}
+        </div>
+        <div class="col-md-10">
+            <h2>{{ other_user.username }} ile Mesajlaşma</h2>
+            <div class="card mt-3" style="height: 70vh; display: flex; flex-direction: column; border: none;">
+        
+                <!-- Mesajlar Alanı -->
+                <div class="chat-messages flex-grow-1" id="chat-container">
+                    {% for message in messages %}
+                        <div class="message-item mb-3 {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                            {% if message.sender != request.user %}
+                                {% if other_user.userprofile.photo %}
+                                    <img src="{{ other_user.userprofile.photo.url }}" alt="{{ other_user.username }}" class="user-photo">
+                                {% else %}
+                                    <img src="{% static 'imgs/default_profile.jpg' %}" alt="{{ other_user.username }}" class="user-photo">
+                                {% endif %}
+                            {% endif %}
+                            {% if message.sender == request.user %}
+                                <div class="sent-message">
+                                    <p class="mb-0">{{ message.body|urlize }}</p>
+                                    <small>{{ message.timestamp|date:"d M Y H:i" }}</small>
+                                </div>
+                            {% else %}
+                                <div class="received-message">
+                                    <p class="mb-1">{{ message.body|urlize }}</p>
+                                    <small>{{ message.timestamp|date:"d M Y H:i" }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="no-messages">Henüz mesaj yok.</div>
+                    {% endfor %}
+                    <div id="scroll-anchor"></div>
+                </div>
+        
+                <!-- Mesaj Gönderme Formu -->
+                <div class="">
+                    <form method="post" class="m-0">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <textarea name="body" class="form-control message-input" placeholder="Mesajınızı yazın..." rows="1" required></textarea>
+                            <button type="submit" class="btn btn-primary ">Gönder</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.addEventListener('load', function() {
+        console.log('Scrolling...');
+        var chatContainer = document.getElementById('chat-container');
+        console.log('scrollHeight:', chatContainer ? chatContainer.scrollHeight : 'No container');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    });
+</script>
+{% endblock %}

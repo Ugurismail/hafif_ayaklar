@@ -1,0 +1,16 @@
+<!-- templates/core/invitation_node.html -->
+<li>
+    {% if node.user %}
+      <a href="{% url 'user_profile' node.user.username %}">{{ node.user.username }}</a>
+    {% else %}
+      <span class="text-muted">Davet Kodu: {{ node.code }}</span>
+    {% endif %}
+    {% if node.children %}
+      <ul>
+        {% for child in node.children %}
+          {% include 'core/invitation_node.html' with node=child %}
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </li>
+  

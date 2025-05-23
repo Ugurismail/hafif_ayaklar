@@ -1,0 +1,314 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+
+{% block extra_css %}
+<style>
+/* Süresi geçmiş anket kartları */
+.expired-poll-card {
+    border: 2px solid #111 !important;
+    border-radius: 9px;
+    background: #fff;
+    margin-bottom: 22px;
+    padding: 18px 18px 10px 18px;
+    box-shadow: none !important;
+}
+/* Kartın içindeki seçenekler için alt alta tek çizgi */
+.expired-poll-card .list-group-item {
+    border-bottom: 1.5px solid #111 !important;
+    border-radius: 0 !important;
+    background: transparent;
+    padding: 5px 2px 5px 0;
+}
+.expired-poll-card .list-group-item:last-child {
+    border-bottom: none !important;
+}
+/* Responsive dört sütun */
+@media (min-width: 992px) {
+  .expired-poll-col { width: 24%; float: left; margin-right:1%; }
+  .expired-poll-col:nth-child(4n) { margin-right:0; }
+}
+@media (max-width: 991px) {
+  .expired-poll-col { width: 49%; float: left; margin-right:2%; }
+  .expired-poll-col:nth-child(2n) { margin-right:0; }
+}
+@media (max-width: 600px) {
+  .expired-poll-col { width: 100%; float: none; margin-right:0; }
+}
+</style>
+{% endblock extra_css %}
+
+
+
+
+
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Anketler</h2>
+  <!-- Yeni anket oluşturma butonu -->
+  <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createPollModal">
+    Yeni Anket Oluştur
+  </button>
+
+  <!-- Sekmeler -->
+  <ul class="nav nav-tabs" id="pollTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="active-polls-tab" data-bs-toggle="tab" data-bs-target="#active-polls" type="button" role="tab" aria-controls="active-polls" aria-selected="true">
+        Aktif Anketler
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="expired-polls-tab" data-bs-toggle="tab" data-bs-target="#expired-polls" type="button" role="tab" aria-controls="expired-polls" aria-selected="false">
+        Süresi Geçmiş Anketler
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content mt-3" id="pollTabsContent">
+    <!-- Aktif Anketler Sekmesi -->
+    <div class="tab-pane fade show active" id="active-polls" role="tabpanel" aria-labelledby="active-polls-tab">
+      <div class="row">
+        {% for poll in active_polls %}
+        <div class="col-md-4 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <h5>{{ poll.question_text }}</h5>
+              <p>Bitiş tarihi: {{ poll.end_date|date:"Y-m-d H:i" }}</p>
+              <!-- Butonları eşit genişlikte ve yan yana hizalama -->
+              <div class="d-flex gap-2">
+                {% if poll.related_question %}
+                  <a href="{% url 'poll_question_redirect' poll.id %}" class="btn btn-primary flex-fill">
+                    Anket Başlığına Git
+                  </a>
+                {% else %}
+                  <a href="{% url 'poll_question_redirect' poll.id %}" class="btn btn-primary flex-fill">
+                    Anket Başlığı Oluştur
+                  </a>
+                {% endif %}
+                <button class="btn btn-secondary flex-fill" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#poll-details-{{ poll.id }}" aria-expanded="false"
+                        aria-controls="poll-details-{{ poll.id }}">
+                  Detayları Göster
+                </button>
+              </div>
+              <!-- Detaylar (collapse) -->
+              <div class="collapse mt-2" id="poll-details-{{ poll.id }}">
+                <h6>Seçenekler:</h6>
+                <ul class="list-group list-group-flush">
+                  {% for opt in poll.options.all %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ opt.option_text }}
+                    {% if poll.is_active and not poll.options.all|user_has_voted:request.user %}
+                      <a href="{% url 'vote_poll' poll.id opt.id %}" class="btn btn-sm btn-success">Oy Ver</a>
+                    {% endif %}
+                  </li>
+                  {% endfor %}
+                </ul>
+                <div class="mt-3">
+                  <!-- Donut Grafik (Chart.js) -->
+                  <canvas id="pollChart-{{ poll.id }}" width="200" height="200"></canvas>
+                  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                  <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                      var ctx = document.getElementById('pollChart-{{ poll.id }}').getContext('2d');
+                      var data = {
+                        labels: [{% for opt in poll.options.all %}"{{ opt.option_text|escapejs }}",{% endfor %}],
+                        datasets: [{
+                          data: [{% for opt in poll.options.all %}{{ opt.votes.count }},{% endfor %}],
+                          backgroundColor: ['#007bff','#6c757d','#28a745','#dc3545','#ffc107','#17a2b8','#f8f9fa','#343a40','#fd7e14','#e83e8c']
+                        }]
+                      };
+                      new Chart(ctx, {
+                        type: 'doughnut',
+                        data: data,
+                      });
+                    });
+                  </script>
+                </div>
+                {% if not poll.is_anonymous %}
+                  <h6 class="mt-3">Oy Kullananlar:</h6>
+                  <ul>
+                    {% for opt in poll.options.all %}
+                      {% for v in opt.votes.all %}
+                        <li>{{ v.user.username }} -> {{ opt.option_text }}</li>
+                      {% endfor %}
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <p>Henüz aktif anket yok. İlk anketi siz oluşturun!</p>
+        {% endfor %}
+      </div>
+    </div>
+    <!-- Tarihi geçmiş Anketler Sekmesi -->
+    <div class="tab-pane fade" id="expired-polls" role="tabpanel" aria-labelledby="expired-polls-tab">
+      {% if expired_polls_data %}
+        <div class="row">
+          {% for epoll in expired_polls_data %}
+            <div class="col-md-3 col-sm-6 mb-4">
+              <div class="card expired-poll-card h-100">
+                <div class="card-body py-3">
+                  <h5 class="card-title mb-2" style="font-size:1.1rem;">{{ epoll.poll.question_text }}</h5>
+                  <div class="mb-2 text-muted" style="font-size:0.97rem;">{{ epoll.poll.end_date|date:"Y-m-d H:i" }}</div>
+                  {% if epoll.options_data %}
+                    <ul class="list-group list-group-flush">
+                      {% for opt_data in epoll.options_data %}
+                        <li class="list-group-item px-1 py-1 d-flex justify-content-between align-items-center expired-poll-option">
+                          <span class="expired-poll-option-text">{{ opt_data.text }}</span>
+                          <span class="expired-poll-option-percent text-secondary">%{{ opt_data.percentage }}</span>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    <div class="text-secondary" style="font-size:0.97rem;">Hiç oy yok</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>Henüz süresi geçmiş anket yok.</p>
+      {% endif %}
+    </div>
+    
+    
+
+
+
+
+  </div>
+</div>
+
+<!-- Anket Oluşturma Modal - Multi-Step Form -->
+<div class="modal fade" id="createPollModal" tabindex="-1" aria-labelledby="createPollModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{% url 'create_poll' %}" method="post" id="pollForm">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="createPollModalLabel">Yeni Anket Oluştur</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Adım 1: Anket Bilgileri -->
+          <div id="pollStep1">
+            <div class="mb-3">
+              {{ form.question_text.label_tag }}
+              {{ form.question_text }}
+              {% if form.question_text.errors %}
+                <div class="text-danger">{{ form.question_text.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-3">
+              {{ form.end_date.label_tag }}
+              {{ form.end_date }}
+              {% if form.end_date.errors %}
+                <div class="text-danger">{{ form.end_date.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="form-check mb-3">
+              {{ form.is_anonymous }}
+              {{ form.is_anonymous.label_tag }}
+              {% if form.is_anonymous.errors %}
+                <div class="text-danger">{{ form.is_anonymous.errors }}</div>
+              {% endif %}
+            </div>
+            <button type="button" class="btn btn-primary" id="toStep2Btn">İleri</button>
+          </div>
+          <!-- Adım 2: Seçenekler -->
+          <div id="pollStep2" style="display: none;">
+            <h6>Seçenekler:</h6>
+            <div id="optionsContainer">
+              <!-- Başlangıçta 2 seçenek gösteriliyor -->
+              <div class="mb-2" id="optionField1">
+                {{ form.option_1.label_tag }}
+                {{ form.option_1 }}
+                {% if form.option_1.errors %}
+                  <div class="text-danger">{{ form.option_1.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="mb-2" id="optionField2">
+                {{ form.option_2.label_tag }}
+                {{ form.option_2 }}
+                {% if form.option_2.errors %}
+                  <div class="text-danger">{{ form.option_2.errors }}</div>
+                {% endif %}
+              </div>
+              {# Diğer seçenek alanlarını döngü ile ekleyelim, başlangıçta gizli #}
+              {% for i in "3,4,5,6,7,8,9,10"|split:"," %}
+                {% with field_name="option_"|add:i %}
+                  {% with field=form|field_by_name:field_name %}
+                    <div class="mb-2 option-field" id="optionField{{ i }}" style="display: none;">
+                      {{ field.label_tag }}
+                      {{ field }}
+                      {% if field.errors %}
+                        <div class="text-danger">{{ field.errors }}</div>
+                      {% endif %}
+                    </div>
+                  {% endwith %}
+                {% endwith %}
+              {% endfor %}
+            </div>
+            <button type="button" class="btn btn-secondary" id="addOptionBtn">Seçenek Ekle</button>
+            <div class="mt-3 d-flex justify-content-between">
+              <button type="button" class="btn btn-secondary" id="backToStep1Btn">Geri</button>
+              <button type="submit" class="btn btn-primary">Anketi Oluştur</button>
+            </div>
+          </div>
+        </div>        
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // --- Anket Oluşturma Multi-Step Form ---
+  var step1 = document.getElementById('pollStep1');
+  var step2 = document.getElementById('pollStep2');
+  var toStep2Btn = document.getElementById('toStep2Btn');
+  var backToStep1Btn = document.getElementById('backToStep1Btn');
+
+  toStep2Btn.addEventListener('click', function() {
+    // Validasyon eklenebilir
+    step1.style.display = 'none';
+    step2.style.display = 'block';
+  });
+
+  if(backToStep1Btn) {
+    backToStep1Btn.addEventListener('click', function() {
+      step2.style.display = 'none';
+      step1.style.display = 'block';
+    });
+  }
+
+  // --- Seçenek Ekleme ---
+  var addOptionBtn = document.getElementById('addOptionBtn');
+  var maxOptions = 10;
+  var currentVisibleOptions = 2; // Başlangıçta 2 seçenek açık.
+  addOptionBtn.addEventListener('click', function() {
+    if (currentVisibleOptions < maxOptions) {
+      currentVisibleOptions++;
+      var nextOptionField = document.getElementById('optionField' + currentVisibleOptions);
+      if (nextOptionField) {
+        nextOptionField.style.display = 'block';
+      }
+      if (currentVisibleOptions === maxOptions) {
+        addOptionBtn.disabled = true;
+      }
+    }
+  });
+});
+</script>
+{% endblock extra_js %}

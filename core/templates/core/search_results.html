@@ -1,0 +1,137 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Arama Sonuçları{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 700px;">
+  <!-- Arama kutusu -->
+  <form method="get" action="{% url 'search' %}" class="input-group mb-4">
+    <input type="text" class="form-control" name="q" placeholder="Başlık, yanıt veya kullanıcı ara..." value="{{ query }}">
+    <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Ara</button>
+    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#advancedSearchModal">
+      <i class="bi bi-funnel-fill"></i>
+    </button>
+  </form>
+
+  <ul class="list-group mb-5">
+    {% if results %}
+      {% for item in results %}
+        {% if item.type == "question" %}
+        <li class="list-group-item py-3">
+          <span class="badge bg-primary me-2">Soru/Başlık</span>
+          <a href="{% url 'question_detail' item.object.id %}" class="fw-bold">
+            {{ item.object.question_text|truncatechars:80 }}
+          </a>
+          <div class="text-muted small mt-1">
+            <i class="bi bi-person"></i>
+            <a href="{% url 'user_profile' item.object.user.username %}">{{ item.object.user.username }}</a>
+            &bull; {{ item.object.created_at|date:"d M Y, H:i" }}
+          </div>
+        </li>
+        {% elif item.type == "answer" %}
+        <li class="list-group-item py-3">
+          <span class="badge bg-success me-2">Yanıt/Girdi</span>
+          <a href="{% url 'question_detail' item.object.question.id %}">
+            <span class="fw-bold">{{ item.object.question.question_text|truncatechars:55 }}</span>
+          </a>
+          <div class="ms-4 mt-1">
+            <span class="text-secondary">
+              <i class="bi bi-chat-right-dots"></i>
+              {{ item.object.answer_text|truncatewords:18 }}
+              <a href="{% url 'question_detail' item.object.question.id %}#answer-{{ item.object.id }}" class="ms-1">→</a>
+            </span>
+          </div>
+          <div class="text-muted small mt-1">
+            <i class="bi bi-person"></i>
+            <a href="{% url 'user_profile' item.object.user.username %}">{{ item.object.user.username }}</a>
+            &bull; {{ item.object.created_at|date:"d M Y, H:i" }}
+          </div>
+        </li>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <li class="list-group-item py-3 text-center text-muted">
+        Aradığınız kritere uygun sonuç bulunamadı.
+      </li>
+    {% endif %}
+  </ul>
+
+  <!-- Kullanıcılar Bölümü (opsiyonel) -->
+  {% if users %}
+    <div class="mt-5 mb-3"><h5>Kullanıcılar</h5></div>
+    <ul class="list-group">
+      {% for user in users %}
+        <li class="list-group-item d-flex align-items-center">
+          {% if user.userprofile.photo %}
+            <img src="{{ user.userprofile.photo.url }}" class="rounded-circle me-2" width="40" height="40">
+          {% else %}
+            <img src="{% static 'core/images/default_avatar.png' %}" class="rounded-circle me-2" width="40" height="40">
+          {% endif %}
+          <a href="{% url 'user_profile' user.username %}" class="fw-bold text-primary">@{{ user.username }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+    {% include 'core/pagination.html' with page_obj=users page_param='users_page' %}
+  {% endif %}
+
+  <!-- Pagination for main results -->
+  {% include 'core/pagination.html' with page_obj=page_obj page_param='page' %}
+</div>
+
+<!-- Gelişmiş Arama Modalı -->
+<div class="modal fade" id="advancedSearchModal" tabindex="-1" aria-labelledby="advancedSearchModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="get" action="{% url 'search' %}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="advancedSearchModalLabel">Gelişmiş Arama</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Kullanıcı Adı</label>
+            <input type="text" class="form-control" name="username" placeholder="ör. yigit" value="{{ username }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Başlangıç Tarihi</label>
+            <input type="date" class="form-control" name="date_from" value="{{ date_from }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Bitiş Tarihi</label>
+            <input type="date" class="form-control" name="date_to" value="{{ date_to }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Metin İçinde Geçen Kelime(ler)</label>
+            <input type="text" class="form-control" name="keywords" placeholder="örn. python django" value="{{ keywords }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nerede Aransın?</label>
+            <select class="form-select" name="search_in">
+              <option value="all" {% if search_in == 'all' %}selected{% endif %}>Başlık (Soru) ve Yanıt</option>
+              <option value="question" {% if search_in == 'question' %}selected{% endif %}>Sadece Sorular</option>
+              <option value="answer" {% if search_in == 'answer' %}selected{% endif %}>Sadece Yanıtlar</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+          <button type="submit" class="btn btn-primary">Ara</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Gelişmiş Arama Modal'ını otomatik açma
+    {% if show_modal %}
+      var advancedSearchModal = new bootstrap.Modal(document.getElementById('advancedSearchModal'));
+      advancedSearchModal.show();
+    {% endif %}
+  });
+</script>
+{% endblock %}

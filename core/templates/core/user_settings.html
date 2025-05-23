@@ -1,0 +1,484 @@
+<!-- templates/core/user_settings.html -->
+
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Renk Ayarları</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="theme_select" class="form-label">Hazır Tema:</label>
+            <select id="theme_select" class="form-select">
+                <option value="">-- Tema Seçin --</option>
+                <option value="default">Varsayılan</option>
+                <option value="gece">Gece Modu</option>
+                <option value="eglence">Eğlence Modu</option>
+                <option value="gpt41">GPT4.1 (Koyu-Mavi)</option>
+                <option value="neomint">NeoMint (Pastel-Mint)</option>
+                <option value="solarpop">SolarPop (Canlı Sarı)</option>
+            </select>
+        </div>
+        
+        <!-- Genel Renkler -->
+        <div class="card p-3 mb-3 cemil">
+            <h4>Genel Renkler</h4>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="background_color" class="form-label">Arka Plan Rengi:</label>
+                    <input type="color" id="background_color" name="background_color" class="form-control form-control-color" value="{{ user_profile.background_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="text_color" class="form-label">Genel Metin ve Sınır Rengi:</label>
+                    <input type="color" id="text_color" name="text_color" class="form-control form-control-color" value="{{ user_profile.text_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="message_bubble_color" class="form-label">Mesaj Baloncuk Rengi</label>
+                    <input type="color" id="message_bubble_color" name="message_bubble_color" class="form-control form-control-color" value="{{ user_profile.message_bubble_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="tbas_color" class="form-label">Sol Başlıkların Rengi</label>
+                    <input type="color" id="tbas_color" name="tbas_color" class="form-control form-control-color" value="{{ user_profile.tbas_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="link_color" class="form-label">Link Rengi:</label>
+                    <input type="color" id="link_color" name="link_color" class="form-control form-control-color" value="{{ user_profile.link_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="link_hover_color" class="form-label">Link Hover Rengi:</label>
+                    <input type="color" id="link_hover_color" name="link_hover_color" class="form-control form-control-color" value="{{ user_profile.link_hover_color }}">
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Navbar Renkleri -->
+        <div class="card p-3 mb-3 cemil">
+            <h4>Navbar Renkleri</h4>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="header_background_color" class="form-label">Navbar Arka Plan Rengi:</label>
+                    <input type="color" id="header_background_color" name="header_background_color" class="form-control form-control-color" value="{{ user_profile.header_background_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="header_text_color" class="form-label">Navbar Metin Rengi:</label>
+                    <input type="color" id="header_text_color" name="header_text_color" class="form-control form-control-color" value="{{ user_profile.header_text_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="nav_link_hover_color" class="form-label">Navbar Link Hover Rengi:</label>
+                    <input type="color" id="nav_link_hover_color" name="nav_link_hover_color" class="form-control form-control-color" value="{{ user_profile.nav_link_hover_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="nav_link_hover_bg" class="form-label">Navbar Link Hover Arka Plan Rengi:</label>
+                    <input type="color" id="nav_link_hover_bg" name="nav_link_hover_bg" class="form-control form-control-color" value="{{ user_profile.nav_link_hover_bg }}">
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Buton Renkleri -->
+        <div class="card p-3 mb-3 cemil">
+            <h4>Tuş Renkleri</h4>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="button_background_color" class="form-label">Mavi Buton Arka Plan Rengi:</label>
+                    <input type="color" id="button_background_color" name="button_background_color" class="form-control form-control-color" value="{{ user_profile.button_background_color }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="button_hover_background_color" class="form-label">Mavi Buton Hover Arka Plan Rengi:</label>
+                    <input type="color" id="button_hover_background_color" name="button_hover_background_color" class="form-control form-control-color" value="{{ user_profile.button_hover_background_color }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="button_text_color" class="form-label">Mavi Buton Metin Rengi:</label>
+                    <input type="color" id="button_text_color" name="button_text_color" class="form-control form-control-color" value="{{ user_profile.button_text_color }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="secondary_button_background_color" class="form-label">Gri Buton Arka Plan Rengi:</label>
+                    <input type="color" id="secondary_button_background_color" name="secondary_button_background_color" class="form-control form-control-color" value="{{ user_profile.secondary_button_background_color }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="secondary_button_hover_background_color" class="form-label">Gri Buton Hover Arka Plan Rengi:</label>
+                    <input type="color" id="secondary_button_hover_background_color" name="secondary_button_hover_background_color" class="form-control form-control-color" value="{{ user_profile.secondary_button_hover_background_color }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="secondary_button_text_color" class="form-label">Gri Buton Metin Rengi:</label>
+                    <input type="color" id="secondary_button_text_color" name="secondary_button_text_color" class="form-control form-control-color" value="{{ user_profile.secondary_button_text_color }}">
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Sekme Renkleri -->
+        <div class="card p-3 mb-3 cemil">
+            <h4>Sekme Renkleri</h4>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="tab_background_color" class="form-label">Sekme Arka Plan Rengi:</label>
+                    <input type="color" id="tab_background_color" name="tab_background_color" class="form-control form-control-color" value="{{ user_profile.tab_background_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="tab_text_color" class="form-label">Sekme Metin Rengi:</label>
+                    <input type="color" id="tab_text_color" name="tab_text_color" class="form-control form-control-color" value="{{ user_profile.tab_text_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="tab_active_background_color" class="form-label">Aktif Sekme Arka Plan Rengi:</label>
+                    <input type="color" id="tab_active_background_color" name="tab_active_background_color" class="form-control form-control-color" value="{{ user_profile.tab_active_background_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="tab_active_text_color" class="form-label">Aktif Sekme Metin Rengi:</label>
+                    <input type="color" id="tab_active_text_color" name="tab_active_text_color" class="form-control form-control-color" value="{{ user_profile.tab_active_text_color }}">
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Sayfalama Renkleri -->
+        <div class="card p-3 mb-3 cemil">
+            <h4>Sayfa Göstergesi Renkleri</h4>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="pagination_background_color" class="form-label">Sayfalama Arka Plan Rengi:</label>
+                    <input type="color" id="pagination_background_color" name="pagination_background_color" class="form-control form-control-color" value="{{ user_profile.pagination_background_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="pagination_text_color" class="form-label">Sayfalama Metin Rengi:</label>
+                    <input type="color" id="pagination_text_color" name="pagination_text_color" class="form-control form-control-color" value="{{ user_profile.pagination_text_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="icon_color" class="form-label">İkon Rengi:</label>
+                    <input type="color" id="icon_color" name="icon_color" class="form-control form-control-color" value="{{ user_profile.icon_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="answer_background_color" class="form-label">Yanıt Kart Arka Plan Rengi:</label>
+                    <input type="color" id="answer_background_color" name="answer_background_color" class="form-control form-control-color" value="{{ user_profile.answer_background_color }}">
+                </div>
+                <!-- <div class="col-md-3 mb-3">
+                    <label for="pagination_active_background_color" class="form-label">Aktif Sayfalama Arka Plan Rengi:</label>
+                    <input type="color" id="pagination_active_background_color" name="pagination_active_background_color" class="form-control form-control-color" value="{{ user_profile.pagination_active_background_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="pagination_active_text_color" class="form-label">Aktif Sayfalama Metin Rengi:</label>
+                    <input type="color" id="pagination_active_text_color" name="pagination_active_text_color" class="form-control form-control-color" value="{{ user_profile.pagination_active_text_color }}">
+                </div> -->
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-4 mb-3">
+                <label for="font_family" class="form-label">Yazı Tipi:</label>
+                <select name="font_family" id="font_family" class="form-select">
+                    <!-- Garamond -->
+                    <option value="EB+Garamond" {% if user_profile.font_family == "EB Garamond" %}selected{% endif %}>EB Garamond (Varsayılan Font)</option>
+                    <option value="Noto+Sans" {% if user_profile.font_family == "Noto Sans" %}selected{% endif %}>Noto Sans</option>
+                    <option value="Noto+Serif" {% if user_profile.font_family == "Noto Serif" %}selected{% endif %}>Noto Serif</option>
+                    <option value="Roboto" {% if user_profile.font_family == "Roboto" %}selected{% endif %}>Roboto</option>
+                    <option value="Roboto+Slab" {% if user_profile.font_family == "Roboto Slab" %}selected{% endif %}>Roboto Slab</option>
+                    <option value="Open+Sans" {% if user_profile.font_family == "Open Sans" %}selected{% endif %}>Open Sans</option>
+                    <option value="Lato" {% if user_profile.font_family == "Lato" %}selected{% endif %}>Lato</option>
+                    <option value="Montserrat" {% if user_profile.font_family == "Montserrat" %}selected{% endif %}>Montserrat</option>
+                    <option value="Oswald" {% if user_profile.font_family == "Oswald" %}selected{% endif %}>Oswald</option>
+                    <option value="Source+Sans+Pro" {% if user_profile.font_family == "Source Sans Pro" %}selected{% endif %}>Source Sans Pro</option>
+                    <option value="Poppins" {% if user_profile.font_family == "Poppins" %}selected{% endif %}>Poppins</option>
+                    <option value="Merriweather" {% if user_profile.font_family == "Merriweather" %}selected{% endif %}>Merriweather</option>
+                    <option value="PT+Sans" {% if user_profile.font_family == "PT Sans" %}selected{% endif %}>PT Sans</option>
+                    <option value="PT+Serif" {% if user_profile.font_family == "PT Serif" %}selected{% endif %}>PT Serif</option>
+                    <option value="Raleway" {% if user_profile.font_family == "Raleway" %}selected{% endif %}>Raleway</option>
+                    <option value="Ubuntu" {% if user_profile.font_family == "Ubuntu" %}selected{% endif %}>Ubuntu</option>
+                    <option value="Titillium+Web" {% if user_profile.font_family == "Titillium Web" %}selected{% endif %}>Titillium Web</option>
+                    <option value="Dosis" {% if user_profile.font_family == "Dosis" %}selected{% endif %}>Dosis</option>
+                    <option value="Cabin" {% if user_profile.font_family == "Cabin" %}selected{% endif %}>Cabin</option>
+                    <option value="Fira+Sans" {% if user_profile.font_family == "Fira Sans" %}selected{% endif %}>Fira Sans</option>
+                    <option value="Quicksand" {% if user_profile.font_family == "Quicksand" %}selected{% endif %}>Quicksand</option>
+                    <option value="Work+Sans" {% if user_profile.font_family == "Work Sans" %}selected{% endif %}>Work Sans</option>
+                    <option value="Rubik" {% if user_profile.font_family == "Rubik" %}selected{% endif %}>Rubik</option>
+                    <option value="Mukta" {% if user_profile.font_family == "Mukta" %}selected{% endif %}>Mukta</option>
+                    <option value="Arimo" {% if user_profile.font_family == "Arimo" %}selected{% endif %}>Arimo</option>
+                    <option value="Heebo" {% if user_profile.font_family == "Heebo" %}selected{% endif %}>Heebo</option>
+                    <option value="Cormorant+Garamond" {% if user_profile.font_family == "Cormorant Garamond" %}selected{% endif %}>Cormorant Garamond</option>
+                    <option value="Source+Serif+Pro" {% if user_profile.font_family == "Source Serif Pro" %}selected{% endif %}>Source Serif Pro</option>
+    
+                </select>
+            </div>
+            <div class="col-2 mb-3">
+                <label for="font_family" class="form-label">Yazı Boyutu:</label>
+                <input type="number" name="font_size" min="16" max="100" id="font_size" class="form-control form-control-color" value="{{ user_profile.font_size }}">
+            </div>
+        </div>
+        <!-- Kaydet ve Varsayılanlara Dön Butonları -->
+        <div class="col-md-12 mb-3">
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+            <button type="submit" name="reset" value="true" class="btn btn-secondary">Varsayılanlara Dön</button>
+        </div>
+    </form>
+</div>
+
+{% block extra_js %}
+<script>
+    function updateColor(variable, value) {
+        document.documentElement.style.setProperty(variable, value);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const colorInputs = document.querySelectorAll('input[type="color"]');
+        colorInputs.forEach(function(input) {
+            input.addEventListener('input', function() {
+                const varName = '--' + this.name.replace(/_/g, '-');
+                updateColor(varName, this.value);
+            });
+        });
+    });
+</script>
+<script>
+    // TEMALAR BURADA TANIMLI
+    const THEMES = {
+        "default": {
+            "background_color": "#F5F5F5",
+            "text_color": "#000000",
+            "header_background_color": "#F5F5F5",
+            "header_text_color": "#333333",
+            "link_color": "#6E8CA7",
+            "link_hover_color": "#4E647E",
+            "button_background_color": "#6E8CA7",
+            "button_hover_background_color": "#4E647E",
+            "button_text_color": "#ffffff",
+            "secondary_button_background_color": "#6c757d",
+            "secondary_button_hover_background_color": "#495057",
+            "secondary_button_text_color": "#ffffff",
+            "message_bubble_color": "#d1e7ff",
+            "tbas_color": "#000000",
+            "font_size": "16",
+            "hover_background_color": "#f0f0f0",
+            "icon_color": "#333333",
+            "icon_hover_color": "#007bff",
+            "answer_background_color": "#F5F5F5",
+            "content_background_color": "#ffffff",
+            "tab_background_color": "#f8f9fa",
+            "tab_text_color": "#000000",
+            "tab_active_background_color": "#ffffff",
+            "tab_active_text_color": "#000000",
+            "dropdown_text_color": "#333333",
+            "dropdown_hover_background_color": "#f2f2f2",
+            "dropdown_hover_text_color": "#0056b3",
+            "nav_link_hover_color": "#007bff",
+            "nav_link_hover_bg": "#f5f5f5",
+            "pagination_background_color": "#ffffff",
+            "pagination_text_color": "#000000",
+            "font_family": "EB Garamond"
+        },
+        "gece": {
+            "background_color": "#181824",
+            "text_color": "#998F8F",
+            "header_background_color": "#232536",
+            "header_text_color": "#e5e5e5",
+            "link_color": "#8ab4f8",
+            "link_hover_color": "#bbdefb",
+            "button_background_color": "#27293d",
+            "button_hover_background_color": "#3b3e5b",
+            "button_text_color": "#e5e5e5",
+            "secondary_button_background_color": "#44475a",
+            "secondary_button_hover_background_color": "#6272a4",
+            "secondary_button_text_color": "#fff",
+            "message_bubble_color": "#B7BADC",
+            "tbas_color": "#e5e5e5",
+            "font_size": "17",
+            "hover_background_color": "#21243a",
+            "icon_color": "#8ab4f8",
+            "icon_hover_color": "#ffffff",
+            "answer_background_color": "#22223b",
+            "content_background_color": "#232536",
+            "tab_background_color": "#21243a",
+            "tab_text_color": "#e5e5e5",
+            "tab_active_background_color": "#2c2e49",
+            "tab_active_text_color": "#8ab4f8",
+            "dropdown_text_color": "#e5e5e5",
+            "dropdown_hover_background_color": "#383a59",
+            "dropdown_hover_text_color": "#8ab4f8",
+            "nav_link_hover_color": "#8ab4f8",
+            "nav_link_hover_bg": "#232536",
+            "pagination_background_color": "#21243a",
+            "pagination_text_color": "#e5e5e5",
+            "font_family": "Roboto"
+        },
+        "gpt41": {
+    "background_color": "#131826",
+    "text_color": "#CED2E5",
+    "header_background_color": "#292F4A",
+    "header_text_color": "#81C3F7",
+    "link_color": "#63B3ED",
+    "link_hover_color": "#B794F4",
+    "button_background_color": "#5759D6",
+    "button_hover_background_color": "#726EFF",
+    "button_text_color": "#F3F4F6",
+    "secondary_button_background_color": "#31365A",
+    "secondary_button_hover_background_color": "#5759D6",
+    "secondary_button_text_color": "#CED2E5",
+    "message_bubble_color": "#222946",
+    "tbas_color": "#A3BFFA",
+    "font_size": "17",
+    "hover_background_color": "#222946",
+    "icon_color": "#81C3F7",
+    "icon_hover_color": "#B794F4",
+    "answer_background_color": "#181D31",
+    "content_background_color": "#1A2138",
+    "tab_background_color": "#23294A",
+    "tab_text_color": "#A3BFFA",
+    "tab_active_background_color": "#292F4A",
+    "tab_active_text_color": "#B794F4",
+    "dropdown_text_color": "#CED2E5",
+    "dropdown_hover_background_color": "#3D426B",
+    "dropdown_hover_text_color": "#81C3F7",
+    "nav_link_hover_color": "#81C3F7",
+    "nav_link_hover_bg": "#181D31",
+    "pagination_background_color": "#23294A",
+    "pagination_text_color": "#A3BFFA",
+    "font_family": "Roboto"
+},
+        "eglence": {
+            "background_color": "#FFFAE3",
+            "text_color": "#392F5A",
+            "header_background_color": "#FFAFCC",
+            "header_text_color": "#392F5A",
+            "link_color": "#FF6F61",
+            "link_hover_color": "#FE346E",
+            "button_background_color": "#FF6F61",
+            "button_hover_background_color": "#FE346E",
+            "button_text_color": "#fff",
+            "secondary_button_background_color": "#87BBA2",
+            "secondary_button_hover_background_color": "#558B6E",
+            "secondary_button_text_color": "#fff",
+            "message_bubble_color": "#FFD6E0",
+            "tbas_color": "#6D435A",
+            "icon_color": "#F9844A",
+            "icon_hover_color": "#F9C74F",
+            "answer_background_color": "#FFF5F7",
+            "content_background_color": "#FFF0F3",
+            "tab_background_color": "#FDE2E4",
+            "tab_text_color": "#392F5A",
+            "tab_active_background_color": "#FFD6E0",
+            "tab_active_text_color": "#FE346E",
+            "dropdown_text_color": "#392F5A",
+            "dropdown_hover_background_color": "#FFD6E0",
+            "dropdown_hover_text_color": "#FE346E",
+            "nav_link_hover_color": "#FE346E",
+            "nav_link_hover_bg": "#FFD6E0",
+            "pagination_background_color": "#FFD6E0",
+            "pagination_text_color": "#392F5A",
+            "font_family": "Poppins",
+            "font_size": "17"
+        },
+        "neomint": {
+    "background_color": "#F6FFF8",
+    "text_color": "#36413E",
+    "header_background_color": "#A6E3E9",
+    "header_text_color": "#36413E",
+    "link_color": "#51C2D5",
+    "link_hover_color": "#39A2DB",
+    "button_background_color": "#5AD2A7",
+    "button_hover_background_color": "#53BC9B",
+    "button_text_color": "#fff",
+    "secondary_button_background_color": "#AED9E0",
+    "secondary_button_hover_background_color": "#88A2AA",
+    "secondary_button_text_color": "#36413E",
+    "message_bubble_color": "#C9F6FF",
+    "tbas_color": "#20B2AA",
+    "font_size": "16",
+    "hover_background_color": "#D9F3EF",
+    "icon_color": "#5AD2A7",
+    "icon_hover_color": "#39A2DB",
+    "answer_background_color": "#F2FDFB",
+    "content_background_color": "#F6FFF8",
+    "tab_background_color": "#E3FFF8",
+    "tab_text_color": "#36413E",
+    "tab_active_background_color": "#A6E3E9",
+    "tab_active_text_color": "#20B2AA",
+    "dropdown_text_color": "#36413E",
+    "dropdown_hover_background_color": "#C9F6FF",
+    "dropdown_hover_text_color": "#39A2DB",
+    "nav_link_hover_color": "#39A2DB",
+    "nav_link_hover_bg": "#AED9E0",
+    "pagination_background_color": "#C9F6FF",
+    "pagination_text_color": "#36413E",
+    "font_family": "Noto Sans"
+},
+        "solarpop": {
+    "background_color": "#FFF9E2",
+    "text_color": "#1F2937",
+    "header_background_color": "#FFD93D",
+    "header_text_color": "#1F2937",
+    "link_color": "#3366FF",
+    "link_hover_color": "#D7263D",
+    "button_background_color": "#3366FF",
+    "button_hover_background_color": "#405DE6",
+    "button_text_color": "#fff",
+    "secondary_button_background_color": "#F2A365",
+    "secondary_button_hover_background_color": "#F76E11",
+    "secondary_button_text_color": "#fff",
+    "message_bubble_color": "#FFFBDA",
+    "tbas_color": "#EA7317",
+    "font_size": "17",
+    "hover_background_color": "#FFF5C3",
+    "icon_color": "#FFD93D",
+    "icon_hover_color": "#F76E11",
+    "answer_background_color": "#FFF6B7",
+    "content_background_color": "#FFF9E2",
+    "tab_background_color": "#FFE49E",
+    "tab_text_color": "#1F2937",
+    "tab_active_background_color": "#FFD93D",
+    "tab_active_text_color": "#F76E11",
+    "dropdown_text_color": "#1F2937",
+    "dropdown_hover_background_color": "#FFD93D",
+    "dropdown_hover_text_color": "#D7263D",
+    "nav_link_hover_color": "#D7263D",
+    "nav_link_hover_bg": "#FFD93D",
+    "pagination_background_color": "#FFE49E",
+    "pagination_text_color": "#1F2937",
+    "font_family": "Open Sans"
+}
+    };
+    
+    function updateColor(variable, value) {
+        document.documentElement.style.setProperty(variable, value);
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Renk inputlarına canlı önizleme
+        const colorInputs = document.querySelectorAll('input[type="color"], input[type="number"], select[name="font_family"]');
+        colorInputs.forEach(function(input) {
+            input.addEventListener('input', function() {
+                const varName = '--' + this.name.replace(/_/g, '-');
+                updateColor(varName, this.value);
+            });
+        });
+    
+        // TEMALAR
+        document.getElementById('theme_select').addEventListener('change', function() {
+            const theme = THEMES[this.value];
+            if (!theme) return;
+            for (const [key, val] of Object.entries(theme)) {
+                // inputları doldur
+                let input = document.getElementsByName(key)[0];
+                if (input) {
+                    input.value = val;
+                    // select ise option'u seç
+                    if (input.tagName.toLowerCase() === 'select') {
+                        Array.from(input.options).forEach(opt => {
+                            if (opt.value.replace(/\+/g, ' ') === val || opt.value === val) opt.selected = true;
+                        });
+                    }
+                    // number ise direkt value ata
+                    if (input.type === "number") input.value = parseInt(val);
+                }
+                // canlı olarak siteye uygula
+                const varName = '--' + key.replace(/_/g, '-');
+                updateColor(varName, val);
+            }
+        });
+    });
+    </script>
+    
+{% endblock %}
+
+{% endblock %}
