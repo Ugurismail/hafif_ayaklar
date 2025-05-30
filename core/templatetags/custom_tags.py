@@ -165,21 +165,22 @@ def highlight(text, keyword):
     )
     return mark_safe(highlighted)
 
+
 @register.filter
 def mention_link(text):
     import re
-    from django.contrib.auth.models import User  # Kullanıcı modelini içe aktarıyoruz
-    pattern = r'@(\w+)'  # @ işaretinden sonra gelen harf/ sayı/alt çizgi kombinasyonunu yakalar
+    from django.contrib.auth.models import User
+
+    # Kullanıcı adı: harf, rakam, @, ., +, -, _, /, boşluk ve Türkçe karakterler
+    pattern = r'@([\w.@+\-_/ \u00C0-\u017F]+)'
 
     def replace(match):
-        username = match.group(1)
+        username = match.group(1).strip()  # baştaki/sondaki boşlukları kaldırır
         try:
             user = User.objects.get(username__iexact=username)
             url = reverse('user_profile', args=[user.username])
-            # İsteğe bağlı: "mention" adında bir CSS sınıfı ekleyebilirsiniz
             return f'<a href="{url}" class="mention">@{username}</a>'
         except User.DoesNotExist:
-            # Böyle bir kullanıcı yoksa orijinal metni bırakıyoruz
             return f'@{username}'
 
     new_text = re.sub(pattern, replace, text)
