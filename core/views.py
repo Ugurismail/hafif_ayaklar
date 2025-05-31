@@ -1576,28 +1576,39 @@ def user_search(request):
     results = [{'id': user.id, 'username': user.username} for user in users]
     return JsonResponse({'results': results})
 
-def map_data(request):
-    filter_param = request.GET.get('filter')
+# views.py içinde
+from django.http import JsonResponse
+from django.contrib.auth.models import User
+from core.models import Question, Answer
+from django.db.models import Prefetch
+
+from django.http import JsonResponse
+from django.db.models import Q
+
+def map_data_view(request):
     user_ids = request.GET.getlist('user_id')
+    filter_param = request.GET.get('filter')
 
-    # Başlangıç soruları
+    # Sadece başlangıç veya alt soru olanlar
     starting_question_ids = StartingQuestion.objects.values_list('question_id', flat=True)
+    subquestion_ids = Question.objects.filter(parent_questions__isnull=False).values_list('id', flat=True)
+    question_ids = set(starting_question_ids) | set(subquestion_ids)
 
-    base_query = Question.objects.filter(
-        Q(id__in=starting_question_ids) | Q(parent_questions__isnull=False)
-    )
-
+    # Filtre uygula
     if filter_param == 'me':
-        questions = base_query.filter(users=request.user)
+        questions = Question.objects.filter(id__in=question_ids, user=request.user)
     elif user_ids:
-        questions = base_query.filter(users__id__in=user_ids).distinct()
+        questions = Question.objects.filter(id__in=question_ids, user__id__in=user_ids).distinct()
     else:
-        questions = base_query
+        questions = Question.objects.filter(id__in=question_ids)
 
-    question_nodes = generate_question_nodes(questions)
-    return JsonResponse(question_nodes, safe=False)
+    # Dönüş yap
+    data = generate_question_nodes(questions)
+    return JsonResponse(data, safe=False)
 
 def generate_question_nodes(questions):
+    from collections import defaultdict
+
     nodes = {}
     links = []
     question_text_to_ids = defaultdict(list)
@@ -1607,42 +1618,62 @@ def generate_question_nodes(questions):
         key = question.question_text
         question_text_to_ids[key].append(question.id)
         if key not in nodes:
-            associated_users = list(question.users.all())
-            user_ids = [user.id for user in associated_users]
+            # Kullanıcıların yanıtlarını da getir
+            user_entries = []
+            # Bu soruya ait tüm yanıtları çek (user, answer_id)
+            answers = question.answers.all().select_related('user')
+            for answer in answers:
+                user_entries.append({
+                    "id": answer.user.id,
+                    "username": answer.user.username,
+                    "answer_id": answer.id,
+                })
+
+            user_ids = [entry["id"] for entry in user_entries]
             node = {
                 "id": f"q{hash(key)}",
                 "label": question.question_text,
-                "users": user_ids,
-                "size": 20 + 10 * (len(user_ids) - 1),
+                "users": user_entries,  # Burada artık her kullanıcı için answer_id de var
+                "size": 20 + 10 * (len(user_entries) - 1),
                 "color": '',
                 "question_id": question.id,
                 "question_ids": [question.id],
             }
-            # Rengi belirle
+            # Renk belirleme mantığı
             if len(user_ids) == 1:
                 node["color"] = get_user_color(user_ids[0])
             elif len(user_ids) > 1:
-                node["color"] = '#CCCCCC'  # Gri renk
+                node["color"] = '#CCCCCC'
             else:
-                node["color"] = '#000000'  # Siyah
+                node["color"] = '#000000'
             nodes[key] = node
         else:
             # Kullanıcıları ve boyutu güncelle
             existing_node = nodes[key]
-            new_user_ids = [user.id for user in question.users.all()]
-            combined_user_ids = list(set(existing_node["users"] + new_user_ids))
-            existing_node["users"] = combined_user_ids
-            existing_node["size"] = 20 + 5 * (len(combined_user_ids) - 1)
+            # Mevcut ve yeni user_entries birleştirilir, answer_id ile benzersizleştirilebilir
+            new_user_entries = []
+            answers = question.answers.all().select_related('user')
+            for answer in answers:
+                new_user_entries.append({
+                    "id": answer.user.id,
+                    "username": answer.user.username,
+                    "answer_id": answer.id,
+                })
+            # Duplicate user id'leri önlemek için
+            user_dict = {entry["id"]: entry for entry in (existing_node["users"] + new_user_entries)}
+            combined_user_entries = list(user_dict.values())
+            existing_node["users"] = combined_user_entries
+            existing_node["size"] = 20 + 5 * (len(combined_user_entries) - 1)
             existing_node["question_ids"].append(question.id)
-            # Rengi güncelle
-            if len(combined_user_ids) == 1:
-                existing_node["color"] = get_user_color(combined_user_ids[0])
-            elif len(combined_user_ids) > 1:
+            # Renk güncelle
+            if len(combined_user_entries) == 1:
+                existing_node["color"] = get_user_color(combined_user_entries[0]["id"])
+            elif len(combined_user_entries) > 1:
                 existing_node["color"] = '#CCCCCC'
             else:
                 existing_node["color"] = '#000000'
 
-    # Bağlantıları oluştur
+    # Bağlantılar
     link_set = set()
     for question in questions:
         source_key = question.question_text
@@ -1662,6 +1693,7 @@ def generate_question_nodes(questions):
         "links": links
     }
     return question_nodes
+
 
 
 @login_required
@@ -2723,32 +2755,31 @@ def insert_toc(paragraph):
     run._r.append(instrText)
     run._r.append(fldChar2)
     run._r.append(fldChar3)
-
+from docx.shared import Pt, RGBColor
 def add_question_tree_to_docx(doc, question, target_user, level=1, visited=None):
-    """
-    Her soru ve alt sorusunu, Word'de heading olarak ekler.
-    Altında ise, kullanıcının verdiği yanıtları ve tarihlerini listeler.
-    Sonsuz döngüyü engellemek için 'visited' kümesi tutulur.
-    """
     if visited is None:
         visited = set()
     if question.id in visited:
         return
     visited.add(question.id)
-    
+
     doc.add_heading(question.question_text, level=level)
-    # Kullanıcıya ait yanıtlar (varsa)
+
     user_answers = question.answers.filter(user=target_user).order_by('created_at')
     for answer in user_answers:
         date_str = answer.created_at.strftime("%Y-%m-%d %H:%M")
-        doc.add_heading(date_str, level=min(level+1, 9))  # Tarihi heading olarak ekle
-        doc.add_paragraph(answer.answer_text)
-        doc.add_paragraph("")  # Görsel boşluk
+        p = doc.add_paragraph()
+        run = p.add_run(date_str + "  ")
+        run.font.size = Pt(9)
+        run.font.color.rgb = RGBColor(140, 140, 140)
+        run.italic = True
+        p.add_run(answer.answer_text)
+        doc.add_paragraph("")
 
-    # Alt soruları recursive olarak ekle
     subquestions = question.subquestions.all().order_by('created_at')
     for sub in subquestions:
         add_question_tree_to_docx(doc, sub, target_user, level=min(level+1, 9), visited=visited)
+
 
 @login_required
 def download_entries_docx(request, username):

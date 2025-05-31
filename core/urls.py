@@ -1,10 +1,12 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from .views import map_data_view
 from . import views
 
 urlpatterns = [
     # Ana Sayfa
     path('', views.user_homepage, name='user_homepage'),
+
 
     # Kullanıcı Kayıt ve Giriş
     path('signup/', views.signup, name='signup'),
@@ -52,7 +54,7 @@ urlpatterns = [
     path('about/', views.about, name='about'),
     path('statistics/', views.site_statistics, name='site_statistics'),
     path('map/', views.question_map, name='question_map'),
-    path('map-data/', views.map_data, name='map_data'),
+    path('map-data/', map_data_view, name='map_data'),
     path('add-starting-question/', views.add_starting_question, name='add_starting_question'),
     path('add_question_from_search/', views.add_question_from_search, name='add_question_from_search'),
     path('bkz/<path:query>/', views.bkz_view, name='bkz'),
