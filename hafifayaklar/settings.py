@@ -13,6 +13,12 @@ DEBUG = True
 # ALLOWED_HOSTS = ['uia.pythonanywhere.com']
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
+# CSRF_COOKIE_SECURE = True
+# SESSION_COOKIE_SECURE = True
+# SECURE_SSL_REDIRECT = True
+# SECURE_HSTS_SECONDS = 31536000  # 1 yıl
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
 # Application definition
 
 INSTALLED_APPS = [

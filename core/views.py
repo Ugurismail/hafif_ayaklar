@@ -2065,7 +2065,6 @@ def poll_question_redirect(request, poll_id):
         return redirect('question_detail', question_id=q.id)
     
 @login_required
-@csrf_exempt
 def vote_poll_ajax(request, poll_id):
     poll = get_object_or_404(Poll, id=poll_id)
 
