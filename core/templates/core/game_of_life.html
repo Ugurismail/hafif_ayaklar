@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load static %}
 
 {% block title %}Game of Life{% endblock %}
 
@@ -12,5 +13,8 @@
         <button id="clearBtn" class="btn btn-danger">Temizle</button>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
 <script src="{% static 'js/game_of_life.js' %}"></script>
 {% endblock %}
