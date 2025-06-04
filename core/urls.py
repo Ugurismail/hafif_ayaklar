@@ -58,6 +58,7 @@ urlpatterns = [
     path('add-starting-question/', views.add_starting_question, name='add_starting_question'),
     path('add_question_from_search/', views.add_question_from_search, name='add_question_from_search'),
     path('bkz/<path:query>/', views.bkz_view, name='bkz'),
+    path('games/game-of-life/', views.game_of_life, name='game_of_life'),
 
     # AJAX İşlemleri
     path('vote/', views.vote, name='vote'),

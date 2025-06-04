@@ -1,0 +1,16 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Game of Life{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Conway'in Game of Life</h1>
+    <canvas id="lifeCanvas" width="600" height="400" class="border"></canvas>
+    <div class="mt-2">
+        <button id="startBtn" class="btn btn-primary">Başlat</button>
+        <button id="stopBtn" class="btn btn-secondary">Durdur</button>
+        <button id="clearBtn" class="btn btn-danger">Temizle</button>
+    </div>
+</div>
+<script src="{% static 'js/game_of_life.js' %}"></script>
+{% endblock %}

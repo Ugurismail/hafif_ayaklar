@@ -101,6 +101,18 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'question_map' %}" title="Harita"><i class="bi bi-diagram-3"></i></a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="gamesMenu" title="Oyunlar" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-controller"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="gamesMenu">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'game_of_life' %}">
+                                    <i class="bi bi-grid-3x3-gap-fill"></i>Conway'in Game of Life
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     <!-- Dropdown Menü -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="extraMenu" title="Müteferrik" role="button" data-bs-toggle="dropdown" aria-expanded="false">
