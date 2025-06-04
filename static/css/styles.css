@@ -33,44 +33,19 @@ a:hover {
 
 /* Navbar Styles */
 .navbar {
-    font-size: var(--font-size, 16px) !important;
-    min-height: calc(var(--font-size, 16px) * 3);
-    padding-top: calc(var(--font-size, 16px) * 0.5);
-    padding-bottom: calc(var(--font-size, 16px) * 0.5);
-    /* Yandan padding orijinal kalsın, gerekirse değiştir */
+    padding: 1rem 1rem;
+    background-color: var(--header-background-color, #343a40);
+    color: var(--header-text-color, #ffffff);
+    border-bottom: 1px solid #e0e0e0;
+    transition: padding 0.3s ease, background-color 0.3s ease;
 }
 
-
-.navbar .navbar-brand {
-    font-size: calc(var(--font-size, 16px) * 1.15) !important;
-    display: flex;
-    align-items: center;
-    height: calc(var(--font-size, 16px) * 2);
-    min-height: calc(var(--font-size, 16px) * 2);
-}
-
-
-.navbar .navbar-brand img {
-    height: calc(var(--font-size, 16px) * 1.35);
-    width: auto;
-    max-height: 48px;   /* Çok büyükse sınırla */
-}
 .navbar .navbar-brand,
 .navbar .nav-link,
 .navbar .dropdown-toggle {
     color: var(--header-text-color, #ffffff) !important;
     text-decoration: none !important;
-    font-size: calc(var(--font-size, 16px) * 1.12) !important;
-    line-height: 1.2 !important;
-    height: calc(var(--font-size, 16px) * 2.2);
-    display: flex;
-    align-items: center;
     transition: color 0.3s ease, background-color 0.3s ease;
-
-}
-.navbar .navbar-brand img {
-    height: calc(var(--font-size, 16px) * 1.65);
-    width: auto;
 }
 
 .navbar .nav-link:hover,
@@ -83,16 +58,10 @@ a:hover {
     background-color: var(--header-background-color, #343a40);
     color: var(--dropdown-text-color, #ffffff);
     border: none;
-    font-size: calc(var(--font-size, 16px) * 1.08) !important;
-    min-height: calc(var(--font-size, 16px) * 2.1) !important;
-    line-height: 1.35 !important;
 }
 
 .navbar .dropdown-menu .dropdown-item {
     color: var(--dropdown-text-color, #ffffff);
-    font-size: calc(var(--font-size, 16px) * 1.08) !important;
-    min-height: calc(var(--font-size, 16px) * 2.1) !important;
-    line-height: 1.35 !important;
 }
 
 .navbar .dropdown-menu .dropdown-item:hover {
@@ -333,7 +302,6 @@ textarea.auto-expand.expanded {
 #search-form,
 #user-search-container {
     position: relative;
-    font-size: var(--font-size, 16px) !important;
 }
 
 #search-results,
@@ -562,10 +530,6 @@ color: var(--text-color);
   }
 #search-input::placeholder {
     color: var(--text-color);
-    font-size: var(--font-size, 16px) !important;
-    height: calc(var(--font-size, 16px) * 2.1);
-    padding-top: calc(var(--font-size, 16px) * 0.27);
-    padding-bottom: calc(var(--font-size, 16px) * 0.27);
 }
   
 .auto-expand::placeholder {

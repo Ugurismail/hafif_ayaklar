@@ -1,36 +1,60 @@
-from django.urls import reverse
-from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect, get_object_or_404, reverse
-from django.contrib.auth.decorators import login_required
-from .forms import InvitationForm, AnswerForm, StartingQuestionForm, SignupForm, LoginForm, QuestionForm, ProfilePhotoForm, MessageForm, DefinitionForm, RandomSentenceForm, PollForm, ReferenceForm
-from .models import  Poll, Reference, PollOption,RandomSentence, PollVote, Invitation, UserProfile, Question, Answer, StartingQuestion, Vote, Message, SavedItem, PinnedEntry, Definition
-from django.contrib import messages
-from django.db import transaction
-from django.http import JsonResponse
-import json, random
-from django.db.models import Q, Count, Max, F, ExpressionWrapper, IntegerField, Sum
-from django.utils import timezone
-from django.core.paginator import Paginator
-from collections import defaultdict, Counter
-import colorsys, re, json
-from django.db.models.functions import Coalesce
-from django.contrib.auth.models import User  # User buradan import edilmeli
-from django.conf import settings
-from django.contrib.admin.views.decorators import staff_member_required
-from django.core.serializers import serialize
-from django.views.decorators.http import require_POST 
-from django.contrib.contenttypes.models import ContentType
-from django.views.decorators.cache import cache_control
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import json
+import random
+import re
+import colorsys
+from collections import Counter, defaultdict
 from datetime import timedelta
+from io import BytesIO
+from urllib.parse import unquote
+
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.serializers import serialize
+from django.db import transaction
+from django.db.models import Q, Count, Max, F, Sum, Prefetch
+from django.db.models.functions import Coalesce, Lower
+from django.http import (
+    HttpResponse,
+    JsonResponse,
+)
+from django.shortcuts import (
+    render,
+    redirect,
+    get_object_or_404,
+)
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils import timezone
 from django.utils.timezone import now
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.views.decorators.cache import cache_control
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
+# 3. parti
 from openpyxl import Workbook
 from openpyxl.styles import Font
-from urllib.parse import unquote
-from django.views.decorators.csrf import csrf_exempt
-from django.db.models.functions import Lower
+from docx import Document
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.shared import Pt, RGBColor
+
+# Uygulama içi
+from .models import (
+    Poll, Reference, PollOption, RandomSentence, PollVote,
+    Invitation, UserProfile, Question, Answer, StartingQuestion,
+    Vote, Message, SavedItem, PinnedEntry, Definition
+)
+from .forms import (
+    InvitationForm, AnswerForm, StartingQuestionForm, SignupForm, LoginForm, 
+    QuestionForm, ProfilePhotoForm, MessageForm, DefinitionForm, 
+    RandomSentenceForm, PollForm, ReferenceForm
+)
 
 
 
@@ -102,23 +126,6 @@ def get_saved_items(request):
             })
     return JsonResponse({'saved_items': filtered_items})
 
-
-
-
-def home(request):
-    if request.user.is_authenticated:
-        user_profile = request.user.userprofile
-        following_users = user_profile.following.all()
-        following_questions = Question.objects.filter(user__userprofile__in=following_users).order_by('-created_at')
-    else:
-        following_questions = Question.objects.none()
-
-    all_questions = Question.objects.all().order_by('-created_at')
-
-    return render(request, 'core/home.html', {
-        'all_questions': all_questions,
-        'following_questions': following_questions,
-    })
 
 
 def signup(request):
@@ -485,14 +492,6 @@ def get_invitation_tree(user):
             tree.append({'code': invite.code, 'children': []})
     return tree
 
-# core/views.py
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404, redirect
-from django.core.paginator import Paginator
-from django.contrib.contenttypes.models import ContentType
-from django.db.models import Count
-
-
 
 @login_required
 def question_detail(request, question_id):
@@ -667,7 +666,7 @@ def search_suggestions(request):
         })
 
     # Gelen veriyi sunucu konsoluna yazdırın
-    import json
+
     print('search_suggestions verisi:', json.dumps({'suggestions': suggestions}, indent=4))
 
     return JsonResponse({'suggestions': suggestions})
@@ -1215,7 +1214,6 @@ def save_item(request):
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
-
 def site_statistics(request):
     # Kullanıcı sayısı (en az bir soru veya yanıt yazmış olanlar)
     user_count = User.objects.filter(
@@ -1307,7 +1305,7 @@ def site_statistics(request):
                     search_word_count += len(search_word_pattern.findall(text))
 
     # --- En çok kullanılan kaynaklar ---
-    from .models import Reference
+
     all_references = list(Reference.objects.all())
     all_references.sort(key=lambda ref: ref.get_usage_count(), reverse=True)
     paginator_references = Paginator(all_references, 5)
@@ -1367,7 +1365,6 @@ def get_today_questions_page(request, per_page=25):
     except EmptyPage:
         all_questions = paginator.page(paginator.num_pages)
     return all_questions
-
 
 def user_homepage(request):
     if not request.user.is_authenticated:
@@ -1576,14 +1573,6 @@ def user_search(request):
     results = [{'id': user.id, 'username': user.username} for user in users]
     return JsonResponse({'results': results})
 
-# views.py içinde
-from django.http import JsonResponse
-from django.contrib.auth.models import User
-from core.models import Question, Answer
-from django.db.models import Prefetch
-
-from django.http import JsonResponse
-from django.db.models import Q
 
 def map_data_view(request):
     user_ids = request.GET.getlist('user_id')
@@ -1607,7 +1596,7 @@ def map_data_view(request):
     return JsonResponse(data, safe=False)
 
 def generate_question_nodes(questions):
-    from collections import defaultdict
+    
 
     nodes = {}
     links = []
@@ -1693,7 +1682,6 @@ def generate_question_nodes(questions):
         "links": links
     }
     return question_nodes
-
 
 
 @login_required
@@ -1862,7 +1850,7 @@ def send_message_from_answer(request, answer_id):
     recipient = answer.user
 
     # İlgili yanıta ait path ve tam URL
-    from django.urls import reverse
+    
     answer_url_path = reverse('single_answer', args=[answer.question.id, answer.id])
     answer_full_url = request.build_absolute_uri(answer_url_path)
 
@@ -1944,8 +1932,6 @@ def ignore_random_sentence(request):
     sentence_obj.ignored_by.add(request.user)
     return JsonResponse({'status': 'success', 'message': 'Cümle ignore listesine eklendi.'})
 
-
-
 def get_random_sentence(request):
     if request.user.is_authenticated:
         # ignore ettiği cümleler hariç
@@ -1977,7 +1963,6 @@ def add_random_sentence(request):
         errors = form.errors.get_json_data()
         return JsonResponse({'status': 'error', 'errors': errors})
     
-
 #POLLS
 @login_required
 def polls_home(request):
@@ -2226,7 +2211,6 @@ def create_definition(request, question_id):
             return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
     return JsonResponse({'status': 'invalid_method'}, status=405)
 
-from django.core.paginator import Paginator
 
 @login_required
 def get_user_definitions(request):
@@ -2294,7 +2278,6 @@ def edit_definition(request, definition_id):
     if request.method == 'POST':
         # İçerik JSON veya form-data olabilir:
         if request.headers.get('Content-Type') == 'application/json':
-            import json
             data = json.loads(request.body.decode('utf-8'))
         else:
             data = request.POST
@@ -2413,7 +2396,6 @@ def create_reference(request):
     else:
         return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
 
-    
 def get_references(request):
     """
     Tüm referans kayıtlarını, opsiyonel 'q' arama parametresi ile 
@@ -2477,7 +2459,6 @@ def delete_reference(request, reference_id):
         return redirect('user_profile', username=request.user.username)
     return render(request, 'core/confirm_delete_reference.html', {'reference': reference})
 
-
 def download_entries_json(request, username):
     target_user = get_object_or_404(User, username=username)
     if request.user != target_user and not request.user.is_superuser:
@@ -2523,8 +2504,6 @@ def download_entries_json(request, username):
     response = HttpResponse(json_string, content_type='application/json; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="entries.json"'
     return response
-
-
 
 def download_entries_xlsx(request, username):
     """
@@ -2599,14 +2578,6 @@ def download_entries_xlsx(request, username):
 
     wb.save(response)
     return response
-
-
-# core/views.py
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse
-from django.template.loader import render_to_string
-
-# core/views.py
 
 @login_required
 def filter_answers(request, question_id):
@@ -2696,50 +2667,6 @@ def filter_answers(request, question_id):
     return HttpResponse(html_content)
 
 
-from docx import Document
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
-from io import BytesIO
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from django.contrib.auth.models import User
-from .models import Question, Answer
-
-def insert_toc(paragraph):
-    """
-    Bu fonksiyon, verilen paragraf içerisine TOC (İçindekiler) alanı ekler.
-    Word dosyası açıldığında, kullanıcı 'Update Field' (alanı güncelle) seçeneğini kullanabilir.
-    """
-    fldChar1 = OxmlElement('w:fldChar')
-    fldChar1.set(qn('w:fldCharType'), 'begin')
-    
-    instrText = OxmlElement('w:instrText')
-    instrText.set(qn('xml:space'), 'preserve')
-    instrText.text = 'TOC \\o "1-3" \\h \\z \\u'
-    
-    fldChar2 = OxmlElement('w:fldChar')
-    fldChar2.set(qn('w:fldCharType'), 'separate')
-    
-    fldChar3 = OxmlElement('w:fldChar')
-    fldChar3.set(qn('w:fldCharType'), 'end')
-    
-    run = paragraph.add_run()
-    run._r.append(fldChar1)
-    run._r.append(instrText)
-    run._r.append(fldChar2)
-    run._r.append(fldChar3)
-
-from django.http import HttpResponse, JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
-from core.models import Question, Answer
-from io import BytesIO
-from docx import Document
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
-
 def insert_toc(paragraph):
     # İçindekiler tablosu alanını ekler (Word'de elle güncellenir)
     run = paragraph.add_run()
@@ -2755,7 +2682,7 @@ def insert_toc(paragraph):
     run._r.append(instrText)
     run._r.append(fldChar2)
     run._r.append(fldChar3)
-from docx.shared import Pt, RGBColor
+
 def add_question_tree_to_docx(doc, question, target_user, level=1, visited=None):
     if visited is None:
         visited = set()
@@ -2780,10 +2707,9 @@ def add_question_tree_to_docx(doc, question, target_user, level=1, visited=None)
     for sub in subquestions:
         add_question_tree_to_docx(doc, sub, target_user, level=min(level+1, 9), visited=visited)
 
-
 @login_required
 def download_entries_docx(request, username):
-    from django.contrib.auth.models import User
+    
 
     target_user = get_object_or_404(User, username=username)
     if request.user != target_user and not request.user.is_superuser:
