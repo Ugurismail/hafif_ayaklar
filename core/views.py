@@ -2750,3 +2750,10 @@ def download_entries_docx(request, username):
     )
     response['Content-Disposition'] = f'attachment; filename="{target_user.username}_entries.docx"'
     return response
+
+
+
+
+def game_of_life(request):
+    return render(request, "core/game_of_life.html")
+
