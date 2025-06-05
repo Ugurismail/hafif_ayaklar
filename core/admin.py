@@ -7,6 +7,7 @@ from django.urls import path
 from django.http import HttpResponseRedirect
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django import forms
+from .models import IATResult
 
 from core.models import (
     Invitation, UserProfile, Question, Answer, 
@@ -255,3 +256,10 @@ class DefinitionAdmin(admin.ModelAdmin):
     def get_answer(self, obj):
         return obj.answer.answer_text if obj.answer else '-'
     get_answer.short_description = 'Yanıt'
+
+
+@admin.register(IATResult)
+class IATResultAdmin(admin.ModelAdmin):
+    list_display = ["id", "user", "test_type", "dscore", "errors", "avg_rt", "created_at"]
+    list_filter = ["test_type", "user"]
+    search_fields = ["user__username"]

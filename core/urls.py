@@ -103,6 +103,11 @@ urlpatterns = [
     path('get-user-questions/', views.get_user_questions, name='get_user_questions'),
     path('get-user-answers/', views.get_user_answers, name='get_user_answers'),
     path('get-saved-items/', views.get_saved_items, name='get_saved_items'),
+
+    path('iat/', views.iat_start, name='iat_start'),
+    path('iat/test/', views.iat_test, name='iat_test'),
+    path('iat/result/page/', views.iat_result_page, name='iat_result_page'),
+    path('iat/result/', views.iat_result, name='iat_result'),
 ]
 
 handler404 = 'core.views.custom_404_view'

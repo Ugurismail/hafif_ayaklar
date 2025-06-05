@@ -315,3 +315,16 @@ class Reference(models.Model):
             matches = pattern.findall(answer.answer_text)
             count += len(matches)
         return count
+
+
+class IATResult(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    test_type = models.CharField(max_length=20, choices=[('gender', 'Cinsiyet'), ('ethnicity', 'Etnisite')])
+    dscore = models.FloatField()
+    bias_side = models.CharField(max_length=20)
+    errors = models.IntegerField()
+    avg_rt = models.FloatField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.test_type} - {self.dscore:.2f}"

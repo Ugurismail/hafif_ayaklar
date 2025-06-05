@@ -1,0 +1,56 @@
+{% extends 'core/base.html' %}
+{% block title %}IAT Sonuçları{% endblock %}
+{% block content %}
+<div class="container mt-5" style="max-width: 700px;">
+    <h1>IAT Sonuçları</h1>
+    <div class="card mt-4 mb-4">
+        <div class="card-body">
+            <h3>{{ result.label }}</h3>
+            <ul class="mt-3">
+                <li><b>D-score:</b> {{ result.dscore }}</li>
+                <li><b>Toplam hata:</b> {{ result.errors }}</li>
+                <li><b>Ortalama tepki süresi:</b> {{ result.avg_rt }} ms</li>
+                <li><b>Sıralamanız:</b> {{ result.user_rank }} / {{ ranking|length }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h4>Kullanıcı Sıralaması</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Sıra</th>
+                    <th>Kullanıcı</th>
+                    <th>D-score</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in ranking %}
+                <tr {% if row.is_me %}class="table-success fw-bold"{% endif %}>
+                    <td>{{ row.rank }}</td>
+                    <td>
+                        {% if row.is_me %}
+                            <span style="color: #146c43;">{{ row.username }} (Siz)</span>
+                        {% else %}
+                            {{ row.username }}
+                        {% endif %}
+                    </td>
+                    <td>{{ row.dscore }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4">
+        <h4>İlgili Okuma ve Kaynaklar</h4>
+        <ul>
+            {% for link in reading %}
+            <li><a href="{{ link.url }}" target="_blank">{{ link.title }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <a href="{% url 'iat_start' %}" class="btn btn-outline-primary mt-4">Yeniden Teste Başla</a>
+</div>
+{% endblock %}

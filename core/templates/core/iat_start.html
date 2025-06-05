@@ -1,0 +1,30 @@
+{% extends 'core/base.html' %}
+{% block title %}Gizli Çağrışım Testi (IAT){% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width:700px;">
+    <h1>Gizli Çağrışım Testi (IAT)</h1>
+    <p>
+        <b>Implicit Association Test</b> (Gizli Çağrışım Testi), bazı kavramlar ve gruplar arasında bilinçdışı önyargı ve çağrışımlarınızı ölçer. Bu testte, ekranda gösterilen sözcük veya isimleri, <b>YÖN TUŞLARI</b> ile verilen kategorilere olabildiğince hızlı ve doğru şekilde atamanız istenir.
+    </p>
+    <ul>
+        <li><b>Her bir kelime için sadece bir yön tuşuna basacaksınız.</b> (sol/sağ ok tuşları)</li>
+        <li>Yanıt süreniz ve doğruluğunuz kaydedilecek.</li>
+        <li>Test sonunda çağrışım gücünüz ve sıralamanız gösterilecek.</li>
+    </ul>
+    <div class="alert alert-info">
+        <b>Lütfen:</b> Test boyunca hızlı ve sezgisel şekilde ilerleyin, çok fazla düşünmeyin. Yanlış cevaplar önemli, çünkü hız ve hata oranı birlikte değerlendirilir.
+    </div>
+    <form method="get" action="{% url 'iat_test' %}" class="mt-4">
+        <div class="mb-3">
+            <label for="iatType" class="form-label"><b>Test Tipi:</b></label>
+            <select name="test_type" id="iatType" class="form-select" required>
+                <option value="" disabled selected>Lütfen bir test seçin</option>
+                <option value="gender">Kadın/Erkek (Cinsiyet ve Toplumsal Önyargı)</option>
+                <option value="ethnicity">Türk/Kürt (Etnik Önyargı)</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg w-100">Teste Başla</button>
+    </form>
+</div>
+{% endblock %}

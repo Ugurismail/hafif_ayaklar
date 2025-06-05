@@ -589,3 +589,29 @@ span.icon-number {
     color: var(--icon-color, #6c757d);
     font-size: 1.2em;
 }
+
+/* #iat test */
+
+#left-label, #right-label {
+    padding: 25px 35px;
+    font-size: 2.3rem;
+    font-weight: bold;
+    border-radius: 12px;
+    background: #687dc7;
+    color: #fff;
+    letter-spacing: .5px;
+    margin-top: 2vw;
+}
+#stimulus-word {
+    font-size: 3.5rem;
+    font-weight: bold;
+    margin: 60px 0;
+}
+#feedback {
+    min-height: 50px;
+    margin-top: 20px;
+}
+@media (max-width: 700px) {
+    #left-label, #right-label { font-size: 1.5rem; padding: 10px 10px; }
+    #stimulus-word { font-size: 2.2rem; }
+}

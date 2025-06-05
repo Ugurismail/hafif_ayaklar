@@ -1,0 +1,256 @@
+{% extends 'core/base.html' %}
+{% block title %}IAT Testi{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:700px;">
+    <div class="mt-4 mb-4" id="iat-instructions">
+        <h2>Teste Hazır mısınız?</h2>
+        <p>
+            Ekranda bir <b>isim</b> veya <b>kelime</b> göreceksiniz.
+            <b>Sol</b> veya <b>sağ</b> ok tuşuna basarak doğru kategoriye hızlıca atayın.
+            Kategoriler üstte görünüyor!
+        </p>
+        <p>Başlamak için <b>Boşluk (Space)</b> tuşuna basın.</p>
+    </div>
+    <div id="iat-test-ui" style="display:none;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-secondary fs-5" id="left-label"></span>
+            <span class="badge bg-secondary fs-5" id="right-label"></span>
+        </div>
+        <div class="text-center my-5">
+            <div id="stimulus-word" class="fs-1 fw-bold" style="min-height: 70px;"></div>
+        </div>
+        <div id="feedback" class="text-center fs-5" style="height: 40px; color: #d32f2f;"></div>
+        <div class="d-flex justify-content-between mt-3">
+            <div> Soru: <span id="progress-current">0</span>/<span id="progress-total">0</span> </div>
+            <div> Hata: <span id="error-count">0</span> </div>
+            <div> Ortalama Süre: <span id="avg-rt">0</span> ms </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const TEST_TYPE = "{{ test_type }}";
+
+// -- Test materyalleri --
+const GENDER_WORDS = {
+    left:  ["Kadın", "Kız", "Anne", "Elif", "Ayşe", "Zeynep", "Nazlı"],
+    right: ["Erkek", "Adam", "Baba", "Mehmet", "Ali", "Cemil", "Emre"],
+    good:  ["İyi", "Sevgi", "Tatlı", "Güzel", "Neşe", "Dost", "Keyifli"],
+    bad:   ["Kötü", "Çirkin", "Savaş", "Üzgün", "İtici", "Tehlike", "Nefret"]
+};
+const ETHNICITY_WORDS = {
+    left:  ["Türk", "Attila", "Alparslan", "Börteçine", "Aybike", "Batuhan", "Timur"],
+    right: ["Kürt", "Rojda", "Dilan", "Nûjiyan", "Şiyar", "Bawer", "Azad"],
+    good:  ["İyi", "Sevgi", "Tatlı", "Güzel", "Sevimli", "Dost", "Keyifli"],
+    bad:   ["Kötü", "Çirkin", "İğrenç", "Üzgün", "Öfke", "Tehlike", "Nefret"]
+};
+const USERNAME = "{{ request.user.username|escapejs }}";
+
+
+// -- Util --
+function shuffle(arr) {
+    let a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+// -- Stage Generator --
+function getStages() {
+    if (TEST_TYPE === "gender") {
+        return [
+            {
+                left: "Kadın", right: "Erkek",
+                items: shuffle(GENDER_WORDS.left.concat(GENDER_WORDS.right)),
+                mapping: word => GENDER_WORDS.left.includes(word) ? "left" : "right"
+            },
+            {
+                left: "İyi", right: "Kötü",
+                items: shuffle(GENDER_WORDS.good.concat(GENDER_WORDS.bad)),
+                mapping: word => GENDER_WORDS.good.includes(word) ? "left" : "right"
+            },
+            {
+                left: "Kadın veya İyi", right: "Erkek veya Kötü",
+                items: shuffle(GENDER_WORDS.left.concat(GENDER_WORDS.right, GENDER_WORDS.good, GENDER_WORDS.bad)),
+                mapping: word => (GENDER_WORDS.left.includes(word) || GENDER_WORDS.good.includes(word)) ? "left" : "right"
+            },
+            {
+                left: "Kadın veya Kötü", right: "Erkek veya İyi",
+                items: shuffle(GENDER_WORDS.left.concat(GENDER_WORDS.right, GENDER_WORDS.good, GENDER_WORDS.bad)),
+                mapping: word => (GENDER_WORDS.left.includes(word) || GENDER_WORDS.bad.includes(word)) ? "left" : "right"
+            }
+        ];
+    } else if (TEST_TYPE === "ethnicity") {
+        return [
+            {
+                left: "Türk", right: "Kürt",
+                items: shuffle(ETHNICITY_WORDS.left.concat(ETHNICITY_WORDS.right)),
+                mapping: word => ETHNICITY_WORDS.left.includes(word) ? "left" : "right"
+            },
+            {
+                left: "İyi", right: "Kötü",
+                items: shuffle(ETHNICITY_WORDS.good.concat(ETHNICITY_WORDS.bad)),
+                mapping: word => ETHNICITY_WORDS.good.includes(word) ? "left" : "right"
+            },
+            {
+                left: "Türk veya İyi", right: "Kürt veya Kötü",
+                items: shuffle(ETHNICITY_WORDS.left.concat(ETHNICITY_WORDS.right, ETHNICITY_WORDS.good, ETHNICITY_WORDS.bad)),
+                mapping: word => (ETHNICITY_WORDS.left.includes(word) || ETHNICITY_WORDS.good.includes(word)) ? "left" : "right"
+            },
+            {
+                left: "Türk veya Kötü", right: "Kürt veya İyi",
+                items: shuffle(ETHNICITY_WORDS.left.concat(ETHNICITY_WORDS.right, ETHNICITY_WORDS.good, ETHNICITY_WORDS.bad)),
+                mapping: word => (ETHNICITY_WORDS.left.includes(word) || ETHNICITY_WORDS.bad.includes(word)) ? "left" : "right"
+            }
+        ];
+    } else {
+        return [];
+    }
+}
+
+// --- IAT Logic ---
+let stages = [];
+let stageIdx = 0;
+let trialIdx = 0;
+let errorCount = 0;
+let rtSum = 0;
+let responses = [];
+let currentKeyHandler = null;
+let waitingNextStage = false;
+
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("IAT script yükleniyor!", performance.now());
+    document.getElementById("iat-instructions").style.display = "";
+    document.getElementById("iat-test-ui").style.display = "none";
+    let testStarted = false;
+
+    function removeKeyHandler() {
+        if (currentKeyHandler) {
+            document.body.removeEventListener("keydown", currentKeyHandler);
+            currentKeyHandler = null;
+        }
+    }
+
+    document.body.addEventListener("keydown", function initialHandler(e) {
+        if (!testStarted && e.code === "Space") {
+            testStarted = true;
+            document.getElementById("iat-instructions").style.display = "none";
+            document.getElementById("iat-test-ui").style.display = "";
+            // -- Reset all state!
+            stages = getStages();
+            stageIdx = 0;
+            trialIdx = 0;
+            errorCount = 0;
+            rtSum = 0;
+            responses = [];
+            removeKeyHandler();
+            startStage();
+        }
+    });
+
+    function startStage() {
+        let stage = stages[stageIdx];
+        trialIdx = 0;
+        console.log("STAGE", stageIdx, "başladı:", stage.items);
+        nextTrial();
+    }
+
+    function nextTrial() {
+    let stage = stages[stageIdx];
+    if (trialIdx >= stage.items.length) {
+        stageIdx++;
+        removeKeyHandler();
+        if (stageIdx >= stages.length) {
+            finishTest();
+        } else {
+            document.getElementById("feedback").textContent = "Bir sonraki bölüme geçmek için boşluk tuşuna basın.";
+            waitingNextStage = true;
+            function stageNextHandler(ev) {
+                if (ev.code === "Space" && waitingNextStage) {
+                    waitingNextStage = false;
+                    document.body.removeEventListener("keydown", stageNextHandler);
+                    document.getElementById("feedback").textContent = "";
+                    startStage();
+                }
+            }
+            document.body.addEventListener("keydown", stageNextHandler);
+        }
+        return;
+    }
+    updateUI(stage, stage.items.length);
+    showWord(stage.items[trialIdx]);
+}
+
+function updateUI(stage, totalTrials) {
+    document.getElementById("left-label").textContent = stage.left;
+    document.getElementById("right-label").textContent = stage.right;
+    document.getElementById("progress-current").textContent = Math.min(trialIdx + 1, totalTrials);
+    document.getElementById("progress-total").textContent = totalTrials;
+    document.getElementById("error-count").textContent = errorCount;
+    document.getElementById("avg-rt").textContent = responses.length ? Math.round(rtSum / responses.length) : 0;
+    document.getElementById("feedback").textContent = "";
+}
+
+    function showWord(word) {
+    document.getElementById("stimulus-word").textContent = word;
+    let stage = stages[stageIdx];
+    let trialStartTime = performance.now();
+    let errorOnThisWord = 0;
+    removeKeyHandler();
+
+    let used = false;
+    currentKeyHandler = function(e) {
+        if (used) return;
+        if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
+            let answer = e.code === "ArrowLeft" ? "left" : "right";
+            let correct = stage.mapping(word);
+            let rt = performance.now() - trialStartTime;
+
+            if (answer === correct) {
+                used = true;
+                responses.push({stage: stageIdx, word, answer, correct: errorOnThisWord === 0, rt});
+                rtSum += rt;
+                if (errorOnThisWord > 0) errorCount += errorOnThisWord;
+                document.getElementById("feedback").textContent = "";
+                removeKeyHandler();
+                trialIdx++;
+                nextTrial();
+            } else {
+                errorOnThisWord += 1;
+                errorCount += 1;
+                document.getElementById("feedback").innerHTML = '<span style="color:#e53935; font-size:3rem; font-weight:bold;">✗</span>';
+                // used burada değişmiyor!
+                // updateUI YALNIZCA HATALI CEVAPTA!
+                updateUI(stage, stage.items.length);
+            }
+        }
+    };
+    document.body.addEventListener("keydown", currentKeyHandler);
+}
+
+    function finishTest() {
+        document.getElementById("stimulus-word").textContent = "Test Bitti!";
+        document.getElementById("feedback").textContent = "Sonuçlarınız hesaplanıyor...";
+        removeKeyHandler();
+        fetch("{% url 'iat_result' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({test_type: TEST_TYPE, responses: responses}),
+        }).then(r => r.json())
+        .then(data => {
+            window.location.href = data.result_url;
+        }).catch(err => {
+            document.getElementById("feedback").textContent = "Sunucuya ulaşılamıyor. Lütfen tekrar deneyin.";
+        });
+    }
+});
+</script>
+{% endblock %}
