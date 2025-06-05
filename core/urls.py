@@ -108,6 +108,12 @@ urlpatterns = [
     path('iat/test/', views.iat_test, name='iat_test'),
     path('iat/result/page/', views.iat_result_page, name='iat_result_page'),
     path('iat/result/', views.iat_result, name='iat_result'),
+
+    # path("kenarda/", views.kenarda_list, name="kenarda_list"),
+    # path("kenarda/<int:pk>/", views.kenarda_detail, name="kenarda_detail"),
+    # path("kenarda/ekle/", views.kenarda_ekle, name="kenarda_ekle"),
+    # path("kenarda/<int:pk>/sil/", views.kenarda_sil, name="kenarda_sil"),
+    # path("kenarda/<int:pk>/gonder/", views.kenarda_gonder, name="kenarda_gonder"),
 ]
 
 handler404 = 'core.views.custom_404_view'

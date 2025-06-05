@@ -5,15 +5,40 @@
 <div class="container mt-4" style="max-width:700px;">
     <h1>Gizli Çağrışım Testi (IAT)</h1>
     <p>
-        <b>Implicit Association Test</b> (Gizli Çağrışım Testi), bazı kavramlar ve gruplar arasında bilinçdışı önyargı ve çağrışımlarınızı ölçer. Bu testte, ekranda gösterilen sözcük veya isimleri, <b>YÖN TUŞLARI</b> ile verilen kategorilere olabildiğince hızlı ve doğru şekilde atamanız istenir.
+        <b>Implicit Association Test</b> (Gizli Çağrışım Testi, kısaca IAT), insanların bazı kavramlar, gruplar veya özellikler arasında sahip olabileceği <b>bilinçdışı (otomatik) önyargı ve çağrışımları</b> ölçmek için geliştirilmiş psikolojik bir testtir.<br>
+        Pek çok araştırmada kullanılır ve <b>kişinin kendisinin bile farkında olmadığı otomatik tutumları</b> ortaya çıkarmayı amaçlar.
+    </p>
+    <p>
+        Test sırasında size ekranda birer birer <b>isimler, kelimeler ya da kavramlar</b> gösterilecektir. Göreviniz, bu kelimeleri üstte verilen iki kategoriye (<b>örneğin:</b> Kadın/Erkek, İyi/Kötü, Türk/Kürt gibi) <b>olabildiğince hızlı ve doğru şekilde</b> atamaktır.<br>
+        Her kelimeyi, klavyenizdeki <b>sol ve sağ ok tuşlarını</b> kullanarak ilgili kategoriye ait olduğunu düşündüğünüz yere göndereceksiniz.
     </p>
     <ul>
-        <li><b>Her bir kelime için sadece bir yön tuşuna basacaksınız.</b> (sol/sağ ok tuşları)</li>
-        <li>Yanıt süreniz ve doğruluğunuz kaydedilecek.</li>
-        <li>Test sonunda çağrışım gücünüz ve sıralamanız gösterilecek.</li>
+        <li><b>Her kelime için sadece bir tuşa basacaksınız.</b> (sol veya sağ ok)</li>
+        <li><b>Yanıt süreniz ve doğruluğunuz</b> (yani ne kadar hızlı ve doğru cevap verdiğiniz) kaydedilir.</li>
+        <li>
+            <b>Test birkaç bölümden oluşur:</b> Her bölümde kategoriler ya da eşleşmeler değişebilir (örneğin bir bölümde “Kadın veya İyi” kategorisiyle “Erkek veya Kötü” karşı karşıya gelir).
+        </li>
+        <li>
+            <b>Test tamamlandığında</b>, hangi kategoriyle hangi kavramı daha hızlı ve kolayca eşleştirdiğiniz analiz edilir ve size bir sonuç sunulur.
+        </li>
     </ul>
     <div class="alert alert-info">
-        <b>Lütfen:</b> Test boyunca hızlı ve sezgisel şekilde ilerleyin, çok fazla düşünmeyin. Yanlış cevaplar önemli, çünkü hız ve hata oranı birlikte değerlendirilir.
+        <b>Önemli Notlar:</b>
+        <ul class="mb-0">
+            <li>
+                Bu testin amacı, <b>kişilerin bilinçli düşüncelerini değil, anlık ve otomatik çağrışımlarını</b> ölçmektir.
+                Sonuçlar, “taraf tutmak” ya da “kötü niyet” göstergesi değildir; toplumda yaygın olan otomatik önyargı ve çağrışımları anlamak için kullanılır.
+            </li>
+            <li>
+                <b>Yanlış cevaplar önemlidir.</b> Yanlış yaptıysanız, doğru cevabı vermek için tekrar tuşa basın. Hem hızınız hem de hata oranınız bir arada analiz edilir.
+            </li>
+            <li>
+                <b>Çok fazla düşünmeyin.</b> Ne kadar hızlı ve sezgisel yanıtlarsanız sonuç o kadar güvenilir olur.
+            </li>
+            <li>
+                <b>Kişisel bilgileriniz ve test yanıtlarınız gizli tutulur.</b>
+            </li>
+        </ul>
     </div>
     <form method="get" action="{% url 'iat_test' %}" class="mt-4">
         <div class="mb-3">

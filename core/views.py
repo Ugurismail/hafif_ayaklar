@@ -7,7 +7,7 @@ from datetime import timedelta
 from io import BytesIO
 from urllib.parse import unquote
 from .models import IATResult 
-
+# from .models import Kenarda
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -2818,9 +2818,10 @@ def iat_result(request):
             stage = resp['stage']
             rt = resp['rt']
             correct = resp['correct']
-            stage_times[stage].append(rt)
             if not correct:
+                rt += 600   # Yanlış cevaplara 600 ms ekle
                 stage_errors[stage] += 1
+            stage_times[stage].append(rt)
 
         # D-score (Greenwald, 2003)
         # Anahtar bloklar: 2 ve 3 (kombinasyonlar)
@@ -2836,8 +2837,8 @@ def iat_result(request):
             var_b = sum((v - mean_b) ** 2 for v in bb) / (len(bb) - 1 if len(bb) > 1 else 1)
             return ((var_a + var_b) / 2) ** 0.5
 
-        rt2 = [rt for rt in stage_times[2] if rt < 3000]
-        rt3 = [rt for rt in stage_times[3] if rt < 3000]
+        rt2 = [rt for rt in stage_times[2] if 200 < rt < 3000]
+        rt3 = [rt for rt in stage_times[3] if 200 < rt < 3000]
         mean2 = safe_mean(rt2)
         mean3 = safe_mean(rt3)
         std_pooled = pooled_std(rt2, rt3) or 1
@@ -2899,3 +2900,36 @@ def iat_result(request):
         return JsonResponse({"result_url": reverse("iat_result_page")})
 
     return HttpResponse(status=405)
+
+# @login_required
+# def kenarda_list(request):
+#     taslaklar = Kenarda.objects.filter(user=request.user, is_sent=False).order_by('-updated_at')
+#     return render(request, "core/kenarda_list.html", {"taslaklar": taslaklar})
+
+# @login_required
+# def kenarda_detail(request, pk):
+#     taslak = get_object_or_404(Kenarda, pk=pk, user=request.user)
+#     return render(request, "core/kenarda_detail.html", {"taslak": taslak})
+
+
+# @login_required
+# @csrf_exempt
+# def kenarda_ekle(request):
+#     if request.method == "POST":
+#         title = request.POST.get("title", "")
+#         content = request.POST.get("content", "")
+#         # Aynı başlık varsa güncelle, yoksa yeni oluştur
+#         taslak, created = Kenarda.objects.update_or_create(
+#             user=request.user,
+#             title=title,
+#             is_sent=False,
+#             defaults={"content": content}
+#         )
+#         return JsonResponse({"status": "ok", "id": taslak.id, "created": created})
+#     return JsonResponse({"status": "fail"}, status=400)
+
+# @login_required
+# def kenarda_sil(request, pk):
+#     taslak = get_object_or_404(Kenarda, pk=pk, user=request.user)
+#     taslak.delete()
+#     return redirect("kenarda_list")
