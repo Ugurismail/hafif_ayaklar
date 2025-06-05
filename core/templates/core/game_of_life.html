@@ -5,12 +5,52 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1>Conway'in Game of Life</h1>
-    <canvas id="lifeCanvas" width="600" height="400" class="border"></canvas>
-    <div class="mt-2">
-        <button id="startBtn" class="btn btn-primary">Başlat</button>
-        <button id="stopBtn" class="btn btn-secondary">Durdur</button>
-        <button id="clearBtn" class="btn btn-danger">Temizle</button>
+    <h1>Conway'in Yaşam Oyunu</h1>
+    <div class="row">
+        <!-- Oyun Alanı -->
+        <div class="col-md-7">
+            <canvas id="lifeCanvas" width="600" height="400" class="border"></canvas>
+            <div class="mt-2">
+                <button id="startBtn" class="btn btn-primary">Başlat</button>
+                <button id="stopBtn" class="btn btn-secondary">Durdur</button>
+                <button id="clearBtn" class="btn btn-danger">Temizle</button>
+            </div>
+        </div>
+        <!-- Açıklama Alanı -->
+        <div class="col-md-5">
+            <div class="card shadow-sm p-3 mb-4" style="background:#f8f9fa;">
+                <h5 class="card-title mb-2">Yaşam Oyunu Nedir?</h5>
+                <p>
+                    <b>Game of Life</b> veya Türkçesiyle <b>Yaşam Oyunu</b>, ünlü matematikçi <b>John Horton Conway</b> tarafından 1970 yılında ortaya atılmış, 
+                    hücresel otomata (cellular automaton) tabanlı bir simülasyon oyunudur. Her hamlede, hücrelerin yaşamı ve ölümü belirli kurallara göre değişir.
+                </p>
+                <h6>Kurallar</h6>
+                <ul>
+                    <li>Her hücre (kare), ya <b>canlı</b> (siyah) ya da <b>ölü</b> (beyaz) olabilir.</li>
+                    <li>Her turda, komşu hücrelerin durumu hücrenin bir sonraki durumda yaşayıp yaşamayacağını belirler.</li>
+                    <li>
+                        <b>Bir hücre:</b>
+                        <ul style="font-size:0.96em;">
+                            <li>Canlıysa ve komşularının sayısı 2 veya 3 ise yaşamaya devam eder.</li>
+                            <li>Canlıysa ve komşularının sayısı 2'den azsa (<i>yalnızlık</i>) ya da 3'ten fazlaysa (<i>kalabalık</i>) ölür.</li>
+                            <li>Ölüyse ve tam olarak 3 canlı komşusu varsa, <b>yeniden canlanır</b> (doğum).</li>
+                        </ul>
+                    </li>
+                </ul>
+                <h6>Nasıl Oynanır?</h6>
+                <ol>
+                    <li>Alan üstünde istediğiniz karelere tıklayarak hücreleri "canlı" (siyah) hale getirin.</li>
+                    <li><b>Başlat</b> tuşu ile simülasyonu başlatın.</li>
+                    <li><b>Durdur</b> ile istediğiniz an duraklatabilirsiniz.</li>
+                    <li><b>Temizle</b> ile tüm alanı sıfırlayabilirsiniz.</li>
+                </ol>
+                <p>
+                    Farklı desenler oluşturup, sonuçlarını gözlemleyebilir ve kendi "hayat formlarınızı" keşfedebilirsiniz!
+                    <br>
+                    <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" target="_blank" rel="noopener">Daha fazla bilgi</a>
+                </p>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

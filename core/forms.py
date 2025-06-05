@@ -164,7 +164,9 @@ class PollForm(forms.Form):
         label="Anket Sorusu",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Anket sorusunu giriniz'
+            'placeholder': 'Anket sorusunu giriniz',
+            'required': 'required',   # HTML5 zorunluluğu
+            'minlength': '2',
         })
     )
     end_date = forms.DateTimeField(
@@ -210,6 +212,11 @@ class PollForm(forms.Form):
             self.add_error('option_1', 'En az 2 seçenek girmelisiniz.')
         cleaned_data['options'] = options
         return cleaned_data
+    def clean_question_text(self):
+        data = self.cleaned_data.get('question_text', '').strip()
+        if not data:
+            raise ValidationError('Anket sorusu boş bırakılamaz.')
+        return data
 
 class DefinitionForm(forms.ModelForm):
     class Meta:
