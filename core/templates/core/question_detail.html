@@ -321,6 +321,8 @@
                   </div>
                   {{ form.answer_text }}
                   <button type="submit" class="btn btn-primary mt-2">Yanıtla</button>
+                  <button type="button" class="btn btn-secondary mt-2 ms-2" id="sabaha-birak-btn">Kenarda Dursun</button>
+                  <span id="sabahabirak-feedback" style="display:none;" class="text-success ms-2">Taslak kaydedildi!</span>
                 </form>
               </div>
             </div>
@@ -861,9 +863,68 @@
   
   });
   </script>
+<script>
+document.getElementById('sabaha-birak-btn').onclick = function(e) {
+    e.preventDefault();
+    const content = document.getElementById('id_answer_text').value;
+    const questionId = document.getElementById('answer_form_question_id').value;
+    fetch("{% url 'kenarda_save' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            question_id: questionId,
+            content: content
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            document.getElementById('sabahabirak-feedback').style.display = 'inline';
+        } else {
+            alert('Bir hata oluştu: ' + (data.error || ''));
+        }
+    })
+    .catch(err => {
+        alert('Sunucu hatası: ' + err);
+    });
+};
+
+  </script>
   
-  
-  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.yukle-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var content = btn.getAttribute('data-taslak-content');
+                // Cevap kutusu ana sayfada veya başka bir yerde olabilir, önce var mı kontrol edelim
+                var textarea = document.getElementById('id_answer_text');
+                if (textarea) {
+                    textarea.value = content;
+                    textarea.focus();
+                    // Modal kullanıyorsan modalı da açabilirsin, örn:
+                    // $('#yanitModal').modal('show');
+                } else {
+                    alert('Yanıt kutusu bulunamadı. Ana sayfada değilseniz orada deneyin.');
+                }
+            });
+        });
+    });
+    </script>
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const draft = urlParams.get('draft');
+        if (draft && document.getElementById('id_answer_text')) {
+          document.getElementById('id_answer_text').value = draft;
+          document.getElementById('id_answer_text').focus();
+        }
+      });
+      </script>
+      
   
   {% endblock %}
 

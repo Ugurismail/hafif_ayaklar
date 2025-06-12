@@ -91,16 +91,15 @@
                     </button>
                 </form>
                 {% endif %}
-                <!-- Sağ taraftaki Navbar Öğeleri -->
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
-                    <!-- Giriş Yapmış Kullanıcılar İçin Linkler -->
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'user_homepage' %}" title="Ana Sayfa"><i class="bi bi-house"></i></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'question_map' %}" title="Harita"><i class="bi bi-diagram-3"></i></a>
                     </li>
+                    <!-- Oyunlar: Ana navda -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="gamesMenu" title="Oyunlar" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-controller"></i>
@@ -108,7 +107,7 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="gamesMenu">
                             <li>
                                 <a class="dropdown-item" href="{% url 'game_of_life' %}">
-                                    <i class="bi bi-grid-3x3-gap-fill"></i>Conway'in Game of Life
+                                    <i class="bi bi-grid-3x3-gap-fill"></i> Conway'in Game of Life
                                 </a>
                             </li>
                             <li>
@@ -118,53 +117,58 @@
                             </li>
                         </ul>
                     </li>
-                    <!-- Dropdown Menü -->
+                    <!-- Müteferrik / Ek Menü -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="extraMenu" title="Müteferrik" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-umbrella-fill"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="extraMenu">
                             <li>
-                                <a class="dropdown-item" href="{% url 'profile' %}" title="Profil">
-                                    <i class="bi bi-person"></i>Profilim
-                                </a>                              
+                                <a class="dropdown-item" href="{% url 'kenarda_list' %}">
+                                    <i class="bi bi-hourglass"></i> Kenardakiler
+                                </a>
+                            </li>                            
+                            <li>
+                                <a class="dropdown-item" href="{% url 'profile' %}">
+                                    <i class="bi bi-person"></i> Profilim
+                                </a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="{% url 'polls_home' %}">
-                                    <i class="bi bi-card-checklist"></i>Anketler
+                                    <i class="bi bi-card-checklist"></i> Anketler
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="{% url 'user_settings' %}">
-                                    <i class="bi bi-gear"></i>Renk Ayarları
+                                    <i class="bi bi-gear"></i> Renk Ayarları
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="{% url 'site_statistics' %}">
-                                    <i class="bi bi-bar-chart"></i>Site İstatistikleri
+                                    <i class="bi bi-bar-chart"></i> Site İstatistikleri
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="{% url 'user_list' %}">
-                                    <i class="bi bi-people"></i>Tüm Kullanıcılar
+                                    <i class="bi bi-people"></i> Tüm Kullanıcılar
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="https://www.typingme.com/10-parmak-klavye-q/10-parmak-q.php">
-                                    <i class="bi bi-keyboard"></i>On Parmak
+                                    <i class="bi bi-keyboard"></i> On Parmak
                                 </a>
                             </li>
-
                             <li>
                                 <a class="dropdown-item" href="{% url 'about' %}">
-                                    <i class="bi bi-info-circle"></i>Hakkında
+                                    <i class="bi bi-info-circle"></i> Hakkında
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'logout' %}" title="Çıkış"><i class="bi bi-box-arrow-right"></i>Çıkış Yap</a>
+                                <a class="dropdown-item" href="{% url 'logout' %}" title="Çıkış"><i class="bi bi-box-arrow-right"></i> Çıkış Yap</a>
                             </li>
                         </ul>
                     </li>
+                    <!-- Mesajlar -->
                     <li>
                         <a class="nav-link position-relative" href="{% url 'message_list' %}">
                             {% if unread_message_count == 0 %}
@@ -175,12 +179,10 @@
                                         {{ unread_message_count }}
                                     </span>
                                 </i>
-
                             {% endif %}
                         </a>
                     </li>
                     {% else %}
-                    <!-- Giriş Yapmamış Kullanıcılar İçin Linkler -->
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">Giriş Yap</a>
                     </li>
@@ -190,6 +192,7 @@
                     {% endif %}
                 </ul>
             </div>
+            
         </div>
     </nav>
 <!-- Gelişmiş Arama Modal -->

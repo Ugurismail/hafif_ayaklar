@@ -316,10 +316,12 @@ class Reference(models.Model):
             count += len(matches)
         return count
 
-
 class IATResult(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    test_type = models.CharField(max_length=20, choices=[('gender', 'Cinsiyet'), ('ethnicity', 'Etnisite')])
+    test_type = models.CharField(
+        max_length=20,
+        choices=[('gender', 'Cinsiyet'), ('ethnicity', 'Etnisite')]
+    )
     dscore = models.FloatField()
     bias_side = models.CharField(max_length=20)
     errors = models.IntegerField()
@@ -328,16 +330,16 @@ class IATResult(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.test_type} - {self.dscore:.2f}"
-    
 
-# class Kenarda(models.Model):
+
+class Kenarda(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="kenardalar")
-    title = models.CharField(max_length=200, blank=True, null=True)  # Başlık/tipine göre değişir
-    content = models.TextField()  # Yazının/taslağın kendisi
+    question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, blank=True, related_name="kenarda_taslaklar")  # <-- EKLENDİ!
+    title = models.CharField(max_length=200, blank=True, null=True)
+    content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_sent = models.BooleanField(default=False)  # Sonradan gönderildiyse True
-    # Gerekirse ilgili objeye referans verilebilir (soru mu, mesaj mı, vs.)
+    is_sent = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.user.username} - {self.title or '[No Title]'} ({'Sent' if self.is_sent else 'Draft'})"
+        return f"{self.title or (self.question.question_text if self.question else '[Başlıksız]')}"

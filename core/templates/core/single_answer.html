@@ -259,6 +259,8 @@
                         </div>
                         {{ form.answer_text }}
                         <button type="submit" class="btn btn-primary mt-2">Yanıtla</button>
+                        <button type="button" class="btn btn-secondary mt-2 ms-2" id="sabaha-birak-btn">Kenarda Dursun</button>
+                        <span id="sabahabirak-feedback" style="display:none;" class="text-success ms-2">Taslak kaydedildi!</span>
                     </form>
                 </div>
             </div>
@@ -608,7 +610,55 @@
         }
     });
     </script>
+   
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // SABAH BIRAK
+        var sabahaBirakBtn = document.getElementById('sabaha-birak-btn');
+        var textarea = document.getElementById('id_answer_text') || document.querySelector('textarea[name="answer_text"]');
+        var qid = window.question_id || (typeof QUESTION_ID !== "undefined" ? QUESTION_ID : null) || {{ question.id|default:"null" }};
+        if (sabahaBirakBtn && textarea && qid) {
+            sabahaBirakBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                var content = textarea.value.trim();
+                if (!content) {
+                    alert("Kaydedilecek içerik yok!");
+                    return;
+                }
+                fetch('/kenarda/save/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        question_id: qid,
+                        content: content
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === "ok") {
+                        alert("Taslak başarıyla kaydedildi!");
+                        textarea.value = "";
+                    } else {
+                        alert("Kaydetme başarısız: " + (data.error || ""));
+                    }
+                });
+            });
+        }
     
+        // TASLAKTAN YÜKLEME (URL'de ?draft= varsa textarea'ya doldur)
+        const urlParams = new URLSearchParams(window.location.search);
+        const draft = urlParams.get('draft');
+        if (draft && textarea) {
+          textarea.value = draft;
+          textarea.focus();
+        }
+    });
+    </script>
+    
+
 <script>
         document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll('.auto-expand').forEach(function(textarea) {

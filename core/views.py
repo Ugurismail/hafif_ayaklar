@@ -6,7 +6,7 @@ from collections import Counter, defaultdict
 from datetime import timedelta
 from io import BytesIO
 from urllib.parse import unquote
-from .models import IATResult 
+from .models import IATResult, Kenarda
 # from .models import Kenarda
 from django.conf import settings
 from django.contrib import messages
@@ -533,6 +533,7 @@ def question_detail(request, question_id):
             new_answer.user = request.user
             new_answer.question = question
             new_answer.save()
+            Kenarda.objects.filter(user=request.user, question=question, is_sent=False).delete()
             return redirect('question_detail', question_id=question.id)
     else:
         form = AnswerForm()
@@ -589,6 +590,7 @@ def question_detail(request, question_id):
     }
     return render(request, 'core/question_detail.html', context)
 
+
 @login_required
 def add_answer(request, question_id):
     question = get_object_or_404(Question, id=question_id)
@@ -599,10 +601,16 @@ def add_answer(request, question_id):
             answer.question = question
             answer.user = request.user
             answer.save()
+            from .models import Kenarda
+            silinen = Kenarda.objects.filter(user=request.user, question=question, is_sent=False)
+            print("SİLİNECEK:", list(silinen))
+            deleted_count, _ = silinen.delete()
+            print("Kaç tane silindi:", deleted_count)
             return redirect('question_detail', question_id=question.id)
     else:
         form = AnswerForm()
     return render(request, 'core/add_answer.html', {'form': form, 'question': question})
+
 
 @login_required
 def sent_messages(request):
@@ -2901,35 +2909,68 @@ def iat_result(request):
 
     return HttpResponse(status=405)
 
-# @login_required
-# def kenarda_list(request):
-#     taslaklar = Kenarda.objects.filter(user=request.user, is_sent=False).order_by('-updated_at')
-#     return render(request, "core/kenarda_list.html", {"taslaklar": taslaklar})
 
-# @login_required
-# def kenarda_detail(request, pk):
-#     taslak = get_object_or_404(Kenarda, pk=pk, user=request.user)
-#     return render(request, "core/kenarda_detail.html", {"taslak": taslak})
+@csrf_exempt
+@login_required
+def kenarda_save(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        question_id = data.get("question_id")
+        content = data.get("content")
+        question = None
+        if question_id:
+            try:
+                question = Question.objects.get(id=question_id)
+            except Question.DoesNotExist:
+                question = None
+        # Mevcut taslak var mı?
+        existing = Kenarda.objects.filter(user=request.user, question=question, is_sent=False).first()
+        if existing:
+            existing.content = content
+            existing.updated_at = timezone.now()
+            existing.save()
+        else:
+            Kenarda.objects.create(
+                user=request.user,
+                question=question,
+                content=content,
+                is_sent=False
+            )
+        return JsonResponse({"status": "ok"})
+    return JsonResponse({"status": "fail", "error": "Yetkisiz veya geçersiz istek"})
 
 
-# @login_required
-# @csrf_exempt
-# def kenarda_ekle(request):
-#     if request.method == "POST":
-#         title = request.POST.get("title", "")
-#         content = request.POST.get("content", "")
-#         # Aynı başlık varsa güncelle, yoksa yeni oluştur
-#         taslak, created = Kenarda.objects.update_or_create(
-#             user=request.user,
-#             title=title,
-#             is_sent=False,
-#             defaults={"content": content}
-#         )
-#         return JsonResponse({"status": "ok", "id": taslak.id, "created": created})
-#     return JsonResponse({"status": "fail"}, status=400)
+@login_required
+def kenarda_list(request):
+    taslaklar = Kenarda.objects.filter(user=request.user, is_sent=False).order_by('-updated_at')
+    return render(request, 'core/kenarda_list.html', {'taslaklar': taslaklar})
 
-# @login_required
-# def kenarda_sil(request, pk):
-#     taslak = get_object_or_404(Kenarda, pk=pk, user=request.user)
-#     taslak.delete()
-#     return redirect("kenarda_list")
+
+
+
+@require_POST
+@login_required
+def kenarda_sil(request, pk):
+    try:
+        taslak = Kenarda.objects.get(pk=pk, user=request.user)
+        taslak.delete()
+        return JsonResponse({"status":"ok"})
+    except Kenarda.DoesNotExist:
+        return JsonResponse({"status":"fail"})
+
+@require_POST
+@login_required
+def kenarda_gonder(request, pk):
+    try:
+        taslak = Kenarda.objects.get(pk=pk, user=request.user)
+        # Otomatik yanıt oluştur
+        Answer.objects.create(
+            question=taslak.question,
+            answer_text=taslak.content,
+            user=request.user
+        )
+        taslak.delete()
+        return JsonResponse({"status":"ok"})
+    except Exception as e:
+        return JsonResponse({"status":"fail", "error": str(e)})
+
