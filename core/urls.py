@@ -114,6 +114,26 @@ urlpatterns = [
     path('kenarda/sil/<int:pk>/', views.kenarda_sil, name='kenarda_sil'),
     path('kenarda/gonder/<int:pk>/', views.kenarda_gonder, name='kenarda_gonder'),
 
+    path('cikis_testleri/', views.cikis_testleri_list, name='cikis_testleri_list'),
+    path('cikis_testleri/olustur/', views.cikis_testi_create, name='cikis_testi_create'),
+    path('cikis_testleri/<int:test_id>/', views.cikis_testi_detail, name='cikis_testi_detail'),
+    path('cikis_testleri/<int:test_id>/soru_ekle/', views.cikis_soru_ekle, name='cikis_soru_ekle'),
+    path('cikis_testleri/soru/<int:soru_id>/sik_ekle/', views.cikis_sik_ekle, name='cikis_sik_ekle'),
+    path('cikis_testleri/soru/<int:soru_id>/dogru_sik/', views.cikis_dogru_sik_sec, name='cikis_dogru_sik_sec'),
+    path('cikis_testleri/<int:test_id>/coz/', views.cikis_testi_coz, name='cikis_testi_coz'),
+    path('cikis_testleri/<int:test_id>/sonuclar/', views.cikis_testi_sonuc_list, name='cikis_testi_sonuc_list'),
+    path('cikis_testleri/<int:test_id>/dogru_ayarla/', views.cikis_dogrusu_ayarla, name='cikis_dogrusu_ayarla'),
+    path('cikis-testleri/', views.cikis_test_list, name='cikis_test_list'),
+    path('cikis-test/<int:test_id>/coz/', views.cikis_test_coz, name='cikis_test_coz'),
+    path('cikis_testleri/sonuc/<int:sonuc_id>/sil/', views.cikis_sonuc_sil, name='cikis_sonuc_sil'),
+    path('cikis_testleri/soru/<int:soru_id>/edit/', views.cikis_soru_edit, name='cikis_soru_edit'),
+    path('cikis_testleri/soru/<int:soru_id>/sil/', views.cikis_soru_sil, name='cikis_soru_sil'),
+
+    
+
+    
+
+
 ]
 
 handler404 = 'core.views.custom_404_view'

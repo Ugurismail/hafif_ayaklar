@@ -343,3 +343,51 @@ class Kenarda(models.Model):
 
     def __str__(self):
         return f"{self.title or (self.question.question_text if self.question else '[Başlıksız]')}"
+
+class CikisTesti(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cikis_testleri")
+    title = models.CharField(max_length=200)
+    cikis_dogrusu = models.PositiveIntegerField(null=True, blank=True)  # Sonradan ayarlanabilir
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def soru_sayisi(self):
+        return self.sorular.count()
+    
+    def __str__(self):
+        return self.title
+
+class CikisTestiSoru(models.Model):
+    test = models.ForeignKey(CikisTesti, on_delete=models.CASCADE, related_name="sorular")
+    question_text = models.TextField()
+    order = models.PositiveIntegerField(default=0)
+    # Doğru şık (her zaman ilgili sorunun şıkları arasında olmalı)
+    correct_option = models.ForeignKey(
+        'CikisTestiSik',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+'
+    )
+
+    def __str__(self):
+        return self.question_text
+
+class CikisTestiSik(models.Model):
+    soru = models.ForeignKey(CikisTestiSoru, on_delete=models.CASCADE, related_name="siklar")
+    text = models.TextField()
+    order = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.text[:40]
+    
+
+class CikisTestiResult(models.Model):
+    test = models.ForeignKey(CikisTesti, on_delete=models.CASCADE, related_name="sonuclar")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    completed_at = models.DateTimeField(auto_now_add=True)
+    dogru_sayisi = models.PositiveIntegerField()
+    toplam_soru = models.PositiveIntegerField()
+    cikis_dogrusu_uydu = models.BooleanField()
+
+    def __str__(self):
+        return f"{self.user.username} - {self.test.title} sonucu"

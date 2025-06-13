@@ -1,0 +1,17 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Çıkış Testlerim</h2>
+    <a class="btn btn-primary mb-3" href="{% url 'cikis_testi_create' %}">Yeni Test Oluştur</a>
+    <ul class="list-group">
+        {% for test in testler %}
+        <li class="list-group-item">
+            <a href="{% url 'cikis_testi_detail' test.id %}">{{ test.title }}</a>
+            ({{ test.soru_sayisi }})
+        </li>
+        {% empty %}
+        <li class="list-group-item">Henüz testiniz yok.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

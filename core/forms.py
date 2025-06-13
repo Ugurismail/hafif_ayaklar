@@ -1,12 +1,13 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Invitation, UserProfile, Question, Answer, Message, RandomSentence, Definition, Reference
+from .models import Invitation, UserProfile, Question, Answer, Message, RandomSentence, Definition, Reference,CikisTesti, CikisTestiSoru, CikisTestiSik
 from django.core.validators import RegexValidator
 from .models import Poll, PollOption
 from django.utils import timezone
 import datetime
 from django.core.exceptions import ValidationError
+
 
 # Kullanıcı adında boşluklar ve Türkçe karakterlere izin veren validator
 username_with_spaces_validator = RegexValidator(
@@ -286,3 +287,19 @@ class AnswerEditForm(forms.ModelForm):
         widgets = {
             'answer_text': forms.Textarea(attrs={'class': 'auto-expand form-control'}),
         }
+
+
+class CikisTestiForm(forms.ModelForm):
+    class Meta:
+        model = CikisTesti
+        fields = ['title']
+
+class CikisTestiSoruForm(forms.ModelForm):
+    class Meta:
+        model = CikisTestiSoru
+        fields = ['question_text']
+
+class CikisTestiSikForm(forms.ModelForm):
+    class Meta:
+        model = CikisTestiSik
+        fields = ['text']

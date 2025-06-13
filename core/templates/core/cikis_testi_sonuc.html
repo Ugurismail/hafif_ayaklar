@@ -1,0 +1,18 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ test.title }} (Sonuç)</h2>
+    <p><b>Doğru Sayısı:</b> {{ dogru }} / {{ toplam }}</p>
+    <p><b>Çıkış doğrusu:</b> {{ cikis_dogrusu|default:"Tanımlanmadı" }}</p>
+    {% if uydu %}
+        <span class="badge bg-success">Çıkış doğrusuna ulaştınız!</span>
+    {% else %}
+        <span class="text-danger">Çıkış doğrusuna ulaşamadınız.</span>
+    {% endif %}
+    <div class="mt-4">
+        <a href="{% url 'cikis_test_list' %}" class="btn btn-secondary btn-sm">Test Listesine Dön</a>
+        <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-primary btn-sm ms-2">Tekrar Çöz</a>
+        <a href="{% url 'cikis_testi_sonuc_list' test.id %}" class="btn btn-info btn-sm ms-2">Tüm Sonuçları Gör</a>
+    </div>
+</div>
+{% endblock %}

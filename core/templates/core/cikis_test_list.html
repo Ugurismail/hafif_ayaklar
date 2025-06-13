@@ -1,0 +1,32 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Çıkış Testleri</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Test Başlığı</th>
+                <th>Sahibi</th>
+                <th>Toplam Soru</th>
+                <th>Çöz</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for test in tests %}
+            <tr>
+                <td>{{ test.title }}</td>
+                <td>{{ test.owner.username }}</td>
+                <td>{{ test.soru_sayisi }}</td>
+                <td>
+                    <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-sm btn-primary">Çöz</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">Henüz test yok.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

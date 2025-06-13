@@ -1,0 +1,12 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h3>Soruyu Düzenle</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a href="{% url 'cikis_testi_detail' soru.test.id %}" class="btn btn-secondary ms-2">Geri Dön</a>
+    </form>
+</div>
+{% endblock %}

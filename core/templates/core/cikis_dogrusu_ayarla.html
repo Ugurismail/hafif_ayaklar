@@ -1,0 +1,11 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container">
+  <h4>Çıkış Doğrusunu Ayarla</h4>
+  <form method="post">
+    {% csrf_token %}
+    <input type="number" name="cikis_dogrusu" class="form-control" min="0" max="{{ test.sorular.count }}" value="{{ test.cikis_dogrusu|default:'' }}">
+    <button class="btn btn-success mt-2">Kaydet</button>
+  </form>
+</div>
+{% endblock %}

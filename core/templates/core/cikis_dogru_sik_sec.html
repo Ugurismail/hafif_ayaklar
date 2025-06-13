@@ -1,0 +1,16 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container">
+    <h4>Doğru Şık Seç ({{ soru.question_text|truncatechars:40 }})</h4>
+    <form method="post">
+        {% csrf_token %}
+        {% for sik in siklar %}
+        <div class="form-check">
+            <input type="radio" name="correct_option" id="sik{{ sik.id }}" value="{{ sik.id }}" {% if soru.correct_option and sik.id == soru.correct_option.id %}checked{% endif %}>
+            <label class="form-check-label" for="sik{{ sik.id }}">{{ sik.text }}</label>
+        </div>
+        {% endfor %}
+        <button class="btn btn-success mt-2">Kaydet</button>
+    </form>
+</div>
+{% endblock %}

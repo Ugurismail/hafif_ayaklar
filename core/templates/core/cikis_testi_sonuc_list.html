@@ -1,0 +1,52 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ test.title }} – Sonuçlar</h2>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Kullanıcı</th>
+                <th>Doğru Sayısı</th>
+                <th>Tarih</th>
+                <th>Çıkış Doğrusuna Uyum</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sonuc in sonuclar %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>
+                  {% if sonuc.user == user %}
+                    <b>Sen (<i class="bi bi-person"></i>)</b>
+                    <form action="{% url 'cikis_sonuc_sil' sonuc.id %}" method="post" class="d-inline-block" onsubmit="return confirm('Sonucunuzu silmek istediğinize emin misiniz?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-danger ms-1">Sil</button>
+                    </form>
+                  {% else %}
+                    <span style="font-size:1.3em; color:#ffd700;">&#9733; Anonim</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <b>{{ sonuc.dogru_sayisi }}</b> / {{ sonuc.toplam_soru }}
+                </td>
+                <td>
+                  {{ sonuc.completed_at|date:"d.m.Y H:i" }}
+                </td>
+                <td>
+                  {% if sonuc.cikis_dogrusu_uydu %}
+                    <span class="badge bg-success">Ulaştı</span>
+                  {% else %}
+                    <span class="badge bg-danger">Ulaşamadı</span>
+                  {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">Henüz kimse bu testi çözmedi.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'cikis_test_list' %}" class="btn btn-secondary btn-sm">Tüm Testlere Dön</a>
+    <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-primary btn-sm ms-2">Tekrar Çöz</a>
+</div>
+{% endblock %}

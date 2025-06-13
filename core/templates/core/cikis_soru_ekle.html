@@ -1,0 +1,11 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container">
+    <h3>Soru Ekle ({{ test.title }})</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-success">Kaydet</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container">
+  <h2>{{ test.title }} (Testi Çöz)</h2>
+  <form method="post">
+    {% csrf_token %}
+    {% for soru in sorular %}
+    <div class="mb-3">
+      <strong>{{ forloop.counter }}. {{ soru.question_text }}</strong>
+      {% for sik in soru.siklar.all %}
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="soru_{{ soru.id }}" value="{{ sik.id }}" id="sik-{{ sik.id }}">
+        <label class="form-check-label" for="sik-{{ sik.id }}">{{ sik.text }}</label>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <button class="btn btn-success">Testi Bitir</button>
+  </form>
+</div>
+{% endblock %}
