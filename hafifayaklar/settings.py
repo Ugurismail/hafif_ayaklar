@@ -5,13 +5,15 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-4m3!p5t!fy=$22i7m==v!z$d#4-yq33=*1u_^e^=@cot@+9q))'
+
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4m3!p5t!fy=$22i7m==v!z$d#4-yq33=*1u_^e^=@cot@+9q))')
+
 
 DEBUG = False
 
 # DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost',"*"]
+ALLOWED_HOSTS = ['www.hafifayaklar.com']
 
 # CSRF_COOKIE_SECURE = True
 # SESSION_COOKIE_SECURE = True
@@ -96,17 +98,11 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 #         }
 #     }
 import os
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
-if os.environ.get('RAILWAY_ENVIRONMENT'):
+if DATABASE_URL:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME':     'railway',
-            'USER':     'postgres',
-            'PASSWORD': 'XprTxhczCKajioDZUqzoEJYHLIzwPSGo',
-            'HOST':     'postgres.railway.internal',
-            'PORT':     '5432',
-        }
+        'default': dj_database_url.parse(DATABASE_URL)
     }
 else:
     DATABASES = {
