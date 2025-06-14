@@ -84,9 +84,29 @@ WSGI_APPLICATION = 'hafifayaklar.wsgi.application'
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
-if DATABASE_URL:
+# if DATABASE_URL:
+#     DATABASES = {
+#         'default': dj_database_url.config(default=DATABASE_URL)
+#     }
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'db.sqlite3',
+#         }
+#     }
+import os
+
+if os.environ.get('RAILWAY_ENVIRONMENT'):
     DATABASES = {
-        'default': dj_database_url.config(default=DATABASE_URL)
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME':     'railway',
+            'USER':     'postgres',
+            'PASSWORD': 'XprTxhczCKajioDZUqzoEJYHLIzwPSGo',
+            'HOST':     'postgres.railway.internal',
+            'PORT':     '5432',
+        }
     }
 else:
     DATABASES = {
@@ -95,6 +115,8 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
