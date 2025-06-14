@@ -4,44 +4,97 @@
 
 {% block extra_css %}
 <style>
-/* Süresi geçmiş anketlerin kompakt kartı */
+.expired-poll-cards-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: flex-start;
+  align-items: stretch;
+}
 .expired-poll-card {
-    border: 1px solid #bdbdbd !important;
-    border-radius: 7px;
-    background: #fcfcfc;
-    margin-bottom: 12px;
-    padding: 10px 10px 6px 10px;
-    min-height: 92px;
-    box-shadow: 0 1px 3px rgba(80,80,80,0.04);
+  min-width: 230px;
+  max-width: 320px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1.5px solid #e6e8ef;
+  box-shadow: 0 1.5px 10px rgba(60,75,100,0.07);
+  margin-bottom: 0;
+  padding: 17px 20px 13px 20px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: box-shadow 0.15s, border 0.15s;
 }
-.expired-poll-card .card-title {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.expired-poll-card:hover {
+  box-shadow: 0 4px 20px rgba(80,110,220,0.12), 0 1.5px 4.5px rgba(0,0,0,0.05);
+  border: 1.5px solid #8fb7ed;
 }
-.expired-poll-card .list-group-item {
-    border: none;
-    padding: 3px 2px 3px 0;
-    font-size: 0.97rem;
-    background: transparent;
+.expired-poll-badge {
+  position: absolute;
+  top: 8px;            /* daha yukarıda ve başlıktan uzak */
+  right: 12px;
+  background: rgba(251,238,217, 0.68); /* daha şeffaf */
+  color: #b48b1e;
+  padding: 1px 8px 1px 7px;
+  font-size: 0.79rem;  /* daha küçük */
+  border-radius: 9px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: none;
 }
-.expired-poll-card .expired-poll-option-percent {
-    font-size: 0.96rem;
-    margin-left: 7px;
+
+.poll-title {
+  font-size: 1.12rem;
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: #224060;
+  line-height: 1.32;
+  word-break: break-word;
 }
-@media (min-width: 992px) {
-  .expired-poll-col { width: 24%; float: left; margin-right:1%; }
-  .expired-poll-col:nth-child(4n) { margin-right:0; }
+.poll-meta-date {
+  font-size: 0.97rem;
+  color: #8c99ad;
+  margin-bottom: 7px;
 }
-@media (max-width: 991px) {
-  .expired-poll-col { width: 48%; float: left; margin-right:2%; }
-  .expired-poll-col:nth-child(2n) { margin-right:0; }
+.expired-poll-options {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.expired-poll-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 0.99rem;
+  border-bottom: 1px dashed #e6e8ef;
+}
+.expired-poll-option:last-child {
+  border-bottom: none;
+}
+.expired-poll-option-text {
+  font-weight: 500;
+  color: #2d4769;
+}
+.expired-poll-option-percent {
+  font-size: 0.98rem;
+  margin-left: 10px;
+  color: #5e88d2;
+  font-weight: 500;
+  min-width: 38px;
+  text-align: right;
+}
+@media (max-width: 900px) {
+  .expired-poll-cards-wrap { gap: 10px; }
+  .expired-poll-card { min-width: 150px; max-width: 100%; flex: 1 1 47vw; }
 }
 @media (max-width: 600px) {
-  .expired-poll-col { width: 100%; float: none; margin-right:0; }
+  .expired-poll-cards-wrap { flex-direction: column; gap: 8px; }
+  .expired-poll-card { min-width: 0; width: 100%; max-width: 100%; }
 }
 </style>
 {% endblock extra_css %}
@@ -67,51 +120,52 @@
   </ul>
 
   <div class="tab-content mt-3" id="pollTabsContent">
-
     <!-- Aktif Anketler -->
     <div class="tab-pane fade show active" id="active-polls" role="tabpanel" aria-labelledby="active-polls-tab">
-      <div class="row">
-        {% for poll in active_polls %}
-        <div class="col-md-4 mb-3">
-          <div class="card">
+      <div class="row g-4">
+        {% for apoll in active_polls_data %}
+        <div class="col-12 col-md-6 col-lg-4 d-flex">
+          <div class="card flex-fill" style="border-radius: 14px;">
             <div class="card-body">
-              <h5>{{ poll.question_text }}</h5>
-              <p>Bitiş tarihi: {{ poll.end_date|date:"Y-m-d H:i" }}</p>
-              <div class="d-flex gap-2">
-                {% if poll.related_question %}
-                  <a href="{% url 'poll_question_redirect' poll.id %}" class="btn btn-primary flex-fill">Anket Başlığına Git</a>
+              <h5 class="card-title" style="font-weight:600;">{{ apoll.poll.question_text }}</h5>
+              <p class="card-subtitle mb-2 text-muted">Bitiş tarihi: {{ apoll.poll.end_date|date:"Y-m-d H:i" }}</p>
+              <div class="mb-3">
+                {% if apoll.poll.related_question %}
+                  <a href="{% url 'poll_question_redirect' apoll.poll.id %}" class="btn btn-primary btn-sm me-2">Anket Başlığına Git</a>
                 {% else %}
-                  <a href="{% url 'poll_question_redirect' poll.id %}" class="btn btn-primary flex-fill">Anket Başlığı Oluştur</a>
+                  <a href="{% url 'poll_question_redirect' apoll.poll.id %}" class="btn btn-primary btn-sm me-2">Anket Başlığı Oluştur</a>
                 {% endif %}
-                <button class="btn btn-secondary flex-fill" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#poll-details-{{ poll.id }}" aria-expanded="false"
-                        aria-controls="poll-details-{{ poll.id }}">
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#poll-details-{{ apoll.poll.id }}" aria-expanded="false"
+                        aria-controls="poll-details-{{ apoll.poll.id }}">
                   Detayları Göster
                 </button>
               </div>
-              <div class="collapse mt-2" id="poll-details-{{ poll.id }}">
-                <h6>Seçenekler:</h6>
-                <ul class="list-group list-group-flush">
-                  {% for opt in poll.options.all %}
+              <div class="collapse" id="poll-details-{{ apoll.poll.id }}">
+                <h6 class="fw-bold">Seçenekler:</h6>
+                <ul class="list-group list-group-flush mb-2">
+                  {% for opt in apoll.options_data %}
                   <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ opt.option_text }}
-                    {% if poll.is_active and not poll.options.all|user_has_voted:request.user %}
-                      <a href="{% url 'vote_poll' poll.id opt.id %}" class="btn btn-sm btn-success">Oy Ver</a>
-                    {% endif %}
+                    <span>{{ opt.option.option_text }}</span>
+                    <span>
+                      %{{ opt.percentage|floatformat:1 }} ({{ opt.votes }} oy)
+                      {% if apoll.poll.is_active and not apoll.poll.options.all|user_has_voted:request.user %}
+                        <a href="{% url 'vote_poll' apoll.poll.id opt.option.id %}" class="btn btn-sm btn-success ms-2">Oy Ver</a>
+                      {% endif %}
+                    </span>
                   </li>
                   {% endfor %}
                 </ul>
                 <div class="mt-3">
                   <!-- Donut Grafik (Chart.js) -->
-                  <canvas id="pollChart-{{ poll.id }}" width="200" height="200"></canvas>
-                  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                  <canvas id="pollChart-{{ apoll.poll.id }}" width="200" height="200"></canvas>
                   <script>
                     document.addEventListener('DOMContentLoaded', function() {
-                      var ctx = document.getElementById('pollChart-{{ poll.id }}').getContext('2d');
+                      var ctx = document.getElementById('pollChart-{{ apoll.poll.id }}').getContext('2d');
                       var data = {
-                        labels: [{% for opt in poll.options.all %}"{{ opt.option_text|escapejs }}",{% endfor %}],
+                        labels: [{% for opt in apoll.options_data %}"{{ opt.option.option_text|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}],
                         datasets: [{
-                          data: [{% for opt in poll.options.all %}{{ opt.votes.count }},{% endfor %}],
+                          data: [{% for opt in apoll.options_data %}{{ opt.votes }}{% if not forloop.last %},{% endif %}{% endfor %}],
                           backgroundColor: ['#007bff','#6c757d','#28a745','#dc3545','#ffc107','#17a2b8','#f8f9fa','#343a40','#fd7e14','#e83e8c']
                         }]
                       };
@@ -122,12 +176,12 @@
                     });
                   </script>
                 </div>
-                {% if not poll.is_anonymous %}
+                {% if not apoll.poll.is_anonymous %}
                   <h6 class="mt-3">Oy Kullananlar:</h6>
                   <ul>
-                    {% for opt in poll.options.all %}
-                      {% for v in opt.votes.all %}
-                        <li>{{ v.user.username }} -> {{ opt.option_text }}</li>
+                    {% for opt in apoll.options_data %}
+                      {% for v in opt.option.votes.all %}
+                        <li>{{ v.user.username }} -> {{ opt.option.option_text }}</li>
                       {% endfor %}
                     {% endfor %}
                   </ul>
@@ -137,46 +191,37 @@
           </div>
         </div>
         {% empty %}
-        <p>Henüz aktif anket yok. İlk anketi siz oluşturun!</p>
+        <div class="col-12"><p>Henüz aktif anket yok. İlk anketi siz oluşturun!</p></div>
         {% endfor %}
       </div>
     </div>
 
     <!-- Süresi Geçmiş Anketler -->
     <div class="tab-pane fade" id="expired-polls" role="tabpanel" aria-labelledby="expired-polls-tab">
-      <!-- Arama Kutusu -->
       <div class="mb-3">
         <input type="text" id="expiredPollSearch" class="form-control" placeholder="Anket başlığına göre ara...">
       </div>
-      {% if expired_polls_data %}
-      <div class="row" id="expiredPollsRow">
+      <div class="expired-poll-cards-wrap" id="expiredPollsRow">
         {% for epoll in expired_polls_data %}
-          <div class="expired-poll-col" data-title="{{ epoll.poll.question_text|lower }}">
-            <div class="card expired-poll-card h-100">
-              <div class="card-body py-2 px-2">
-                <div class="card-title">{{ epoll.poll.question_text }}</div>
-                <div class="mb-1 text-muted" style="font-size:0.89rem;">{{ epoll.poll.end_date|date:"Y-m-d H:i" }}</div>
-                {% if epoll.options_data %}
-                  <ul class="list-group list-group-flush">
-                    {% for opt_data in epoll.options_data %}
-                      <li class="list-group-item d-flex justify-content-between align-items-center expired-poll-option">
-                        <span class="expired-poll-option-text" style="flex:1;">{{ opt_data.text }}</span>
-                        <span class="expired-poll-option-percent text-secondary">%{{ opt_data.percentage }}</span>
-                      </li>
-                    {% endfor %}
-                  </ul>
-                {% else %}
-                  <div class="text-secondary" style="font-size:0.93rem;">Hiç oy yok</div>
-                {% endif %}
-              </div>
+          <div class="expired-poll-card" data-title="{{ epoll.poll.question_text|lower }}">
+            <span class="expired-poll-badge">Süresi Geçti</span>
+            <div class="poll-title">{{ epoll.poll.question_text }}</div>
+            <div class="poll-meta-date">{{ epoll.poll.end_date|date:"Y-m-d H:i" }}</div>
+            <div class="expired-poll-options">
+              {% for opt_data in epoll.options_data %}
+                <div class="expired-poll-option">
+                  <span class="expired-poll-option-text">{{ opt_data.text }}</span>
+                  <span class="expired-poll-option-percent">%{{ opt_data.percentage }}</span>
+                </div>
+              {% endfor %}
             </div>
           </div>
+        {% empty %}
+          <div>Hiç eski anket yok!</div>
         {% endfor %}
       </div>
-      {% else %}
-        <p>Henüz süresi geçmiş anket yok.</p>
-      {% endif %}
     </div>
+    
   </div>
 </div>
 
@@ -198,21 +243,21 @@
               {{ form.question_text }}
               <div class="invalid-feedback">Anket sorusu boş bırakılamaz.</div>
               {% if form.question_text.errors %}
-                <div class="text-danger">{{ form.question_text.errors }}</div>
+              <div class="text-danger">{{ form.question_text.errors }}</div>
               {% endif %}
             </div>
             <div class="mb-3">
               {{ form.end_date.label_tag }}
               {{ form.end_date }}
               {% if form.end_date.errors %}
-                <div class="text-danger">{{ form.end_date.errors }}</div>
+              <div class="text-danger">{{ form.end_date.errors }}</div>
               {% endif %}
             </div>
             <div class="form-check mb-3">
               {{ form.is_anonymous }}
               {{ form.is_anonymous.label_tag }}
               {% if form.is_anonymous.errors %}
-                <div class="text-danger">{{ form.is_anonymous.errors }}</div>
+              <div class="text-danger">{{ form.is_anonymous.errors }}</div>
               {% endif %}
             </div>
             <button type="button" class="btn btn-primary" id="toStep2Btn">İleri</button>
@@ -225,14 +270,14 @@
                 {{ form.option_1.label_tag }}
                 {{ form.option_1 }}
                 {% if form.option_1.errors %}
-                  <div class="text-danger">{{ form.option_1.errors }}</div>
+                <div class="text-danger">{{ form.option_1.errors }}</div>
                 {% endif %}
               </div>
               <div class="mb-2" id="optionField2">
                 {{ form.option_2.label_tag }}
                 {{ form.option_2 }}
                 {% if form.option_2.errors %}
-                  <div class="text-danger">{{ form.option_2.errors }}</div>
+                <div class="text-danger">{{ form.option_2.errors }}</div>
                 {% endif %}
               </div>
               {% for i in "3,4,5,6,7,8,9,10"|split:"," %}
@@ -273,17 +318,17 @@ document.addEventListener('DOMContentLoaded', function() {
   var toStep2Btn = document.getElementById('toStep2Btn');
   var backToStep1Btn = document.getElementById('backToStep1Btn');
   toStep2Btn.addEventListener('click', function() {
-  var questionInput = document.querySelector('[name="question_text"]');
-  if (!questionInput.value.trim()) {
-    questionInput.classList.add('is-invalid');
-    questionInput.focus();
-    return; // İkinci adıma geçişi engelle!
-  } else {
-    questionInput.classList.remove('is-invalid');
-    step1.style.display = 'none';
-    step2.style.display = 'block';
-  }
-});
+    var questionInput = document.querySelector('[name="question_text"]');
+    if (!questionInput.value.trim()) {
+      questionInput.classList.add('is-invalid');
+      questionInput.focus();
+      return;
+    } else {
+      questionInput.classList.remove('is-invalid');
+      step1.style.display = 'none';
+      step2.style.display = 'block';
+    }
+  });
   if(backToStep1Btn) {
     backToStep1Btn.addEventListener('click', function() {
       step2.style.display = 'none';
@@ -308,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (pollSearch) {
     pollSearch.addEventListener('input', function() {
       var searchValue = pollSearch.value.trim().toLowerCase();
-      var pollCards = document.querySelectorAll('#expiredPollsRow .expired-poll-col');
+      var pollCards = document.querySelectorAll('#expiredPollsRow .expired-poll-card');
       pollCards.forEach(function(card) {
         var title = card.getAttribute('data-title');
         card.style.display = (!searchValue || title.includes(searchValue)) ? '' : 'none';
@@ -317,5 +362,4 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
-
 {% endblock extra_js %}

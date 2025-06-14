@@ -1982,6 +1982,21 @@ def polls_home(request):
     # Süresi geçmiş anketler (end_date <= şu an)
     expired_polls = Poll.objects.filter(end_date__lte=timezone.now()).order_by('-created_at')
 
+    active_polls_data = []
+    for poll in active_polls:
+        total_votes = sum(opt.votes.count() for opt in poll.options.all())
+        options_data = []
+        for opt in poll.options.all():
+            options_data.append({
+                'option': opt,
+                'votes': opt.votes.count(),
+                'percentage': (100 * opt.votes.count() / total_votes) if total_votes > 0 else 0
+            })
+        active_polls_data.append({
+            'poll': poll,
+            'total_votes': total_votes,
+            'options_data': options_data,
+        })
     # Süresi geçmiş anketler için yüzdeleri hesaplayalım
     expired_polls_data = []
     for poll in expired_polls:
@@ -2001,11 +2016,13 @@ def polls_home(request):
             'options_data': options_data
         })
 
+
     form = PollForm()
     return render(request, 'core/polls.html', {
         'active_polls': active_polls,
         'expired_polls_data': expired_polls_data,
-        'form': form
+        'form': form,
+        'active_polls_data': active_polls_data,
     })
 
 @login_required

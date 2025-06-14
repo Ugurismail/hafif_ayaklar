@@ -15,6 +15,7 @@
     <!-- Özel CSS -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    {% block extra_css %}{% endblock extra_css %}
     {% if user.is_authenticated %}
     <style>
         @import url("https://fonts.googleapis.com/css?family={{ user.userprofile.font_family|urlencode }}");

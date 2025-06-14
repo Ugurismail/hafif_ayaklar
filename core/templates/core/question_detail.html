@@ -800,7 +800,7 @@
     });
 });
   </script>
-
+<!-- poll -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
   
@@ -811,6 +811,21 @@
   
     const openMap = new Map();   // pollId → {instance, hideTimer}
   
+
+    function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
     function show(icon, pid){
       fetch(popTpl.replace('0', pid))
         .then(r => r.json())
@@ -850,19 +865,28 @@
       const f=e.target, pid=f.dataset.pollId, fd=new FormData(f);
       fetch(voteTpl.replace('0', pid), {
         method:'POST', body:fd, credentials:'same-origin',
-        headers:{'X-CSRFToken': fd.get('csrfmiddlewaretoken')}
+        headers:{'X-CSRFToken': getCookie('csrftoken')}
+
       })
       .then(r=>r.json())
       .then(d=>{
         const o=openMap.get(pid);
         if(o){
           o.instance.getTipElement().querySelector('.popover-body').innerHTML = d.html;
+          // Otomatik kapat: (oy kullanımı başarılıysa)
+          if (d.html.includes("Oyunuz kaydedildi")) {
+            setTimeout(()=>{
+              o.instance.hide();
+              openMap.delete(pid);
+            }, 750); 
+          }
         }
       });
     });
   
   });
   </script>
+
 <script>
 document.getElementById('sabaha-birak-btn').onclick = function(e) {
     e.preventDefault();
