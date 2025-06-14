@@ -128,6 +128,8 @@ urlpatterns = [
     path('cikis_testleri/sonuc/<int:sonuc_id>/sil/', views.cikis_sonuc_sil, name='cikis_sonuc_sil'),
     path('cikis_testleri/soru/<int:soru_id>/edit/', views.cikis_soru_edit, name='cikis_soru_edit'),
     path('cikis_testleri/soru/<int:soru_id>/sil/', views.cikis_soru_sil, name='cikis_soru_sil'),
+    path('cikis_testi/<int:test_id>/sil/', views.cikis_testi_sil, name='cikis_testi_sil'),
+
 
     
 

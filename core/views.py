@@ -3172,3 +3172,12 @@ def cikis_sonuc_sil(request, sonuc_id):
         # Normal redirect (eski usül link tıklandıysa)
         return redirect("cikis_testi_sonuc_list", test_id=sonuc.test.id)
     return HttpResponseForbidden("Geçersiz istek")
+
+
+@login_required
+def cikis_testi_sil(request, test_id):
+    test = get_object_or_404(CikisTesti, id=test_id, owner=request.user)
+    if request.method == "POST":
+        test.delete()
+        return redirect('cikis_testleri_list')  # Kullanıcının test listesine yönlendir
+    return render(request, 'core/cikis_testi_sil.html', {'test': test})
