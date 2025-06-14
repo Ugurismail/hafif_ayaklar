@@ -114,10 +114,10 @@ document.addEventListener('DOMContentLoaded', function () {
         svg = d3.select("#chart").append("svg")
             .attr("width", width).attr("height", height)
             .style("background", "#fafafa");
-
+    
         g = svg.append("g");
         userLabelGroup = g.append("g").attr("class", "user-labels");
-
+    
         // Zoom
         zoom = d3.zoom()
             .scaleExtent([0.05, 5])
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateNodeVisibility(event.transform.k);
             });
         svg.call(zoom);
-
+    
         // Ok marker
         var defs = svg.append("defs");
         defs.append("marker")
@@ -134,13 +134,13 @@ document.addEventListener('DOMContentLoaded', function () {
             .attr("refX", 25).attr("refY", 0).attr("orient", "auto")
             .attr("markerWidth", 6).attr("markerHeight", 6)
             .append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", "#999");
-
+    
         // Bağlantılar
         link = g.append("g").attr("class", "links")
             .selectAll("line").data(linksData).enter().append("line")
             .attr("stroke-width", 2).attr("stroke", "#999")
             .attr("marker-end", "url(#arrowhead)");
-
+    
         // Düğümler
         node = g.append("g").attr("class", "nodes")
             .selectAll("circle").data(nodesData).enter().append("circle")
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .call(d3.drag()
                 .on("start", dragstarted).on("drag", dragged).on("end", dragended)
             );
-
+    
         // Başlık etiketleri
         label = g.append("g").attr("class", "labels")
             .selectAll("text").data(nodesData).enter().append("text")
@@ -162,7 +162,8 @@ document.addEventListener('DOMContentLoaded', function () {
             .text(d => d.label)
             .style("font-size", d => (12 + d.users.length * 2) + "px")
             .style("fill", "#222");
-
+    
+        // Force simulation
         simulation = d3.forceSimulation(nodesData)
             .force("link", d3.forceLink(linksData)
                 .id(d => d.id)
@@ -172,18 +173,36 @@ document.addEventListener('DOMContentLoaded', function () {
             .force("center", d3.forceCenter(width / 2, height / 2))
             .force("collide", d3.forceCollide().radius(d => d.size * 1.3))
             .on("tick", ticked);
-
+    
+        // Sadece bir kez odaklama yapmak için
+        let zoomed = false;
+        simulation.on("tick", function() {
+            ticked();
+            if (!zoomed && focusQuestionId && simulation.alpha() < 0.03) {
+                let node = nodesData.find(n => String(n.question_id) === String(focusQuestionId));
+                if (node && typeof node.x === "number" && typeof node.y === "number") {
+                    zoomToNode(node);
+                    zoomed = true;
+                }
+            }
+        });
+        
+    
         updateNodeVisibility(1);
-
-        if (focusQuestionId) {
-            let node = nodesData.find(n => n.question_id == focusQuestionId);
-            if (node) zoomToNode(node);
-        }
-
+    
         svg.on("click", function () {
             if (userLabelGroup) userLabelGroup.selectAll("*").remove();
         });
+        if (focusQuestionId) {
+            setTimeout(function() {
+                let node = nodesData.find(n => String(n.question_id) === String(focusQuestionId));
+                if (node && typeof node.x === "number" && typeof node.y === "number") {
+                    zoomToNode(node);
+                }
+            }, 1000); // 1000 ms = 1 saniye bekle, gerekirse artır (1200-1500 ms deneyebilirsin)
+        }
     }
+    
 
     // Kart şeklinde kutu üstünde göster!
     function showNodeUserLabels(event, d) {

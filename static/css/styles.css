@@ -615,3 +615,35 @@ span.icon-number {
     #left-label, #right-label { font-size: 1.5rem; padding: 10px 10px; }
     #stimulus-word { font-size: 2.2rem; }
 }
+
+.site-badge-success, .site-badge-danger, .site-badge-info {
+    /* background-color: var(--button-background-color, #007bff); */
+    background-color: black !important;
+    color: var(--button-text-color, #ffffff);
+    padding: 0.2em 0.5em;
+    border-radius: 0.25em;
+    font-size: 0.8em;
+
+}
+.bg-success, .bg-primary {
+    background-color: var(--button-background-color, #007bff) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+.bg-danger{
+    background-color: var(--secondary-button-background-color, #6c757d) !important;
+    color: var(--secondary-button-text-color, #ffffff) !important;
+
+}
+.btn-outline-primary{
+    border-color: var(--button-background-color, #007bff) !important;
+    color: var(--button-background-color, #007bff) !important;
+}
+.btn-outline-primary:hover{
+    border-color: var(--button-hover-background-color, #0056b3) !important;
+    background-color: var(--button-background-color, #007bff) !important;
+    color: var(--button-text-color, #ffffff) !important;
+}
+.toast-body,.toast-header{
+    background-color: var(--background-color) !important;
+    color: var(--text-color) !important;
+}

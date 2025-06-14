@@ -1,14 +1,14 @@
 {% extends "core/base.html" %}
 {% block content %}
-<div class="container">
+<div class="container mt-5">
     <!-- Başlık ve üst menü -->
     <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
         <h2>{{ test.title }}</h2>
         <div>
-            <a href="{% url 'cikis_testi_sonuc_list' test.id %}" class="btn btn-info btn-sm ms-2">
+            <a href="{% url 'cikis_testi_sonuc_list' test.id %}" class="btn btn-primary btn-sm ms-2">
                 <i class="bi bi-bar-chart-line"></i> Sonuçları Gör
             </a>
-            <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-success btn-sm ms-2">
+            <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-secondary btn-sm ms-2">
                 <i class="bi bi-play-circle"></i> Testi Çöz
             </a>
             {% if user == test.owner %}
@@ -58,13 +58,13 @@
                 </td>
                 {% if user == test.owner %}
                 <td>
-                    <a class="btn btn-sm btn-outline-success" href="{% url 'cikis_dogru_sik_sec' soru.id %}">
+                    <a class="btn btn-sm btn-outline-primary" href="{% url 'cikis_dogru_sik_sec' soru.id %}">
                         <i class="bi bi-check2-circle"></i> Doğruyu Seç
                     </a>
                     <a class="btn btn-sm btn-outline-primary" href="{% url 'cikis_soru_edit' soru.id %}">
                         <i class="bi bi-pencil-square"></i> Düzenle
                     </a>
-                    <button class="btn btn-sm btn-danger" onclick="showDeleteModal({{ soru.id }}, '{{ soru.question_text|escapejs }}')">
+                    <button class="btn btn-sm btn-outline-primary" onclick="showDeleteModal({{ soru.id }}, '{{ soru.question_text|escapejs }}')">
                         <i class="bi bi-trash"></i> Sil
                     </button>
                 </td>
@@ -78,7 +78,7 @@
     <div class="mt-4">
         <strong>Çıkış doğrusu:</strong>
         {% if test.cikis_dogrusu %}
-            <span class="badge bg-info">{{ test.cikis_dogrusu }}</span>
+            <span class="badge bg-primary">{{ test.cikis_dogrusu }}</span>
             {% if user == test.owner %}
                 <form method="post" action="{% url 'cikis_dogrusu_ayarla' test.id %}" class="d-inline ms-2">
                     {% csrf_token %}
@@ -127,8 +127,8 @@
             <p>Bu soruyu silmek istediğinize emin misiniz?</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
-            <button type="submit" class="btn btn-danger">Sil</button>
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Vazgeç</button>
+            <button type="submit" class="btn btn-secondary">Sil</button>
           </div>
         </form>
       </div>

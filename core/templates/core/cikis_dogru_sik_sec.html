@@ -1,6 +1,6 @@
 {% extends "core/base.html" %}
 {% block content %}
-<div class="container">
+<div class="container mt-5">
     <h4>Doğru Şık Seç ({{ soru.question_text|truncatechars:40 }})</h4>
     <form method="post">
         {% csrf_token %}
@@ -10,7 +10,7 @@
             <label class="form-check-label" for="sik{{ sik.id }}">{{ sik.text }}</label>
         </div>
         {% endfor %}
-        <button class="btn btn-success mt-2">Kaydet</button>
+        <button class="btn btn-primary mt-2">Kaydet</button>
     </form>
 </div>
 {% endblock %}

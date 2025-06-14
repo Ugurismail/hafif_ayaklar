@@ -6,7 +6,7 @@
   <p>Gerçekten <b>{{ test.title }}</b> adlı testi ve tüm sorularını kalıcı olarak silmek istiyor musunuz?</p>
   <form method="post">
     {% csrf_token %}
-    <button class="btn btn-danger" type="submit">Evet, Testi Sil</button>
+    <button class="btn btn-primary" type="submit">Evet, Testi Sil</button>
     <a href="{% url 'cikis_testi_detail' test.id %}" class="btn btn-secondary">Vazgeç</a>
   </form>
 </div>

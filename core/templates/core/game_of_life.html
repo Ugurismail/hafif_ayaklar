@@ -4,57 +4,98 @@
 {% block title %}Game of Life{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>Conway'in Yaşam Oyunu</h1>
-    <div class="row">
-        <!-- Oyun Alanı -->
-        <div class="col-md-7">
-            <canvas id="lifeCanvas" width="600" height="400" class="border"></canvas>
-            <div class="mt-2">
-                <button id="startBtn" class="btn btn-primary">Başlat</button>
-                <button id="stopBtn" class="btn btn-secondary">Durdur</button>
-                <button id="clearBtn" class="btn btn-danger">Temizle</button>
-            </div>
-        </div>
-        <!-- Açıklama Alanı -->
-        <div class="col-md-5">
-            <div class="card shadow-sm p-3 mb-4" style="background:#f8f9fa;">
-                <h5 class="card-title mb-2">Yaşam Oyunu Nedir?</h5>
-                <p>
-                    <b>Game of Life</b> veya Türkçesiyle <b>Yaşam Oyunu</b>, ünlü matematikçi <b>John Horton Conway</b> tarafından 1970 yılında ortaya atılmış, 
-                    hücresel otomata (cellular automaton) tabanlı bir simülasyon oyunudur. Her hamlede, hücrelerin yaşamı ve ölümü belirli kurallara göre değişir.
-                </p>
-                <h6>Kurallar</h6>
-                <ul>
-                    <li>Her hücre (kare), ya <b>canlı</b> (siyah) ya da <b>ölü</b> (beyaz) olabilir.</li>
-                    <li>Her turda, komşu hücrelerin durumu hücrenin bir sonraki durumda yaşayıp yaşamayacağını belirler.</li>
-                    <li>
-                        <b>Bir hücre:</b>
-                        <ul style="font-size:0.96em;">
-                            <li>Canlıysa ve komşularının sayısı 2 veya 3 ise yaşamaya devam eder.</li>
-                            <li>Canlıysa ve komşularının sayısı 2'den azsa (<i>yalnızlık</i>) ya da 3'ten fazlaysa (<i>kalabalık</i>) ölür.</li>
-                            <li>Ölüyse ve tam olarak 3 canlı komşusu varsa, <b>yeniden canlanır</b> (doğum).</li>
-                        </ul>
-                    </li>
-                </ul>
-                <h6>Nasıl Oynanır?</h6>
-                <ol>
-                    <li>Alan üstünde istediğiniz karelere tıklayarak hücreleri "canlı" (siyah) hale getirin.</li>
-                    <li><b>Başlat</b> tuşu ile simülasyonu başlatın.</li>
-                    <li><b>Durdur</b> ile istediğiniz an duraklatabilirsiniz.</li>
-                    <li><b>Temizle</b> ile tüm alanı sıfırlayabilirsiniz.</li>
-                </ol>
-                <p>
-                    Farklı desenler oluşturup, sonuçlarını gözlemleyebilir ve kendi "hayat formlarınızı" keşfedebilirsiniz!
-                    <br>
-                    <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" target="_blank" rel="noopener">Daha fazla bilgi</a>
-                </p>
-            </div>
-        </div>
+<div class="container my-5">
+  <h1 class="mb-4">Conway'in Yaşam Oyunu</h1>
+  <div class="row">
+    <!-- Oyun Alanı -->
+    <div class="col-lg-8 mb-4">
+      <!-- Alanı ve kareleri büyüttük -->
+      <canvas id="lifeCanvas" width="900" height="600" class="border rounded shadow" style="background: #fff;"></canvas>
+      <div class="mt-3 d-flex flex-wrap gap-2">
+        <button id="startBtn" class="btn btn-primary">Başlat</button>
+        <button id="stopBtn" class="btn btn-secondary">Durdur</button>
+        <button id="clearBtn" class="btn btn-danger">Temizle</button>
+
+      </div>
+      <small class="text-muted mt-2 d-block">Büyütmek/küçültmek için CTRL + mouse wheel kullanabilirsiniz.</small>
     </div>
+    <!-- Açıklama Alanı -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm p-3 mb-4" style="background:#f8f9fa;">
+        <h5 class="card-title mb-2">Yaşam Oyunu Nedir?</h5>
+        <p>
+          <b>Game of Life</b> veya Türkçesiyle <b>Yaşam Oyunu</b>, ünlü matematikçi <b>John Horton Conway</b> tarafından 1970 yılında ortaya atılmış, hücresel otomata tabanlı bir simülasyon oyunudur.
+        </p>
+        <h6>Kurallar</h6>
+        <ul>
+          <li>Her hücre (kare), <b>canlı</b> (siyah) ya da <b>ölü</b> (beyaz) olabilir.</li>
+          <li>Her turda, komşu hücrelerin durumu, hücrenin yaşayıp yaşamayacağını belirler.</li>
+          <li>
+            <b>Bir hücre:</b>
+            <ul style="font-size:0.95em;">
+              <li>Canlıysa ve komşularının sayısı 2 ya da 3 ise yaşamaya devam eder.</li>
+              <li>Canlıysa ve komşu sayısı 2'den az veya 3'ten fazla ise ölür.</li>
+              <li>Ölüyse ve tam 3 canlı komşusu varsa, doğar.</li>
+            </ul>
+          </li>
+        </ul>
+        <h6>Nasıl Oynanır?</h6>
+        <ol>
+          <li>İstediğiniz hücreye tıklayarak "canlı" (siyah) yapın.</li>
+          <li><b>Başlat</b> ile simülasyonu çalıştırın, <b>Durdur</b> ile durdurun.</li>
+          <li><b>Temizle</b> ile alanı sıfırlayın.</li>
+        </ol>
+        <h6>Glider (Kaykaycı) Nasıl Yapılır?</h6>
+        <ul>
+          <li><b>Glider</b>, kendini hareket ettiren en basit ve en meşhur Yaşam Oyunu desenidir.</li>
+          <li>Aşağıdaki gibi (soldan sağa, yukarıdan aşağıya) 5 canlı hücreyi dizin:</li>
+        </ul>
+        <div style="font-family:monospace;line-height:1.2;background:#eee;padding:8px 16px;border-radius:8px;display:inline-block;">
+          . ■ . <br>
+          . . ■ <br>
+          ■ ■ ■
+        </div>
+        <ul class="mt-2 mb-1">
+          <li>Bunu kolayca denemek için sağdaki <b>Glider'ı Ekle</b> butonunu kullanabilirsin.</li>
+          <li>İstersen kendin de yukarıdaki düzende kutuları siyaha tıklayarak işaretleyebilirsin.</li>
+        </ul>
+        <p>
+          <a href="https://en.wikipedia.org/wiki/Glider_(Conway%27s_Life)" target="_blank" rel="noopener">Glider hakkında daha fazla bilgi</a>
+        </p>
+        <hr>
+        <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" target="_blank" rel="noopener">Game of Life hakkında daha fazla bilgi</a>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/game_of_life.js' %}"></script>
+<script>
+/**
+ * Glider yerleştirici: 
+ * (örnek kod, kendi JS dosyana da ekleyebilirsin)
+ * Glider'ı oyun alanının ortasına ekler.
+ */
+document.getElementById('gliderBtn').addEventListener('click', function() {
+    // Varsayalım ki window.gameOfLife nesnesi var ve .addPattern(x, y, pattern) fonksiyonu var
+    if (window.addGliderPattern) {
+        window.addGliderPattern();
+    } else if (window.gameOfLife && typeof window.gameOfLife.addPattern === 'function') {
+        // Modern yapı: gameOfLife.addPattern(row, col, patternArray)
+        const pattern = [
+            [0,1,0],
+            [0,0,1],
+            [1,1,1]
+        ];
+        // Oyun alanı 900x600, örnek olarak ortasına
+        const row = Math.floor(window.gameOfLife.rows/2)-1;
+        const col = Math.floor(window.gameOfLife.cols/2)-1;
+        window.gameOfLife.addPattern(row, col, pattern);
+    } else {
+        alert("Glider fonksiyonu, JS dosyanızda tanımlanmalı!");
+    }
+});
+</script>
 {% endblock %}

@@ -1,11 +1,69 @@
 const canvas = document.getElementById('lifeCanvas');
 const ctx = canvas.getContext('2d');
 const cellSize = 10;
-const cols = canvas.width / cellSize;
-const rows = canvas.height / cellSize;
+const cols = Math.floor(canvas.width / cellSize);
+const rows = Math.floor(canvas.height / cellSize);
+
 let grid = Array.from({length: rows}, () => Array(cols).fill(0));
 let running = false;
-let interval;
+let interval = null;
+
+// Toroidal (wrap-around) komşu sayma fonksiyonu
+const countNeighbors = (y, x) => {
+    let n = 0;
+    for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            // wrap-around ile komşu bak
+            const ny = (y + dy + rows) % rows;
+            const nx = (x + dx + cols) % cols;
+            n += grid[ny][nx];
+        }
+    }
+    return n;
+};
+
+const draw = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            ctx.strokeStyle = "#e0e0e0";
+            ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+            if (grid[y][x]) {
+                ctx.fillStyle = "#222";
+                ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+            }
+        }
+    }
+};
+
+const step = () => {
+    const newGrid = Array.from({length: rows}, () => Array(cols).fill(0));
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            const neighbors = countNeighbors(y, x);
+            if (grid[y][x]) {
+                newGrid[y][x] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
+            } else {
+                newGrid[y][x] = (neighbors === 3) ? 1 : 0;
+            }
+        }
+    }
+    grid = newGrid;
+    draw();
+};
+
+const start = () => {
+    if (!running) {
+        running = true;
+        interval = setInterval(step, 100);
+    }
+};
+
+const stop = () => {
+    running = false;
+    clearInterval(interval);
+};
 
 canvas.addEventListener('click', (e) => {
     const rect = canvas.getBoundingClientRect();
@@ -15,60 +73,10 @@ canvas.addEventListener('click', (e) => {
     draw();
 });
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-            if (grid[y][x]) {
-                ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-            }
-            ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
-        }
-    }
-}
-
-function step() {
-    const newGrid = grid.map(row => row.slice());
-    for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-            let neighbors = 0;
-            for (let j = -1; j <= 1; j++) {
-                for (let i = -1; i <= 1; i++) {
-                    if (i === 0 && j === 0) continue;
-                    const nx = x + i;
-                    const ny = y + j;
-                    if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
-                        neighbors += grid[ny][nx];
-                    }
-                }
-            }
-            if (grid[y][x]) {
-                if (neighbors < 2 || neighbors > 3) newGrid[y][x] = 0;
-            } else {
-                if (neighbors === 3) newGrid[y][x] = 1;
-            }
-        }
-    }
-    grid = newGrid;
-    draw();
-}
-
-function start() {
-    if (!running) {
-        running = true;
-        interval = setInterval(step, 100);
-    }
-}
-
-function stop() {
-    running = false;
-    clearInterval(interval);
-}
-
 document.getElementById('startBtn').addEventListener('click', start);
 document.getElementById('stopBtn').addEventListener('click', stop);
 document.getElementById('clearBtn').addEventListener('click', () => {
-    grid = grid.map(row => row.fill(0));
+    grid = Array.from({length: rows}, () => Array(cols).fill(0));
     draw();
 });
 

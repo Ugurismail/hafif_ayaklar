@@ -268,8 +268,8 @@
         width: 50px;
         height: 50px;
         border-radius: 50%;
-        background: #6E8CA7;
-        color: #fff;
+        background: var(--button-background-color, #007bff);
+        color: var(--button-text-color, #fff);
         font-size: 24px;
         text-align: center;
         line-height: 50px;
@@ -278,7 +278,8 @@
     }
 
     .floating-help-btn:hover {
-        background: #0056b3;
+        background: var(--button-hover-background-color, #0056b3);
+        color: var(--button-text-color, #fff);
     }
     </style>
 
@@ -305,7 +306,7 @@
         
         <!-- "Yeni cümle ekle" butonu -->
         <button type="button"
-                class="btn btn-success btn-sm me-2"
+                class="btn btn-primary btn-sm me-2"
                 id="addSentenceBtn"
                 data-bs-toggle="tooltip" 
                 data-bs-placement="top" 

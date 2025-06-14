@@ -1584,115 +1584,163 @@ def user_search(request):
     results = [{'id': user.id, 'username': user.username} for user in users]
     return JsonResponse({'results': results})
 
-
+@login_required
 def map_data_view(request):
     user_ids = request.GET.getlist('user_id')
     filter_param = request.GET.get('filter')
 
-    # Sadece başlangıç veya alt soru olanlar
+    # Sadece başlangıç sorusu VEYA alt soru olanlar (harita-question'ları)
     starting_question_ids = StartingQuestion.objects.values_list('question_id', flat=True)
     subquestion_ids = Question.objects.filter(parent_questions__isnull=False).values_list('id', flat=True)
     question_ids = set(starting_question_ids) | set(subquestion_ids)
 
+    # Sadece bu question'ları çek
+    queryset = Question.objects.filter(id__in=question_ids)
+
     # Filtre uygula
     if filter_param == 'me':
-        questions = Question.objects.filter(id__in=question_ids, user=request.user)
+        queryset = queryset.filter(users=request.user)
     elif user_ids:
-        questions = Question.objects.filter(id__in=question_ids, user__id__in=user_ids).distinct()
-    else:
-        questions = Question.objects.filter(id__in=question_ids)
+        queryset = queryset.filter(users__id__in=user_ids).distinct()
 
-    # Dönüş yap
-    data = generate_question_nodes(questions)
+    # Düğümleri oluştur ve JSON olarak döndür
+    data = generate_question_nodes(queryset)
     return JsonResponse(data, safe=False)
 
 def generate_question_nodes(questions):
+    nodes = []
+    links = []
+    question_ids = set(q.id for q in questions)
+
+    for question in questions:
+        user_entries = []
+        for user in question.users.all():
+            # Kullanıcının bu başlığa verdiği ilk cevabı bul
+            answer = question.answers.filter(user=user).order_by('created_at').first()
+            answer_id = answer.id if answer else None
+            user_entries.append({
+                "id": user.id,
+                "username": user.username,
+                "answer_id": answer_id,  # Gerekirse None olabilir!
+            })
+
+        user_ids = [entry["id"] for entry in user_entries]
+        node = {
+            "id": f"q{question.id}",
+            "label": question.question_text,
+            "users": user_entries,
+            "size": 20 + 10 * (len(user_entries) - 1),
+            "color": (
+                get_user_color(user_ids[0]) if len(user_ids) == 1 else
+                '#CCCCCC' if len(user_ids) > 1 else
+                '#000000'
+            ),
+            "question_id": question.id,
+            "question_ids": [question.id],
+        }
+        nodes.append(node)
+
+    for question in questions:
+        for subquestion in question.subquestions.all():
+            if subquestion.id in question_ids:
+                links.append({
+                    "source": f"q{question.id}",
+                    "target": f"q{subquestion.id}",
+                })
+
+    return {
+        "nodes": nodes,
+        "links": links,
+    }
+
+
+# def generate_question_nodes(questions):
     
 
-    nodes = {}
-    links = []
-    question_text_to_ids = defaultdict(list)
+#     nodes = {}
+#     links = []
+#     question_text_to_ids = defaultdict(list)
 
-    # Düğümleri oluştur
-    for question in questions:
-        key = question.question_text
-        question_text_to_ids[key].append(question.id)
-        if key not in nodes:
-            # Kullanıcıların yanıtlarını da getir
-            user_entries = []
-            # Bu soruya ait tüm yanıtları çek (user, answer_id)
-            answers = question.answers.all().select_related('user')
-            for answer in answers:
-                user_entries.append({
-                    "id": answer.user.id,
-                    "username": answer.user.username,
-                    "answer_id": answer.id,
-                })
+#     # Düğümleri oluştur
+#     for question in questions:
+#         key = question.question_text
+#         question_text_to_ids[key].append(question.id)
+#         if key not in nodes:
+#             # Kullanıcıların yanıtlarını da getir
+#             user_entries = []
+#             # Bu soruya ait tüm yanıtları çek (user, answer_id)
+#             answers = question.answers.all().select_related('user')
+#             for answer in answers:
+#                 user_entries.append({
+#                     "id": answer.user.id,
+#                     "username": answer.user.username,
+#                     "answer_id": answer.id,
+#                 })
 
-            user_ids = [entry["id"] for entry in user_entries]
-            node = {
-                "id": f"q{hash(key)}",
-                "label": question.question_text,
-                "users": user_entries,  # Burada artık her kullanıcı için answer_id de var
-                "size": 20 + 10 * (len(user_entries) - 1),
-                "color": '',
-                "question_id": question.id,
-                "question_ids": [question.id],
-            }
-            # Renk belirleme mantığı
-            if len(user_ids) == 1:
-                node["color"] = get_user_color(user_ids[0])
-            elif len(user_ids) > 1:
-                node["color"] = '#CCCCCC'
-            else:
-                node["color"] = '#000000'
-            nodes[key] = node
-        else:
-            # Kullanıcıları ve boyutu güncelle
-            existing_node = nodes[key]
-            # Mevcut ve yeni user_entries birleştirilir, answer_id ile benzersizleştirilebilir
-            new_user_entries = []
-            answers = question.answers.all().select_related('user')
-            for answer in answers:
-                new_user_entries.append({
-                    "id": answer.user.id,
-                    "username": answer.user.username,
-                    "answer_id": answer.id,
-                })
-            # Duplicate user id'leri önlemek için
-            user_dict = {entry["id"]: entry for entry in (existing_node["users"] + new_user_entries)}
-            combined_user_entries = list(user_dict.values())
-            existing_node["users"] = combined_user_entries
-            existing_node["size"] = 20 + 5 * (len(combined_user_entries) - 1)
-            existing_node["question_ids"].append(question.id)
-            # Renk güncelle
-            if len(combined_user_entries) == 1:
-                existing_node["color"] = get_user_color(combined_user_entries[0]["id"])
-            elif len(combined_user_entries) > 1:
-                existing_node["color"] = '#CCCCCC'
-            else:
-                existing_node["color"] = '#000000'
+#             user_ids = [entry["id"] for entry in user_entries]
+#             node = {
+#                 "id": f"q{hash(key)}",
+#                 "label": question.question_text,
+#                 "users": user_entries,  # Burada artık her kullanıcı için answer_id de var
+#                 "size": 20 + 10 * (len(user_entries) - 1),
+#                 "color": '',
+#                 "question_id": question.id,
+#                 "question_ids": [question.id],
+#             }
+#             # Renk belirleme mantığı
+#             if len(user_ids) == 1:
+#                 node["color"] = get_user_color(user_ids[0])
+#             elif len(user_ids) > 1:
+#                 node["color"] = '#CCCCCC'
+#             else:
+#                 node["color"] = '#000000'
+#             nodes[key] = node
+#         else:
+#             # Kullanıcıları ve boyutu güncelle
+#             existing_node = nodes[key]
+#             # Mevcut ve yeni user_entries birleştirilir, answer_id ile benzersizleştirilebilir
+#             new_user_entries = []
+#             answers = question.answers.all().select_related('user')
+#             for answer in answers:
+#                 new_user_entries.append({
+#                     "id": answer.user.id,
+#                     "username": answer.user.username,
+#                     "answer_id": answer.id,
+#                 })
+#             # Duplicate user id'leri önlemek için
+#             user_dict = {entry["id"]: entry for entry in (existing_node["users"] + new_user_entries)}
+#             combined_user_entries = list(user_dict.values())
+#             existing_node["users"] = combined_user_entries
+#             existing_node["size"] = 20 + 5 * (len(combined_user_entries) - 1)
+#             existing_node["question_ids"].append(question.id)
+#             # Renk güncelle
+#             if len(combined_user_entries) == 1:
+#                 existing_node["color"] = get_user_color(combined_user_entries[0]["id"])
+#             elif len(combined_user_entries) > 1:
+#                 existing_node["color"] = '#CCCCCC'
+#             else:
+#                 existing_node["color"] = '#000000'
 
-    # Bağlantılar
-    link_set = set()
-    for question in questions:
-        source_key = question.question_text
-        for subquestion in question.subquestions.all():
-            target_key = subquestion.question_text
-            if target_key in nodes:
-                link_id = (nodes[source_key]["id"], nodes[target_key]["id"])
-                if link_id not in link_set:
-                    links.append({
-                        "source": nodes[source_key]["id"],
-                        "target": nodes[target_key]["id"]
-                    })
-                    link_set.add(link_id)
+#     # Bağlantılar
+#     link_set = set()
+#     for question in questions:
+#         source_key = question.question_text
+#         for subquestion in question.subquestions.all():
+#             target_key = subquestion.question_text
+#             if target_key in nodes:
+#                 link_id = (nodes[source_key]["id"], nodes[target_key]["id"])
+#                 if link_id not in link_set:
+#                     links.append({
+#                         "source": nodes[source_key]["id"],
+#                         "target": nodes[target_key]["id"]
+#                     })
+#                     link_set.add(link_id)
 
-    question_nodes = {
-        "nodes": list(nodes.values()),
-        "links": links
-    }
-    return question_nodes
+#     question_nodes = {
+#         "nodes": list(nodes.values()),
+#         "links": links
+#     }
+#     return question_nodes
 
 
 @login_required

@@ -1,11 +1,12 @@
 {% extends "core/base.html" %}
 {% block content %}
-<div class="container">
+<div class="container mt-5">
+    {% if messages %}
     <h2>Yeni Çıkış Testi Oluştur</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button class="btn btn-success">Oluştur</button>
+        <button class="btn btn-primary">Oluştur</button>
     </form>
 </div>
 {% endblock %}

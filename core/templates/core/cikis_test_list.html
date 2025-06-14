@@ -1,6 +1,6 @@
 {% extends "core/base.html" %}
 {% block content %}
-<div class="container">
+<div class="container mt-5">
     <h2>Çıkış Testleri</h2>
     <table class="table">
         <thead>
@@ -19,7 +19,7 @@
                 <td>{{ test.soru_sayisi }}</td>
                 <td>
                     <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-sm btn-primary">Çöz</a>
-                    <a href="{% url 'cikis_testi_sil' test.id %}" class="btn btn-danger btn-sm">Testi Sil</a>
+                    <a href="{% url 'cikis_testi_sil' test.id %}" class="btn btn-secondary btn-sm">Testi Sil</a>
                 </td>
             </tr>
             {% empty %}
