@@ -118,12 +118,12 @@ def reference_link(text):
     reference_map = {}
     current_index = 1
 
-    pattern = r'\(kaynak:(\d+)(?:,\s*sayfa:(\d+))?\)'
+    pattern = r'\(kaynak:(\d+)(?:,\s*sayfa:([^)]+))?\)'
 
     def replace_reference(match):
         nonlocal current_index
         ref_id_str = match.group(1)
-        sayfa = match.group(2)  # Opsiyonel: None veya sayfa numarası
+        sayfa = match.group(2)  # Opsiyonel: None veya string (12-14, 123a vs.)
         ref_id = int(ref_id_str)
 
         if ref_id not in reference_map:
@@ -138,7 +138,7 @@ def reference_link(text):
             if ref_obj.abbreviation:
                 full_citation += f" [{ref_obj.abbreviation}]"
             if sayfa:
-                full_citation += f", s. {sayfa}"
+                full_citation += f", s. {sayfa.strip()}"
         except Reference.DoesNotExist:
             full_citation = f"Kaynak bulunamadı (ID: {ref_id})"
 

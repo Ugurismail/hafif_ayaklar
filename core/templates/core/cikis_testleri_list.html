@@ -5,9 +5,12 @@
     <a class="btn btn-primary mb-3" href="{% url 'cikis_testi_create' %}">Yeni Test Oluştur</a>
     <ul class="list-group">
         {% for test in testler %}
-        <li class="list-group-item">
-            <a href="{% url 'cikis_testi_detail' test.id %}">{{ test.title }}</a>
-            ({{ test.soru_sayisi }})
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <a href="{% url 'cikis_testi_detail' test.id %}">{{ test.title }}</a>
+                ({{ test.soru_sayisi }})
+            </div>
+            <a href="{% url 'cikis_testi_sil' test.id %}" class="btn btn-secondary btn-sm">Testi Sil</a>
         </li>
         {% empty %}
         <li class="list-group-item">Henüz testiniz yok.</li>

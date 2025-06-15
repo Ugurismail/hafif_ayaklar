@@ -448,11 +448,13 @@
                       </td>
                       <td>{{ definition.definition_text|truncatewords:25 }}</td>
                       <td>
+                        {% if definition.user == user %}
                         <a href="{% url 'edit_definition' definition.id %}?tab=tanimlar" class="btn btn-sm btn-primary">Düzenle</a>
                         <form action="{% url 'delete_definition' definition.id %}?tab=tanimlar" method="post" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Bu tanımı silmek istediğinize emin misiniz?');">Sil</button>
                         </form>
+                    {% endif %}
                       </td>
                     </tr>
                   {% endfor %}

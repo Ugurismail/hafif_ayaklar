@@ -3229,3 +3229,15 @@ def cikis_testi_sil(request, test_id):
         test.delete()
         return redirect('cikis_testleri_list')  # Kullanıcının test listesine yönlendir
     return render(request, 'core/cikis_testi_sil.html', {'test': test})
+
+@login_required
+def cikis_sik_edit(request, sik_id):
+    sik = get_object_or_404(CikisTestiSik, id=sik_id, soru__test__owner=request.user)
+    if request.method == "POST":
+        form = CikisTestiSikForm(request.POST, instance=sik)
+        if form.is_valid():
+            form.save()
+            return redirect('cikis_testi_detail', test_id=sik.soru.test.id)
+    else:
+        form = CikisTestiSikForm(instance=sik)
+    return render(request, 'core/cikis_sik_edit.html', {'form': form, 'sik': sik})

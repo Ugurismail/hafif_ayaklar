@@ -1,0 +1,12 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Şık Düzenle</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-primary">Kaydet</button>
+        <a class="btn btn-secondary" href="{% url 'cikis_testi_detail' test_id=sik.soru.test.id %}">Geri Dön</a>
+    </form>
+</div>
+{% endblock %}
