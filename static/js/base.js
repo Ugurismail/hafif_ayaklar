@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 2) Hiçbir sonuç "aktif" değil => 
             //    Kullanıcının girdiği metinle tam eşleşen bir "question" var mı diye bakalım.
-            const typed = searchInput.value.trim().toLowerCase();
+            const typed = searchInput.value.trim();
 
             // lastSearchResults içinde "text.toLowerCase() === typed" olan question var mı?
             let exactQuestion = lastSearchResults.find(res => {
