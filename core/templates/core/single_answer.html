@@ -26,11 +26,27 @@
         <div class="col-md-8">
             <!-- Soru Başlığı ve Harita İkonu -->
             <div class="action d-flex justify-content-between align-items-center">
-                <h2>{{ question.question_text }}
-                    <a href="{% url 'question_map' %}?question_id={{ question.id }}" title="Haritada Gör">
+                <h1 class="h1 mb-0">
+                    {{ question.question_text }}
+                  
+                    {# Haritada Gör butonu (mevcut özelliğin değişmedi) #}
+                    {% if is_on_map %}
+                      <a href="{% url 'question_map' %}?question_id={{ question.id }}" 
+                         class="ms-2 text-secondary topic-small-icon"
+                         title="Haritada Gör">
                         <i class="bi bi-geo-alt-fill"></i>
-                    </a>
-                </h2>
+                      </a>
+                    {% endif %}
+                  
+                    {# YENİ: Eğer bu başlık bir anketle ilişkiliyse, anket ikonunu göster #}
+                    {% with poll=question.poll_set.first %}
+                    {% if poll %}
+                    <span class="ms-2 poll-icon-wrapper" data-poll-id="{{ poll.id }}">
+                      <i class="bi bi-pie-chart poll-icon topic-small-icon"></i>
+                    </span>
+                    {% endif %}
+                  {% endwith %}
+                  </h1>
             </div>
 
             <!-- Soruya Oy Verme ve Kaydetme -->

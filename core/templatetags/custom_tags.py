@@ -134,7 +134,7 @@ def reference_link(text):
 
         try:
             ref_obj = Reference.objects.get(id=ref_id)
-            full_citation = f"{ref_obj.author_surname}, {ref_obj.author_name} ({ref_obj.year}). {ref_obj.rest}"
+            full_citation = f"{ref_obj.author_surname}, {ref_obj.author_name}.{ref_obj.metin_ismi} ({ref_obj.year}). {ref_obj.rest}"
             if ref_obj.abbreviation:
                 full_citation += f" [{ref_obj.abbreviation}]"
             if sayfa:

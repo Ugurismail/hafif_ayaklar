@@ -153,117 +153,149 @@
 
 <!-- SCRIPTS: Kaynak Ekle + Arama + (kaynak:ID) ekle -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // (A) Sekme butonları
-  const kaynakEkleTab = document.getElementById('kaynak-ekle-tab');
-  const kaynakSecTab  = document.getElementById('kaynak-sec-tab');
-
-  // (B) Form (Kaynak Ekle)
-  const kaynakForm    = document.getElementById('kaynakForm');
-
-  // (C) Arama (Kaynak Seç)
-  const kaynakAraInput       = document.getElementById('kaynakAraInput');
-  const kaynakListesi        = document.getElementById('kaynakListesi');
-  const seciliKaynakEkleBtn  = document.getElementById('seciliKaynakEkleBtn');
-
-  // --- 1) KAYNAK OLUŞTURMA (AJAX) ---
-  kaynakForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    let formData = new FormData(kaynakForm);
-
-    fetch("{% url 'create_reference' %}", {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-CSRFToken': "{{ csrf_token }}", // Django CSRF
-      },
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === 'success') {
-        alert("Kaynak başarıyla eklendi!");
-        kaynakForm.reset();
-        // Kaynak eklendikten sonra "Kaynak Seç" sekmesine geçip listeyi yenileyelim
-        kaynakSecTab.click();
-        kaynaklariListele('');
-      } else {
-        console.error(data.errors);
-        alert("Kaynak eklenirken hata oluştu:\n" + JSON.stringify(data.errors));
+  document.addEventListener('DOMContentLoaded', function() {
+      // Elemanları seç
+      const kaynakEkleTab    = document.getElementById('kaynak-ekle-tab');
+      const kaynakSecTab     = document.getElementById('kaynak-sec-tab');
+      const kaynakForm       = document.getElementById('kaynakForm');
+      const kaynakAraInput   = document.getElementById('kaynakAraInput');
+      const kaynakListesi    = document.getElementById('kaynakListesi');
+      const sayfaInput       = document.getElementById('kaynakSayfaInput');
+      const modalId          = 'kaynakRefModal';
+  
+      // =========================
+      // (1) KAYNAK OLUŞTURMA
+      // =========================
+      if (kaynakForm) {
+          kaynakForm.addEventListener('submit', function(e) {
+              e.preventDefault();
+              let formData = new FormData(kaynakForm);
+              fetch("{% url 'create_reference' %}", {
+                  method: 'POST',
+                  body: formData,
+                  headers: {
+                      'X-CSRFToken': "{{ csrf_token }}",
+                  },
+              })
+              .then(response => response.json())
+              .then(data => {
+                  if (data.status === 'success') {
+                      alert("Kaynak başarıyla eklendi!");
+                      kaynakForm.reset();
+                      if (kaynakSecTab) kaynakSecTab.click();
+                      kaynaklariListele('');
+                  } else {
+                      alert("Kaynak eklenirken hata:\n" + JSON.stringify(data.errors));
+                  }
+              })
+              .catch(err => {
+                  alert("Bir hata oluştu.");
+              });
+          });
       }
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Bir hata oluştu.");
-    });
+  
+      // =========================
+      // (2) KAYNAK ARA/SEÇ
+      // =========================
+      function kaynaklariListele(searchTerm='') {
+          const url = "{% url 'get_references' %}?q=" + encodeURIComponent(searchTerm);
+          fetch(url)
+          .then(response => response.json())
+          .then(data => {
+              kaynakListesi.innerHTML = '';
+              data.references.forEach(ref => {
+                  let label = document.createElement('label');
+                  label.classList.add('list-group-item');
+                  label.innerHTML = `
+                      <input type="radio" name="kaynakSecimi" value="${ref.id}" class="form-check-input me-2" />
+                      <span>${ref.display}</span>
+                  `;
+                  kaynakListesi.appendChild(label);
+              });
+          })
+          .catch(err => {
+              alert("Kaynak listesi yüklenirken hata oluştu.");
+          });
+      }
+  
+      // "Kaynak Seç" sekmesine tıklanınca arama kutusunu temizle ve tümünü getir
+      if (kaynakSecTab) {
+          kaynakSecTab.addEventListener('click', function() {
+              if (kaynakAraInput) kaynakAraInput.value = '';
+              kaynaklariListele('');
+          });
+      }
+  
+      // Arama kutusunda yazıldıkça filtrele
+      if (kaynakAraInput) {
+          kaynakAraInput.addEventListener('input', function() {
+              let searchTerm = kaynakAraInput.value.trim();
+              kaynaklariListele(searchTerm);
+          });
+      }
+  
+      // =========================
+      // (3) SEÇİLEN KAYNAĞI METNE EKLE
+      // =========================
+      // --- Her açılışta çift event olmaması için butonu klonla/bağla ---
+      function bindKaynakBtn() {
+          // En güncel butonu bul
+          const oldBtn = document.getElementById('seciliKaynakEkleBtn');
+          if (!oldBtn) return;
+  
+          // Klonla ve eski eventleri temizle
+          const newBtn = oldBtn.cloneNode(true);
+          oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+  
+          newBtn.addEventListener('click', function() {
+              const secili = document.querySelector('input[name="kaynakSecimi"]:checked');
+              if (!secili) {
+                  alert("Lütfen bir kaynak seçin.");
+                  return;
+              }
+              const refId = secili.value;
+              const sayfaInput = document.getElementById('kaynakSayfaInput');
+              let sayfaStr = sayfaInput ? sayfaInput.value.trim() : '';
+  
+              // Yanıt textarea'sı
+              const answerTextArea = document.getElementById('id_answer_text');
+              if (!answerTextArea) {
+                  alert("Yanıt metin alanı (#id_answer_text) bulunamadı!");
+                  return;
+              }
+              let ekMetin = sayfaStr ? ` (kaynak:${refId}, sayfa:${sayfaStr}) ` : ` (kaynak:${refId}) `;
+  
+              // İmleçte ekle (seçim varsa seçilen kısmı değiştir)
+              if (typeof answerTextArea.selectionStart === 'number') {
+                  const start = answerTextArea.selectionStart;
+                  const end = answerTextArea.selectionEnd;
+                  const val = answerTextArea.value;
+                  answerTextArea.value = val.slice(0, start) + ekMetin + val.slice(end);
+                  // İmleci eklenen bloğun sonuna taşı
+                  const caret = start + ekMetin.length;
+                  answerTextArea.selectionStart = answerTextArea.selectionEnd = caret;
+              } else {
+                  answerTextArea.value += ekMetin;
+              }
+  
+              // Modalı kapat
+              const myModal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+              if (myModal) myModal.hide();
+          });
+      }
+  
+      // Sayfa ilk açıldığında ve modal her açıldığında butonu bind et
+      bindKaynakBtn();
+  
+      // Modal her gösterildiğinde tekrar bind et (çift event önler)
+      const kaynakRefModal = document.getElementById(modalId);
+      if (kaynakRefModal) {
+          kaynakRefModal.addEventListener('shown.bs.modal', bindKaynakBtn);
+      }
+      // Kaynak sekmesine geçince de tekrar bind et (her ihtimale karşı)
+      if (kaynakSecTab) {
+          kaynakSecTab.addEventListener('click', bindKaynakBtn);
+      }
   });
-
-  // --- 2) KAYNAK ARA/SEÇ ---
-  // “Kaynak Seç” sekmesine geçildiğinde önce tüm kayıtları çekelim
-  kaynakSecTab.addEventListener('click', function() {
-    kaynakAraInput.value = '';
-    kaynaklariListele('');
-  });
-
-  // Arama kutusuna yazıldıkça listeyi filtrele
-  kaynakAraInput.addEventListener('input', function() {
-    let searchTerm = kaynakAraInput.value.trim();
-    kaynaklariListele(searchTerm);
-  });
-
-  function kaynaklariListele(searchTerm='') {
-    const url = "{% url 'get_references' %}?q=" + encodeURIComponent(searchTerm);
-
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        // Mevcut listeyi temizle
-        kaynakListesi.innerHTML = '';
-        // Dönen verileri listeye ekle
-        data.references.forEach(ref => {
-          let label = document.createElement('label');
-          label.classList.add('list-group-item');
-          label.innerHTML = `
-            <input type="radio" name="kaynakSecimi" value="${ref.id}" class="form-check-input me-2" />
-            <span>${ref.display}</span>
-          `;
-          kaynakListesi.appendChild(label);
-        });
-      })
-      .catch(err => {
-        console.error(err);
-        alert("Kaynak listesi yüklenirken hata oluştu.");
-      });
-  }
-
-  // --- 3) SEÇİLEN KAYNAĞI METNE EKLE ---
-  seciliKaynakEkleBtn.addEventListener('click', function() {
-    const secili = document.querySelector('input[name="kaynakSecimi"]:checked');
-    if (!secili) {
-      alert("Lütfen bir kaynak seçin.");
-      return;
-    }
-    const refId = secili.value;
-    
-      // Opsiyonel sayfa numarası alanını alalım
-  const sayfaInput = document.getElementById('kaynakSayfaInput');
-  let sayfaStr = sayfaInput ? sayfaInput.value.trim() : '';
-
-
-    // Yanıt textarea'sını bulalım (question_detail.html içinde <textarea id="id_answer_text">)
-    const answerTextArea = document.getElementById('id_answer_text');
-    if (!answerTextArea) {
-      alert("Yanıt metin alanı (#id_answer_text) bulunamadı!");
-      return;
-    }
-    // Metnin sonuna (kaynak:REF_ID) formatını ekle
-      // Eğer sayfa numarası girilmişse, onu da ekleyelim
-  if (sayfaStr) {
-    answerTextArea.value += ` (kaynak:${refId}, sayfa:${sayfaStr}) `;
-  } else {
-    answerTextArea.value += ` (kaynak:${refId}) `;
-  }
-    const myModal = bootstrap.Modal.getInstance(document.getElementById('kaynakRefModal'));
-    myModal.hide();
-  });
-});
-</script>
+  </script>
+  
