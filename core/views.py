@@ -1525,6 +1525,10 @@ def single_answer(request, question_id, answer_id):
     focused_answer = get_object_or_404(Answer, id=answer_id, question=question)
     all_questions = get_today_questions_queryset()
 
+    all_questions_qs = get_today_questions_queryset()
+    q_page_number = request.GET.get('q_page', 1)
+    q_paginator = Paginator(all_questions_qs, 20)
+    all_questions_page = q_paginator.get_page(q_page_number)
     # Tüm yanıtlar
     all_answers = Answer.objects.filter(question=question).select_related('user')
 
@@ -1574,7 +1578,8 @@ def single_answer(request, question_id, answer_id):
         'saved_answer_ids': saved_answer_ids,
         'answer_save_dict': answer_save_dict,
         'form': form,  # Yanıt ekleme formu
-        'all_questions': all_questions,
+        # 'all_questions': all_questions,
+        'all_questions_page': all_questions_page,
     }
     return render(request, 'core/single_answer.html', context)
 
@@ -3241,3 +3246,29 @@ def cikis_sik_edit(request, sik_id):
     else:
         form = CikisTestiSikForm(instance=sik)
     return render(request, 'core/cikis_sik_edit.html', {'form': form, 'sik': sik})
+
+
+def random_question_id(request):
+    ids = list(Question.objects.values_list('id', flat=True))
+    if not ids:
+        return JsonResponse({'question_id': None})
+    random_id = random.choice(ids)
+    return JsonResponse({'question_id': random_id})
+
+def shuffle_questions(request):
+    all_ids = list(Question.objects.values_list('id', flat=True))
+    if not all_ids:
+        return JsonResponse({'questions': []})
+    # Rastgele 20 id seç
+    sample_size = min(20, len(all_ids))
+    selected_ids = random.sample(all_ids, sample_size)
+    # Sırayı karıştır, başlıkları çek
+    questions = (Question.objects
+                 .filter(id__in=selected_ids)
+                 .values('id', 'question_text'))
+    # Rastgele sıralamayı korumak için shuffle
+    questions = list(questions)
+    random.shuffle(questions)
+    return JsonResponse({'questions': [
+        {'id': q['id'], 'text': q['question_text']} for q in questions
+    ]})

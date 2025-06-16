@@ -207,6 +207,16 @@ textarea.auto-expand.expanded {
     cursor: pointer;
 }
 
+.vote-btn2{
+    color: var(--icon-color, #6c757d) !important;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 1.2rem;
+    text-decoration: none !important;
+    cursor: pointer;
+}
+
 .vote-btn:hover,
 .save-btn:hover {
     color: var(--icon-hover-color, #343a40) !important;
@@ -647,3 +657,42 @@ span.icon-number {
     background-color: var(--background-color) !important;
     color: var(--text-color) !important;
 }
+
+#naber {
+    height: 80vh;  /* Ana container'ın yüksekliği */
+    min-height: 450px;
+}
+
+#naber > .row {
+    height: 100%;  /* Row tüm yüksekliği kaplasın */
+}
+
+@media (max-width: 991px) {
+    #naber, #naber > .row { height: auto; }
+}
+
+/* Sadece sol-scroll sınıfında scrollbar'ı özelleştirir */
+.sol-scroll div[style*="overflow-y:auto"]::-webkit-scrollbar {
+    width: 7px;
+    background: transparent;
+  }
+  
+  .sol-scroll div[style*="overflow-y:auto"]::-webkit-scrollbar-thumb {
+    background: rgba(110, 140, 167, 0.18);   /* Yarı şeffaf */
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .sol-scroll div[style*="overflow-y:auto"]:hover::-webkit-scrollbar-thumb,
+  .sol-scroll div[style*="overflow-y:auto"]:active::-webkit-scrollbar-thumb {
+    background: rgba(110, 140, 167, 0.38);   /* Scroll yapılınca biraz daha belirgin */
+  }
+  
+  /* Firefox için */
+  .sol-scroll div[style*="overflow-y:auto"] {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(110, 140, 167, 0.18) transparent;
+  }
+  .sol-scroll div[style*="overflow-y:auto"]:hover {
+    scrollbar-color: rgba(110, 140, 167, 0.38) transparent;
+  }
+  

@@ -4,26 +4,39 @@
   {% load markdownify %}
 
   {% block content %}
-  <div class="container mt-5">
-      <div class="row">
+  <div class="container mt-5" id="naber">
+    <div class="row" style="height: 100vh; min-height: 500px;">
           <!-- SOL SÜTUN: TÜM SORULAR -->
-          <div class="col-md-2" style="border-right: 1px solid #ccc;">
-              <h4>Tüm Sorular</h4>
-              <ul class="list-unstyled">
-                  {% for question in all_questions_page %}
-                  <li class="d-flex justify-content-between align-items-center mt-2 baslik">
-                      <a href="{% url 'question_detail' question.id %}"
-                        class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
-                          <span>{{ question.question_text }}</span>
-                          <small class="ms-2">{{ question.answers_count }}</small>
-                      </a>
-                  </li>
-                  {% endfor %}
-              </ul>
+          <div class="col-md-2 d-flex flex-column sol-scroll" style="border-right: 1px solid #ccc; height: 90%; min-height: 0;">
+            <h4 style="display: flex; justify-content: center; align-items: center; gap: 18px; min-height: 38px; margin-bottom: 0.5rem;">
+              <a href="#" id="random-question-btn" title="Rastgele Başlık Diz" class="vote-btn2 d-flex align-items-center justify-content-center"
+                 style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
+                  <i class="bi bi-shuffle" style="font-size: 1.25em; color: #6E8CA7;"></i>
+              </a>
+              <a href="#" id="shuffle-btn" title="Rastgele Başlığa Git" class="vote-btn2 d-flex align-items-center justify-content-center"
+                 style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
+                  <i class="bi bi-asterisk" style="font-size: 1.25em; color: #6E8CA7;"></i>
+              </a>
+          </h4>   
+          <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
+            <ul class="list-unstyled" id="questions-list">
+              {% for question in all_questions_page %}
+              <li class="d-flex justify-content-between align-items-center mt-2 baslik">
+                  <a href="{% url 'question_detail' question.id %}"
+                    class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
+                      <span>{{ question.question_text }}</span>
+                      <small class="ms-2">{{ question.answers_count }}</small>
+                  </a>
+              </li>
+              {% endfor %}
+          </ul>
+          </div>       
               {% include 'core/pagination.html' with page_obj=all_questions_page page_param='q_page' %}
           </div>
+          
         <!-- ORTA SÜTUN -->
-          <div class="col-md-8">
+        <div class="col-md-8 d-flex flex-column sol-scroll" style="height: 100%; min-height: 0;">
+          <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
           
             <!-- Gizli input: question.id -->
             <input type="hidden" id="answer_form_question_id" value="{{ question.id }}">
@@ -327,10 +340,11 @@
               </div>
             </div>
           
-          </div>
+            </div>
+        </div>
           <!-- SAĞ SÜTUN: ALT SORULAR -->
-          <div class="col-md-2">
-              <div class="mb-4">
+          <div class="col-md-2 d-flex flex-column" style="border-left: 1px solid #ccc; height: 100%; min-height: 0;">
+            <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
                   <div class="row g-2">  <!-- Satır ekledik, boşluk için g-2 kullanıldı -->
                       {% if question.parent_questions.count == 0 %}
                       <div class="col-12 d-grid">
@@ -423,9 +437,9 @@
                   </ul>
               </div>
           </div>
-          
-      </div>
   </div>
+</div>
+
 
 
 
@@ -950,6 +964,50 @@ document.getElementById('sabaha-birak-btn').onclick = function(e) {
       });
       </script>
       
+<!-- sol frame -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+  // Shuffle butonu (sol frame'i random doldurur)
+  document.getElementById('random-question-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      fetch("{% url 'shuffle_questions' %}")
+      .then(response => response.json())
+      .then(data => {
+          const questionsList = document.getElementById('questions-list');
+          if (!questionsList) {
+              alert('Soruları listeleyecek alan bulunamadı! (questions-list)');
+              return;
+          }
+          questionsList.innerHTML = '';
+          data.questions.forEach(function(q) {
+              const link = "{% url 'question_detail' 12345 %}".replace('12345', q.id);
+              questionsList.innerHTML += `
+                  <li class="tbas-color baslik d-flex justify-content-between align-items-center mt-2">
+                      <a href="${link}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
+                          <span>${q.text}</span>
+                      </a>
+                  </li>
+              `;
+          });
+      });
+  });
+
+  // Rastgele başlığa git butonu (senin mevcut kodun zaten çalışıyor)
+  document.getElementById('shuffle-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      fetch("{% url 'shuffle_questions' %}")
+      .then(response => response.json())
+      .then(data => {
+          if (data.questions && data.questions.length > 0) {
+              const q = data.questions[Math.floor(Math.random() * data.questions.length)];
+              const link = "{% url 'question_detail' 12345 %}".replace('12345', q.id);
+              window.location.href = link;
+          }
+      });
+  });
+});
+
+</script>
   
   {% endblock %}
 

@@ -129,8 +129,12 @@ urlpatterns = [
     path('cikis_testleri/soru/<int:soru_id>/edit/', views.cikis_soru_edit, name='cikis_soru_edit'),
     path('cikis_testleri/soru/<int:soru_id>/sil/', views.cikis_soru_sil, name='cikis_soru_sil'),
     path('cikis_testi/<int:test_id>/sil/', views.cikis_testi_sil, name='cikis_testi_sil'),
-
     path('cikis_testleri/sik/<int:sik_id>/edit/', views.cikis_sik_edit, name='cikis_sik_edit'),
+
+    path('random_question_id/', views.random_question_id, name='random_question_id'),#bunu sonra kullanacağız.
+    path('shuffle_questions/', views.shuffle_questions, name='shuffle_questions'),
+
+
 
 
 
