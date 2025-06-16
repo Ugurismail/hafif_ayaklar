@@ -355,8 +355,11 @@
         <div class="tab-pane fade {% if active_tab == 'istatistikler' %}show active{% endif %}" id="istatistikler" role="tabpanel" aria-labelledby="istatistikler-tab">
           <div class="mt-3">
             <h5>İstatistikler</h5>
-            <p>Toplam Upvotes: {{ total_upvotes }}</p>
-            <p>Toplam Downvotes: {{ total_downvotes }}</p>
+            <p>Toplam Beğenmeler: {{ total_upvotes }}</p>
+            <p>Toplam Kelime: {{ total_words }}</p>
+            <p>Toplam Karakter (boşluksuz): {{ total_chars }}</p>
+            <p>Girdi Başına Ortalama Kelime: {{ avg_words_per_entry }}</p>
+            <p>Toplam Beğenmemeler: {{ total_downvotes }}</p>
             <p>Toplam Kaydedilme Sayısı: {{ total_saves }}</p>
             <h6>En Çok Upvote Alan Girdi:</h6>
             {% if most_upvoted_entry %}

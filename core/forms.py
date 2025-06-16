@@ -107,12 +107,14 @@ class QuestionForm(forms.ModelForm):
 
 class StartingQuestionForm(forms.ModelForm):
     answer_text = forms.CharField(
+        label='',
         widget=forms.Textarea(attrs={
             'class': 'form-control auto-expand',
             'rows': 4,
             'placeholder': 'Yanıtınızı buraya yazın'
         })
     )
+    
 
     class Meta:
         model = Question
@@ -122,6 +124,9 @@ class StartingQuestionForm(forms.ModelForm):
                 'class': 'form-control auto-expand',
                 'placeholder': 'Soru başlığı'
             }),
+        }
+        labels = {
+            'question_text': '',
         }
 
     def __init__(self, *args, **kwargs):
@@ -288,6 +293,9 @@ class AnswerEditForm(forms.ModelForm):
         fields = ['answer_text']
         widgets = {
             'answer_text': forms.Textarea(attrs={'class': 'auto-expand form-control'}),
+        }
+        labels = {
+            'answer_text': ''
         }
 
 

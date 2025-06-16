@@ -369,12 +369,24 @@ def user_profile(request, username):
             context['saved_items_page'] = saved_paginator.page(1)
 
     elif active_tab in ['istatistikler', 'kelimeler']:
+        # Kullanıcıya ait tüm sorular ve yanıtlar
         questions_list = Question.objects.filter(user=profile_user)
         answers_list = Answer.objects.filter(user=profile_user)
-        question_texts = questions_list.values_list('question_text', flat=True)
-        answer_texts = answers_list.values_list('answer_text', flat=True)
-        all_texts = (' '.join(question_texts) + ' ' + ' '.join(answer_texts)).lower()
-        words = re.findall(r'\b\w+\b', all_texts)
+        question_texts = list(questions_list.values_list('question_text', flat=True))
+        answer_texts = list(answers_list.values_list('answer_text', flat=True))
+
+        # Girişlerin tamamı
+        all_entries = [q for q in question_texts if q] + [a for a in answer_texts if a]
+
+        # Toplam kelime ve karakter (boşluksuz) sayısı, ortalama kelime/girdi
+        total_words = sum(len(re.findall(r'\b\w+\b', entry)) for entry in all_entries)
+        total_chars = sum(len(entry.replace(" ", "")) for entry in all_entries)
+        total_entries = len(all_entries)
+        avg_words_per_entry = total_words / total_entries if total_entries else 0
+
+        # Top words, kelime analizleri için
+        all_texts_joined = (' '.join(question_texts) + ' ' + ' '.join(answer_texts)).lower()
+        words = re.findall(r'\b\w+\b', all_texts_joined)
         exclude_words_str = request.GET.get('exclude_words', '')
         exclude_words_list = [w.strip() for w in exclude_words_str.split(',') if w.strip()]
         exclude_words_set = set(word.lower() for word in exclude_words_list)
@@ -393,18 +405,12 @@ def user_profile(request, username):
         search_word_count = None
         if search_word:
             search_word_count = word_counts.get(search_word, 0)
-        context.update({
-            'top_words': top_words,
-            'exclude_words': exclude_words_str,
-            'exclude_words_list': exclude_words_list,
-            'search_word': search_word,
-            'search_word_count': search_word_count,
-        })
-        # İstatistikler için:
+
+        # Upvote, downvote, save sayıları ve en çok oy/kaydedilenler
         total_upvotes = ((questions_list.aggregate(total=Sum('upvotes'))['total'] or 0) +
-                         (answers_list.aggregate(total=Sum('upvotes'))['total'] or 0))
+                        (answers_list.aggregate(total=Sum('upvotes'))['total'] or 0))
         total_downvotes = ((questions_list.aggregate(total=Sum('downvotes'))['total'] or 0) +
-                           (answers_list.aggregate(total=Sum('downvotes'))['total'] or 0))
+                        (answers_list.aggregate(total=Sum('downvotes'))['total'] or 0))
         content_type_question = ContentType.objects.get_for_model(Question)
         content_type_answer = ContentType.objects.get_for_model(Answer)
         total_saves_questions = SavedItem.objects.filter(
@@ -435,7 +441,17 @@ def user_profile(request, username):
             key=lambda x: getattr(x, 'save_count', 0),
             default=None
         )
+
+        # Context'e ekle
         context.update({
+            'total_words': total_words,
+            'total_chars': total_chars,
+            'avg_words_per_entry': round(avg_words_per_entry, 2),
+            'top_words': top_words,
+            'exclude_words': exclude_words_str,
+            'exclude_words_list': exclude_words_list,
+            'search_word': search_word,
+            'search_word_count': search_word_count,
             'total_upvotes': total_upvotes,
             'total_downvotes': total_downvotes,
             'total_saves': total_saves,

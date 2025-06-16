@@ -8,11 +8,14 @@ from django.http import HttpResponseRedirect
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django import forms
 from .models import IATResult
+from django.contrib import admin
+
 
 from core.models import (
     Invitation, UserProfile, Question, Answer, 
     Poll, PollOption, PollVote, SavedItem, Vote, PinnedEntry, 
-    Entry, RandomSentence, Message, Definition, Reference
+    Entry, RandomSentence, Message, Definition, Reference,CikisTesti, 
+    CikisTestiSoru, CikisTestiSik, CikisTestiResult
 )
 
 # =============================================================================
@@ -263,3 +266,22 @@ class IATResultAdmin(admin.ModelAdmin):
     list_display = ["id", "user", "test_type", "dscore", "errors", "avg_rt", "created_at"]
     list_filter = ["test_type", "user"]
     search_fields = ["user__username"]
+
+
+@admin.register(CikisTesti)
+class CikisTestiAdmin(admin.ModelAdmin):
+    list_display = ['title', 'owner', 'created_at', 'cikis_dogrusu']
+    search_fields = ['title', 'owner__username']
+
+@admin.register(CikisTestiSoru)
+class CikisTestiSoruAdmin(admin.ModelAdmin):
+    list_display = ['question_text', 'test', 'order']
+    search_fields = ['question_text', 'test__title']
+
+@admin.register(CikisTestiSik)
+class CikisTestiSikAdmin(admin.ModelAdmin):
+    list_display = ['text', 'soru']
+
+@admin.register(CikisTestiResult)
+class CikisTestiResultAdmin(admin.ModelAdmin):
+    list_display = ['test', 'user', 'dogru_sayisi', 'toplam_soru', 'completed_at']
