@@ -1767,7 +1767,7 @@ def generate_question_nodes(questions):
 @login_required
 def bkz_view(request, query):
     try:
-        question = Question.objects.get(question_text__iexact=query)
+        question = Question.objects.get(question_text__exact=query)
         return redirect('question_detail', question_id=question.id)
     except Question.DoesNotExist:
         # Soru bulunamazsa, add_question_from_search sayfasına yönlendirin
@@ -1785,6 +1785,7 @@ def reference_search(request):
                 'text': question.question_text
             })
     return JsonResponse({'results': results})
+
 
 @login_required
 def pin_entry(request, answer_id):

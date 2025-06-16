@@ -75,98 +75,94 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
   //==================================================================
-  // C) (bkz:...) REFERANS EKLEME (MODAL)
-  //==================================================================
-  var referenceModalElem = document.getElementById('referenceModal');
-  if (referenceModalElem) {
-    var referenceModal       = new bootstrap.Modal(referenceModalElem);
-    var insertReferenceBtn   = document.querySelector('.insert-reference-btn');
-    var referenceSearchInput = document.getElementById('reference-search-input');
-    var referenceSearchResults= document.getElementById('reference-search-results');
-    var noResultsDiv         = document.getElementById('no-results');
-    var addCurrentQueryBtn   = document.getElementById('add-current-query');
+// C) (bkz:...) REFERANS EKLEME (MODAL)
+//==================================================================
+var referenceModalElem = document.getElementById('referenceModal');
+  if (!referenceModalElem) return;
 
-    if (insertReferenceBtn) {
-      insertReferenceBtn.addEventListener('click', function() {
-          referenceModal.show();
-          if (referenceSearchInput) {
-            referenceSearchInput.value = '';
-          }
-          if (referenceSearchResults) {
-            referenceSearchResults.innerHTML = '';
-          }
-          if (noResultsDiv) {
-            noResultsDiv.style.display = 'none';
-          }
-      });
-    }
+  var referenceModal = new bootstrap.Modal(referenceModalElem);
+  var insertReferenceBtn = document.querySelector('.insert-reference-btn');
+  var referenceSearchInput = document.getElementById('reference-search-input');
+  var referenceSearchResults = document.getElementById('reference-search-results');
+  var noResultsDiv = document.getElementById('no-results');
+  var addCurrentQueryBtn = document.getElementById('add-current-query');
 
-    // Arama
-    if (referenceSearchInput && referenceSearchResults && noResultsDiv) {
-      referenceSearchInput.addEventListener('input', function() {
-        var query = this.value.trim();
-        if (query.length > 0) {
-          fetch('/reference-search/?q=' + encodeURIComponent(query), {
-              headers: { 'X-Requested-With': 'XMLHttpRequest' }
-          })
-          .then(response => response.json())
-          .then(data => {
-              referenceSearchResults.innerHTML = '';
-              if (data.results && data.results.length > 0) {
-                  noResultsDiv.style.display = 'none';
-                  data.results.forEach(function(item) {
-                      var div = document.createElement('div');
-                      div.classList.add('list-group-item');
-                      div.textContent = item.text;
-                      div.dataset.questionId = item.id;
-                      referenceSearchResults.appendChild(div);
-                  });
-              } else {
-                  noResultsDiv.style.display = 'block';
-                  referenceSearchResults.innerHTML = '';
-              }
-          });
-        } else {
+  // Modalı açan buton
+  if (insertReferenceBtn) {
+    insertReferenceBtn.addEventListener('click', function () {
+      referenceModal.show();
+      if (referenceSearchInput) referenceSearchInput.value = '';
+      if (referenceSearchResults) referenceSearchResults.innerHTML = '';
+      if (noResultsDiv) noResultsDiv.style.display = 'none';
+    });
+  }
+
+  // Arama işlemi
+  if (referenceSearchInput && referenceSearchResults && noResultsDiv) {
+    referenceSearchInput.addEventListener('input', function () {
+      var query = this.value.trim();
+      if (query.length > 0) {
+        fetch('/reference-search/?q=' + encodeURIComponent(query), {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
           referenceSearchResults.innerHTML = '';
-          noResultsDiv.style.display = 'none';
-        }
-      });
-
-      // Arama sonuçlarından birine tıklayınca
-      referenceSearchResults.addEventListener('click', function(event) {
-        var target = event.target;
-        if (target && target.matches('.list-group-item')) {
-            insertBkzReference(target.textContent);
-            referenceModal.hide();
-        }
-      });
-
-      // Mevcut sorguyu ekle
-      if (addCurrentQueryBtn) {
-        addCurrentQueryBtn.addEventListener('click', function() {
-          var query = referenceSearchInput.value.trim();
-          if (query.length > 0) {
-            insertBkzReference(query);
-            referenceModal.hide();
+          if (data.results && data.results.length > 0) {
+            data.results.forEach(function (item) {
+              var div = document.createElement('div');
+              div.classList.add('list-group-item');
+              div.textContent = item.text;
+              div.dataset.questionId = item.id;
+              referenceSearchResults.appendChild(div);
+            });
           }
+          // *** Her zaman göster ***
+          noResultsDiv.style.display = 'block';
         });
+      } else {
+        referenceSearchResults.innerHTML = '';
+        noResultsDiv.style.display = 'none';
       }
-    }
-
-    function insertBkzReference(text) {
-      var textarea = document.getElementById('id_answer_text');
-      if (!textarea) return;
-      var start = textarea.selectionStart;
-      var end   = textarea.selectionEnd;
-      var before= textarea.value.substring(0, start);
-      var after = textarea.value.substring(end);
-      var referenceText = '(bkz: ' + text + ')';
-      textarea.value = before + referenceText + after;
-      textarea.focus();
-      textarea.selectionStart = start;
-      textarea.selectionEnd   = start + referenceText.length;
+    });
+  
+    // Sonuçlardan birine tıklama
+    referenceSearchResults.addEventListener('click', function (event) {
+      var target = event.target;
+      if (target && target.matches('.list-group-item')) {
+        insertBkzReference(target.textContent);
+        referenceModal.hide();
+      }
+    });
+  
+    // "ekle" butonuna tıklama
+    if (addCurrentQueryBtn) {
+      addCurrentQueryBtn.addEventListener('click', function () {
+        var query = referenceSearchInput.value.trim();
+        if (query.length > 0) {
+          insertBkzReference(query);
+          referenceModal.hide();
+        }
+      });
     }
   }
+  
+  
+
+  function insertBkzReference(text) {
+    var textarea = document.getElementById('id_answer_text');
+    if (!textarea) return;
+    var start = textarea.selectionStart;
+    var end = textarea.selectionEnd;
+    var before = textarea.value.substring(0, start);
+    var after = textarea.value.substring(end);
+    var referenceText = '(bkz: ' + text + ')';
+    textarea.value = before + referenceText + after;
+    textarea.focus();
+    textarea.selectionStart = start;
+    textarea.selectionEnd = start + referenceText.length;
+  }
+
 
 
   //==================================================================
