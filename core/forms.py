@@ -133,12 +133,14 @@ class AnswerForm(forms.ModelForm):
         model = Answer
         fields = ['answer_text']
         widgets = {
-            # Otomatik genişleme özelliğini sağlayacak 'auto-expand' sınıfı eklenmiştir.
             'answer_text': forms.Textarea(attrs={
                 'class': 'form-control auto-expand',
                 'rows': 2,
                 'placeholder': 'Yanıtınızı buraya yazın'
             }),
+        }
+        labels = {
+            'answer_text': ''
         }
 
 class MessageForm(forms.ModelForm):
