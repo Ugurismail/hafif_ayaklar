@@ -2698,7 +2698,7 @@ def filter_answers(request, question_id):
     keyword = request.GET.get('keyword', '').strip()
 
     # Tüm yanıtlar (bu soru altındaki)
-    answers = question.answers.all().order_by('-created_at')  # güncelden eskiye
+    answers = question.answers.all().order_by('created_at')  # güncelden eskiye
 
     # 1) Kendi yanıtlarım
     if my_answers == 'on':

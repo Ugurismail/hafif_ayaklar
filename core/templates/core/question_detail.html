@@ -265,15 +265,17 @@
                               <form action="{% url 'pin_entry' answer_id=answer.id %}" method="post">
                                 {% csrf_token %}
                                 <button type="submit" class="dropdown-item">
-                                  <i class="bi bi-pin-angle"></i> Profil Sabitle
+                                  <i class="bi bi-pin-angle"></i> Profile Sabitle
                                 </button>
                               </form>
                             </li>
+                            {% if request.user != answer.user %}
                             <li>
                               <a class="dropdown-item" href="{% url 'send_message_from_answer' answer.id %}">
                                 <i class="bi bi-envelope"></i> Mesaj Gönder
                               </a>
                             </li>
+                            {% endif %}
                             <li id="word-count-{{ answer.id }}" style="text-align:center;">
                               Kelime Sayısı: ...
                             </li>

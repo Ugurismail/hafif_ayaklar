@@ -143,10 +143,12 @@
                                             </form>
                                             
                                         </li>
+                                        {% if request.user != answer.user %}
                                         <li><a class="dropdown-item" href="{% url 'send_message_from_answer' answer.id %}">
                                             <i class="bi bi-envelope"></i> Mesaj Gönder
                                             </a>
                                         </li>
+                                        {% endif %}
                                     </ul>
                                 </div>
                             </div>

@@ -85,7 +85,7 @@ class QuestionForm(forms.ModelForm):
             'rows': 4,
             'placeholder': 'Yanıtınızı buraya yazın'
         }),
-        required=False
+        required=True
     )
 
     class Meta:
