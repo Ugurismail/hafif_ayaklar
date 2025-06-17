@@ -146,36 +146,80 @@ mark{
     color: var(--text-color);
 }
 
-/* Pagination */
-/* Pagination için custom ayarları uygula */
+/* ========== Pagination Responsive/Hizalama Fix ========== */
+
+/* Kapsayıcıya sabit font ve min-height veriyoruz */
+.custom-pagination {
+    font-size: inherit;              /* Sayfa fontunu devralır */
+    min-height: 44px;                /* Dikeyde dağılmayı önler, ihtiyaca göre büyüt/küçült */
+    align-items: center;
+}
+
+/* Tüm page-link ve select'leri ortala, yüksekliklerini sabitle */
 .custom-pagination .page-link,
+.custom-pagination .form-select,
+.custom-pagination .page-item,
 .custom-pagination .page-link > span {
-    background-color: var(--pagination-background-color) !important;
-    color: var(--pagination-text-color) !important;
-    border: 1px solid var(--pagination-background-color) !important;
+    font-size: inherit !important;
+    height: 2.8em;                  /* Dikeyde tümü aynı olur */
+    min-height: 2.5em;
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
-/* Aktif sayfa için (istenirse farklı renkler de tanımlayabilirsiniz) */
+/* Select için ekstra margin ve min-width ver */
+.custom-pagination .form-select {
+    min-width: 2.5em;
+    margin-left: 0.25em;
+    margin-right: 0.25em;
+    height: 2.8em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+}
+
+/* Disabled ve aktifler de aynı yükseklik ve ortalamayı korusun */
+.custom-pagination .page-item.disabled .page-link,
 .custom-pagination .page-item.active .page-link {
-    background-color: var(--pagination-active-background-color, var(--pagination-background-color)) !important;
-    color: var(--pagination-active-text-color, var(--pagination-text-color)) !important;
-    border-color: var(--pagination-active-background-color, var(--pagination-background-color)) !important;
+    height: 2.8em;
+    min-height: 2.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
 }
 
-/* Disabled (pasif) düğmeler için */
+/* Responsive: Küçük ekranlarda biraz küçült */
+@media (max-width: 700px) {
+    .custom-pagination {
+        min-height: 38px;
+    }
+    .custom-pagination .page-link,
+    .custom-pagination .form-select {
+        height: 2.1em;
+        min-height: 1.8em;
+        font-size: 0.97em !important;
+        padding-top: 0.2em;
+        padding-bottom: 0.2em;
+    }
+}
+
+/* İstenirse sayfa numarası gösteren disabled kutu da tam ortalansın */
 .custom-pagination .page-item.disabled .page-link {
-    background-color: var(--pagination-background-color) !important;
+    font-size: inherit !important;
+    background: var(--pagination-background-color) !important;
     color: var(--pagination-text-color) !important;
     border-color: var(--pagination-background-color) !important;
+    padding: 0.3em 0.7em;
+    min-width: 2em;
+    min-height: 2em;
+    text-align: center;
 }
 
-/* Select ve Option elemanları için */
-.custom-pagination .form-select,
-.custom-pagination .form-select option {
-    background-color: var(--pagination-background-color) !important;
-    color: var(--pagination-text-color) !important;
-    border: 1px solid var(--pagination-background-color) !important;
-}
 
 
 .yanit-card{
