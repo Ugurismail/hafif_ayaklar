@@ -2495,31 +2495,33 @@ def create_reference(request):
 
 def get_references(request):
     """
-    Tüm referans kayıtlarını, opsiyonel 'q' arama parametresi ile 
-    filtreleyerek JSON döndürür.
+    Referansları arama ve sayfalama ile JSON döndürür.
+    GET parametreleri:
+      - q: arama terimi (opsiyonel)
+      - page: istenen sayfa (varsayılan 1)
+      - page_size: sayfa başı kayıt (varsayılan 10)
     """
-    q = request.GET.get('q', '').strip()  # Arama terimi
-    references = Reference.objects.all()
+    q = request.GET.get('q', '').strip()
+    page = int(request.GET.get('page', 1))
+    page_size = int(request.GET.get('page_size', 5))
 
+    references = Reference.objects.all()
     if q:
         references = references.filter(
             Q(author_surname__icontains=q) |
             Q(author_name__icontains=q) |
             Q(rest__icontains=q) |
-            Q(abbreviation__icontains=q)|
-            Q(metin_ismi__icontains=q)|
+            Q(abbreviation__icontains=q) |
+            Q(metin_ismi__icontains=q) |
             Q(year__iexact=q)
-            # Yıl alanında arama yapmak isterseniz (IntegerField olduğu için tam eşleşmede kullanabilirsiniz)
-            # veya q yalnızca sayıysa year__icontains gibi bir yaklaşımla handle edebilirsiniz.
-            # Örnek:
-            # 
         )
-    
-    # Sıralama
     references = references.order_by('author_surname', 'year')
 
+    paginator = Paginator(references, page_size)
+    page_obj = paginator.get_page(page)
+
     data = []
-    for ref in references:
+    for ref in page_obj.object_list:
         data.append({
             'id': ref.id,
             'author_surname': ref.author_surname,
@@ -2529,8 +2531,17 @@ def get_references(request):
             'abbreviation': ref.abbreviation or '',
             'display': str(ref),
         })
-    
-    return JsonResponse({'references': data}, status=200)
+
+    response = {
+        'references': data,
+        'has_next': page_obj.has_next(),
+        'has_previous': page_obj.has_previous(),
+        'num_pages': paginator.num_pages,
+        'current_page': page_obj.number,
+        'total_count': paginator.count,
+    }
+    return JsonResponse(response, status=200)
+
 
 @login_required
 def edit_reference(request, reference_id):
