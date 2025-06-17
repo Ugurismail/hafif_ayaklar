@@ -696,3 +696,8 @@ span.icon-number {
     scrollbar-color: rgba(110, 140, 167, 0.38) transparent;
   }
   
+
+textarea.form-control.auto-expand {
+    font-size: var(--user-font-size) !important;
+    color: var(--text-color) !important;
+}
