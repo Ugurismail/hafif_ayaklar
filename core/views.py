@@ -343,24 +343,32 @@ def user_profile(request, username):
             context['references_page'] = ref_paginator.page(r_page)
         except (PageNotAnInteger, EmptyPage):
             context['references_page'] = ref_paginator.page(1)
-
     elif active_tab == 'kaydedilenler' and is_own_profile:
-        user_saved = SavedItem.objects.filter(user=profile_user).select_related('content_type').order_by('-saved_at')
-        saved_items_list = []
-        content_type_map = {ct.model: ct for ct in ContentType.objects.all()}
-        question_ids = [si.object_id for si in user_saved if si.content_type.model == 'question']
-        answer_ids = [si.object_id for si in user_saved if si.content_type.model == 'answer']
+        from django.contrib.contenttypes.models import ContentType
+
+        # ContentType'ları doğrudan modelden çekiyoruz
+        question_ct = ContentType.objects.get_for_model(Question)
+        answer_ct = ContentType.objects.get_for_model(Answer)
+
+        user_saved = SavedItem.objects.filter(user=profile_user).order_by('-saved_at')
+
+        question_ids = [si.object_id for si in user_saved if si.content_type_id == question_ct.id]
+        answer_ids = [si.object_id for si in user_saved if si.content_type_id == answer_ct.id]
+
         question_map = {q.id: q for q in Question.objects.filter(id__in=question_ids)}
         answer_map = {a.id: a for a in Answer.objects.select_related('question').filter(id__in=answer_ids)}
+
+        saved_items_list = []
         for item in user_saved:
-            if item.content_type.model == 'question':
+            if item.content_type_id == question_ct.id:
                 obj = question_map.get(item.object_id)
                 if obj:
                     saved_items_list.append({'type': 'question', 'object': obj})
-            elif item.content_type.model == 'answer':
+            elif item.content_type_id == answer_ct.id:
                 obj = answer_map.get(item.object_id)
                 if obj:
                     saved_items_list.append({'type': 'answer', 'object': obj})
+
         s_page = request.GET.get('s_page', 1)
         saved_paginator = Paginator(saved_items_list, 5)
         try:
