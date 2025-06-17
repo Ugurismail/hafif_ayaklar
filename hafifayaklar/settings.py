@@ -9,9 +9,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4m3!p5t!fy=$22i7m==v!z$d#4-yq33=*1u_^e^=@cot@+9q))')
 
 
-# DEBUG = False
+DEBUG = False
 
-DEBUG = True
+# DEBUG = True
 
 ALLOWED_HOSTS = ['uia1.pythonanywhere.com','*']
 
