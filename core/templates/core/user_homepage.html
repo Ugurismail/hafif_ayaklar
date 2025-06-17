@@ -46,10 +46,10 @@
                     </div>
                     <!-- Answer Content -->
                     <div class="card-body">
-                        {% if answer.answer_text|length > 500 %}
+                        {% if answer.answer_text|length > 1000 %}
                         <!-- Kısaltılmış Yanıt -->
                         <div class="answer-text" id="answer-summary-{{ answer.id }}">
-                            {{ answer.answer_text|slice:":500"|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+                            {{ answer.answer_text|slice:":1000"|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
                         </div>
                     
                         <!-- Tam Yanıt (başlangıçta gizli) -->
