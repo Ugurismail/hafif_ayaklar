@@ -274,6 +274,9 @@
                                 <i class="bi bi-envelope"></i> Mesaj Gönder
                               </a>
                             </li>
+                            <li id="word-count-{{ answer.id }}" style="text-align:center;">
+                              Kelime Sayısı: ...
+                            </li>
                           </ul>
                         </div>
                       </div>
@@ -1008,6 +1011,65 @@ document.getElementById('sabaha-birak-btn').onclick = function(e) {
 });
 
 </script>
+  
+
+<!-- kelime sayma -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    function countWords(text) {
+        return (text || '')
+            .replace(/\n/g, ' ')
+            .replace(/<[^>]*>/g, '')  // HTML etiketleri varsa sil
+            .split(' ')
+            .filter(word => word.trim().length > 0)
+            .length;
+    }
+
+    function updateWordCount(answerId) {
+        var summaryElem = document.getElementById('answer-summary-' + answerId);
+        var fullElem    = document.getElementById('answer-full-' + answerId);
+        var countElem   = document.getElementById('word-count-' + answerId);
+
+        // --- YENİ: Kısa yanıtta summary yoksa doğrudan .answer-text'i bul ---
+        var targetElem = null;
+        if (fullElem && fullElem.style.display !== 'none') {
+            targetElem = fullElem;
+        } else if (summaryElem && summaryElem.style.display !== 'none') {
+            targetElem = summaryElem;
+        } else {
+            // fallback: card içinde, ilgili yanıt id'sine sahip .answer-text'i bul
+            var answerCard = document.getElementById('answer-' + answerId);
+            if (answerCard) {
+                targetElem = answerCard.querySelector('.answer-text');
+            }
+        }
+
+        if (!countElem || !targetElem) return;
+
+        var text = targetElem.innerText || targetElem.textContent || '';
+        var count = countWords(text);
+
+        countElem.textContent = 'Kelime sayısı: ' + count;
+    }
+
+    // Tüm yanıtlar için başlat
+    document.querySelectorAll('[id^=word-count-]').forEach(function(countElem) {
+        var answerId = countElem.id.replace('word-count-', '');
+        updateWordCount(answerId);
+    });
+
+    // Tümünü Göster tıklandığında tekrar hesapla
+    document.querySelectorAll('.read-more').forEach(function(link) {
+        link.addEventListener('click', function () {
+            var answerId = this.getAttribute('data-answer-id');
+            setTimeout(function() {
+                updateWordCount(answerId);
+            }, 20);
+        });
+    });
+});
+
+  </script>
   
   {% endblock %}
 
