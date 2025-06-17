@@ -26,6 +26,7 @@ from django.http import (
     HttpResponseForbidden
 )
 
+
 from django.shortcuts import (
     render,
     redirect,
@@ -269,7 +270,6 @@ def user_profile(request, username):
     active_tab = request.GET.get('tab', 'girdiler')
     is_own_profile = (request.user == profile_user)
 
-    # Her sekme için context anahtarları baştan boş atanıyor
     context = {
         'profile_user': profile_user,
         'user_profile': user_profile,
@@ -284,7 +284,6 @@ def user_profile(request, username):
         'exclude_words_list': None,
         'search_word': None,
         'search_word_count': None,
-        # ... diğer anahtarlar da buraya eklenecekse boş bırak
     }
 
     # Takip ve takipçi sayısı
@@ -302,7 +301,7 @@ def user_profile(request, username):
     except PinnedEntry.DoesNotExist:
         context['pinned_entry'] = None
 
-    # Hangi sekmedeyse sadece oradaki veriyi doldur
+    # Sadece ilgili sekmenin contextini doldur
     if active_tab == 'girdiler':
         answers_list = Answer.objects.filter(user=profile_user).select_related('question', 'user').order_by('-created_at')
         answer_paginator = Paginator(answers_list, 10)
@@ -343,18 +342,14 @@ def user_profile(request, username):
             context['references_page'] = ref_paginator.page(r_page)
         except (PageNotAnInteger, EmptyPage):
             context['references_page'] = ref_paginator.page(1)
-    elif active_tab == 'kaydedilenler' and is_own_profile:
-        from django.contrib.contenttypes.models import ContentType
 
-        # ContentType'ları doğrudan modelden çekiyoruz
+    elif active_tab == 'kaydedilenler' and is_own_profile:
         question_ct = ContentType.objects.get_for_model(Question)
         answer_ct = ContentType.objects.get_for_model(Answer)
 
         user_saved = SavedItem.objects.filter(user=profile_user).order_by('-saved_at')
-
         question_ids = [si.object_id for si in user_saved if si.content_type_id == question_ct.id]
         answer_ids = [si.object_id for si in user_saved if si.content_type_id == answer_ct.id]
-
         question_map = {q.id: q for q in Question.objects.filter(id__in=question_ids)}
         answer_map = {a.id: a for a in Answer.objects.select_related('question').filter(id__in=answer_ids)}
 
@@ -377,28 +372,25 @@ def user_profile(request, username):
             context['saved_items_page'] = saved_paginator.page(1)
 
     elif active_tab in ['istatistikler', 'kelimeler']:
-        # Kullanıcıya ait tüm sorular ve yanıtlar
         questions_list = Question.objects.filter(user=profile_user)
         answers_list = Answer.objects.filter(user=profile_user)
         question_texts = list(questions_list.values_list('question_text', flat=True))
         answer_texts = list(answers_list.values_list('answer_text', flat=True))
-
-        # Girişlerin tamamı
         all_entries = [q for q in question_texts if q] + [a for a in answer_texts if a]
-
-        # Toplam kelime ve karakter (boşluksuz) sayısı, ortalama kelime/girdi
         total_words = sum(len(re.findall(r'\b\w+\b', entry)) for entry in all_entries)
         total_chars = sum(len(entry.replace(" ", "")) for entry in all_entries)
         total_entries = len(all_entries)
         avg_words_per_entry = total_words / total_entries if total_entries else 0
-
-        # Top words, kelime analizleri için
         all_texts_joined = (' '.join(question_texts) + ' ' + ' '.join(answer_texts)).lower()
         words = re.findall(r'\b\w+\b', all_texts_joined)
         exclude_words_str = request.GET.get('exclude_words', '')
         exclude_words_list = [w.strip() for w in exclude_words_str.split(',') if w.strip()]
         exclude_words_set = set(word.lower() for word in exclude_words_list)
         exclude_word = request.GET.get('exclude_word', '').strip().lower()
+        total_upvotes = ((questions_list.aggregate(total=Sum('upvotes'))['total'] or 0) +
+                 (answers_list.aggregate(total=Sum('upvotes'))['total'] or 0))
+        total_downvotes = ((questions_list.aggregate(total=Sum('downvotes'))['total'] or 0) +
+                   (answers_list.aggregate(total=Sum('downvotes'))['total'] or 0))
         if exclude_word:
             exclude_words_set.add(exclude_word)
         include_word = request.GET.get('include_word', '').strip().lower()
@@ -414,11 +406,6 @@ def user_profile(request, username):
         if search_word:
             search_word_count = word_counts.get(search_word, 0)
 
-        # Upvote, downvote, save sayıları ve en çok oy/kaydedilenler
-        total_upvotes = ((questions_list.aggregate(total=Sum('upvotes'))['total'] or 0) +
-                        (answers_list.aggregate(total=Sum('upvotes'))['total'] or 0))
-        total_downvotes = ((questions_list.aggregate(total=Sum('downvotes'))['total'] or 0) +
-                        (answers_list.aggregate(total=Sum('downvotes'))['total'] or 0))
         content_type_question = ContentType.objects.get_for_model(Question)
         content_type_answer = ContentType.objects.get_for_model(Answer)
         total_saves_questions = SavedItem.objects.filter(
@@ -428,6 +415,7 @@ def user_profile(request, username):
             content_type=content_type_answer, object_id__in=answers_list
         ).count()
         total_saves = total_saves_questions + total_saves_answers
+
         most_upvoted_question = questions_list.order_by('-upvotes').first()
         most_upvoted_answer = answers_list.order_by('-upvotes').first()
         most_upvoted_entry = max(
@@ -450,7 +438,6 @@ def user_profile(request, username):
             default=None
         )
 
-        # Context'e ekle
         context.update({
             'total_words': total_words,
             'total_chars': total_chars,
