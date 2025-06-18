@@ -95,13 +95,16 @@
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'user_homepage' %}" title="Ana Sayfa"><i class="bi bi-house"></i></a>
+                        <a class="nav-link" href="{% url 'user_homepage' %}" title="Ana Sayfa">
+                            <i class="bi bi-house"></i>
+                            <span class="d-inline d-md-none ms-1">Ana Sayfa</span>
+                        </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item d-none d-md-block">
                         <a class="nav-link" href="{% url 'question_map' %}" title="Harita"><i class="bi bi-diagram-3"></i></a>
                     </li>
                     <!-- Oyunlar: Ana navda -->
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown d-none d-md-block">
                         <a class="nav-link dropdown-toggle" href="#" id="gamesMenu" title="Oyunlar" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-controller"></i>
                         </a>
@@ -132,6 +135,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="extraMenu" title="Müteferrik" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-umbrella-fill"></i>
+                            <span class="d-inline d-md-none ms-1">Müteferrik</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="extraMenu">
                             <li>
@@ -186,13 +190,15 @@
                                 <i class="bi bi-envelope" id="message-icon"></i>
                             {% elif unread_message_count > 0 %}
                                 <i class="msg bi bi-envelope" id="message-icon">
-                                    <span class=" position-absolute top-10 start-100 badge translate-middle">
+                                    <span class="position-absolute top-10 start-100 badge translate-middle">
                                         {{ unread_message_count }}
                                     </span>
                                 </i>
                             {% endif %}
+                            <span class="d-inline d-md-none ms-1">Mesajlar</span>
                         </a>
                     </li>
+                    
                     {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">Giriş Yap</a>
