@@ -134,6 +134,11 @@ urlpatterns = [
     path('random_question_id/', views.random_question_id, name='random_question_id'),#bunu sonra kullanacağız.
     path('shuffle_questions/', views.shuffle_questions, name='shuffle_questions'),
 
+    path('delphoi/', views.delphoi_home, name='delphoi_home'),
+    path('delphoi/result/', views.delphoi_result, name='delphoi_result'),
+    
+
+
 
 
 

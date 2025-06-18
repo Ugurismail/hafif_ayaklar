@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Invitation, UserProfile, Question, Answer, Message, RandomSentence, Definition, Reference,CikisTesti, CikisTestiSoru, CikisTestiSik
+from .models import Invitation, UserProfile, Question, Answer, Message, RandomSentence, Definition, Reference,CikisTesti, CikisTestiSoru, CikisTestiSik,DelphoiProphecy
 from django.core.validators import RegexValidator
 from .models import Poll, PollOption
 from django.utils import timezone
@@ -313,3 +313,27 @@ class CikisTestiSikForm(forms.ModelForm):
     class Meta:
         model = CikisTestiSik
         fields = ['text']
+
+class DelphoiProphecyForm(forms.Form):
+    positive = forms.CharField(
+        label='Olumlu Kehanet',
+        max_length=300,
+        required=True,
+        widget=forms.Textarea(attrs={
+            'rows': 2,
+            'class': 'form-control prophecy-field',
+            'maxlength': '300',
+            'placeholder': 'Herhangi bir soruya yanıt olabilecek şekilde kehanetinizi yazınız. Ne kadar muğlak olursa o kadar iyi.',
+        })
+    )
+    negative = forms.CharField(
+        label='Olumsuz Kehanet',
+        max_length=300,
+        required=True,
+        widget=forms.Textarea(attrs={
+            'rows': 2,
+            'class': 'form-control prophecy-field',
+            'maxlength': '300',
+            'placeholder': 'Herhangi bir soruya yanıt olabilecek şekilde kehanetinizi yazınız. Ne kadar muğlak olursa o kadar iyi.',
+        })
+    )

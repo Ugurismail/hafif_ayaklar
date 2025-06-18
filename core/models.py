@@ -391,3 +391,25 @@ class CikisTestiResult(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.test.title} sonucu"
+
+
+class DelphoiProphecy(models.Model):
+    TYPE_CHOICES = (
+        ('positive', 'Pozitif'),
+        ('negative', 'Negatif'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='delphoi_prophecies')
+    type = models.CharField(max_length=8, choices=TYPE_CHOICES)
+    text = models.TextField(max_length=300)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+class DelphoiRequest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    requested_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = ('user', 'requested_at', 'question')

@@ -1,0 +1,252 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container py-4">
+  <div class="row g-4">
+    <!-- SOL SÜTUN: Kurallar + Form + Kendi Kehanetlerin -->
+    <div class="col-md-4 col-12">
+      <div class="accordion mb-4" id="rulesAccordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingRules">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseRules" aria-expanded="true" aria-controls="collapseRules">
+              Delphoi Kuralları
+            </button>
+          </h2>
+          <div id="collapseRules" class="accordion-collapse collapse show" aria-labelledby="headingRules">
+            <div class="accordion-body">
+              <ul>
+                <li>Her gün Kahine <b>bir kere</b> danışabilirsiniz.</li>
+                <li><b>En fazla 3 pozitif ve 3 negatif</b> kehanet girebilirsiniz.</li>
+                <li><b>Pozitif ve negatif</b> kehanet zorunlu. İki kehaneti birden yapmalısınız.</li>
+                <li>Her kehanet <b>en fazla 300 karakter</b> olabilir.</li>
+                <li>Kehanetler <b>anonimdir</b>.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <form id="delphoi-form" method="post" class="p-3 border rounded bg-light">
+        {% csrf_token %}
+        <div class="mb-2">
+          {{ form.positive.label_tag }} {{ form.positive }}
+          <div class="text-end small">
+            Girilen: {{ positive_count }}/3
+            {% if positive_count >= 3 %}<span class="text-danger"> (limit doldu)</span>{% endif %}
+          </div>
+        </div>
+        <div class="mb-2">
+          {{ form.negative.label_tag }} {{ form.negative }}
+          <div class="text-end small">
+            Girilen: {{ negative_count }}/3
+            {% if negative_count >= 3 %}<span class="text-danger"> (limit doldu)</span>{% endif %}
+          </div>
+        </div>
+        <div class="text-center">
+          <button type="submit" id="submit_prophecies_btn" class="btn btn-primary mt-3" {% if disable_form %}disabled{% endif %}>
+            Kehanetleri Gönder
+          </button>
+        </div>
+        {% if disable_form %}
+          <div class="alert alert-warning mt-3 p-2 text-center">
+            3 pozitif ve 3 negatif kehanet sınırına ulaştınız.
+          </div>
+        {% endif %}
+      </form>
+      <hr>
+      <h5 class="fw-bold mb-2">Kendi Kehanetlerin</h5>
+      <div class="accordion" id="myPropheciesAccordion">
+        {% for prophecy in prophecies %}
+          <div class="accordion-item mb-2">
+            <h2 class="accordion-header" id="heading{{prophecy.id}}">
+              <button class="accordion-button collapsed d-flex align-items-center{% if edit_id == prophecy.id or updated_id == prophecy.id %} show{% endif %}"
+                      type="button" data-bs-toggle="collapse"
+                      data-bs-target="#collapse{{prophecy.id}}" aria-expanded="false" aria-controls="collapse{{prophecy.id}}">
+                <span class="me-2">{{ forloop.counter }}.</span>
+                {% if prophecy.type == 'positive' %}
+                  <span class="badge bg-success me-2">Pozitif</span>
+                {% else %}
+                  <span class="badge bg-danger me-2">Negatif</span>
+                {% endif %}
+                <span class="ms-auto small text-muted">{{ prophecy.created_at|date:"d.m.Y H:i" }}</span>
+              </button>
+            </h2>
+            <div id="collapse{{prophecy.id}}" class="accordion-collapse collapse{% if edit_id == prophecy.id or updated_id == prophecy.id %} show{% endif %}"
+                 aria-labelledby="heading{{prophecy.id}}" data-bs-parent="#myPropheciesAccordion">
+              <div class="accordion-body">
+                {% if update_message and updated_id == prophecy.id %}
+                  <div class="alert alert-success py-2 mb-2">{{ update_message }}</div>
+                {% endif %}
+                {% if edit_id == prophecy.id %}
+                  <form method="post" action="?edit={{prophecy.id}}">
+                    {% csrf_token %}
+                    {% if prophecy.type == 'positive' %}
+                      <div class="mb-2">
+                        <label class="form-label">Pozitif Kehanet</label>
+                        {{ edit_form.positive }}
+                      </div>
+                    {% else %}
+                      <div class="mb-2">
+                        <label class="form-label">Negatif Kehanet</label>
+                        {{ edit_form.negative }}
+                      </div>
+                    {% endif %}
+                    <button type="submit" name="save_edit" class="btn btn-success btn-sm">Kaydet</button>
+                    <a href="{% url 'delphoi_home' %}#collapse{{prophecy.id}}" class="btn btn-secondary btn-sm ms-2">Vazgeç</a>
+                  </form>
+                {% else %}
+                  <div class="mb-2">{{ prophecy.text }}</div>
+                  <form method="get" style="display:inline;">
+                    <input type="hidden" name="edit" value="{{ prophecy.id }}">
+                    <button class="btn btn-primary btn-sm" type="submit">Düzenle</button>
+                  </form>
+                  <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_id" value="{{ prophecy.id }}">
+                    <button class="btn btn-danger btn-sm ms-2" type="submit"
+                      onclick="return confirm('Bu kehaneti silmek istediğine emin misin?');">Sil</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="alert alert-info p-2 text-center mb-0">Hiç kehanet girmemişsiniz.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- SAĞ SÜTUN: GIF ve Sonuç Sticky Üstte -->
+    <div class="col-md-8 col-12">
+      <div class="sticky-top" style="top: 24px; z-index: 2;">
+        <div class="position-relative w-100 mb-3 d-flex justify-content-center" style="height:350px; min-height:250px;">
+          <img src="{% static 'imgs/delphoi.gif' %}" alt="Delphoi GIF"
+              class="shadow"
+              style="max-width: 100%; max-height: 100%; object-fit: cover; border-radius:18px; width: 100%; min-width:320px;"/>
+          <div id="countdown"
+              class="position-absolute top-50 start-50 translate-middle fw-bold text-white"
+              style="font-size:4rem; text-shadow:0 0 16px #000; display:none; pointer-events:none;"></div>
+        </div>
+        <div class="w-100 text-center mb-4">
+          <div id="prophecyResult"
+              class="border rounded p-4 bg-white shadow-sm"
+              style="font-size:1.3rem; min-height:100px; max-width:720px; margin: 0 auto;">
+            {% if not can_request_prophecy and wait_until %}
+              <b>
+                Kahine tekrar danışmak için  
+                <span id="waitTime">
+                  {{ wait_until|date:"d.m.Y H:i" }}
+                </span>  
+                beklemelisiniz.
+              </b>
+              <script>
+                // Kalan zamanı canlı göster
+                const waitUntil = new Date("{{ wait_until|date:'Y-m-d H:i:s' }}".replace(' ', 'T'));
+                function updateWaitTime() {
+                  const now = new Date();
+                  let diff = Math.max(0, (waitUntil - now)/1000);
+                  let h = Math.floor(diff/3600);
+                  let m = Math.floor((diff%3600)/60);
+                  let s = Math.floor(diff%60);
+                  document.getElementById('waitTime').innerText =
+                    (h>0 ? h+' saat, ':'') + (m>0 ? m+' dk ':'') + s + ' sn';
+                }
+                updateWaitTime();
+                setInterval(updateWaitTime, 1000);
+              </script>
+            {% elif prophecy_result %}
+              <strong>{{ prophecy_result }}</strong>
+            {% else %}
+              <span class="text-muted">Sorunuzu belirledikten sonra tuşa tıklayın.</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="w-100 text-center">
+          <button id="get_prophecy_btn"
+                  class="btn btn-success btn-lg"
+                  style="min-width:200px;"
+                  {% if not can_request_prophecy %}disabled{% endif %}>
+            Yanıtı Duy
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  let positive = document.getElementById('id_positive');
+  let negative = document.getElementById('id_negative');
+  let btn = document.getElementById('submit_prophecies_btn');
+
+  function checkFields() {
+    if (btn && positive && negative) {
+      btn.disabled = !(positive.value.trim().length > 0 && negative.value.trim().length > 0);
+    }
+  }
+  if (positive && negative) {
+    positive.addEventListener('input', checkFields);
+    negative.addEventListener('input', checkFields);
+    checkFields();
+  }
+
+  let getProphecyBtn = document.getElementById('get_prophecy_btn');
+  let countdownDiv = document.getElementById('countdown');
+  if (getProphecyBtn) {
+    getProphecyBtn.addEventListener('click', function(e) {
+      // Günlük kısıtlama varsa JS'de de kontrol et.
+      if (getProphecyBtn.disabled) return;
+      e.preventDefault();
+      let sec = 5;
+      countdownDiv.style.display = 'block';
+      countdownDiv.textContent = sec;
+      getProphecyBtn.disabled = true;
+      let interval = setInterval(function() {
+        sec -= 1;
+        countdownDiv.textContent = sec;
+        if (sec <= 0) {
+          clearInterval(interval);
+          countdownDiv.style.display = 'none';
+          window.location.href = "{% url 'delphoi_result' %}";
+        }
+      }, 1000);
+    });
+  }
+});
+</script>
+{% endblock %}
+
+<style>
+    .prophecy-field {
+      font-size: 1.05rem;
+      min-height: 48px;
+      resize: vertical;
+    }
+    #prophecyResult {
+      font-size: 1.25rem;
+      min-height: 80px;
+    }
+    .accordion-item {
+      border-radius: 8px !important;
+      overflow: hidden;
+      border: 1px solid #dee2e6;
+    }
+    .accordion-item + .accordion-item {
+      margin-top: 8px;
+    }
+    .badge {
+      font-size: .85em;
+      padding: 0.5em 0.7em;
+    }
+    /* Sticky top behavior for right column GIF and results */
+    @media (max-width: 991px) {
+      .sticky-top {
+        position: static !important;
+      }
+    }
+</style>
