@@ -2955,15 +2955,15 @@ def iat_result(request):
             bias_side = "neutral"
         elif dscore > 0.15:
             if test_type == "gender":
-                bias_label = "Kadınları iyiyle, erkekleri kötüyle daha hızlı eşlediniz (Kadın lehine çağrışım)."
+                bias_label = "Kadınları iyiyle, erkekleri kötüyle daha hızlı eşlediniz (Kadın lehine ön yargılarınız olabilir)."
             else:
-                bias_label = "Türkleri iyiyle, Kürtleri kötüyle daha hızlı eşlediniz (Türk lehine çağrışım)."
+                bias_label = "Türkleri iyiyle, Kürtleri kötüyle daha hızlı eşlediniz (Türk lehine önyargılarınız olabilir)."
             bias_side = "left"
         else:
             if test_type == "gender":
-                bias_label = "Erkekleri iyiyle, kadınları kötüyle daha hızlı eşlediniz (Erkek lehine çağrışım)."
+                bias_label = "Erkekleri iyiyle, kadınları kötüyle daha hızlı eşlediniz (Erkek lehine ön yargılarınız olabilir.)."
             else:
-                bias_label = "Kürtleri iyiyle, Türkleri kötüyle daha hızlı eşlediniz (Kürt lehine çağrışım)."
+                bias_label = "Kürtleri iyiyle, Türkleri kötüyle daha hızlı eşlediniz (Kürt lehine önyargılarınız olabilir.)."
             bias_side = "right"
 
         # Sonucu kaydet

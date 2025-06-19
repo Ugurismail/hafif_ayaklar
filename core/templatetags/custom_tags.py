@@ -3,6 +3,7 @@ from django import template
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from core.models import Question, PollVote, Definition,Reference
+from django.contrib.auth.models import User
 
 
 
@@ -165,23 +166,26 @@ def highlight(text, keyword):
     )
     return mark_safe(highlighted)
 
-
 @register.filter
 def mention_link(text):
-    import re
-    from django.contrib.auth.models import User
-
-    # Kullanıcı adı: harf, rakam, @, ., +, -, _, /, boşluk ve Türkçe karakterler
-    pattern = r'@([\w.@+\-_/ \u00C0-\u017F]+)'
+    # @ ile başlayan ve sonrasında max 3 kelime yakala
+    pattern = r'@([A-Za-z0-9_.\-ğüşöçıİĞÜŞÖÇ ]{1,50})'  # 50 karakterlik kullanıcı adı limiti
 
     def replace(match):
-        username = match.group(1).strip()  # baştaki/sondaki boşlukları kaldırır
-        try:
-            user = User.objects.get(username__iexact=username)
-            url = reverse('user_profile', args=[user.username])
-            return f'<a href="{url}" class="mention">@{username}</a>'
-        except User.DoesNotExist:
-            return f'@{username}'
+        candidate = match.group(1)
+        words = candidate.split()
+        for i in range(len(words), 0, -1):
+            username = ' '.join(words[:i])
+            try:
+                user = User.objects.get(username__iexact=username)
+                url = reverse('user_profile', args=[user.username])
+                # kalan kelimeler ek veya düz metin olur
+                tail = ' '.join(words[i:])
+                return f'<a href="{url}" class="mention">@{username}</a>{(" " + tail) if tail else ""}'
+            except User.DoesNotExist:
+                continue
+        # hiçbiri yoksa düz metin döndür
+        return f'@{candidate}'
 
-    new_text = re.sub(pattern, replace, text)
-    return mark_safe(new_text)
+    result = re.sub(pattern, replace, text)
+    return mark_safe(result)
