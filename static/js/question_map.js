@@ -1,8 +1,9 @@
 // static/js/question_map.js
+
 document.addEventListener('DOMContentLoaded', function () {
     var width = document.getElementById('chart').clientWidth;
     var height = 800;
-    var svg, g, zoom, simulation, link, node, label, userLabelGroup;
+    var svg, g, zoom, simulation, link, node, label, userLabelGroup, arrows;
     var nodesData = [], linksData = [], selectedUsers = [];
     var focusQuestionId = window.focusQuestionId || null;
 
@@ -114,10 +115,10 @@ document.addEventListener('DOMContentLoaded', function () {
         svg = d3.select("#chart").append("svg")
             .attr("width", width).attr("height", height)
             .style("background", "#fafafa");
-    
+
         g = svg.append("g");
         userLabelGroup = g.append("g").attr("class", "user-labels");
-    
+
         // Zoom
         zoom = d3.zoom()
             .scaleExtent([0.05, 5])
@@ -126,21 +127,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateNodeVisibility(event.transform.k);
             });
         svg.call(zoom);
-    
-        // Ok marker
-        var defs = svg.append("defs");
-        defs.append("marker")
-            .attr("id", "arrowhead").attr("viewBox", "-0 -5 10 10")
-            .attr("refX", 25).attr("refY", 0).attr("orient", "auto")
-            .attr("markerWidth", 6).attr("markerHeight", 6)
-            .append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", "#999");
-    
-        // Bağlantılar
+
+        // Çizgiler
         link = g.append("g").attr("class", "links")
             .selectAll("line").data(linksData).enter().append("line")
-            .attr("stroke-width", 2).attr("stroke", "#999")
-            .attr("marker-end", "url(#arrowhead)");
-    
+            .attr("stroke-width", 2).attr("stroke", "#999");
+
+        // Ortada oklar için paths
+        arrows = g.append("g").attr("class", "mid-arrows")
+            .selectAll("path")
+            .data(linksData)
+            .enter().append("path")
+            .attr("fill", "#999")
+            .attr("stroke", "none");
+
         // Düğümler
         node = g.append("g").attr("class", "nodes")
             .selectAll("circle").data(nodesData).enter().append("circle")
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .call(d3.drag()
                 .on("start", dragstarted).on("drag", dragged).on("end", dragended)
             );
-    
+
         // Başlık etiketleri
         label = g.append("g").attr("class", "labels")
             .selectAll("text").data(nodesData).enter().append("text")
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .text(d => d.label)
             .style("font-size", d => (12 + d.users.length * 2) + "px")
             .style("fill", "#222");
-    
+
         // Force simulation
         simulation = d3.forceSimulation(nodesData)
             .force("link", d3.forceLink(linksData)
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .force("center", d3.forceCenter(width / 2, height / 2))
             .force("collide", d3.forceCollide().radius(d => d.size * 1.3))
             .on("tick", ticked);
-    
+
         // Sadece bir kez odaklama yapmak için
         let zoomed = false;
         simulation.on("tick", function() {
@@ -186,10 +186,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
-        
-    
+
         updateNodeVisibility(1);
-    
+
         svg.on("click", function () {
             if (userLabelGroup) userLabelGroup.selectAll("*").remove();
         });
@@ -199,58 +198,54 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (node && typeof node.x === "number" && typeof node.y === "number") {
                     zoomToNode(node);
                 }
-            }, 1000); // 1000 ms = 1 saniye bekle, gerekirse artır (1200-1500 ms deneyebilirsin)
+            }, 1000);
         }
     }
-    
 
     // Kart şeklinde kutu üstünde göster!
     function showNodeUserLabels(event, d) {
         userLabelGroup.selectAll("*").remove();
-    
+
         // Kutu ayarları
         const users = d.users;
-        const maxUsersShown = 12;     // Maksimum gösterilecek kullanıcı
-        const maxPerRow = 4;          // Satır başına kullanıcı
+        const maxUsersShown = 12;
+        const maxPerRow = 4;
         const userBoxWidth = 92, userBoxHeight = 32, userBoxPadding = 10;
         const rowGap = 10;
         const minCardWidth = 250;
         const headerHeight = 35;
         const btnH = 36;
-        const btnGap = 10;
-    
-        // Gösterilecek ve kalan kullanıcıları ayır
+
         let shownUsers = users.slice(0, maxUsersShown);
         let hiddenCount = users.length - shownUsers.length;
-    
+
         // Satırlara böl
         let userRows = [];
         for (let i = 0; i < shownUsers.length; i += maxPerRow) {
             userRows.push(shownUsers.slice(i, i + maxPerRow));
         }
         if (hiddenCount > 0) {
-            // Son satıra ekle
             if (userRows.length === 0 || userRows[userRows.length-1].length === maxPerRow) {
                 userRows.push([]);
             }
             userRows[userRows.length-1].push({username: `…ve ${hiddenCount} kişi daha`, isMore: true});
         }
-    
+
         let rowCount = userRows.length;
         let rowW = Math.max(minCardWidth, Math.min(maxPerRow, userRows[0].length) * (userBoxWidth + userBoxPadding));
         let cardWidth = rowW;
         let cardHeight = headerHeight + rowCount * (userBoxHeight + rowGap) + btnH + 20;
-    
+
         // Kartı node'un üstünde ortala
         let nodeX = d.x, nodeY = d.y - d.size - 22;
         let cardLeft = nodeX - cardWidth / 2;
         let cardTop = nodeY - cardHeight;
-    
+
         // Kart grubu
         let card = userLabelGroup.append("g")
             .attr("class", "user-card")
             .attr("transform", `translate(${cardLeft},${cardTop})`);
-    
+
         // Gölge
         card.append("rect")
             .attr("x", 7).attr("y", 7)
@@ -258,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .attr("width", cardWidth).attr("height", cardHeight)
             .attr("fill", "#1c2c5820")
             .attr("opacity", 0.14);
-    
+
         // Kutu
         card.append("rect")
             .attr("x", 0).attr("y", 0)
@@ -267,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .attr("fill", "#fff")
             .attr("stroke", "#4682ea")
             .attr("stroke-width", 1.5);
-    
+
         // Başlık
         card.append("text")
             .attr("x", cardWidth/2)
@@ -275,31 +270,29 @@ document.addEventListener('DOMContentLoaded', function () {
             .attr("text-anchor", "middle")
             .attr("font-size", "24px")
             .attr("font-weight", "bold")
-            .attr("fill", "#24264b")
-            
-    
+            .attr("fill", "#24264b");
+
         // Kullanıcı etiketleri
         userRows.forEach((row, rowIdx) => {
             row.forEach((user, colIdx) => {
                 let totalUsersInRow = row.length;
                 let totalRowWidth = totalUsersInRow * (userBoxWidth + userBoxPadding) - userBoxPadding;
                 let startX = (cardWidth - totalRowWidth) / 2;
-    
+
                 let x = startX + colIdx * (userBoxWidth + userBoxPadding);
                 let y = headerHeight + rowIdx * (userBoxHeight + rowGap);
-    
+
                 let g = card.append("g")
-                    .style("cursor", user.isMore ? "pointer" : "pointer")
+                    .style("cursor", "pointer")
                     .on("click", function (event) {
                         event.stopPropagation();
                         if (user.isMore) {
-                            // Tüm kullanıcıya özel ayrı bir sayfa açmak istersen burada modal ekleyebilirsin.
                             window.location.href = `/question/${d.question_id}/`;
                         } else {
                             window.location.href = `/question/${d.question_id}/answer/${user.answer_id}/`;
                         }
                     });
-    
+
                 // Kutu
                 g.append("rect")
                     .attr("x", x)
@@ -310,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     .attr("fill", user.isMore ? "#eee" : "#e7edfa")
                     .attr("stroke", "#4682ea")
                     .attr("stroke-width", 1.1);
-    
+
                 g.append("text")
                     .attr("x", x + userBoxWidth/2)
                     .attr("y", y + 21)
@@ -321,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     .text(user.isMore ? user.username : ("@" + user.username));
             });
         });
-    
+
         // Başlığa git butonu
         let btnX = cardWidth/2 - 55, btnY = cardHeight - btnH - 10;
         let group = card.append("g")
@@ -343,12 +336,36 @@ document.addEventListener('DOMContentLoaded', function () {
             .attr("text-anchor", "middle").attr("fill", "#2554A3")
             .attr("font-size", "17px").attr("font-weight", "500").text("Başlığa git");
     }
-    
-    
 
     function ticked() {
-        link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+        // Kenar çizgileri
+        link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+        // Ortada ok çizimi
+        arrows.attr("d", function (d) {
+            let x1 = d.source.x, y1 = d.source.y;
+            let x2 = d.target.x, y2 = d.target.y;
+            let mx = (x1 + x2) / 2;
+            let my = (y1 + y2) / 2;
+            let dx = x2 - x1, dy = y2 - y1;
+            let angle = Math.atan2(dy, dx);
+            let arrowLength = 24, arrowWidth = 10;
+            let tipX = mx + Math.cos(angle) * (arrowLength / 2);
+            let tipY = my + Math.sin(angle) * (arrowLength / 2);
+            let baseX = mx - Math.cos(angle) * (arrowLength / 2);
+            let baseY = my - Math.sin(angle) * (arrowLength / 2);
+            let leftX = baseX + Math.cos(angle + Math.PI/2) * (arrowWidth/2);
+            let leftY = baseY + Math.sin(angle + Math.PI/2) * (arrowWidth/2);
+            let rightX = baseX + Math.cos(angle - Math.PI/2) * (arrowWidth/2);
+            let rightY = baseY + Math.sin(angle - Math.PI/2) * (arrowWidth/2);
+            return `M${leftX},${leftY} L${tipX},${tipY} L${rightX},${rightY} Z`;
+        });
+
+        // Düğümler ve etiketler
         node.attr("cx", d => d.x).attr("cy", d => d.y);
         label.attr("x", d => d.x).attr("y", d => d.y - d.size - 5);
     }
