@@ -3395,104 +3395,29 @@ def delphoi_home(request):
     }
     return render(request, 'core/delphoi_home.html', context)
 
-import random
 
 @login_required
 def delphoi_result(request):
     user = request.user
     question = Question.objects.first()
 
+    # Günlük tıklama kontrolü
     now = timezone.now()
     last_request = DelphoiRequest.objects.filter(user=user, question=question).order_by('-requested_at').first()
-
-    can_request = True
-    wait_until = None
-
     if last_request and (now - last_request.requested_at) < timedelta(hours=24):
-        can_request = False
+        # Hala süresi dolmadıysa, ana sayfaya bekleme zamanı ile dön
         wait_until = last_request.requested_at + timedelta(hours=24)
+        return redirect(f"{request.build_absolute_uri('/delphoi/')}?wait_until={wait_until.isoformat()}")
 
-    prophecy_result = None
-    if can_request:
-        # Rastgele kehanet seç (pozitif/negatif karışık)
-        all_prophecies = list(DelphoiProphecy.objects.filter(question=question))
-        if all_prophecies:
-            prophecy = random.choice(all_prophecies)
-            prophecy_result = prophecy.text
-        else:
-            prophecy_result = "Henüz kehanet bulunamadı. Lütfen kehanet ekleyin."
-        # Yeni istek kaydı oluştur
-        DelphoiRequest.objects.create(user=user, question=question)
-    # else: prophecy_result None olur, mesaj template'te gösterilir.
-
-    context = {
-        'prophecy_result': prophecy_result,
-        'can_request': can_request,
-        'wait_until': wait_until,
-    }
-    return render(request, 'core/delphoi_result.html', context)
-
-    question = Question.objects.first()
+    # Rastgele prophecy seçimi
     prophecies = DelphoiProphecy.objects.filter(question=question)
     if not prophecies.exists():
-        result = "Henüz hiç kehanet girilmemiş!"
+        prophecy_result = "Henüz bir kehanet yok."
     else:
-        prophecy = random.choice(list(prophecies))
-        result = prophecy.text
-    # Sonucu ana sayfaya query param ile gönder
-    return redirect(f"/delphoi/?prophecy_result={result}")
+        prophecy_result = random.choice(list(prophecies)).text
 
-    user = request.user
-    question = Question.objects.first()  # Eğer birden fazla soru yoksa
+    # Kullanıcıya yeni request kaydı aç
+    DelphoiRequest.objects.create(user=user, question=question)
 
-    # Sadece kullanıcıya ait kehanetler
-    prophecies = DelphoiProphecy.objects.filter(user=user, question=question).order_by('-created_at')
-
-    # Düzenleme işlemi (id ile)
-    edit_id = request.GET.get("edit")
-    edit_prophecy = None
-    edit_form = None
-
-    if edit_id:
-        edit_prophecy = get_object_or_404(DelphoiProphecy, id=edit_id, user=user)
-        if request.method == 'POST' and 'save_edit' in request.POST:
-            edit_form = DelphoiProphecyForm(request.POST)
-            # SADECE ilgili alanı required yap, diğeri required olmasın:
-            if edit_prophecy.type == 'positive':
-                edit_form.fields['negative'].required = False
-            else:
-                edit_form.fields['positive'].required = False
-            if edit_form.is_valid():
-                new_text = (
-                    edit_form.cleaned_data['positive'] if edit_prophecy.type == 'positive'
-                    else edit_form.cleaned_data['negative']
-                )
-                if edit_prophecy.text != new_text:
-                    edit_prophecy.text = new_text
-                    edit_prophecy.save()
-                return redirect(f"{request.path}?updated_id={edit_prophecy.id}")
-        else:
-            edit_form = DelphoiProphecyForm(initial={
-                'positive': edit_prophecy.text if edit_prophecy.type == 'positive' else '',
-                'negative': edit_prophecy.text if edit_prophecy.type == 'negative' else '',
-            })
-            # SADECE ilgili alanı required yap, diğeri olmasın:
-            if edit_prophecy.type == 'positive':
-                edit_form.fields['negative'].required = False
-            else:
-                edit_form.fields['positive'].required = False
-
-
-    # Silme işlemi
-    if request.method == 'POST' and 'delete_id' in request.POST:
-        to_delete = get_object_or_404(DelphoiProphecy, id=request.POST['delete_id'], user=user)
-        to_delete.delete()
-        return redirect('delphoi_prophecies_manage')
-
-    context = {
-        'prophecies': prophecies,
-        'edit_id': int(edit_id) if edit_id else None,
-        'edit_form': edit_form,
-        'edit_prophecy': edit_prophecy,
-    }
-    return render(request, 'core/delphoi_prophecies_manage.html', context)
+    # Sonucu ana sayfaya querystring ile dön
+    return redirect(f"{request.build_absolute_uri('/delphoi/')}?prophecy_result={prophecy_result}")
