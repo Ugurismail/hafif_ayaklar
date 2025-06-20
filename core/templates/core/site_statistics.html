@@ -44,7 +44,7 @@
                         <input type="text" id="search_word" name="search_word" class="form-control" value="{{ search_word }}">
                     </div>
                     <div class="col-md-8">
-                        <label for="exclude_words">Hariç Tutulacak Kelimeler (virgülle ayırın):</label>
+                        <label for="exclude_words">Hariç Tutulacak Kelimeler: Virgülle ayırın ve sonra enter tuşuna basın.</label>
                         <input type="text" id="exclude_words" name="exclude_words" class="form-control" value="{{ exclude_words_input }}">
                     </div>
                 </div>
@@ -72,12 +72,17 @@
                 <li>Toplam Yanıt Sayısı: {{ total_answers }}</li>
                 <li>Toplam Beğeni Sayısı: {{ total_likes }}</li>
                 <li>Toplam Beğenmeme Sayısı: {{ total_dislikes }}</li>
+                <li><strong>Toplam Kelime Sayısı:</strong> {{ total_words }}</li>
+                <li><strong>Toplam Karakter Sayısı:</strong> {{ total_characters }}</li>
+                <li><strong>Ortalama Girdi Başına Kelime:</strong> {{ avg_words_per_entry }}</li>
+                <li><strong>Ortalama Girdi Başına Karakter:</strong> {{ avg_chars_per_entry }}</li>
+                <li><strong>Kullanıcı Başına Ortalama Girdi:</strong> {{ avg_entries_per_user }}</li>
             </ul>
         </div>
 
         <!-- Kullanıcılar Tab -->
         <div class="tab-pane fade {% if active_tab == 'users' %}show active{% endif %}" id="users" role="tabpanel" aria-labelledby="users-tab">
-            <h3 class="mt-3">En Çok Soru Soran Kullanıcılar</h3>
+            <h3 class="mt-3">En Çok Soru Soran/Başlık Açan Kullanıcılar</h3>
             <ul class="mb-4">
                 {% for user in top_question_users %}
                     <li><a href="{% url 'user_profile' user.username %}">{{ user.username }}</a> - {{ user.question_count }} soru</li>

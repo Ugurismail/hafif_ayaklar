@@ -1335,6 +1335,21 @@ def site_statistics(request):
     paginator_references = Paginator(all_references, 5)
     reference_page_number = request.GET.get('reference_page', 1)
     top_references = paginator_references.get_page(reference_page_number)
+    # --- Ek İstatistikler ---
+
+    # Toplam girdi sayısı (soru + yanıt)
+    total_entries = len(all_texts)
+
+    # Toplam kelime ve karakter sayısı
+    total_words = sum(len(re.findall(r'\b\w+\b', text)) for text in all_texts if text)
+    total_characters = sum(len(text) for text in all_texts if text)
+
+    # Ortalama girdi başına kelime ve karakter
+    avg_words_per_entry = round(total_words / total_entries, 2) if total_entries else 0
+    avg_chars_per_entry = round(total_characters / total_entries, 2) if total_entries else 0
+
+    # Kullanıcı başına ortalama girdi (aktif kullanıcılar = user_count)
+    avg_entries_per_user = round(total_entries / user_count, 2) if user_count else 0
 
     context = {
         'active_tab': active_tab,
@@ -1355,6 +1370,11 @@ def site_statistics(request):
         'exclude_words': ', '.join(sorted(exclude_words)),
         'exclude_words_input': exclude_words_input,
         'top_references': top_references,
+        'total_words': total_words,
+        'total_characters': total_characters,
+        'avg_words_per_entry': avg_words_per_entry,
+        'avg_chars_per_entry': avg_chars_per_entry,
+        'avg_entries_per_user': avg_entries_per_user,
     }
     return render(request, 'core/site_statistics.html', context)
 
@@ -2218,7 +2238,11 @@ def poll_detail(request, poll_id):
 
     # Oy kullanma işlemi (POST)
     if request.method == "POST":
-        if not user_vote:  # Sadece ilk oy
+        # Önce: Süre kontrolü
+        if poll.end_date and timezone.now() > poll.end_date:
+            messages.error(request, "Bu anketin süresi dolmuş. Oy kullanamazsınız.")
+            return redirect('poll_detail', poll_id=poll.id)
+        if not user_vote:
             option_id = request.POST.get("option")
             option = get_object_or_404(PollOption, id=option_id, poll=poll)
             PollVote.objects.create(user=request.user, option=option)
@@ -2366,6 +2390,7 @@ def get_user_definitions(request):
         return JsonResponse(response_data, status=200)
     else:
         return JsonResponse({'error': 'invalid method'}, status=405)
+
 @login_required
 def edit_definition(request, definition_id):
     definition = get_object_or_404(Definition, id=definition_id, user=request.user)
@@ -2458,6 +2483,7 @@ def get_all_definitions(request):
                 'username': d.user.username,
                 'usage_count_all': usage_count_all,
             })
+            data_list = sorted(data_list, key=lambda x: -x['usage_count_all'])
 
         return JsonResponse({
             'definitions': data_list,
