@@ -13,7 +13,7 @@ DEBUG = False
 
 # DEBUG = True
 
-ALLOWED_HOSTS = ['uia1.pythonanywhere.com','*']
+ALLOWED_HOSTS = ['uia1.pythonanywhere.com']
 
 # CSRF_COOKIE_SECURE = True
 # SESSION_COOKIE_SECURE = True

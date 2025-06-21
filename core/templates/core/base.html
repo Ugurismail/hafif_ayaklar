@@ -295,10 +295,11 @@
     }
     </style>
 
+{% if user.is_authenticated %}
     <div class="floating-help-btn" id="help-btn" >
         ?
     </div>
-        
+{% endif %}   
 
     {% if user.is_authenticated %}
 <div class="position-fixed bottom-0 end-3 p-3" style="z-index: 9999;">
