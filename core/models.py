@@ -84,7 +84,6 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username}'s profile"
 
-
 class Question(models.Model):
     question_text = models.CharField(max_length=255)
     subquestions = models.ManyToManyField('self', symmetrical=False, related_name='parent_questions', blank=True)

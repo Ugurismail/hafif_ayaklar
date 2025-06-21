@@ -2,6 +2,7 @@ import json
 import random
 import re
 import colorsys
+import uuid
 from collections import Counter, defaultdict
 from datetime import timedelta
 from io import BytesIO
@@ -10,6 +11,7 @@ from .models import IATResult, Kenarda
 # from .models import Kenarda
 from django.conf import settings
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -133,51 +135,43 @@ def get_saved_items(request):
     return JsonResponse({'saved_items': filtered_items})
 
 
-
 def signup(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
             invitation_code = form.cleaned_data['invitation_code']
-            # Davetiye kodunu kontrol et
             try:
-                invitation = Invitation.objects.get(code=invitation_code, is_used=False)
-            except Invitation.DoesNotExist:
-                messages.error(request, 'Geçersiz veya kullanılmış davet kodu.')
+                # Kodun geçerli bir UUID olup olmadığını kontrol et
+                code_uuid = uuid.UUID(str(invitation_code))
+                invitation = Invitation.objects.get(code=code_uuid, is_used=False)
+            except (ValueError, ValidationError, Invitation.DoesNotExist):
+                messages.error(request, 'Geçersiz veya kullanılmış davetiye kodu.')
                 return render(request, 'core/signup.html', {'form': form})
 
-            user = form.save()  # Kullanıcı oluşturuldu
+            user = form.save()
+            # Kullanıcıya profil oluştur
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
+            if user.is_superuser:
+                user_profile.invitation_quota = 999999999
+            user_profile.invitation_quota += invitation.quota_granted
+            user_profile.save()
 
-            # UserProfile'ı kontrol edip oluşturun, eğer yoksa
-            try:
-                user_profile = user.userprofile
-            except UserProfile.DoesNotExist:
-                if user.is_superuser:
-                    quota = 999999999
-                else:
-                    quota = 0
-                user_profile = UserProfile.objects.create(user=user, invitation_quota=quota)
-
-            # Davetiye kodunu kullanılmış olarak işaretle ve quota güncelle
+            # Davetiyeyi kullanılmış yap
             invitation.is_used = True
             invitation.used_by = user
             invitation.save()
 
-            user_profile.invitation_quota += invitation.quota_granted
-            user_profile.save()
-
             login(request, user)
             return redirect('user_homepage')
         else:
-            # Form geçersizse hataları göster
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field}: {error}")
     else:
         form = SignupForm()
-
     return render(request, 'core/signup.html', {'form': form})
 
+from django.contrib import messages
 
 def user_login(request):
     if request.method == 'POST':
@@ -186,6 +180,8 @@ def user_login(request):
             user = form.get_user()
             login(request, user)
             return redirect('user_homepage')
+        else:
+            messages.error(request, "Kullanıcı adı veya şifre hatalı.")  # Hata mesajı
     else:
         form = LoginForm()
     return render(request, 'core/login.html', {'form': form})
