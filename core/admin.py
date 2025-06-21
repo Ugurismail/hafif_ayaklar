@@ -15,7 +15,7 @@ from core.models import (
     Invitation, UserProfile, Question, Answer, 
     Poll, PollOption, PollVote, SavedItem, Vote, PinnedEntry, 
     Entry, RandomSentence, Message, Definition, Reference,CikisTesti, 
-    CikisTestiSoru, CikisTestiSik, CikisTestiResult
+    CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy
 )
 
 # =============================================================================
@@ -285,3 +285,13 @@ class CikisTestiSikAdmin(admin.ModelAdmin):
 @admin.register(CikisTestiResult)
 class CikisTestiResultAdmin(admin.ModelAdmin):
     list_display = ['test', 'user', 'dogru_sayisi', 'toplam_soru', 'completed_at']
+
+@admin.register(DelphoiProphecy)
+class DelphoiProphecyAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'question', 'type', 'short_text', 'created_at']
+    list_filter = ['type', 'created_at', 'question', 'user']
+    search_fields = ['text', 'user__username', 'question__question_text']
+
+    def short_text(self, obj):
+        return obj.text[:60] + ('...' if len(obj.text) > 60 else '')
+    short_text.short_description = "Kehanet"
