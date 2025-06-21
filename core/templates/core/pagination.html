@@ -4,7 +4,9 @@
         <!-- Önceki Sayfa -->
         {% if page_obj.has_previous %}
         <li class="page-item">
-            <a class="page-link" href="?{{ page_param }}={{ page_obj.previous_page_number }}&tab={{ active_tab }}" aria-label="Önceki">
+            <a class="page-link"
+               href="?{% for key, value in request.GET.items %}{% if key != page_param %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}{{ page_param }}={{ page_obj.previous_page_number }}"
+               aria-label="Önceki">
                 <span aria-hidden="true">&lsaquo;</span>
             </a>
         </li>
@@ -18,7 +20,9 @@
 
         <!-- Sayfa Seçici -->
         <li class="page-item">
-            <select class="form-select form-select-sm" onchange="location.href='?{{ page_param }}=' + this.value + '&tab={{ active_tab }}';" style="width: auto; display: inline-block;">
+            <select class="form-select form-select-sm"
+                    onchange="location.href='?{% for key, value in request.GET.items %}{% if key != page_param %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}{{ page_param }}=' + this.value;"
+                    style="width: auto; display: inline-block;">
                 {% for num in page_obj.paginator.page_range %}
                     <option value="{{ num }}" {% if page_obj.number == num %}selected{% endif %}>
                         {{ num }}
@@ -37,7 +41,9 @@
         <!-- Sonraki Sayfa -->
         {% if page_obj.has_next %}
         <li class="page-item">
-            <a class="page-link" href="?{{ page_param }}={{ page_obj.next_page_number }}&tab={{ active_tab }}" aria-label="Sonraki">
+            <a class="page-link"
+               href="?{% for key, value in request.GET.items %}{% if key != page_param %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}{{ page_param }}={{ page_obj.next_page_number }}"
+               aria-label="Sonraki">
                 <span aria-hidden="true">&rsaquo;</span>
             </a>
         </li>
