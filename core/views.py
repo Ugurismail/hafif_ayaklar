@@ -640,7 +640,8 @@ def view_message(request, message_id):
 
 @login_required
 def user_list(request):
-    users = User.objects.exclude(id=request.user.id) \
+    users = User.objects.filter(is_active=True) \
+                        .exclude(id=request.user.id) \
                         .annotate(username_lower=Lower('username')) \
                         .order_by('username_lower')
     paginator = Paginator(users, 36)  # Sayfa başına 36 kullanıcı
