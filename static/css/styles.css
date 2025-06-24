@@ -1,3 +1,82 @@
+@import url("https://fonts.googleapis.com/css?family={{ user.userprofile.font_family|urlencode }}");
+:root {
+    --secondary-button-background-color: #6c757d;
+    --secondary-button-hover-background-color: #495057;
+    --secondary-button-text-color: #fff;
+    --font-size: 16px;
+    --message-bubble: #f1f5fa;
+    --tbas-color: #222;
+    --background-color: #fff;
+    --text-color: #111;
+    --header-background-color: #343a40;
+    --header-text-color: #fff;
+    --link-color: #007bff;
+    --link-hover-color: #0056b3;
+    --button-background-color: #007bff;
+    --button-hover-background-color: #0056b3;
+    --button-text-color: #fff;
+    --hover-background-color: #e9ecef;
+    --icon-color: #6c757d;
+    --icon-hover-color: #343a40;
+    --answer-background-color: #fff;
+    --content-background-color: #f8f9fa;
+    --tab-background-color: #e9ecef;
+    --tab-text-color: #495057;
+    --tab-active-background-color: #fff;
+    --tab-active-text-color: #495057;
+    --dropdown-text-color: #fff;
+    --dropdown-hover-background-color: #495057;
+    --dropdown-hover-text-color: #fff;
+    --nav-link-hover-color: #fff;
+    --nav-link-hover-bg: #d3e2f1;
+    --pagination-background-color: #f1f1f1;
+    --pagination-text-color: #333;
+    --body-font-family: "EB Garamond", serif;
+    --yanit-card-background-color: #f9f9f9;
+    /* ... diğer tüm değişkenler için default ... */
+}
+
+:root {
+    --secondary-button-background-color : {{ user.userprofile.secondary_button_background_color }};
+    --secondary-button-hover-background-color : {{ user.userprofile.secondary_button_hover_background_color }};
+    --secondary-button-text-color : {{ user.userprofile.secondary_button_text_color }};
+    --font-size: {{ user.userprofile.font_size }}px;
+
+    --message-bubble: {{ user.userprofile.message_bubble_color }};
+    --tbas-color: {{ user.userprofile.tbas_color }};
+    --background-color: {{ user.userprofile.background_color }};
+    --text-color: {{ user.userprofile.text_color }};
+    --header-background-color: {{ user.userprofile.header_background_color }};
+    --header-text-color: {{ user.userprofile.header_text_color }};
+    --link-color: {{ user.userprofile.link_color }};
+    --link-hover-color: {{ user.userprofile.link_hover_color }};
+    --button-background-color: {{ user.userprofile.button_background_color }};
+    --button-hover-background-color: {{ user.userprofile.button_hover_background_color }};
+    --button-text-color: {{ user.userprofile.button_text_color }};
+    --hover-background-color: {{ user.userprofile.hover_background_color }};
+    --icon-color: {{ user.userprofile.icon_color }};
+    --icon-hover-color: {{ user.userprofile.icon_hover_color }};
+    --answer-background-color: {{ user.userprofile.answer_background_color }};
+    --content-background-color: {{ user.userprofile.content_background_color }};
+    --tab-background-color: {{ user.userprofile.tab_background_color }};
+    --tab-text-color: {{ user.userprofile.tab_text_color }};
+    --tab-active-background-color: {{ user.userprofile.tab_active_background_color }};
+    --tab-active-text-color: {{ user.userprofile.tab_active_text_color }};
+    --dropdown-text-color: {{ user.userprofile.dropdown_text_color }};
+    --dropdown-hover-background-color: {{ user.userprofile.dropdown_hover_background_color }};
+    --dropdown-hover-text-color: {{ user.userprofile.dropdown_hover_text_color }};
+    --nav-link-hover-color: {{ user.userprofile.nav_link_hover_color }};
+    --nav-link-hover-bg: {{ user.userprofile.nav_link_hover_bg }};
+
+    --pagination-background-color: {{ user.userprofile.pagination_background_color }};
+    --pagination-text-color: {{ user.userprofile.pagination_text_color }};
+    /* --pagination-active-background-color: {{ user.userprofile.pagination_active_background_color }};
+    --pagination-active-text-color: {{ user.userprofile.pagination_active_text_color }}; */
+    --body-font-family: "{{ user.userprofile.font_family }}";
+    --yanit-card-background-color: {{ user.userprofile.yanit_card }}
+    
+    /* vs. diğer değişkenler */
+  }
 /* General Styles */
 body {
     background-color: var(--background-color, #ffffff);
