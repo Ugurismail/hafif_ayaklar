@@ -810,7 +810,18 @@ document.addEventListener('DOMContentLoaded', function() {
     setupDynamicSearch('#questionsSearchInput', "{% url 'get_user_questions' %}", '#questionsList', renderQuestions);
     setupDynamicSearch('#answersSearchInput', "{% url 'get_user_answers' %}", '#answersList', renderAnswers);
     setupDynamicSearch('#savedItemsSearchInput', "{% url 'get_saved_items' %}", '#savedItemsList', renderSavedItems);
+    $('#answersSearchInput').on('input', function() {
+      if ($(this).val().trim() === '') {
+          window.location.href = window.location.pathname + "?tab=girdiler";
+          // window.location.reload(); // alternatif
+      }
   });
+  $('#savedItemsSearchInput').on('input', function() {
+    if ($(this).val().trim() === '') {
+        window.location.href = window.location.pathname + "?tab=kaydedilenler";
+    }
+});
+});
 
   // 7. Sekme seçim ve URL güncelleme
   document.addEventListener('DOMContentLoaded', function() {
