@@ -579,7 +579,7 @@
                   {% endif %}
                 {% endfor %}
               {% else %}
-                <p>Kaydedilmiş soru veya yanıt yok.</p>
+                <p>Diğer kullanıcının kaydedilenlerini göremezsiniz.</p>
               {% endif %}
             </div>
             
@@ -787,41 +787,127 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 
-  function renderSavedItems(data, container) {
-    if(data.saved_items && data.saved_items.length > 0) {
-      $.each(data.saved_items, function(i, item) {
-        container.append(
-          '<div class="mb-3"><a href="' + item.detail_url + '" class="text-decoration-none">' +
-          item.text +
-          '</a></div>'
-        );
-      });
-    } else {
-      container.append('<p>Sonuç bulunamadı.</p>');
-    }
+function renderSavedItems(data, container) {
+  if (data.saved_items && data.saved_items.length > 0) {
+    $.each(data.saved_items, function(i, item) {
+      let html = '';
+      if (item.type === 'question') {
+        html = `
+          <div class="mb-3 p-2 border rounded card">
+            <p>
+              <strong>Soru:</strong>
+              <a href="${item.detail_url}" class="text-decoration-none">
+                ${item.text}
+              </a>
+            </p>
+            <a href="#" class="save-btn btn btn-sm btn-warning"
+               data-content-type="question"
+               data-object-id="${item.id}">
+              Kaydetmeyi Kaldır
+            </a>
+          </div>
+        `;
+      } else if (item.type === 'answer') {
+        html = `
+          <div class="mb-3 p-2 border rounded position-relative card">
+            <p>
+              <strong>Yanıt:</strong>
+              <a href="${item.question_url}#answer-${item.id}" class="text-decoration-none">
+                ${item.question_text}
+              </a>
+            </p>
+            <a href="${item.detail_url}" class="text-body text-decoration-none">
+              ${item.text}
+            </a>
+            <div class="position-absolute top-0 end-0 me-2 mt-2">
+              <a href="#" class="save-btn btn btn-sm btn-link icon-black-white"
+                 data-content-type="answer"
+                 data-object-id="${item.id}"
+                 title="Kaydetmeyi kaldır">
+                <i class="bi bi-bookmark-x fs-5"></i>
+              </a>
+            </div>
+          </div>
+        `;
+      }
+      container.append(html);
+    });
+  } else {
+    container.append('<p>Sonuç bulunamadı.</p>');
   }
+}
+
 
   // 6. Belirtilen inputlar için dinamik aramayı başlatıyoruz
   $(document).ready(function(){
-    // Tanımlar ve kaynaklar için:
-    setupDynamicSearch('#definitionsSearchInput', "{% url 'get_user_definitions' %}", '#definitionsTbody', renderDefinitions);
-    setupDynamicSearch('#referencesSearchInput', "{% url 'get_references' %}", '#referencesTbody', renderReferences);
-    // Soru, yanıt ve kaydedilenler için (varsa diğer dinamik arama inputlarınız):
-    setupDynamicSearch('#questionsSearchInput', "{% url 'get_user_questions' %}", '#questionsList', renderQuestions);
-    setupDynamicSearch('#answersSearchInput', "{% url 'get_user_answers' %}", '#answersList', renderAnswers);
-    setupDynamicSearch('#savedItemsSearchInput', "{% url 'get_saved_items' %}", '#savedItemsList', renderSavedItems);
-    $('#answersSearchInput').on('input', function() {
+  var profileUsername = "{{ profile_user.username }}";  // şablondan dinamik geliyor
+
+  // Ortak dinamik arama fonksiyonu
+  function setupDynamicSearch(inputSelector, endpointUrl, targetSelector, renderFunction, tabName) {
+    $(inputSelector).on('keyup', debounce(function(){
+      var query = $(this).val();
+      $.ajax({
+        url: endpointUrl,
+        data: { q: query },
+        dataType: "json",
+        success: function(data) {
+          var container = $(targetSelector);
+          container.empty();
+          renderFunction(data, container);
+        }
+      });
+    }, 300));
+
+    // Input boşaltıldığında sekmeyi baştan yükle (tam reload ile)
+    $(inputSelector).on('input', function() {
       if ($(this).val().trim() === '') {
-          window.location.href = window.location.pathname + "?tab=girdiler";
-          // window.location.reload(); // alternatif
+        window.location.href = window.location.pathname + "?tab=" + tabName;
       }
-  });
-  $('#savedItemsSearchInput').on('input', function() {
-    if ($(this).val().trim() === '') {
-        window.location.href = window.location.pathname + "?tab=kaydedilenler";
-    }
+    });
+  }
+
+  // Kullanım: Tüm inputlar için çağır (tab adını da ver!)
+  setupDynamicSearch(
+    '#definitionsSearchInput',
+    "{% url 'get_user_definitions' %}?username=" + profileUsername,
+    '#definitionsTbody',
+    renderDefinitions,
+    'tanimlar'
+  );
+  setupDynamicSearch(
+    '#referencesSearchInput',
+    "{% url 'get_references' %}?username=" + profileUsername,
+    '#referencesTbody',
+    renderReferences,
+    'kaynaklarim'
+  );
+  setupDynamicSearch(
+    '#answersSearchInput',
+    "{% url 'get_user_answers' %}?username=" + profileUsername,
+    '#answersList',
+    renderAnswers,
+    'girdiler'
+  );
+  setupDynamicSearch(
+    '#savedItemsSearchInput',
+    "{% url 'get_saved_items' %}?username=" + profileUsername,
+    '#savedItemsList',
+    renderSavedItems,
+    'kaydedilenler'
+  );
 });
-});
+
+// Debounce fonksiyonu (aynen kalacak)
+function debounce(func, delay) {
+  var timeout;
+  return function() {
+    var context = this, args = arguments;
+    clearTimeout(timeout);
+    timeout = setTimeout(function(){
+      func.apply(context, args);
+    }, delay);
+  };
+}
 
   // 7. Sekme seçim ve URL güncelleme
   document.addEventListener('DOMContentLoaded', function() {

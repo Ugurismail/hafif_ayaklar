@@ -66,11 +66,14 @@ from .forms import (
 
 
 
+
 @login_required
 def get_user_questions(request):
+    username = request.GET.get('username')  # Profil sahibinin username’i
     q = request.GET.get('q', '').strip()
-    # İstediğiniz filtreleme: örneğin sadece kendi sorularınız veya profildeki tüm sorular
-    questions = Question.objects.filter(user=request.user)
+    user = get_object_or_404(User, username=username) if username else request.user
+
+    questions = Question.objects.filter(user=user)
     if q:
         questions = questions.filter(question_text__icontains=q)
     data = []
@@ -82,10 +85,14 @@ def get_user_questions(request):
         })
     return JsonResponse({'questions': data})
 
+
 @login_required
 def get_user_answers(request):
+    username = request.GET.get('username')
     q = request.GET.get('q', '').strip()
-    answers = Answer.objects.filter(user=request.user)
+    user = get_object_or_404(User, username=username) if username else request.user
+
+    answers = Answer.objects.filter(user=user)
     if q:
         answers = answers.filter(
             Q(answer_text__icontains=q) | Q(question__question_text__icontains=q)
@@ -94,7 +101,7 @@ def get_user_answers(request):
     for answer in answers:
         data.append({
             'id': answer.id,
-            'question_text': answer.question.question_text,  # Bunu da gönder
+            'question_text': answer.question.question_text,
             'answer_text': answer.answer_text[:80] + '...' if len(answer.answer_text) > 80 else answer.answer_text,
             'detail_url': reverse('single_answer', args=[answer.question.id, answer.id]),
             'question_url': reverse('question_detail', args=[answer.question.id]),
@@ -104,17 +111,18 @@ def get_user_answers(request):
 
 @login_required
 def get_saved_items(request):
+    username = request.GET.get('username')
     q = request.GET.get('q', '').strip()
-    saved_items = SavedItem.objects.filter(user=request.user)
+    user = get_object_or_404(User, username=username) if username else request.user
+
+    saved_items = SavedItem.objects.filter(user=user)
     filtered_items = []
     for item in saved_items:
         instance = item.content_type.get_object_for_this_type(id=item.object_id)
         if item.content_type.model == 'question':
             text = instance.question_text
-            # Soru için sadece başlık aranır
             matches = not q or q.lower() in text.lower()
         elif item.content_type.model == 'answer':
-            # Hem yanıt hem başlık aranır
             text = instance.answer_text
             matches = (
                 not q
@@ -2310,32 +2318,21 @@ def create_definition(request, question_id):
 
 @login_required
 def get_user_definitions(request):
-    """
-    Kullanıcının tanımlarını JSON olarak döndürür.
-    Arama + sayfalama + usage_count eklenmiştir.
-    ?q=abc  => Arama
-    ?page=2 => Sayfa numarası
-    """
     if request.method == 'GET':
+        username = request.GET.get('username')
+        user = get_object_or_404(User, username=username) if username else request.user
         q = request.GET.get('q', '').strip()
         page_num = request.GET.get('page', '1')
 
-        # Sadece kullanıcıya ait Definition’lar
-        defs = Definition.objects.filter(user=request.user)
-
-        # Arama (soru metninde veya tanım metninde?)
-        # d.question.question_text veya d.definition_text
+        defs = Definition.objects.filter(user=user)
         if q:
             defs = defs.filter(
                 Q(definition_text__icontains=q) |
                 Q(question__question_text__icontains=q)
             )
 
-        # Alfabetik sıralama => question_text üzerinden
         defs = defs.order_by('question__question_text')
-
-        # Sayfalama
-        paginator = Paginator(defs, 5)  # sayfa başına 5 kayıt
+        paginator = Paginator(defs, 5)
         try:
             page_obj = paginator.page(page_num)
         except:
@@ -2344,7 +2341,7 @@ def get_user_definitions(request):
         data_list = []
         for d in page_obj.object_list:
             usage_count_self = Answer.objects.filter(
-                user=request.user,
+                user=user,
                 answer_text__icontains=f'(tanim:{d.question.question_text}:{d.id})'
             ).count()
             usage_count_all = Answer.objects.filter(
@@ -2356,8 +2353,8 @@ def get_user_definitions(request):
                 'question_id': d.question.id,
                 'question_text': d.question.question_text,
                 'definition_text': d.definition_text[:80] + '...' if len(d.definition_text) > 80 else d.definition_text,
-                'usage_count_self': usage_count_self,  # Bu tanımı bu kullanıcı kaç kere kullanmış
-                'usage_count_all': usage_count_all,    # Bu tanımı tüm kullanıcılar kaç kere kullanmış
+                'usage_count_self': usage_count_self,
+                'usage_count_all': usage_count_all,
             })
 
         response_data = {
@@ -2368,6 +2365,9 @@ def get_user_definitions(request):
         return JsonResponse(response_data, status=200)
     else:
         return JsonResponse({'error': 'invalid method'}, status=405)
+
+
+
 
 @login_required
 def edit_definition(request, definition_id):
@@ -2494,17 +2494,13 @@ def create_reference(request):
     else:
         return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
 
+@login_required
 def get_references(request):
-    """
-    Referansları arama ve sayfalama ile JSON döndürür.
-    GET parametreleri:
-      - q: arama terimi (opsiyonel)
-      - page: istenen sayfa (varsayılan 1)
-      - page_size: sayfa başı kayıt (varsayılan 10)
-    """
     q = request.GET.get('q', '').strip()
     page = int(request.GET.get('page', 1))
     page_size = int(request.GET.get('page_size', 5))
+    username = request.GET.get('username')
+    user = get_object_or_404(User, username=username) if username else request.user
 
     references = Reference.objects.all()
     if q:
