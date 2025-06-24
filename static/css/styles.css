@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css?family={{ user.userprofile.font_family|urlencode }}");
+
 :root {
     --secondary-button-background-color: #6c757d;
     --secondary-button-hover-background-color: #495057;
