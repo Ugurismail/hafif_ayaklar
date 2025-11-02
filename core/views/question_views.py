@@ -27,7 +27,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
-from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, Kenarda
+from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, Kenarda, UserProfile
 from ..forms import AnswerForm, QuestionForm, StartingQuestionForm
 from ..querysets import get_today_questions_queryset
 from ..utils import paginate_queryset
@@ -49,8 +49,23 @@ def get_user_questions(request):
 
 def question_detail(request, question_id):
     # Public view - anyone can see questions and answers
+
+    # Takip ettiklerim filtresi (sidebar için)
+    followed_param = request.GET.get('followed', '0')
+    show_followed_only = followed_param == '1'
+
     # Soldaki tüm sorular ve pagination
     all_questions = get_today_questions_queryset()
+
+    # Takip ettiklerim filtresi uygulanırsa
+    if show_followed_only and request.user.is_authenticated:
+        try:
+            user_profile = request.user.userprofile
+            followed_user_ids = user_profile.following.values_list('id', flat=True)
+            all_questions = all_questions.filter(user_id__in=followed_user_ids)
+        except UserProfile.DoesNotExist:
+            all_questions = Question.objects.none()
+
     q_page_number = request.GET.get('q_page', 1)
     q_paginator = Paginator(all_questions, 20)
     all_questions_page = q_paginator.get_page(q_page_number)
@@ -149,6 +164,7 @@ def question_detail(request, question_id):
         'filter_username': username,
         'filter_keyword': keyword,
         'is_on_map': is_on_map,
+        'show_followed_only': show_followed_only,
     }
     return render(request, 'core/question_detail.html', context)
 

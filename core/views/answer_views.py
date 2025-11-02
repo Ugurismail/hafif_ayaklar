@@ -19,7 +19,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
-from ..models import Question, Answer, SavedItem, Vote, StartingQuestion
+from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, UserProfile
 from ..forms import AnswerForm
 from ..querysets import get_today_questions_queryset
 from ..utils import paginate_queryset
@@ -115,8 +115,22 @@ def single_answer(request, question_id, answer_id):
     question = get_object_or_404(Question, id=question_id)
     focused_answer = get_object_or_404(Answer, id=answer_id, question=question)
 
+    # Takip ettiklerim filtresi (sidebar için)
+    followed_param = request.GET.get('followed', '0')
+    show_followed_only = followed_param == '1'
+
     # Paginate questions using utility
     all_questions_qs = get_today_questions_queryset()
+
+    # Takip ettiklerim filtresi uygulanırsa
+    if show_followed_only and request.user.is_authenticated:
+        try:
+            user_profile = request.user.userprofile
+            followed_user_ids = user_profile.following.values_list('id', flat=True)
+            all_questions_qs = all_questions_qs.filter(user_id__in=followed_user_ids)
+        except UserProfile.DoesNotExist:
+            all_questions_qs = Question.objects.none()
+
     all_questions_page = paginate_queryset(all_questions_qs, request, 'q_page', 20)
 
     # All answers for this question
@@ -138,6 +152,36 @@ def single_answer(request, question_id, answer_id):
     else:
         form = AnswerForm() if request.user.is_authenticated else None
 
+    # Check if question is on map
+    starting_question_ids = set(StartingQuestion.objects.values_list('question_id', flat=True))
+    is_on_map = (question.id in starting_question_ids) or question.parent_questions.exists()
+
+    # Save count for question
+    content_type_question = ContentType.objects.get_for_model(Question)
+    if request.user.is_authenticated:
+        user_has_saved_question = SavedItem.objects.filter(
+            user=request.user,
+            content_type=content_type_question,
+            object_id=question.id
+        ).exists()
+    else:
+        user_has_saved_question = False
+    question_save_count = SavedItem.objects.filter(
+        content_type=content_type_question,
+        object_id=question.id
+    ).count()
+
+    # Vote value for question
+    if request.user.is_authenticated:
+        question_vote = Vote.objects.filter(
+            user=request.user,
+            content_type=content_type_question,
+            object_id=question.id
+        ).first()
+        question.user_vote_value = question_vote.value if question_vote else 0
+    else:
+        question.user_vote_value = 0
+
     context = {
         'question': question,
         'focused_answer': focused_answer,
@@ -147,5 +191,9 @@ def single_answer(request, question_id, answer_id):
         'form': form,  # Yanıt ekleme formu
         # 'all_questions': all_questions,
         'all_questions_page': all_questions_page,
+        'show_followed_only': show_followed_only,
+        'is_on_map': is_on_map,
+        'user_has_saved_question': user_has_saved_question,
+        'question_save_count': question_save_count,
     }
     return render(request, 'core/single_answer.html', context)
