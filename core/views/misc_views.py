@@ -75,8 +75,23 @@ def user_homepage(request):
     # Public view - anyone can see questions
     # But some features require login
 
+    # Takip ettiklerim filtresi
+    followed_param = request.GET.get('followed', '0')
+    show_followed_only = followed_param == '1'
+
     # 1. Tüm Sorular (ve cevap sayısı) - Using new utility
     all_questions_qs = get_today_questions_queryset().select_related('user')
+
+    # Takip ettiklerim filtresi uygulanırsa
+    if show_followed_only and request.user.is_authenticated:
+        try:
+            user_profile = request.user.userprofile
+            followed_user_ids = user_profile.following.values_list('id', flat=True)
+            all_questions_qs = all_questions_qs.filter(user_id__in=followed_user_ids)
+        except UserProfile.DoesNotExist:
+            # Kullanıcının profili yoksa boş sonuç döndür
+            all_questions_qs = Question.objects.none()
+
     all_questions = paginate_queryset(all_questions_qs, request, 'page', 20)
 
     # 2. Rastgele Cevaplar -- OPTİMİZE (ID ile çek, sonra select_related)
@@ -115,6 +130,7 @@ def user_homepage(request):
         'answer_save_dict': answer_save_dict,
         'all_questions': all_questions,  # Pagineli queryset
         'starting_questions': starting_questions,  # Pagineli queryset
+        'show_followed_only': show_followed_only,
     }
     return render(request, 'core/user_homepage.html', context)
 
