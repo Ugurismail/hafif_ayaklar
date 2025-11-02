@@ -454,6 +454,7 @@ def generate_question_nodes(questions):
             "id": f"q{question.id}",
             "label": question.question_text,
             "users": user_entries,
+            "user_ids": user_ids,  # Add user_ids for statistics calculation
             "size": 20 + 10 * (len(user_entries) - 1),
             "color": node_color,
             "question_id": question.id,

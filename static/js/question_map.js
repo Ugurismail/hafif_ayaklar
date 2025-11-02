@@ -735,22 +735,49 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        // Ask user for resolution scale
+        const scaleInput = prompt(
+            'Çözünürlük seçin (daha yüksek değerler daha net ama daha büyük dosya):\n\n' +
+            '1 = Normal (varsayılan)\n' +
+            '2 = Yüksek (önerilen)\n' +
+            '3 = Çok Yüksek\n' +
+            '4 = Ultra Yüksek (çok fazla node için)',
+            '2'
+        );
+
+        if (!scaleInput) {
+            return; // User cancelled
+        }
+
+        const scale = parseFloat(scaleInput);
+        if (isNaN(scale) || scale < 1 || scale > 4) {
+            alert('Geçersiz değer! 1-4 arası bir sayı girin.');
+            return;
+        }
+
         // Get SVG dimensions
         const bbox = svgElement.getBBox();
-        const width = bbox.width + bbox.x;
-        const height = bbox.height + bbox.y;
+        const baseWidth = Math.max(bbox.width + Math.abs(bbox.x), 800) + 100; // Add padding
+        const baseHeight = Math.max(bbox.height + Math.abs(bbox.y), 600) + 100; // Add padding
+
+        // Apply resolution multiplier
+        const canvasWidth = baseWidth * scale;
+        const canvasHeight = baseHeight * scale;
 
         // Clone and serialize SVG
         const clonedSvg = svgElement.cloneNode(true);
         clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         clonedSvg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+        clonedSvg.setAttribute('width', baseWidth);
+        clonedSvg.setAttribute('height', baseHeight);
+
         const serializer = new XMLSerializer();
         const svgString = serializer.serializeToString(clonedSvg);
 
-        // Create canvas
+        // Create canvas with high resolution
         const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
         const ctx = canvas.getContext('2d');
 
         // Create image from SVG
@@ -761,23 +788,31 @@ document.addEventListener('DOMContentLoaded', function () {
         img.onload = function() {
             // Draw white background
             ctx.fillStyle = '#fafafa';
-            ctx.fillRect(0, 0, width, height);
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            // Scale context for high resolution rendering
+            ctx.scale(scale, scale);
 
             // Draw SVG
-            ctx.drawImage(img, 0, 0);
+            ctx.drawImage(img, 0, 0, baseWidth, baseHeight);
 
             // Convert to PNG and download
             canvas.toBlob(function(blob) {
                 const pngUrl = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = pngUrl;
-                link.download = 'soru_haritasi.png';
+                link.download = `soru_haritasi_${scale}x.png`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(pngUrl);
                 URL.revokeObjectURL(url);
             });
+        };
+
+        img.onerror = function() {
+            alert('PNG oluşturulurken hata oluştu. Lütfen tekrar deneyin.');
+            URL.revokeObjectURL(url);
         };
 
         img.src = url;

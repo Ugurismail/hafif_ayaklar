@@ -674,20 +674,29 @@ def download_entries_pdf(request, username):
     # Container for PDF elements
     elements = []
 
-    # Register Turkish-compatible font (Helvetica supports Latin Extended)
-    # We'll use DejaVu fonts which support Turkish characters
+    # Register Turkish-compatible font
+    # Try to use Helvetica or Arial which support Turkish characters
     try:
-        # Try to register DejaVu Sans font for Turkish support
         import os
-        dejavu_path = '/System/Library/Fonts/Supplemental/DejaVuSans.ttf'
-        if os.path.exists(dejavu_path):
-            pdfmetrics.registerFont(TTFont('DejaVu', dejavu_path))
-            pdfmetrics.registerFont(TTFont('DejaVu-Bold', '/System/Library/Fonts/Supplemental/DejaVuSans-Bold.ttf'))
-            font_name = 'DejaVu'
+
+        # Try Helvetica first (available on macOS)
+        helvetica_path = '/System/Library/Fonts/Helvetica.ttc'
+        if os.path.exists(helvetica_path):
+            # For TTC files, we need to specify subfontIndex
+            pdfmetrics.registerFont(TTFont('TurkishFont', helvetica_path, subfontIndex=0))
+            pdfmetrics.registerFont(TTFont('TurkishFont-Bold', helvetica_path, subfontIndex=1))
+            font_name = 'TurkishFont'
         else:
-            # Fallback to Helvetica (limited Turkish support)
-            font_name = 'Helvetica'
-    except Exception:
+            # Try Arial as fallback
+            arial_path = '/System/Library/Fonts/ArialHB.ttc'
+            if os.path.exists(arial_path):
+                pdfmetrics.registerFont(TTFont('TurkishFont', arial_path, subfontIndex=0))
+                font_name = 'TurkishFont'
+            else:
+                # Last resort: use built-in Helvetica (may not support all Turkish chars)
+                font_name = 'Helvetica'
+    except Exception as e:
+        # If font registration fails, use built-in Helvetica
         font_name = 'Helvetica'
 
     # Define styles
