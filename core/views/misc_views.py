@@ -58,7 +58,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 from ..models import (
     Question, Answer, Vote, SavedItem, StartingQuestion,
-    Reference
+    Reference, UserProfile
 )
 from ..utils import paginate_queryset
 from ..services import VoteSaveService
@@ -383,9 +383,15 @@ def search(request):
 
     # Takip ettiklerim filtresi
     if followed_only and request.user.is_authenticated:
-        followed_user_ids = request.user.following.values_list('id', flat=True)
-        questions = questions.filter(user_id__in=followed_user_ids)
-        answers = answers.filter(user_id__in=followed_user_ids)
+        try:
+            user_profile = request.user.userprofile
+            followed_user_ids = user_profile.following.values_list('id', flat=True)
+            questions = questions.filter(user_id__in=followed_user_ids)
+            answers = answers.filter(user_id__in=followed_user_ids)
+        except UserProfile.DoesNotExist:
+            # Kullanıcının profili yoksa boş sonuç döndür
+            questions = Question.objects.none()
+            answers = Answer.objects.none()
 
     # 6) Arama yeri seçimi
     if search_in == 'question':
