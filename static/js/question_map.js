@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setupButtons();
     setupUserSearch();
+    setupQuestionSearch();
+    setupHashtagSearch();
 
     fetchData('/map-data/', function (data) {
         nodesData = data.nodes;
@@ -88,20 +90,142 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
         function addUserToSelectedList(userId, username) {
-            let li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
-            li.textContent = username;
-            li.dataset.userId = userId;
-            let btn = document.createElement('button');
-            btn.className = 'btn btn-sm btn-danger ms-2';
-            btn.textContent = 'Kaldır';
-            btn.onclick = function () {
+            let container = document.getElementById('selected-users-container');
+            let filterBtn = document.getElementById('btn-filter-users');
+
+            let tag = document.createElement('span');
+            tag.className = 'selected-user-tag';
+            tag.dataset.userId = userId;
+            tag.textContent = username;
+
+            let removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-btn';
+            removeBtn.innerHTML = '&times;';
+            removeBtn.onclick = function () {
                 selectedUsers = selectedUsers.filter(id => id !== userId);
-                selectedList.removeChild(li);
+                container.removeChild(tag);
+                if (selectedUsers.length === 0) {
+                    filterBtn.style.display = 'none';
+                }
             };
-            li.appendChild(btn);
-            selectedList.appendChild(li);
+
+            tag.appendChild(removeBtn);
+            container.appendChild(tag);
+            filterBtn.style.display = 'block';
         }
+    }
+
+    function setupQuestionSearch() {
+        let searchInput = document.getElementById('question-search-input');
+        let resultsDiv = document.getElementById('question-search-results');
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', function () {
+            let q = this.value.trim().toLowerCase();
+            resultsDiv.innerHTML = '';
+
+            if (!q) return;
+
+            // Filter nodes by question text
+            let matches = nodesData.filter(n => n.label.toLowerCase().includes(q)).slice(0, 10);
+
+            if (matches.length) {
+                matches.forEach(n => {
+                    let div = document.createElement('div');
+                    div.className = 'list-group-item list-group-item-action';
+                    div.textContent = n.label;
+                    div.style.cursor = 'pointer';
+                    div.onclick = function () {
+                        highlightAndZoomToNode(n);
+                        searchInput.value = '';
+                        resultsDiv.innerHTML = '';
+                    };
+                    resultsDiv.appendChild(div);
+                });
+            } else {
+                let div = document.createElement('div');
+                div.className = 'list-group-item text-muted';
+                div.textContent = 'Sonuç bulunamadı';
+                resultsDiv.appendChild(div);
+            }
+        });
+    }
+
+    function setupHashtagSearch() {
+        let searchInput = document.getElementById('hashtag-search-input');
+        let resultsDiv = document.getElementById('hashtag-search-results');
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', function () {
+            let q = this.value.trim().replace('#', '').toLowerCase();
+            resultsDiv.innerHTML = '';
+
+            if (!q) return;
+
+            // Fetch hashtags from API
+            fetch('/hashtags/search/?q=' + encodeURIComponent(q))
+                .then(r => r.json())
+                .then(data => {
+                    if (data.hashtags && data.hashtags.length) {
+                        data.hashtags.forEach(h => {
+                            let div = document.createElement('div');
+                            div.className = 'list-group-item list-group-item-action d-flex justify-content-between';
+                            div.style.cursor = 'pointer';
+
+                            let nameSpan = document.createElement('span');
+                            nameSpan.textContent = '#' + h.name;
+
+                            let countBadge = document.createElement('span');
+                            countBadge.className = 'badge bg-primary';
+                            countBadge.textContent = h.usage_count;
+
+                            div.appendChild(nameSpan);
+                            div.appendChild(countBadge);
+
+                            div.onclick = function () {
+                                filterByHashtag(h.name);
+                                searchInput.value = '';
+                                resultsDiv.innerHTML = '';
+                            };
+
+                            resultsDiv.appendChild(div);
+                        });
+                    } else {
+                        let div = document.createElement('div');
+                        div.className = 'list-group-item text-muted';
+                        div.textContent = 'Hashtag bulunamadı';
+                        resultsDiv.appendChild(div);
+                    }
+                });
+        });
+    }
+
+    function highlightAndZoomToNode(targetNode) {
+        // Remove previous highlights
+        node.classed('highlighted-node', false);
+
+        // Highlight target node
+        node.each(function (d) {
+            if (d.id === targetNode.id) {
+                d3.select(this).classed('highlighted-node', true);
+            }
+        });
+
+        // Zoom to node
+        zoomToNode(targetNode);
+
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+            node.classed('highlighted-node', false);
+        }, 3000);
+    }
+
+    function filterByHashtag(hashtagName) {
+        // This would need backend support to filter questions by hashtag
+        // For now, we'll just show an alert
+        alert('Hashtag filtresi: #' + hashtagName + '\n\nBackend desteği eklenmeli.');
+        // TODO: Implement backend endpoint for hashtag filtering
+        // fetchData('/map-data/?hashtag=' + hashtagName, updateGraphFromData);
     }
 
     function updateGraphFromData(data) {
@@ -171,8 +295,7 @@ document.addEventListener('DOMContentLoaded', function () {
             )
             .force("charge", d3.forceManyBody().strength(-200))
             .force("center", d3.forceCenter(width / 2, height / 2))
-            .force("collide", d3.forceCollide().radius(d => d.size * 1.3))
-            .on("tick", ticked);
+            .force("collide", d3.forceCollide().radius(d => d.size * 1.3));
 
         // Sadece bir kez odaklama yapmak için
         let zoomed = false;
@@ -192,14 +315,6 @@ document.addEventListener('DOMContentLoaded', function () {
         svg.on("click", function () {
             if (userLabelGroup) userLabelGroup.selectAll("*").remove();
         });
-        if (focusQuestionId) {
-            setTimeout(function() {
-                let node = nodesData.find(n => String(n.question_id) === String(focusQuestionId));
-                if (node && typeof node.x === "number" && typeof node.y === "number") {
-                    zoomToNode(node);
-                }
-            }, 1000);
-        }
     }
 
     // Kart şeklinde kutu üstünde göster!

@@ -1,41 +1,268 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
+{% block extra_css %}
+<style>
+    /* Sidebar Styles */
+    .map-sidebar {
+        position: fixed;
+        left: 0;
+        top: 60px;
+        width: 320px;
+        height: calc(100vh - 60px);
+        background: var(--content-background-color, #fff);
+        border-right: 2px solid var(--header-background-color, #ddd);
+        padding: 20px;
+        overflow-y: auto;
+        z-index: 1000;
+        transition: transform 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .map-sidebar.collapsed {
+        transform: translateX(-320px);
+    }
+
+    .sidebar-toggle {
+        position: fixed;
+        left: 320px;
+        top: 70px;
+        z-index: 1001;
+        background: var(--button-background-color, #007bff);
+        color: var(--button-text-color, #fff);
+        border: none;
+        border-radius: 0 8px 8px 0;
+        padding: 10px 8px;
+        cursor: pointer;
+        transition: left 0.3s ease, background 0.2s ease;
+        box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .sidebar-toggle:hover {
+        background: var(--button-hover-background-color, #0056b3);
+    }
+
+    .sidebar-toggle.collapsed {
+        left: 0;
+    }
+
+    .map-container {
+        margin-left: 320px;
+        transition: margin-left 0.3s ease;
+        padding: 20px;
+    }
+
+    .map-container.expanded {
+        margin-left: 0;
+    }
+
+    /* Legend Styles */
+    .legend-box {
+        background: var(--content-background-color, #fff);
+        border: 1px solid var(--header-background-color, #ddd);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .legend-color {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        margin-right: 10px;
+        border: 2px solid #333;
+    }
+
+    .legend-label {
+        font-size: 14px;
+        color: var(--text-color, #333);
+    }
+
+    /* Filter Section Styles */
+    .filter-section {
+        margin-bottom: 20px;
+    }
+
+    .filter-section h5 {
+        color: var(--text-color, #333);
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 12px;
+        border-bottom: 2px solid var(--header-background-color, #ddd);
+        padding-bottom: 8px;
+    }
+
+    .btn-filter {
+        width: 100%;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    /* Selected Users */
+    .selected-user-tag {
+        display: inline-flex;
+        align-items: center;
+        background: var(--tab-active-background-color, #e7f3ff);
+        color: var(--tab-active-text-color, #0066cc);
+        padding: 6px 12px;
+        border-radius: 16px;
+        margin: 4px;
+        font-size: 13px;
+    }
+
+    .selected-user-tag .remove-btn {
+        margin-left: 8px;
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        font-weight: bold;
+        padding: 0 4px;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .map-sidebar {
+            width: 100%;
+            transform: translateX(-100%);
+        }
+
+        .map-sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .map-sidebar:not(.collapsed) {
+            transform: translateX(0);
+        }
+
+        .sidebar-toggle {
+            left: auto;
+            right: 20px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+        }
+
+        .sidebar-toggle.collapsed {
+            left: auto;
+        }
+
+        .map-container {
+            margin-left: 0;
+        }
+    }
+
+    /* Search highlight */
+    .highlighted-node {
+        stroke: #ff0;
+        stroke-width: 4px;
+        animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { stroke-opacity: 1; }
+        50% { stroke-opacity: 0.5; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-        <div class="col-md-12 mt-5">
-            <!-- Kontrol Paneli -->
-            <div class="card mb-3">
-                <div class="card-body">
-                    <button class="btn btn-primary btn-block mb-2" id="btn-me">Ben</button>
-                    <button class="btn btn-primary btn-block mb-2" id="btn-all">Tümü</button>
-                    <div id="user-search-container" class="position-relative">
-                        <input type="text" class="form-control mb-0" id="user-search-input" placeholder="Kullanıcı Ara" autocomplete="off">
-                        <!-- Arama Sonuçları İçin Div -->
-                        <div id="user-search-results" class="list-group position-absolute w-100" style="z-index: 1000; display: none;"></div>
-                    </div>
-                    <!-- Seçili Kullanıcılar Listesi -->
-                    <div id="selected-users" class="mt-2">
-                        <h5>Seçili Kullanıcılar:</h5>
-                        <ul id="selected-users-list" class="list-group"></ul>
-                        <button class="btn btn-primary mt-2" id="btn-filter-users">Filtrele</button>
-                    </div>
-                </div>
-            </div>
+<!-- Sidebar Toggle Button -->
+<button class="sidebar-toggle" id="sidebar-toggle">
+    <i class="bi bi-chevron-left" id="toggle-icon"></i>
+</button>
+
+<!-- Sidebar -->
+<div class="map-sidebar" id="map-sidebar">
+    <!-- Legend -->
+    <div class="legend-box">
+        <h5><i class="bi bi-info-circle"></i> Açıklama</h5>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #87ceeb;"></div>
+            <span class="legend-label">Tek kullanıcı</span>
         </div>
-    <div class="row">
-        <div class="col-md-12">
-            <!-- Harita Alanı -->
-            <div id="chart" style="width: 100%; height: 800px; border: 1px solid #ccc;"></div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #9370db;"></div>
+            <span class="legend-label">Çoklu kullanıcı</span>
         </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ff6b6b;"></div>
+            <span class="legend-label">Çok aktif (5+ kişi)</span>
+        </div>
+        <div class="legend-item">
+            <i class="bi bi-arrow-right" style="font-size: 20px; margin-right: 10px;"></i>
+            <span class="legend-label">Alt soru ilişkisi</span>
+        </div>
+        <small class="text-muted">
+            <i class="bi bi-circle" style="font-size: 8px;"></i> Düğüm boyutu = Kullanıcı sayısı
+        </small>
+    </div>
+
+    <!-- Quick Filters -->
+    <div class="filter-section">
+        <h5><i class="bi bi-funnel"></i> Hızlı Filtreler</h5>
+        <button class="btn btn-primary btn-filter" id="btn-me">
+            <i class="bi bi-person-fill"></i> Sadece Benim Sorularım
+        </button>
+        <button class="btn btn-outline-primary btn-filter" id="btn-all">
+            <i class="bi bi-grid-3x3"></i> Tüm Sorular
+        </button>
+    </div>
+
+    <!-- Search Questions -->
+    <div class="filter-section">
+        <h5><i class="bi bi-search"></i> Soru Ara</h5>
+        <input type="text" class="form-control mb-2" id="question-search-input"
+               placeholder="Soru başlığı ara..." autocomplete="off">
+        <div id="question-search-results" class="list-group" style="max-height: 200px; overflow-y: auto;"></div>
+    </div>
+
+    <!-- User Filter -->
+    <div class="filter-section">
+        <h5><i class="bi bi-people-fill"></i> Kullanıcı Filtresi</h5>
+        <div class="position-relative">
+            <input type="text" class="form-control mb-2" id="user-search-input"
+                   placeholder="Kullanıcı ara..." autocomplete="off">
+            <div id="user-search-results" class="list-group position-absolute w-100"
+                 style="z-index: 1000; display: none; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+
+        <div id="selected-users-container" class="mt-2">
+            <!-- Selected user tags will appear here -->
+        </div>
+
+        <button class="btn btn-success btn-filter mt-2" id="btn-filter-users" style="display: none;">
+            <i class="bi bi-check-circle"></i> Filtrele
+        </button>
+    </div>
+
+    <!-- Hashtag Filter -->
+    <div class="filter-section">
+        <h5><i class="bi bi-hash"></i> Hashtag Filtresi</h5>
+        <input type="text" class="form-control mb-2" id="hashtag-search-input"
+               placeholder="#hashtag ara..." autocomplete="off">
+        <div id="hashtag-search-results" class="list-group" style="max-height: 200px; overflow-y: auto;"></div>
     </div>
 </div>
 
-<!-- D3.js kütüphanesi -->
+<!-- Map Container -->
+<div class="map-container" id="map-container">
+    <div id="chart" style="width: 100%; height: calc(100vh - 100px); border: 1px solid #ccc; border-radius: 8px;"></div>
+</div>
+
+<!-- D3.js library -->
 <script src="https://d3js.org/d3.v6.min.js"></script>
 
-<!-- Harita verilerini JavaScript'e aktarmak için -->
-<!-- Harita verilerini JavaScript'e aktarmak için -->
+<!-- Map data -->
 <script id="question-nodes-data" type="application/json">
     {{ question_nodes|safe }}
 </script>
@@ -43,9 +270,33 @@
     var focusQuestionId = "{{ focus_question_id|default:'' }}";
 </script>
 
-
 {% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/question_map.js' %}"></script>
+<script>
+// Sidebar toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('map-sidebar');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const toggleIcon = document.getElementById('toggle-icon');
+    const mapContainer = document.getElementById('map-container');
+
+    toggleBtn.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+        toggleBtn.classList.toggle('collapsed');
+        mapContainer.classList.toggle('expanded');
+
+        // Change icon
+        if (sidebar.classList.contains('collapsed')) {
+            toggleIcon.className = 'bi bi-chevron-right';
+        } else {
+            toggleIcon.className = 'bi bi-chevron-left';
+        }
+
+        // Trigger resize event for D3 to adjust
+        window.dispatchEvent(new Event('resize'));
+    });
+});
+</script>
 {% endblock %}
