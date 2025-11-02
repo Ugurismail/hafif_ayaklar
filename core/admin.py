@@ -12,10 +12,11 @@ from django.contrib import admin
 
 
 from core.models import (
-    Invitation, UserProfile, Question, Answer, 
-    Poll, PollOption, PollVote, SavedItem, Vote, PinnedEntry, 
-    Entry, RandomSentence, Message, Definition, Reference,CikisTesti, 
-    CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy
+    Invitation, UserProfile, Question, Answer,
+    Poll, PollOption, PollVote, SavedItem, Vote, PinnedEntry,
+    Entry, RandomSentence, Message, Definition, Reference,CikisTesti,
+    CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy,
+    QuestionFollow, AnswerFollow, Notification
 )
 
 # =============================================================================
@@ -295,3 +296,46 @@ class DelphoiProphecyAdmin(admin.ModelAdmin):
     def short_text(self, obj):
         return obj.text[:60] + ('...' if len(obj.text) > 60 else '')
     short_text.short_description = "Kehanet"
+
+
+# =============================================================================
+# 5) Takip ve Bildirim Admin Kayıtları
+# =============================================================================
+@admin.register(QuestionFollow)
+class QuestionFollowAdmin(admin.ModelAdmin):
+    list_display = ['user', 'question', 'followed_at']
+    list_filter = ['followed_at']
+    search_fields = ['user__username', 'question__question_text']
+    date_hierarchy = 'followed_at'
+
+
+@admin.register(AnswerFollow)
+class AnswerFollowAdmin(admin.ModelAdmin):
+    list_display = ['user', 'answer', 'followed_at']
+    list_filter = ['followed_at']
+    search_fields = ['user__username', 'answer__answer_text']
+    date_hierarchy = 'followed_at'
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['recipient', 'notification_type', 'sender', 'short_message', 'is_read', 'created_at']
+    list_filter = ['notification_type', 'is_read', 'created_at']
+    search_fields = ['recipient__username', 'sender__username', 'message']
+    date_hierarchy = 'created_at'
+
+    def short_message(self, obj):
+        return obj.message[:60] + ('...' if len(obj.message) > 60 else '')
+    short_message.short_description = 'Mesaj'
+
+    actions = ['mark_as_read', 'mark_as_unread']
+
+    def mark_as_read(self, request, queryset):
+        updated = queryset.update(is_read=True)
+        self.message_user(request, f"{updated} bildirim okundu olarak işaretlendi.")
+    mark_as_read.short_description = "Seçili bildirimleri okundu olarak işaretle"
+
+    def mark_as_unread(self, request, queryset):
+        updated = queryset.update(is_read=False)
+        self.message_user(request, f"{updated} bildirim okunmadı olarak işaretlendi.")
+    mark_as_unread.short_description = "Seçili bildirimleri okunmadı olarak işaretle"

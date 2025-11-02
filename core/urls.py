@@ -145,9 +145,18 @@ urlpatterns = [
     path('hashtags/trending/', views.trending_hashtags, name='trending_hashtags'),
     path('hashtags/all/', views.all_hashtags, name='all_hashtags'),
     path('hashtags/search/', views.search_hashtags, name='search_hashtags'),
-    
 
+    # Notification URLs
+    path('notifications/', views.notification_list, name='notification_list'),
+    path('notifications/<int:notification_id>/mark-read/', views.mark_notification_read, name='mark_notification_read'),
+    path('notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
+    path('notifications/unread-count/', views.get_unread_notification_count, name='get_unread_notification_count'),
 
+    # Follow URLs
+    path('question/<int:question_id>/follow/', views.follow_question, name='follow_question'),
+    path('question/<int:question_id>/unfollow/', views.unfollow_question, name='unfollow_question'),
+    path('answer/<int:answer_id>/follow/', views.follow_answer, name='follow_answer'),
+    path('answer/<int:answer_id>/unfollow/', views.unfollow_answer, name='unfollow_answer'),
 
 
 

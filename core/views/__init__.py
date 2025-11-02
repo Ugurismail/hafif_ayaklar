@@ -17,6 +17,7 @@ from .kenarda_views import *
 from .cikis_test_views import *
 from .delphoi_views import *
 from .hashtag_views import *
+from .notification_views import *
 from .misc_views import *
 
 # Legacy file kept as backup (can be removed after verification)

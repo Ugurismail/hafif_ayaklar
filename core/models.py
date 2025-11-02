@@ -504,3 +504,203 @@ def cleanup_question_hashtags(sender, instance, **kwargs):
     Clean up hashtag usages when question is deleted
     """
     HashtagUsage.objects.filter(question=instance).delete()
+
+
+# ========== FOLLOW SYSTEM MODELS ==========
+
+class QuestionFollow(models.Model):
+    """Track users following specific questions"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followed_questions')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='followers')
+    followed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'question')
+        ordering = ['-followed_at']
+        indexes = [
+            models.Index(fields=['user', '-followed_at']),
+            models.Index(fields=['question', '-followed_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} follows {self.question.question_text}"
+
+
+class AnswerFollow(models.Model):
+    """Track users following specific answers"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followed_answers')
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='followers')
+    followed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'answer')
+        ordering = ['-followed_at']
+        indexes = [
+            models.Index(fields=['user', '-followed_at']),
+            models.Index(fields=['answer', '-followed_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} follows answer {self.answer.id}"
+
+
+# ========== NOTIFICATION SYSTEM ==========
+
+class Notification(models.Model):
+    """Unified notification system for all user notifications"""
+    NOTIFICATION_TYPES = (
+        ('mention', 'Mention'),                    # @username mention
+        ('new_answer', 'New Answer'),              # New answer to followed question
+        ('answer_update', 'Answer Update'),        # Update to followed answer
+        ('question_update', 'Question Update'),    # Update to followed question
+        ('new_subquestion', 'New Subquestion'),    # New subquestion to followed question
+        ('system', 'System'),                      # System notifications
+    )
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='sent_notifications')
+
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    message = models.TextField()
+
+    # Related objects (optional, depending on notification type)
+    related_question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
+    related_answer = models.ForeignKey(Answer, on_delete=models.CASCADE, null=True, blank=True)
+
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', '-created_at']),
+            models.Index(fields=['recipient', 'is_read', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.notification_type} notification for {self.recipient.username}"
+
+    def mark_as_read(self):
+        """Mark this notification as read"""
+        if not self.is_read:
+            self.is_read = True
+            self.save(update_fields=['is_read'])
+
+    @classmethod
+    def create_mention_notification(cls, recipient, sender, answer=None, question=None):
+        """Create a mention notification"""
+        if answer:
+            message = f"{sender.username} seni bir yanıtta bahsetti: {answer.question.question_text}"
+            return cls.objects.create(
+                recipient=recipient,
+                sender=sender,
+                notification_type='mention',
+                message=message,
+                related_answer=answer,
+                related_question=answer.question
+            )
+        elif question:
+            message = f"{sender.username} seni bir başlıkta bahsetti: {question.question_text}"
+            return cls.objects.create(
+                recipient=recipient,
+                sender=sender,
+                notification_type='mention',
+                message=message,
+                related_question=question
+            )
+
+    @classmethod
+    def create_new_answer_notification(cls, recipient, answer):
+        """Create notification for new answer to followed question"""
+        message = f"{answer.user.username} takip ettiğin başlığa yanıt verdi: {answer.question.question_text}"
+        return cls.objects.create(
+            recipient=recipient,
+            sender=answer.user,
+            notification_type='new_answer',
+            message=message,
+            related_answer=answer,
+            related_question=answer.question
+        )
+
+    @classmethod
+    def create_answer_update_notification(cls, recipient, answer):
+        """Create notification for update to followed answer"""
+        message = f"{answer.user.username} takip ettiğin yanıtı güncelledi"
+        return cls.objects.create(
+            recipient=recipient,
+            sender=answer.user,
+            notification_type='answer_update',
+            message=message,
+            related_answer=answer,
+            related_question=answer.question
+        )
+
+    @classmethod
+    def create_question_update_notification(cls, recipient, question):
+        """Create notification for update to followed question"""
+        message = f"{question.user.username} takip ettiğin başlığı güncelledi: {question.question_text}"
+        return cls.objects.create(
+            recipient=recipient,
+            sender=question.user,
+            notification_type='question_update',
+            message=message,
+            related_question=question
+        )
+
+    @classmethod
+    def create_new_subquestion_notification(cls, recipient, subquestion, parent_question):
+        """Create notification for new subquestion to followed question"""
+        message = f"{subquestion.user.username} takip ettiğin başlığa alt soru ekledi: {subquestion.question_text}"
+        return cls.objects.create(
+            recipient=recipient,
+            sender=subquestion.user,
+            notification_type='new_subquestion',
+            message=message,
+            related_question=subquestion
+        )
+
+
+# ========== SIGNALS FOR FOLLOW NOTIFICATIONS ==========
+
+@receiver(post_save, sender=Answer)
+def notify_question_followers_on_new_answer(sender, instance, created, **kwargs):
+    """Notify followers when a new answer is added to a question they follow"""
+    if created:
+        # Get all users following this question
+        followers = QuestionFollow.objects.filter(
+            question=instance.question
+        ).exclude(user=instance.user).select_related('user')
+
+        # Create notifications for each follower
+        for follow in followers:
+            Notification.create_new_answer_notification(
+                recipient=follow.user,
+                answer=instance
+            )
+    else:
+        # Answer was updated - notify answer followers
+        followers = AnswerFollow.objects.filter(
+            answer=instance
+        ).exclude(user=instance.user).select_related('user')
+
+        for follow in followers:
+            Notification.create_answer_update_notification(
+                recipient=follow.user,
+                answer=instance
+            )
+
+
+@receiver(post_save, sender=Question)
+def notify_question_followers_on_update(sender, instance, created, **kwargs):
+    """Notify followers when a question is updated"""
+    if not created:
+        # Question was updated
+        followers = QuestionFollow.objects.filter(
+            question=instance
+        ).exclude(user=instance.user).select_related('user')
+
+        for follow in followers:
+            Notification.create_question_update_notification(
+                recipient=follow.user,
+                question=instance
+            )

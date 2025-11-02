@@ -4,7 +4,7 @@ Utility functions for mention, hashtag processing and pagination
 import re
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Message, Hashtag, HashtagUsage
+from .models import Notification, Hashtag, HashtagUsage
 
 
 def paginate_queryset(queryset, request, page_param='page', per_page=20):
@@ -78,10 +78,9 @@ def extract_hashtags(text):
 def send_mention_notifications(answer, mentioned_usernames):
     """
     Send mention notifications to users
-    Creates Message objects for each mentioned user
+    Creates Notification objects for each mentioned user
     """
     author = answer.user
-    question = answer.question
 
     for username in mentioned_usernames:
         try:
@@ -91,16 +90,11 @@ def send_mention_notifications(answer, mentioned_usernames):
             if mentioned_user == author:
                 continue
 
-            # Create notification message
-            message_body = f"{author.username} sizi bir yanıtta bahsetti: \"{question.question_text}\""
-
-            Message.objects.create(
-                sender=author,
+            # Create mention notification
+            Notification.create_mention_notification(
                 recipient=mentioned_user,
-                body=message_body,
-                message_type='mention',
-                related_answer=answer,
-                related_question=question
+                sender=author,
+                answer=answer
             )
         except User.DoesNotExist:
             # User doesn't exist, skip

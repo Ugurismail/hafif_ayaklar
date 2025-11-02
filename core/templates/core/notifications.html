@@ -1,0 +1,208 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Bildirimler - Hafif Ayaklar{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2 class="mb-4">
+                <i class="bi bi-bell"></i> Bildirimler
+                {% if unread_count > 0 %}
+                <span class="badge bg-danger">{{ unread_count }} okunmamış</span>
+                {% endif %}
+            </h2>
+
+            <!-- Filtreler -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <select class="form-select" id="type-filter">
+                                <option value="">Tüm Tipler</option>
+                                <option value="mention" {% if current_type == 'mention' %}selected{% endif %}>Bahsedenler</option>
+                                <option value="new_answer" {% if current_type == 'new_answer' %}selected{% endif %}>Yeni Yanıtlar</option>
+                                <option value="answer_update" {% if current_type == 'answer_update' %}selected{% endif %}>Yanıt Güncellemeleri</option>
+                                <option value="question_update" {% if current_type == 'question_update' %}selected{% endif %}>Başlık Güncellemeleri</option>
+                                <option value="new_subquestion" {% if current_type == 'new_subquestion' %}selected{% endif %}>Yeni Alt Sorular</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="status-filter">
+                                <option value="">Tümü</option>
+                                <option value="unread" {% if current_status == 'unread' %}selected{% endif %}>Okunmamış</option>
+                                <option value="read" {% if current_status == 'read' %}selected{% endif %}>Okunmuş</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            {% if unread_count > 0 %}
+                            <button class="btn btn-primary w-100" id="mark-all-read-btn">
+                                <i class="bi bi-check-all"></i> Tümünü Okundu İşaretle
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bildirimler Listesi -->
+            <div class="list-group">
+                {% if notifications %}
+                    {% for notification in notifications %}
+                    <div class="list-group-item {% if not notification.is_read %}bg-light border-primary{% endif %}" data-notification-id="{{ notification.id }}">
+                        <div class="d-flex w-100 justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <!-- Bildirim Tipi İkonu -->
+                                <span class="me-2">
+                                    {% if notification.notification_type == 'mention' %}
+                                        <i class="bi bi-at text-primary"></i>
+                                    {% elif notification.notification_type == 'new_answer' %}
+                                        <i class="bi bi-chat-left-text text-success"></i>
+                                    {% elif notification.notification_type == 'answer_update' %}
+                                        <i class="bi bi-pencil text-warning"></i>
+                                    {% elif notification.notification_type == 'question_update' %}
+                                        <i class="bi bi-pencil-square text-info"></i>
+                                    {% elif notification.notification_type == 'new_subquestion' %}
+                                        <i class="bi bi-diagram-3 text-secondary"></i>
+                                    {% endif %}
+                                </span>
+
+                                <!-- Mesaj -->
+                                <strong class="mb-1">{{ notification.message }}</strong>
+
+                                <!-- Zaman -->
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-clock"></i> {{ notification.created_at|timesince }} önce
+                                </small>
+                            </div>
+
+                            <!-- Bağlantılar -->
+                            <div class="ms-3">
+                                {% if notification.related_answer %}
+                                    <a href="{% url 'question_detail' notification.related_question.id %}#answer-{{ notification.related_answer.id }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-box-arrow-up-right"></i> Git
+                                    </a>
+                                {% elif notification.related_question %}
+                                    <a href="{% url 'question_detail' notification.related_question.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-box-arrow-up-right"></i> Git
+                                    </a>
+                                {% endif %}
+
+                                {% if not notification.is_read %}
+                                <button class="btn btn-sm btn-success mark-read-btn" data-id="{{ notification.id }}">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-bell-slash" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="text-muted mt-3">Henüz bildiriminiz yok</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Sayfalama -->
+            {% if notifications.has_other_pages %}
+            <nav aria-label="Bildirimler sayfalama" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if notifications.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ notifications.previous_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">Önceki</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">{{ notifications.number }} / {{ notifications.paginator.num_pages }}</span>
+                    </li>
+
+                    {% if notifications.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ notifications.next_page_number }}{% if current_type %}&type={{ current_type }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">Sonraki</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('[name=csrf-token]').content;
+
+    // Filtre değişikliklerinde sayfa yenile
+    document.getElementById('type-filter').addEventListener('change', function() {
+        const url = new URL(window.location);
+        if (this.value) {
+            url.searchParams.set('type', this.value);
+        } else {
+            url.searchParams.delete('type');
+        }
+        url.searchParams.delete('page');
+        window.location = url;
+    });
+
+    document.getElementById('status-filter').addEventListener('change', function() {
+        const url = new URL(window.location);
+        if (this.value) {
+            url.searchParams.set('status', this.value);
+        } else {
+            url.searchParams.delete('status');
+        }
+        url.searchParams.delete('page');
+        window.location = url;
+    });
+
+    // Tekil bildirim okundu işaretle
+    document.querySelectorAll('.mark-read-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const notifId = this.dataset.id;
+            const notifElement = this.closest('.list-group-item');
+
+            fetch(`/notifications/${notifId}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    notifElement.classList.remove('bg-light', 'border-primary');
+                    this.remove();
+                    // Unread count güncelle
+                    window.location.reload();
+                }
+            });
+        });
+    });
+
+    // Tümünü okundu işaretle
+    const markAllBtn = document.getElementById('mark-all-read-btn');
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function() {
+            fetch('/notifications/mark-all-read/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}
