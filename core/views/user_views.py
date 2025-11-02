@@ -77,6 +77,31 @@ def user_profile(request, username):
     active_tab = request.GET.get('tab', 'girdiler')
     is_own_profile = (request.user == profile_user)
 
+    # Handle invitation creation POST request
+    if request.method == 'POST' and is_own_profile and active_tab == 'davetler':
+        from django.db import transaction
+        from ..forms import InvitationForm
+
+        form = InvitationForm(request.POST)
+        if form.is_valid():
+            quota_granted = form.cleaned_data.get('quota_granted', 0)
+            if user_profile.invitation_quota >= quota_granted:
+                with transaction.atomic():
+                    invitation = form.save(commit=False)
+                    invitation.sender = request.user
+                    invitation.quota_granted = quota_granted
+                    invitation.save()
+
+                    user_profile.invitation_quota -= quota_granted
+                    user_profile.save()
+
+                messages.success(request, f'Davetiye kodu oluşturuldu: {invitation.code}')
+            else:
+                messages.error(request, 'Yetersiz davet hakkı.')
+
+        # Redirect to same page to prevent form resubmission
+        return redirect(f'/profile/{username}/?tab=davetler')
+
     context = {
         'profile_user': profile_user,
         'user_profile': user_profile,
