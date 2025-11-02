@@ -674,6 +674,22 @@ def download_entries_pdf(request, username):
     # Container for PDF elements
     elements = []
 
+    # Register Turkish-compatible font (Helvetica supports Latin Extended)
+    # We'll use DejaVu fonts which support Turkish characters
+    try:
+        # Try to register DejaVu Sans font for Turkish support
+        import os
+        dejavu_path = '/System/Library/Fonts/Supplemental/DejaVuSans.ttf'
+        if os.path.exists(dejavu_path):
+            pdfmetrics.registerFont(TTFont('DejaVu', dejavu_path))
+            pdfmetrics.registerFont(TTFont('DejaVu-Bold', '/System/Library/Fonts/Supplemental/DejaVuSans-Bold.ttf'))
+            font_name = 'DejaVu'
+        else:
+            # Fallback to Helvetica (limited Turkish support)
+            font_name = 'Helvetica'
+    except Exception:
+        font_name = 'Helvetica'
+
     # Define styles
     styles = getSampleStyleSheet()
 
@@ -681,6 +697,7 @@ def download_entries_pdf(request, username):
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
+        fontName=font_name,
         fontSize=24,
         textColor='#2c3e50',
         spaceAfter=30,
@@ -691,6 +708,7 @@ def download_entries_pdf(request, username):
     h1_style = ParagraphStyle(
         'CustomH1',
         parent=styles['Heading1'],
+        fontName=font_name,
         fontSize=16,
         textColor='#2c3e50',
         spaceAfter=12,
@@ -700,6 +718,7 @@ def download_entries_pdf(request, username):
     h2_style = ParagraphStyle(
         'CustomH2',
         parent=styles['Heading2'],
+        fontName=font_name,
         fontSize=14,
         textColor='#34495e',
         spaceAfter=10,
@@ -710,6 +729,7 @@ def download_entries_pdf(request, username):
     h3_style = ParagraphStyle(
         'CustomH3',
         parent=styles['Heading3'],
+        fontName=font_name,
         fontSize=12,
         textColor='#7f8c8d',
         spaceAfter=8,
@@ -721,6 +741,7 @@ def download_entries_pdf(request, username):
     answer_style = ParagraphStyle(
         'AnswerText',
         parent=styles['BodyText'],
+        fontName=font_name,
         fontSize=10,
         textColor='#2c3e50',
         spaceAfter=12,
@@ -731,6 +752,7 @@ def download_entries_pdf(request, username):
     date_style = ParagraphStyle(
         'DateStyle',
         parent=styles['Normal'],
+        fontName=font_name,
         fontSize=8,
         textColor='#95a5a6',
         spaceAfter=6,

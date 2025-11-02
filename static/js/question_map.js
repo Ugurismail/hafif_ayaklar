@@ -396,24 +396,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         const totalUsers = uniqueUsers.size;
 
-        // Determine filter status
-        let filterStatus = 'Tümü';
-        if (selectedUsers.length > 0) {
-            filterStatus = `${selectedUsers.length} Kullanıcı`;
-        } else if (window.location.search.includes('filter=me')) {
-            filterStatus = 'Sadece Ben';
-        } else if (window.location.search.includes('hashtag=')) {
-            const hashtagMatch = window.location.search.match(/hashtag=([^&]+)/);
-            if (hashtagMatch) {
-                filterStatus = `#${decodeURIComponent(hashtagMatch[1])}`;
-            }
-        }
-
         // Update DOM
         document.getElementById('stat-total-nodes').textContent = totalNodes;
         document.getElementById('stat-total-links').textContent = totalLinks;
         document.getElementById('stat-total-users').textContent = totalUsers;
-        document.getElementById('stat-filter-status').textContent = filterStatus;
     }
 
     function createGraph() {
