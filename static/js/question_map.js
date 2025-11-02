@@ -706,23 +706,29 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Handle window resize events (including sidebar toggle)
+    let resizeTimeout;
     window.addEventListener('resize', function() {
-        // Update width based on current container size
-        const newWidth = document.getElementById('chart').clientWidth;
-        if (Math.abs(newWidth - width) > 10) { // Only update if significant change
-            width = newWidth;
+        // Clear previous timeout
+        clearTimeout(resizeTimeout);
 
-            // Update SVG dimensions
-            if (svg) {
-                svg.attr("width", width);
-            }
+        // Wait for CSS transition to complete (300ms) before updating
+        resizeTimeout = setTimeout(function() {
+            const newWidth = document.getElementById('chart').clientWidth;
+            if (Math.abs(newWidth - width) > 10) { // Only update if significant change
+                width = newWidth;
 
-            // Update force center and restart simulation
-            if (simulation) {
-                simulation.force("center", d3.forceCenter(width / 2, height / 2));
-                simulation.alpha(0.3).restart();
+                // Update SVG dimensions
+                if (svg) {
+                    svg.attr("width", width).attr("height", height);
+                }
+
+                // Update force center and restart simulation
+                if (simulation) {
+                    simulation.force("center", d3.forceCenter(width / 2, height / 2));
+                    simulation.alpha(0.3).restart();
+                }
             }
-        }
+        }, 350); // Wait slightly longer than CSS transition (300ms)
     });
 
     function exportSVG() {
