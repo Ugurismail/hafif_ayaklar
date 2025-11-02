@@ -469,6 +469,9 @@ document.addEventListener('DOMContentLoaded', function () {
             .force("center", d3.forceCenter(width / 2, height / 2))
             .force("collide", d3.forceCollide().radius(d => d.size * 1.3));
 
+        // Update SVG dimensions when width changes
+        svg.attr("width", width).attr("height", height);
+
         // Sadece bir kez odaklama yapmak için
         let zoomed = false;
         simulation.on("tick", function() {

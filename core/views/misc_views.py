@@ -368,11 +368,11 @@ def search(request):
             hashtag = Hashtag.objects.get(name__iexact=hashtag_param)
             # HashtagUsage üzerinden hem question hem answer'ları filtrele
             question_ids = hashtag.usages.filter(
-                content_type__model='question'
-            ).values_list('object_id', flat=True)
+                question__isnull=False
+            ).values_list('question_id', flat=True)
             answer_ids = hashtag.usages.filter(
-                content_type__model='answer'
-            ).values_list('object_id', flat=True)
+                answer__isnull=False
+            ).values_list('answer_id', flat=True)
 
             questions = questions.filter(id__in=question_ids)
             answers = answers.filter(id__in=answer_ids)
