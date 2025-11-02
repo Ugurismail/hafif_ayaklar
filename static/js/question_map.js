@@ -29,12 +29,14 @@ document.addEventListener('DOMContentLoaded', function () {
         let btnFilter = document.getElementById('btn-filter-users');
         if (btnMe) btnMe.onclick = function () {
             selectedUsers = [];
-            document.getElementById('selected-users-list').innerHTML = '';
+            let container = document.getElementById('selected-users-container');
+            if (container) container.innerHTML = '';
             fetchData('/map-data/?filter=me', updateGraphFromData);
         };
         if (btnAll) btnAll.onclick = function () {
             selectedUsers = [];
-            document.getElementById('selected-users-list').innerHTML = '';
+            let container = document.getElementById('selected-users-container');
+            if (container) container.innerHTML = '';
             fetchData('/map-data/', updateGraphFromData);
         };
         if (btnFilter) btnFilter.onclick = function () {
@@ -48,7 +50,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function setupUserSearch() {
         let searchInput = document.getElementById('user-search-input');
         let resultsDiv = document.getElementById('user-search-results');
-        let selectedList = document.getElementById('selected-users-list');
         let currentFocus = -1;
 
         if (!searchInput) return;
