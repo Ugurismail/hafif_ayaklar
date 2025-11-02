@@ -1,0 +1,88 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+{% block title %}Tüm Hashtag'ler{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="mb-3">
+                        <i class="bi bi-hash"></i> Tüm Hashtag'ler
+                    </h2>
+                    <p class="text-muted">Toplam {{ total_count }} hashtag</p>
+                </div>
+            </div>
+
+            <!-- Hashtags Grouped by Letter -->
+            {% if hashtag_dict %}
+                {% for letter, tags in hashtag_dict %}
+                    <div class="card mb-3">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0">{{ letter }}</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for hashtag in tags %}
+                                    <div class="col-md-4 col-sm-6 mb-2">
+                                        <a href="{% url 'hashtag_view' hashtag.name %}" class="text-decoration-none">
+                                            #{{ hashtag.name }}
+                                        </a>
+                                        <span class="text-muted small">({{ hashtag.usage_count }})</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">
+                    Henüz hashtag bulunmuyor.
+                </div>
+            {% endif %}
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">İlk</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Önceki</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Sonraki</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Son</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+
+            <!-- Back Link -->
+            <div class="mt-4">
+                <a href="{% url 'trending_hashtags' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-fire"></i> Trend Hashtag'ler
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

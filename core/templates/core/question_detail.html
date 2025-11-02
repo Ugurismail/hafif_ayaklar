@@ -151,11 +151,22 @@
                 <!-- Kaydet -->
                 <a href="#"
                   class="save-btn ms-2"
-                  data-content-type="question" data-object-id="{{ question.id }}" 
+                  data-content-type="question" data-object-id="{{ question.id }}"
                   title="Kaydet">
                   <i class="{% if user_has_saved_question %}bi bi-bookmark-fill{% else %}bi bi-bookmark{% endif %}"></i>
                 </a>
                 <span class="save-count icon-number">{{ question_save_count }}</span>
+
+                {% if user.is_authenticated %}
+                <!-- Mevcut Başlığı Bağla -->
+                <a href="#"
+                   class="save-btn ms-2"
+                   data-bs-toggle="modal"
+                   data-bs-target="#linkExistingQuestionModal"
+                   title="Mevcut Başlığı Alt Soru Olarak Ekle">
+                  <i class="bi bi-link-45deg"></i>
+                </a>
+                {% endif %}
               </div>
               <div class="text-end">
                 <small class="">
@@ -174,15 +185,15 @@
                   <div class="card-body">
                     {% if answer.answer_text|length > 1000 %}
                       <div class="answer-text" id="answer-summary-{{ answer.id }}">
-                        {{ answer.answer_text|slice:":1000"|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+                        {{ answer.answer_text|slice:":1000"|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
                       </div>
                       <div class="answer-text" id="answer-full-{{ answer.id }}" style="display: none;">
-                        {{ answer.answer_text|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                        {{ answer.answer_text|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
                       </div>
                       <a href="#" class="read-more" data-answer-id="{{ answer.id }}">Tümünü Göster</a>
                     {% else %}
                       <div class="answer-text">
-                        {{ answer.answer_text|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                        {{ answer.answer_text|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
                       </div>
                     {% endif %}
           
@@ -295,6 +306,7 @@
             {% include 'core/pagination.html' with page_obj=answers_page page_param='a_page' %}
           
             <!-- YANIT EKLEME FORMU -->
+            {% if user.is_authenticated %}
             <div class="card mt-4">
               <div class="card-body yanit-card">
                 <form method="post">
@@ -310,7 +322,7 @@
                       <i class="bi bi-type-italic"></i>
                     </button>
                     <!-- Harici Link Ekle -->
-                    <button type="button" class="btn btn-sm btn-outline-secondary insert-link-btn me-2" 
+                    <button type="button" class="btn btn-sm btn-outline-secondary insert-link-btn me-2"
                             title="Harici WEB Linki Ekleyin">
                       <i class="bi bi-link-45deg"></i> Link Ekle
                     </button>
@@ -344,6 +356,15 @@
                 </form>
               </div>
             </div>
+            {% else %}
+            <div class="card mt-4">
+              <div class="card-body text-center">
+                <p class="mb-3">Yanıt yazmak için üye olmalısınız.</p>
+                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">Giriş Yap</a>
+                <a href="{% url 'signup' %}" class="btn btn-outline-primary ms-2">Üye Ol</a>
+              </div>
+            </div>
+            {% endif %}
           
             </div>
         </div>
@@ -1072,6 +1093,11 @@ document.getElementById('sabaha-birak-btn').onclick = function(e) {
 });
 
   </script>
-  
+
+  <!-- Link Existing Question Modal -->
+  {% include 'core/link_existing_question_modal.html' %}
+
+  <script src="{% static 'js/link_existing_question.js' %}"></script>
+
   {% endblock %}
 

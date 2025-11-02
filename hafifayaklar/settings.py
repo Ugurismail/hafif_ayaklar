@@ -9,12 +9,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4m3!p5t!fy=$22i7m==v!z$d#4-yq33=*1u_^e^=@cot@+9q))')
 
 
-DEBUG = False
+DEBUG = True  # Local development mode
 
-# DEBUG = True
+# DEBUG = False  # Production mode
 
-ALLOWED_HOSTS = ['uia1.pythonanywhere.com']
-                #  '*']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'uia1.pythonanywhere.com']
 
 # CSRF_COOKIE_SECURE = True
 # SESSION_COOKIE_SECURE = True
@@ -47,10 +46,14 @@ MARKDOWNIFY = {
         "WHITELIST_TAGS": [
             'a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
             'em', 'i', 'li', 'ol', 'strong', 'ul', 'p',
-            'pre', 'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'pre', 'img',
         ],
         "WHITELIST_ATTRS": ['href', 'src', 'alt'],
         "WHITELIST_PROTOCOLS": ['http', 'https'],
+        "MARKDOWN_EXTENSIONS": {
+            'markdown.extensions.extra': {},
+            'markdown.extensions.nl2br': {},
+        },
     }
 }
 

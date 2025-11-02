@@ -189,3 +189,54 @@ def mention_link(text):
 
     result = re.sub(pattern, replace, text)
     return mark_safe(result)
+
+@register.filter
+def hashtag_link(text):
+    """
+    Convert #hashtags to clickable links
+    Pattern: #word (alphanumeric + underscore)
+    """
+    # Hashtag pattern - must not be preceded by alphanumeric to avoid mid-word matches
+    pattern = r'(?:^|(?<=[^a-zA-Z0-9_]))#([a-zA-Z0-9_]+)'
+
+    def replace(match):
+        hashtag_name = match.group(1)
+        url = reverse('hashtag_view', args=[hashtag_name.lower()])
+        return f'<a href="{url}" class="hashtag-link">#{hashtag_name}</a>'
+
+    result = re.sub(pattern, replace, text)
+    return mark_safe(result)
+
+@register.filter
+def safe_markdownify(text, arg='default'):
+    """
+    Markdownify with hashtag protection
+    Converts hashtags to placeholders before markdown, then restores them
+    """
+    import uuid
+    from markdownify.templatetags.markdownify import markdownify as original_markdownify
+
+    # Store hashtags with unique placeholders
+    hashtag_map = {}
+    pattern = r'(?:^|(?<=[^a-zA-Z0-9_]))#([a-zA-Z0-9_]+)'
+
+    def replace_with_placeholder(match):
+        hashtag_name = match.group(1)
+        placeholder = f"HASHTAG_{uuid.uuid4().hex[:8]}_{hashtag_name}"
+        url = reverse('hashtag_view', args=[hashtag_name.lower()])
+        hashtag_map[placeholder] = f'<a href="{url}" class="hashtag-link">#{hashtag_name}</a>'
+        # Return placeholder with space before to prevent markdown interpretation
+        prefix = match.group(0)[0] if len(match.group(0)) > 1 and match.group(0)[0] != '#' else ''
+        return f'{prefix}{placeholder}'
+
+    # Replace hashtags with placeholders
+    text_with_placeholders = re.sub(pattern, replace_with_placeholder, text)
+
+    # Apply markdown
+    markdown_result = original_markdownify(text_with_placeholders, arg)
+
+    # Restore hashtags
+    for placeholder, hashtag_html in hashtag_map.items():
+        markdown_result = markdown_result.replace(placeholder, hashtag_html)
+
+    return mark_safe(markdown_result)

@@ -49,9 +49,13 @@ document.addEventListener('DOMContentLoaded', function () {
         let searchInput = document.getElementById('user-search-input');
         let resultsDiv = document.getElementById('user-search-results');
         let selectedList = document.getElementById('selected-users-list');
+        let currentFocus = -1;
+
         if (!searchInput) return;
+
         searchInput.addEventListener('input', function () {
             let q = this.value.trim();
+            currentFocus = -1;
             if (!q) return resultsDiv.style.display = 'none';
             fetch('/user-search/?q=' + encodeURIComponent(q), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                 .then(r => r.json())
@@ -71,6 +75,45 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
         });
+
+        // Keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            let items = resultsDiv.querySelectorAll('.list-group-item');
+
+            if (e.keyCode === 40) {
+                // Arrow Down
+                e.preventDefault();
+                currentFocus++;
+                if (currentFocus >= items.length) currentFocus = 0;
+                highlightUserItem(items, currentFocus);
+            }
+            else if (e.keyCode === 38) {
+                // Arrow Up
+                e.preventDefault();
+                currentFocus--;
+                if (currentFocus < 0) currentFocus = items.length - 1;
+                highlightUserItem(items, currentFocus);
+            }
+            else if (e.keyCode === 13) {
+                // Enter
+                e.preventDefault();
+                if (currentFocus > -1 && currentFocus < items.length) {
+                    items[currentFocus].click();
+                }
+            }
+        });
+
+        function highlightUserItem(items, index) {
+            // Remove active class from all items
+            for (let i = 0; i < items.length; i++) {
+                items[i].classList.remove('active');
+            }
+            // Add active class to current item
+            if (index >= 0 && index < items.length) {
+                items[index].classList.add('active');
+            }
+        }
+
         resultsDiv.addEventListener('click', function (event) {
             let t = event.target;
             if (t.classList.contains('list-group-item')) {
@@ -82,6 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 searchInput.value = '';
                 resultsDiv.style.display = 'none';
+                currentFocus = -1;
             }
         });
         document.addEventListener('click', function (event) {
@@ -118,11 +162,14 @@ document.addEventListener('DOMContentLoaded', function () {
     function setupQuestionSearch() {
         let searchInput = document.getElementById('question-search-input');
         let resultsDiv = document.getElementById('question-search-results');
+        let currentFocus = -1;
+
         if (!searchInput) return;
 
         searchInput.addEventListener('input', function () {
             let q = this.value.trim().toLowerCase();
             resultsDiv.innerHTML = '';
+            currentFocus = -1;
 
             if (!q) return;
 
@@ -149,6 +196,44 @@ document.addEventListener('DOMContentLoaded', function () {
                 resultsDiv.appendChild(div);
             }
         });
+
+        // Keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            let items = resultsDiv.querySelectorAll('.list-group-item-action');
+
+            if (e.keyCode === 40) {
+                // Arrow Down
+                e.preventDefault();
+                currentFocus++;
+                if (currentFocus >= items.length) currentFocus = 0;
+                highlightQuestionItem(items, currentFocus);
+            }
+            else if (e.keyCode === 38) {
+                // Arrow Up
+                e.preventDefault();
+                currentFocus--;
+                if (currentFocus < 0) currentFocus = items.length - 1;
+                highlightQuestionItem(items, currentFocus);
+            }
+            else if (e.keyCode === 13) {
+                // Enter
+                e.preventDefault();
+                if (currentFocus > -1 && currentFocus < items.length) {
+                    items[currentFocus].click();
+                }
+            }
+        });
+
+        function highlightQuestionItem(items, index) {
+            // Remove active class from all items
+            for (let i = 0; i < items.length; i++) {
+                items[i].classList.remove('active');
+            }
+            // Add active class to current item
+            if (index >= 0 && index < items.length) {
+                items[index].classList.add('active');
+            }
+        }
     }
 
     function setupHashtagSearch() {
@@ -201,6 +286,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function highlightAndZoomToNode(targetNode) {
+        if (!node || !svg) {
+            console.error('Graph not initialized yet');
+            return;
+        }
+
         // Remove previous highlights
         node.classed('highlighted-node', false);
 
@@ -212,11 +302,24 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Zoom to node
-        zoomToNode(targetNode);
+        if (typeof targetNode.x === 'number' && typeof targetNode.y === 'number') {
+            zoomToNode(targetNode);
+        } else {
+            // If node doesn't have position yet, wait for simulation to settle
+            let checkInterval = setInterval(() => {
+                if (typeof targetNode.x === 'number' && typeof targetNode.y === 'number') {
+                    clearInterval(checkInterval);
+                    zoomToNode(targetNode);
+                }
+            }, 100);
+            setTimeout(() => clearInterval(checkInterval), 2000); // timeout after 2s
+        }
 
         // Remove highlight after 3 seconds
         setTimeout(() => {
-            node.classed('highlighted-node', false);
+            if (node) {
+                node.classed('highlighted-node', false);
+            }
         }, 3000);
     }
 

@@ -1,0 +1,509 @@
+/**
+ * Modern Animations & Micro-interactions
+ * Smooth, performant animations for better UX
+ */
+
+/* ========== SMOOTH TRANSITIONS ========== */
+
+* {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* ========== FADE IN ANIMATIONS ========== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Apply fade-in to cards and answers */
+.card, .answer {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.list-group-item {
+    animation: fadeInUp 0.2s ease-out;
+    animation-fill-mode: backwards;
+}
+
+/* Stagger animation for list items */
+.list-group-item:nth-child(1) { animation-delay: 0.05s; }
+.list-group-item:nth-child(2) { animation-delay: 0.1s; }
+.list-group-item:nth-child(3) { animation-delay: 0.15s; }
+.list-group-item:nth-child(4) { animation-delay: 0.2s; }
+.list-group-item:nth-child(5) { animation-delay: 0.25s; }
+
+/* ========== BUTTON HOVER EFFECTS ========== */
+
+.btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== VOTE BUTTON ANIMATIONS ========== */
+
+.vote-btn, .save-btn {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.vote-btn:hover, .save-btn:hover {
+    transform: scale(1.15) rotate(5deg);
+}
+
+.vote-btn:active, .save-btn:active {
+    transform: scale(0.95);
+}
+
+/* Smooth vote state transitions */
+.voted-up, .voted-down {
+    animation: voteScale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes voteScale {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.3);
+    }
+    100% {
+        transform: scale(1.2);
+    }
+}
+
+/* ========== CARD HOVER EFFECTS ========== */
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Prevent transform when dropdown is open to avoid stacking context issues */
+.card:has(.dropdown.show):hover {
+    transform: none !important;
+}
+
+.card.dropdown-active-card:hover {
+    transform: none !important;
+}
+
+/* ========== LINK ANIMATIONS ========== */
+
+a {
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: currentColor;
+    transition: width 0.3s ease;
+}
+
+a:hover::after {
+    width: 100%;
+}
+
+/* Remove underline animation for buttons and nav links */
+.btn::after, .nav-link::after, .vote-btn::after, .save-btn::after {
+    display: none;
+}
+
+/* ========== MODAL ANIMATIONS ========== */
+
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: scale(0.9) translateY(-50px);
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1) translateY(0);
+}
+
+/* ========== DROPDOWN ANIMATIONS ========== */
+
+.dropdown-menu {
+    animation: dropdownSlide 0.3s ease-out;
+    transform-origin: top;
+    /* Removed 'contain' property that was blocking click-outside detection */
+}
+
+@keyframes dropdownSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-item {
+    transition: background-color 0.2s ease, color 0.2s ease;
+    /* Fix: Ensure dropdown items don't overlap */
+    display: block;
+    width: 100%;
+    padding: 0.25rem 1rem;
+    clear: both;
+    text-align: inherit;
+    white-space: nowrap;
+}
+
+/* Note: dropdown-item hover styles (background, color) are handled in styles.css */
+/* Removed translateX animation that was causing overlap issues */
+
+/* ========== SEARCH RESULTS ANIMATION ========== */
+
+#search-results, #user-search-results {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+#search-results .list-group-item,
+#user-search-results .list-group-item {
+    transition: all 0.2s ease;
+}
+
+#search-results .list-group-item:hover,
+#user-search-results .list-group-item:hover {
+    transform: translateX(8px);
+    background-color: var(--hover-background-color, #f0f0f0);
+}
+
+/* ========== NAVBAR SCROLL EFFECT ========== */
+
+.navbar {
+    transition: padding 0.3s ease, box-shadow 0.3s ease;
+}
+
+.navbar.scrolled {
+    padding: 0.5rem 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== LOADING SPINNER ========== */
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: var(--button-background-color, #007bff);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* ========== PULSE ANIMATION FOR NOTIFICATIONS ========== */
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+.badge {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ========== SMOOTH SCROLL ========== */
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* ========== FOCUS STATES ========== */
+
+*:focus {
+    outline: 2px solid var(--button-background-color, #007bff);
+    outline-offset: 2px;
+    transition: outline 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--button-background-color, #007bff);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ========== TEXTAREA EXPAND ANIMATION ========== */
+
+textarea.auto-expand {
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+textarea.auto-expand.expanded {
+    animation: textareaExpand 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes textareaExpand {
+    0% {
+        height: 6em;
+    }
+    100% {
+        height: 24em;
+    }
+}
+
+/* ========== PAGINATION HOVER EFFECTS ========== */
+
+.page-link {
+    transition: all 0.3s ease;
+}
+
+.page-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== ALERT/TOAST ANIMATIONS ========== */
+
+.alert {
+    animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ========== SKELETON LOADING ========== */
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        #f0f0f0 25%,
+        #e0e0e0 50%,
+        #f0f0f0 75%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+    border-radius: 4px;
+}
+
+/* ========== QUESTION/ANSWER LIST HOVER ========== */
+
+.baslik {
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.baslik::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background-color: var(--button-background-color, #007bff);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0;
+    z-index: 1;
+}
+
+.baslik:hover::before {
+    width: 3px;
+}
+
+.baslik:hover {
+    transform: translateX(3px);
+    background-color: var(--hover-background-color, #f8f9fa);
+}
+
+/* ========== ICON ANIMATIONS ========== */
+
+.bi-geo-alt-fill, .bi-pie-chart, .bi-link-45deg {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bi-geo-alt-fill:hover, .bi-pie-chart:hover, .bi-link-45deg:hover {
+    transform: scale(1.2) rotate(5deg);
+}
+
+/* ========== MESSAGE BUBBLE ANIMATION ========== */
+
+.message-item {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.sent-message, .received-message {
+    transition: all 0.3s ease;
+}
+
+.sent-message:hover, .received-message:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== SUBQUESTION LIST ANIMATION ========== */
+
+.subquestions-list .list-group-item {
+    border-left: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.subquestions-list .list-group-item:hover {
+    border-left-color: var(--button-background-color, #007bff);
+    padding-left: 1.5rem;
+}
+
+/* ========== REDUCE MOTION FOR ACCESSIBILITY ========== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ========== CUSTOM SCROLLBAR ========== */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background-color, #f1f1f1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--icon-color, #888);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--icon-hover-color, #555);
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--icon-color, #888) var(--background-color, #f1f1f1);
+}
+
+/* ========== ACTIVE STATE ANIMATIONS ========== */
+
+.list-group-item.active {
+    animation: activeGlow 0.5s ease-out;
+}
+
+@keyframes activeGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+    }
+    100% {
+        box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+    }
+}
+
+/* ========== PERFORMANCE OPTIMIZATIONS ========== */
+
+/* Use GPU acceleration for transforms */
+/* Removed .card from will-change to prevent stacking context issues with dropdowns */
+.btn, .vote-btn, .save-btn {
+    will-change: transform;
+}
+
+/* Prevent layout thrashing */
+.modal {
+    contain: layout style paint;
+}
+
+/* Note: Removed 'contain' from .dropdown-menu as it was preventing auto-close on outside click */

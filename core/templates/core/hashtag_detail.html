@@ -1,0 +1,111 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load custom_tags %}
+{% load markdownify %}
+
+{% block title %}#{{ hashtag.name }} - Hashtag{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Hashtag Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="mb-3">#{{ hashtag.name }}</h2>
+                    <p class="text-muted">
+                        <i class="bi bi-hash"></i> {{ usage_count }} kullanım
+                    </p>
+                </div>
+            </div>
+
+            <!-- Items with this hashtag -->
+            {% if page_obj %}
+                {% for item in page_obj %}
+                    {% if item.type == 'answer' %}
+                        <!-- Answer Card -->
+                        <div class="card mb-3 clickable-card" style="cursor: pointer;" onclick="window.location.href='{% url 'single_answer' item.question.id item.object.id %}'">
+                            <div class="card-header">
+                                <a href="{% url 'question_detail' item.question.id %}" class="text-decoration-none" onclick="event.stopPropagation();">
+                                    <strong>{{ item.question.question_text }}</strong>
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                {% if item.object.answer_text|length > 500 %}
+                                    <div class="answer-text">
+                                        {{ item.object.answer_text|slice:":500"|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+                                    </div>
+                                    <a href="{% url 'single_answer' item.question.id item.object.id %}" class="btn btn-sm btn-link" onclick="event.stopPropagation();">Devamını oku</a>
+                                {% else %}
+                                    <div class="answer-text">
+                                        {{ item.object.answer_text|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                                    </div>
+                                {% endif %}
+                                <div class="mt-2 text-muted small">
+                                    <a href="{% url 'user_profile' item.user.username %}" class="text-decoration-none" onclick="event.stopPropagation();">
+                                        @{{ item.user.username }}
+                                    </a>
+                                    • {{ item.created_at|date:"d M Y, H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                    {% elif item.type == 'question' %}
+                        <!-- Question Card -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{% url 'question_detail' item.object.id %}" class="text-decoration-none">
+                                        {{ item.object.question_text }}
+                                    </a>
+                                </h5>
+                                <div class="mt-2 text-muted small">
+                                    Soru •
+                                    <a href="{% url 'user_profile' item.user.username %}" class="text-decoration-none">
+                                        @{{ item.user.username }}
+                                    </a>
+                                    • {{ item.created_at|date:"d M Y, H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1">İlk</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Önceki</a>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Sonraki</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Son</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    Bu hashtag'i içeren içerik bulunamadı.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

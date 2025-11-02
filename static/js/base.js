@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
+                console.log('Search results:', data.results);  // Debug
                 lastSearchResults = data.results;  // Global olarak sakla
 
                 // Önceki sonuçları temizle
@@ -48,13 +49,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     data.results.forEach(function(item) {
                         var div = document.createElement('div');
                         div.classList.add('list-group-item');
-                        
+
                         div.textContent = item.text;
                         div.dataset.type = item.type;
                         if (item.type === 'question') {
                             div.dataset.id = item.id;
                         } else if (item.type === 'user') {
                             div.dataset.username = item.username;
+                        } else if (item.type === 'hashtag') {
+                            div.dataset.url = item.url;
                         }
                         searchResults.appendChild(div);
                     });
@@ -88,11 +91,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fare tıklamasıyla seçim
     searchResults.addEventListener('click', function(event) {
         var target = event.target;
-        if (target.id === 'create-new-question') {
+
+        // Eğer tıklanan element list-group-item değilse, parent'ını kontrol et
+        if (!target.classList.contains('list-group-item')) {
+            target = target.closest('.list-group-item');
+        }
+
+        if (!target) return;  // Hiçbir list-group-item bulunmadıysa çık
+
+        if (target.id === 'create-new-question' || target.querySelector('#create-new-question')) {
             event.preventDefault();
             var q = searchInput.value.trim();
             window.location.href = '/add_question_from_search/?q=' + encodeURIComponent(q);
-        } 
+        }
         else if (target.classList.contains('list-group-item')) {
             var type = target.dataset.type;
             if (type === 'question') {
@@ -101,6 +112,12 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (type === 'user') {
                 var username = target.dataset.username;
                 window.location.href = '/profile/' + username + '/';
+            } else if (type === 'hashtag') {
+                var url = target.dataset.url;
+                console.log('Hashtag clicked, URL:', url);  // Debug
+                if (url) {
+                    window.location.href = url;
+                }
             }
         }
     });
@@ -178,4 +195,25 @@ document.addEventListener('DOMContentLoaded', function() {
             items[currentFocus].classList.add('active');
         }
     }
+
+    /**
+     * ========== Dropdown Z-Index Fix ==========
+     * Ensures dropdown menus appear above all cards
+     */
+    document.addEventListener('show.bs.dropdown', function(event) {
+        // Find the closest card to the dropdown
+        var card = event.target.closest('.card');
+        if (card) {
+            // Add a class to elevate this card
+            card.classList.add('dropdown-active-card');
+        }
+    });
+
+    document.addEventListener('hide.bs.dropdown', function(event) {
+        // Remove the elevation class when dropdown closes
+        var card = event.target.closest('.card');
+        if (card) {
+            card.classList.remove('dropdown-active-card');
+        }
+    });
 });

@@ -49,20 +49,20 @@
                         {% if answer.answer_text|length > 1000 %}
                         <!-- Kısaltılmış Yanıt -->
                         <div class="answer-text" id="answer-summary-{{ answer.id }}">
-                            {{ answer.answer_text|slice:":1000"|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+                            {{ answer.answer_text|slice:":1000"|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
                         </div>
-                    
+
                         <!-- Tam Yanıt (başlangıçta gizli) -->
                         <div class="answer-text" id="answer-full-{{ answer.id }}" style="display: none;">
-                            {{ answer.answer_text|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                            {{ answer.answer_text|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
                         </div>
-                    
+
                         <!-- "Tümünü göster" / "Tamamını oku" linki -->
                         <a href="#" class="read-more" data-answer-id="{{ answer.id }}">Tümünü Göster</a>
                     {% else %}
                         <!-- 500 karakterden kısaysa doğrudan gösteriyoruz -->
                         <div class="answer-text">
-                            {{ answer.answer_text|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                            {{ answer.answer_text|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
                         </div>
                     {% endif %}
                         <!-- Actions and User Info -->

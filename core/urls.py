@@ -28,6 +28,7 @@ urlpatterns = [
     path('question/<int:question_id>/add-answer/', views.add_answer, name='add_answer'),
     path('question/<int:question_id>/delete/', views.delete_question, name='delete_question'),
     path('question/<int:question_id>/add-subquestion/', views.add_subquestion, name='add_subquestion'),
+    path('question/<int:current_question_id>/add-as-subquestion/', views.add_existing_subquestion, name='add_existing_subquestion'),
     path('question/<int:question_id>/answer/<int:answer_id>/', views.single_answer, name='single_answer'),
 
     # Yanıt İşlemleri
@@ -46,6 +47,7 @@ urlpatterns = [
     path('search_suggestions/', views.search_suggestions, name='search_suggestions'),
     path('reference-search/', views.reference_search, name='reference_search'),
     path('user-search/', views.user_search, name='user_search'),
+    path('search-questions-for-linking/', views.search_questions_for_linking, name='search_questions_for_linking'),
 
     # Kullanıcı Ayarları
     path('settings/', views.user_settings, name='user_settings'),
@@ -136,6 +138,12 @@ urlpatterns = [
 
     path('delphoi/', views.delphoi_home, name='delphoi_home'),
     path('delphoi/result/', views.delphoi_result, name='delphoi_result'),
+
+    # Hashtag URLs
+    path('hashtag/<str:hashtag_name>/', views.hashtag_view, name='hashtag_view'),
+    path('hashtags/trending/', views.trending_hashtags, name='trending_hashtags'),
+    path('hashtags/all/', views.all_hashtags, name='all_hashtags'),
+    path('hashtags/search/', views.search_hashtags, name='search_hashtags'),
     
 
 
@@ -150,4 +158,8 @@ urlpatterns = [
 
 ]
 
+# Custom error handlers
 handler404 = 'core.views.custom_404_view'
+handler403 = 'core.views.custom_403_view'
+handler500 = 'core.views.custom_500_view'
+handler502 = 'core.views.custom_502_view'

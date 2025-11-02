@@ -621,9 +621,7 @@ def add_answer(request, question_id):
             answer.save()
             from .models import Kenarda
             silinen = Kenarda.objects.filter(user=request.user, question=question, is_sent=False)
-            print("SİLİNECEK:", list(silinen))
             deleted_count, _ = silinen.delete()
-            print("Kaç tane silindi:", deleted_count)
             return redirect('question_detail', question_id=question.id)
     else:
         form = AnswerForm()
@@ -692,10 +690,6 @@ def search_suggestions(request):
             'label': question.question_text,
             'url': reverse('question_detail', args=[question.id])
         })
-
-    # Gelen veriyi sunucu konsoluna yazdırın
-
-    print('search_suggestions verisi:', json.dumps({'suggestions': suggestions}, indent=4))
 
     return JsonResponse({'suggestions': suggestions})
 
@@ -1991,10 +1985,31 @@ def send_message_from_user(request, user_id):
 
 def custom_404_view(request, exception):
     # 404 sayfası için özel view
-    # Status kodunu 404 olarak ayarlamayı unutmayın.
     response = render(request, 'core/404.html')
     response.status_code = 404
     return response
+
+
+def custom_403_view(request, exception):
+    # 403 Forbidden sayfası için özel view
+    response = render(request, 'core/403.html')
+    response.status_code = 403
+    return response
+
+
+def custom_500_view(request):
+    # 500 Internal Server Error sayfası için özel view
+    response = render(request, 'core/500.html')
+    response.status_code = 500
+    return response
+
+
+def custom_502_view(request):
+    # 502 Bad Gateway sayfası için özel view
+    response = render(request, 'core/502.html')
+    response.status_code = 502
+    return response
+
 
 @require_POST
 @login_required
@@ -3398,26 +3413,36 @@ def delphoi_home(request):
 
 @login_required
 def delphoi_result(request):
+    from django.db import transaction
+
     user = request.user
     question = Question.objects.first()
 
     # Günlük tıklama kontrolü
     now = timezone.now()
-    last_request = DelphoiRequest.objects.filter(user=user, question=question).order_by('-requested_at').first()
-    if last_request and (now - last_request.requested_at) < timedelta(hours=24):
-        # Hala süresi dolmadıysa, ana sayfaya bekleme zamanı ile dön
-        wait_until = last_request.requested_at + timedelta(hours=24)
-        return redirect(f"{request.build_absolute_uri('/delphoi/')}?wait_until={wait_until.isoformat()}")
 
-    # Rastgele prophecy seçimi
-    prophecies = DelphoiProphecy.objects.filter(question=question)
-    if not prophecies.exists():
-        prophecy_result = "Henüz bir kehanet yok."
-    else:
-        prophecy_result = random.choice(list(prophecies)).text
+    # Transaction içinde atomik kontrol ve kayıt
+    with transaction.atomic():
+        # Son isteği kilitle ve kontrol et
+        last_request = DelphoiRequest.objects.filter(
+            user=user,
+            question=question
+        ).select_for_update().order_by('-requested_at').first()
 
-    # Kullanıcıya yeni request kaydı aç
-    DelphoiRequest.objects.create(user=user, question=question)
+        if last_request and (now - last_request.requested_at) < timedelta(hours=24):
+            # Hala süresi dolmadıysa, ana sayfaya bekleme zamanı ile dön
+            wait_until = last_request.requested_at + timedelta(hours=24)
+            return redirect(f"{request.build_absolute_uri('/delphoi/')}?wait_until={wait_until.isoformat()}")
+
+        # Rastgele prophecy seçimi (veritabanı seviyesinde)
+        prophecy = DelphoiProphecy.objects.filter(question=question).order_by('?').first()
+        if not prophecy:
+            prophecy_result = "Henüz bir kehanet yok."
+        else:
+            prophecy_result = prophecy.text
+
+        # Kullanıcıya yeni request kaydı aç
+        DelphoiRequest.objects.create(user=user, question=question)
 
     # Sonucu ana sayfaya querystring ile dön
     return redirect(f"{request.build_absolute_uri('/delphoi/')}?prophecy_result={prophecy_result}")

@@ -9,6 +9,8 @@ from django.contrib.contenttypes.models import ContentType
 import datetime
 from django.conf import settings
 import re
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 
 
@@ -137,6 +139,12 @@ class Answer(models.Model):
         return f"Answer to {self.question.question_text} by {self.user.username}"
 
 class Message(models.Model):
+    MESSAGE_TYPES = (
+        ('normal', 'Normal'),
+        ('mention', 'Mention'),
+        ('system', 'System'),
+    )
+
     sender = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='sent_messages'
     )
@@ -146,6 +154,11 @@ class Message(models.Model):
     body = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
     is_read = models.BooleanField(default=False)
+    message_type = models.CharField(max_length=10, choices=MESSAGE_TYPES, default='normal')
+
+    # Mention için ilgili answer/question linki
+    related_answer = models.ForeignKey('Answer', on_delete=models.CASCADE, null=True, blank=True)
+    related_question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"{self.sender.username} -> {self.recipient.username}: {self.body[:20]}"
@@ -412,3 +425,82 @@ class DelphoiRequest(models.Model):
     requested_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         unique_together = ('user', 'requested_at', 'question')
+
+class Hashtag(models.Model):
+    name = models.CharField(max_length=100, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"#{self.name}"
+
+    def get_usage_count(self):
+        """Returns total usage count from answers and questions"""
+        return self.answers.count() + self.questions.count()
+
+    def get_recent_answers(self, limit=20):
+        """Returns recent answers containing this hashtag"""
+        return self.answers.select_related('user', 'question').order_by('-created_at')[:limit]
+
+    class Meta:
+        ordering = ['-created_at']
+
+class HashtagUsage(models.Model):
+    """Track hashtag usage in answers and questions"""
+    hashtag = models.ForeignKey(Hashtag, on_delete=models.CASCADE, related_name='usages')
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, null=True, blank=True, related_name='hashtags')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True, related_name='hashtags')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['hashtag', '-created_at']),
+        ]
+
+    def __str__(self):
+        if self.answer:
+            return f"#{self.hashtag.name} in answer {self.answer.id}"
+        return f"#{self.hashtag.name} in question {self.question.id}"
+
+
+# ========== SIGNALS FOR MENTIONS AND HASHTAGS ==========
+
+@receiver(post_save, sender=Answer)
+def process_answer_mentions_and_hashtags(sender, instance, created, **kwargs):
+    """
+    Process mentions and hashtags when an answer is created or updated
+    """
+    from .utils import extract_mentions, send_mention_notifications, process_hashtags
+
+    if created:
+        # Extract and send mention notifications
+        mentioned_usernames = extract_mentions(instance.answer_text)
+        if mentioned_usernames:
+            send_mention_notifications(instance, mentioned_usernames)
+
+    # Process hashtags (both create and update)
+    process_hashtags(answer=instance)
+
+
+@receiver(post_save, sender=Question)
+def process_question_hashtags(sender, instance, created, **kwargs):
+    """
+    Process hashtags when a question is created or updated
+    """
+    from .utils import process_hashtags
+    process_hashtags(question=instance)
+
+
+@receiver(post_delete, sender=Answer)
+def cleanup_answer_hashtags(sender, instance, **kwargs):
+    """
+    Clean up hashtag usages when answer is deleted
+    """
+    HashtagUsage.objects.filter(answer=instance).delete()
+
+
+@receiver(post_delete, sender=Question)
+def cleanup_question_hashtags(sender, instance, **kwargs):
+    """
+    Clean up hashtag usages when question is deleted
+    """
+    HashtagUsage.objects.filter(question=instance).delete()

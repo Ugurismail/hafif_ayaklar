@@ -192,6 +192,12 @@ a:hover {
     padding: 10px;
     border-bottom: 1px solid #ddd;
     background-color: var(--answer-background-color, #ffffff);
+    position: relative;
+    z-index: 1; /* Base z-index for answers */
+}
+
+.answer:has(.dropdown.show) {
+    z-index: 1052 !important; /* Elevate answer when dropdown is open */
 }
 
 mark{
@@ -410,7 +416,57 @@ textarea.auto-expand.expanded {
 /* Dropdown Icons */
 .dropdown-menu {
     background-color: var(--background-color) !important;
-    border-color: var(--text-color) !important; 
+    border-color: var(--text-color) !important;
+    z-index: 9999 !important; /* Maximum z-index to appear above everything */
+    position: absolute !important;
+}
+
+.dropdown.show {
+    z-index: 9998 !important; /* Parent dropdown also needs high z-index when open */
+    position: relative !important;
+}
+
+/* Fix z-index for all elements containing dropdowns */
+.baslik:has(.dropdown.show),
+.card:has(.dropdown.show),
+.list-group-item:has(.dropdown.show),
+.card-body:has(.dropdown.show),
+.action:has(.dropdown.show),
+div:has(> .dropdown.show),
+small:has(.dropdown.show) {
+    z-index: 1052 !important; /* Elevate parent when dropdown is open */
+    position: relative !important;
+}
+
+/* Ensure baslik and list items have base positioning */
+.baslik,
+.list-group-item {
+    position: relative;
+}
+
+/* Fix for cards containing dropdowns */
+.card {
+    position: relative;
+    z-index: 1; /* Low base z-index for all cards */
+}
+
+.card-body {
+    position: relative;
+}
+
+.card-body .action {
+    position: relative;
+}
+
+/* Elevate card that has open dropdown - CSS fallback */
+.card:has(.dropdown.show) {
+    z-index: 10000 !important; /* Much higher than other cards and dropdown menu */
+}
+
+/* Elevate card that has open dropdown - JavaScript-controlled class */
+.card.dropdown-active-card {
+    z-index: 10000 !important;
+    position: relative !important;
 }
 
 .dropdown-menu .dropdown-item:hover{
@@ -823,4 +879,46 @@ span.icon-number {
 textarea.form-control.auto-expand {
     font-size: var(--user-font-size) !important;
     color: var(--text-color) !important;
+}
+
+/* Mention and Hashtag Links */
+a.mention {
+    color: var(--link-color);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 2px 4px;
+    border-radius: 3px;
+    background-color: rgba(0, 123, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+a.mention:hover {
+    background-color: rgba(0, 123, 255, 0.2);
+    color: var(--link-hover-color);
+}
+
+a.hashtag-link {
+    color: #0d6efd;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 2px 4px;
+    border-radius: 3px;
+    background-color: rgba(13, 110, 253, 0.08);
+    transition: all 0.2s ease;
+}
+
+a.hashtag-link:hover {
+    background-color: rgba(13, 110, 253, 0.15);
+    color: #0a58ca;
+    text-decoration: none;
+}
+
+/* Clickable Card Hover Effect */
+.clickable-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.clickable-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }

@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
     <!-- Özel CSS -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     {% block extra_css %}{% endblock extra_css %}
     {% if user.is_authenticated %}
@@ -145,10 +146,15 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="extraMenu">
                             <li>
+                                <a class="dropdown-item" href="{% url 'all_hashtags' %}">
+                                    <i class="bi bi-hash"></i> Etiketler
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item" href="{% url 'kenarda_list' %}">
                                     <i class="bi bi-hourglass"></i> Kenardakiler
                                 </a>
-                            </li>                            
+                            </li>
                             <li>
                                 <a class="dropdown-item" href="{% url 'profile' %}">
                                     <i class="bi bi-person"></i> Profilim
@@ -383,6 +389,7 @@
     <!-- Ana JavaScript dosyalarınız -->
     <script src="{% static 'js/base.js' %}"></script>
     <script src="{% static 'js/message_notifications.js' %}"></script>
+    <script src="{% static 'js/animations.js' %}"></script>
 
     {% block extra_js %}{% endblock %}
     <!-- Navbar küçülme ve transparanlık efekti -->
