@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
         nodesData = data.nodes;
         linksData = data.links;
         createGraph();
+        updateStatistics();
     });
 
     function fetchData(url, callback) {
@@ -403,6 +404,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function createGraph() {
+        // Update width dynamically based on current chart container size
+        width = document.getElementById('chart').clientWidth;
+
         d3.select("#chart").selectAll("*").remove();
         svg = d3.select("#chart").append("svg")
             .attr("width", width).attr("height", height)
