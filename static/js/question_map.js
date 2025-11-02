@@ -705,6 +705,26 @@ document.addEventListener('DOMContentLoaded', function () {
         exportPNG();
     });
 
+    // Handle window resize events (including sidebar toggle)
+    window.addEventListener('resize', function() {
+        // Update width based on current container size
+        const newWidth = document.getElementById('chart').clientWidth;
+        if (Math.abs(newWidth - width) > 10) { // Only update if significant change
+            width = newWidth;
+
+            // Update SVG dimensions
+            if (svg) {
+                svg.attr("width", width);
+            }
+
+            // Update force center and restart simulation
+            if (simulation) {
+                simulation.force("center", d3.forceCenter(width / 2, height / 2));
+                simulation.alpha(0.3).restart();
+            }
+        }
+    });
+
     function exportSVG() {
         const svgElement = d3.select("#chart svg").node();
         if (!svgElement) {
