@@ -325,11 +325,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function filterByHashtag(hashtagName) {
-        // This would need backend support to filter questions by hashtag
-        // For now, we'll just show an alert
-        alert('Hashtag filtresi: #' + hashtagName + '\n\nBackend desteği eklenmeli.');
-        // TODO: Implement backend endpoint for hashtag filtering
-        // fetchData('/map-data/?hashtag=' + hashtagName, updateGraphFromData);
+        // Filter the map by hashtag
+        fetchData('/map-data/?hashtag=' + encodeURIComponent(hashtagName), updateGraphFromData);
     }
 
     function updateGraphFromData(data) {

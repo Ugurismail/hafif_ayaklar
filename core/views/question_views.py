@@ -366,6 +366,7 @@ def question_map(request):
 def map_data_view(request):
     user_ids = request.GET.getlist('user_id')
     filter_param = request.GET.get('filter')
+    hashtag_name = request.GET.get('hashtag')
 
     # Haritada görünmesi gereken sorular:
     # 1. Başlangıç soruları
@@ -384,6 +385,18 @@ def map_data_view(request):
         queryset = queryset.filter(users=request.user)
     elif user_ids:
         queryset = queryset.filter(users__id__in=user_ids).distinct()
+
+    # Hashtag filtresi
+    if hashtag_name:
+        from core.models import Hashtag
+        try:
+            hashtag = Hashtag.objects.get(name=hashtag_name)
+            # Get all answers that use this hashtag
+            answer_ids = hashtag.usages.values_list('answer_id', flat=True)
+            # Filter questions that have answers with this hashtag
+            queryset = queryset.filter(answers__id__in=answer_ids).distinct()
+        except Hashtag.DoesNotExist:
+            queryset = queryset.none()
 
     # Düğümleri oluştur ve JSON olarak döndür
     data = generate_question_nodes(queryset)
