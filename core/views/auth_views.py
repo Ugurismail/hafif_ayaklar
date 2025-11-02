@@ -114,31 +114,5 @@ def send_invitation(request):
 
 @login_required
 def create_invitation(request):
-    user = request.user
-    user_profile = user.userprofile
-
-    if request.method == 'POST':
-        form = InvitationForm(request.POST)
-        if form.is_valid():
-            quota_granted = form.cleaned_data.get('quota_granted', 0)
-            if user_profile.invitation_quota >= quota_granted:
-                with transaction.atomic():
-                    invitation = form.save(commit=False)
-                    invitation.sender = user
-                    invitation.quota_granted = quota_granted
-                    invitation.save()
-
-                    user_profile.invitation_quota -= quota_granted
-                    user_profile.save()
-
-                messages.success(request, f'Davetiye kodu oluşturuldu: {invitation.code}')
-                return redirect('create_invitation')
-            else:
-                messages.error(request, 'Yetersiz davet hakkı.')
-    else:
-        form = InvitationForm()
-
-    return render(request, 'core/create_invitation.html', {
-        'form': form,
-        'invitation_quota': user_profile.invitation_quota,
-    })
+    """Redirect to profile page with invitations tab"""
+    return redirect(f'/profile/{request.user.username}/?tab=davetler')
