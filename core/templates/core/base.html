@@ -258,7 +258,21 @@
               <label for="searchKeywords" class="form-label">Metin İçinde Geçen Kelime(ler)</label>
               <input type="text" class="form-control" id="searchKeywords" name="keywords" placeholder="ör. python django">
             </div>
-            
+
+            <!-- Etiket Filtresi -->
+            <div class="mb-3">
+              <label for="searchHashtag" class="form-label">Etiket</label>
+              <input type="text" class="form-control" id="searchHashtag" name="hashtag" placeholder="ör. programlama">
+            </div>
+
+            <!-- Takip Ettiklerim -->
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="searchFollowedOnly" name="followed_only" value="1">
+              <label class="form-check-label" for="searchFollowedOnly">
+                Sadece takip ettiğim kullanıcıların başlıklarını/entry'lerini göster
+              </label>
+            </div>
+
           </div> <!-- modal-body -->
           
           <div class="modal-footer">

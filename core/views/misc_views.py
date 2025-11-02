@@ -332,6 +332,8 @@ def search(request):
     date_from = request.GET.get('date_from', '').strip()
     date_to = request.GET.get('date_to', '').strip()
     keywords = request.GET.get('keywords', '').strip()
+    hashtag_param = request.GET.get('hashtag', '').strip()
+    followed_only = request.GET.get('followed_only', '') == '1'
     search_in = request.GET.get('search_in', 'all')
 
     # 3) Temel querysetler
@@ -358,6 +360,32 @@ def search(request):
     if keywords:
         questions = questions.filter(question_text__icontains=keywords)
         answers = answers.filter(answer_text__icontains=keywords)
+
+    # Hashtag filtresi
+    if hashtag_param:
+        from core.models import Hashtag
+        try:
+            hashtag = Hashtag.objects.get(name__iexact=hashtag_param)
+            # HashtagUsage üzerinden hem question hem answer'ları filtrele
+            question_ids = hashtag.usages.filter(
+                content_type__model='question'
+            ).values_list('object_id', flat=True)
+            answer_ids = hashtag.usages.filter(
+                content_type__model='answer'
+            ).values_list('object_id', flat=True)
+
+            questions = questions.filter(id__in=question_ids)
+            answers = answers.filter(id__in=answer_ids)
+        except Hashtag.DoesNotExist:
+            # Hashtag yoksa sonuç yok
+            questions = Question.objects.none()
+            answers = Answer.objects.none()
+
+    # Takip ettiklerim filtresi
+    if followed_only and request.user.is_authenticated:
+        followed_user_ids = request.user.following.values_list('id', flat=True)
+        questions = questions.filter(user_id__in=followed_user_ids)
+        answers = answers.filter(user_id__in=followed_user_ids)
 
     # 6) Arama yeri seçimi
     if search_in == 'question':
