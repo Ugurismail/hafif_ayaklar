@@ -98,8 +98,9 @@ urlpatterns = [
     # path('profile/<str:username>/download_entries/', views.download_entries, name='download_entries'),
     path('profile/<str:username>/download_entries_json/', views.download_entries_json, name='download_entries_json'),
     path('profile/<str:username>/download_entries_xlsx/', views.download_entries_xlsx, name='download_entries_xlsx'),
-    path('question/<int:question_id>/filter_answers/', views.filter_answers, name='filter_answers'),
     path('profile/<str:username>/download_entries_docx/', views.download_entries_docx, name='download_entries_docx'),
+    path('profile/<str:username>/download_entries_pdf/', views.download_entries_pdf, name='download_entries_pdf'),
+    path('question/<int:question_id>/filter_answers/', views.filter_answers, name='filter_answers'),
 
     # Aramalar
     path('get-user-questions/', views.get_user_questions, name='get_user_questions'),

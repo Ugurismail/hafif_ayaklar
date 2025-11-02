@@ -348,19 +348,19 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Zoom to node
-        if (typeof targetNode.x === 'number' && typeof targetNode.y === 'number') {
-            zoomToNode(targetNode);
-        } else {
-            // If node doesn't have position yet, wait for simulation to settle
-            let checkInterval = setInterval(() => {
-                if (typeof targetNode.x === 'number' && typeof targetNode.y === 'number') {
-                    clearInterval(checkInterval);
-                    zoomToNode(targetNode);
-                }
-            }, 100);
-            setTimeout(() => clearInterval(checkInterval), 2000); // timeout after 2s
+        // Stop simulation immediately to speed up navigation
+        if (simulation) {
+            simulation.stop();
         }
+
+        // Force immediate position update if node doesn't have position
+        if (typeof targetNode.x !== 'number' || typeof targetNode.y !== 'number') {
+            targetNode.x = width / 2;
+            targetNode.y = height / 2;
+        }
+
+        // Zoom to node immediately
+        zoomToNode(targetNode);
 
         // Remove highlight after 3 seconds
         setTimeout(() => {
@@ -379,6 +379,41 @@ document.addEventListener('DOMContentLoaded', function () {
         nodesData = data.nodes;
         linksData = data.links;
         updateGraph();
+        updateStatistics();
+    }
+
+    function updateStatistics() {
+        // Count total nodes and links
+        const totalNodes = nodesData.length;
+        const totalLinks = linksData.length;
+
+        // Count unique users
+        const uniqueUsers = new Set();
+        nodesData.forEach(node => {
+            if (node.user_ids && Array.isArray(node.user_ids)) {
+                node.user_ids.forEach(uid => uniqueUsers.add(uid));
+            }
+        });
+        const totalUsers = uniqueUsers.size;
+
+        // Determine filter status
+        let filterStatus = 'Tümü';
+        if (selectedUsers.length > 0) {
+            filterStatus = `${selectedUsers.length} Kullanıcı`;
+        } else if (window.location.search.includes('filter=me')) {
+            filterStatus = 'Sadece Ben';
+        } else if (window.location.search.includes('hashtag=')) {
+            const hashtagMatch = window.location.search.match(/hashtag=([^&]+)/);
+            if (hashtagMatch) {
+                filterStatus = `#${decodeURIComponent(hashtagMatch[1])}`;
+            }
+        }
+
+        // Update DOM
+        document.getElementById('stat-total-nodes').textContent = totalNodes;
+        document.getElementById('stat-total-links').textContent = totalLinks;
+        document.getElementById('stat-total-users').textContent = totalUsers;
+        document.getElementById('stat-filter-status').textContent = filterStatus;
     }
 
     function createGraph() {
@@ -665,5 +700,100 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     function updateGraph() {
         createGraph();
+        updateStatistics();
+    }
+
+    // Export functionality
+    document.getElementById('export-svg-btn')?.addEventListener('click', function() {
+        exportSVG();
+    });
+
+    document.getElementById('export-png-btn')?.addEventListener('click', function() {
+        exportPNG();
+    });
+
+    function exportSVG() {
+        const svgElement = d3.select("#chart svg").node();
+        if (!svgElement) {
+            alert('Harita henüz yüklenmedi!');
+            return;
+        }
+
+        // Clone SVG to avoid affecting the original
+        const clonedSvg = svgElement.cloneNode(true);
+
+        // Set proper SVG attributes
+        clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        clonedSvg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+
+        // Serialize SVG
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(clonedSvg);
+
+        // Create download link
+        const blob = new Blob([svgString], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'soru_haritasi.svg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    function exportPNG() {
+        const svgElement = d3.select("#chart svg").node();
+        if (!svgElement) {
+            alert('Harita henüz yüklenmedi!');
+            return;
+        }
+
+        // Get SVG dimensions
+        const bbox = svgElement.getBBox();
+        const width = bbox.width + bbox.x;
+        const height = bbox.height + bbox.y;
+
+        // Clone and serialize SVG
+        const clonedSvg = svgElement.cloneNode(true);
+        clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        clonedSvg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(clonedSvg);
+
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+
+        // Create image from SVG
+        const img = new Image();
+        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+
+        img.onload = function() {
+            // Draw white background
+            ctx.fillStyle = '#fafafa';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw SVG
+            ctx.drawImage(img, 0, 0);
+
+            // Convert to PNG and download
+            canvas.toBlob(function(blob) {
+                const pngUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = pngUrl;
+                link.download = 'soru_haritasi.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(pngUrl);
+                URL.revokeObjectURL(url);
+            });
+        };
+
+        img.src = url;
     }
 });

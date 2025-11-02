@@ -48,6 +48,13 @@ from docx import Document
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Pt, RGBColor
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 from ..models import (
     Question, Answer, Vote, SavedItem, StartingQuestion,
@@ -641,6 +648,167 @@ def download_entries_docx(request, username):
         content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
     response['Content-Disposition'] = f'attachment; filename="{target_user.username}_entries.docx"'
+    return response
+
+
+@login_required
+def download_entries_pdf(request, username):
+    """
+    PDF export for user entries using ReportLab
+    """
+    target_user = get_object_or_404(User, username=username)
+    if request.user != target_user and not request.user.is_superuser:
+        return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
+
+    user_questions = Question.objects.filter(
+        user=target_user,
+        parent_questions__isnull=True
+    ).order_by('created_at').distinct()
+
+    # Create PDF buffer
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+                           rightMargin=72, leftMargin=72,
+                           topMargin=72, bottomMargin=18)
+
+    # Container for PDF elements
+    elements = []
+
+    # Define styles
+    styles = getSampleStyleSheet()
+
+    # Title style
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor='#2c3e50',
+        spaceAfter=30,
+        alignment=TA_CENTER
+    )
+
+    # Heading styles for different levels
+    h1_style = ParagraphStyle(
+        'CustomH1',
+        parent=styles['Heading1'],
+        fontSize=16,
+        textColor='#2c3e50',
+        spaceAfter=12,
+        spaceBefore=12
+    )
+
+    h2_style = ParagraphStyle(
+        'CustomH2',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor='#34495e',
+        spaceAfter=10,
+        spaceBefore=10,
+        leftIndent=20
+    )
+
+    h3_style = ParagraphStyle(
+        'CustomH3',
+        parent=styles['Heading3'],
+        fontSize=12,
+        textColor='#7f8c8d',
+        spaceAfter=8,
+        spaceBefore=8,
+        leftIndent=40
+    )
+
+    # Answer text style
+    answer_style = ParagraphStyle(
+        'AnswerText',
+        parent=styles['BodyText'],
+        fontSize=10,
+        textColor='#2c3e50',
+        spaceAfter=12,
+        leftIndent=20
+    )
+
+    # Date style
+    date_style = ParagraphStyle(
+        'DateStyle',
+        parent=styles['Normal'],
+        fontSize=8,
+        textColor='#95a5a6',
+        spaceAfter=6,
+        leftIndent=20
+    )
+
+    # Add title
+    title = Paragraph(f"{target_user.username} - Entry'ler", title_style)
+    elements.append(title)
+    elements.append(Spacer(1, 0.3*inch))
+
+    # Helper function to escape HTML entities and handle special chars
+    def clean_text(text):
+        if not text:
+            return ""
+        # Replace HTML-like characters
+        text = text.replace('&', '&amp;')
+        text = text.replace('<', '&lt;')
+        text = text.replace('>', '&gt;')
+        # Handle line breaks
+        text = text.replace('\n', '<br/>')
+        return text
+
+    # Recursive function to add questions and their tree
+    def add_question_tree(question, level=1, visited=None):
+        if visited is None:
+            visited = set()
+        if question.id in visited:
+            return
+        visited.add(question.id)
+
+        # Choose heading style based on level
+        if level == 1:
+            heading_style = h1_style
+        elif level == 2:
+            heading_style = h2_style
+        else:
+            heading_style = h3_style
+
+        # Add question heading
+        question_para = Paragraph(clean_text(question.question_text), heading_style)
+        elements.append(question_para)
+        elements.append(Spacer(1, 0.1*inch))
+
+        # Add user's answers to this question
+        user_answers = question.answers.filter(user=target_user).order_by('created_at')
+        for answer in user_answers:
+            # Add date
+            date_str = answer.created_at.strftime("%Y-%m-%d %H:%M")
+            date_para = Paragraph(f"<i>{date_str}</i>", date_style)
+            elements.append(date_para)
+
+            # Add answer text
+            answer_para = Paragraph(clean_text(answer.answer_text), answer_style)
+            elements.append(answer_para)
+            elements.append(Spacer(1, 0.15*inch))
+
+        # Process subquestions recursively
+        subquestions = question.subquestions.all().order_by('created_at')
+        for sub in subquestions:
+            add_question_tree(sub, level=min(level+1, 3), visited=visited)
+
+    # Add all questions
+    for question in user_questions:
+        add_question_tree(question, level=1)
+        # Add page break after each main question
+        elements.append(PageBreak())
+
+    # Build PDF
+    doc.build(elements)
+
+    # Get PDF from buffer
+    buffer.seek(0)
+    pdf_content = buffer.read()
+
+    # Create response
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{target_user.username}_entries.pdf"'
     return response
 
 

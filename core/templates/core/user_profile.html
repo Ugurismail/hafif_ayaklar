@@ -26,9 +26,10 @@
               </button>
               <a href="{% url 'password_change' %}" class="btn btn-outline-secondary btn-sm">Şifreyi Değiştir</a>
               <a href="{% url 'user_settings' %}" class="btn btn-outline-secondary btn-sm">Ayarlar</a>
-              <a href="{% url 'download_entries_json' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry’lerimi (JSON) İndir</a>
-              <a href="{% url 'download_entries_xlsx' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry’lerimi (Excel) İndir</a>
-              <a href="{% url 'download_entries_docx' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry’lerimi (Word) İndir</a>
+              <a href="{% url 'download_entries_json' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry'lerimi (JSON) İndir</a>
+              <a href="{% url 'download_entries_xlsx' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry'lerimi (Excel) İndir</a>
+              <a href="{% url 'download_entries_docx' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry'lerimi (Word) İndir</a>
+              <a href="{% url 'download_entries_pdf' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry'lerimi (PDF) İndir</a>
             </div>
           {% else %}
             {% if request.user.is_authenticated %}
@@ -157,13 +158,12 @@
             <p>Kullanılan Davetiye Sayısı: {{ used_invitations }}</p>
             <p>Kalan Davetiye Sayısı: {{ remaining_invitations }}</p>
             {% if remaining_invitations > 0 %}
-              <form action="{% url 'create_invitation' %}" method="post" class="mb-3">
+              <form action="?tab=davetler" method="post" class="mb-3">
                 {% csrf_token %}
                 <div class="input-group">
                   <input type="number" name="quota_granted" min="1" max="{{ remaining_invitations }}" value="1" class="form-control" style="max-width:100px;" required>
                   <button type="submit" class="btn btn-primary btn-sm">Davetiye Oluştur</button>
                 </div>
-                <input type="hidden" name="tab" value="davetler">
               </form>
             {% else %}
               <p>Davetiye kotanız dolmuştur.</p>
