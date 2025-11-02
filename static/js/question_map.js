@@ -240,11 +240,16 @@ document.addEventListener('DOMContentLoaded', function () {
     function setupHashtagSearch() {
         let searchInput = document.getElementById('hashtag-search-input');
         let resultsDiv = document.getElementById('hashtag-search-results');
+        let currentFocus = -1;
+        let currentHashtags = [];
+
         if (!searchInput) return;
 
         searchInput.addEventListener('input', function () {
             let q = this.value.trim().replace('#', '').toLowerCase();
             resultsDiv.innerHTML = '';
+            currentFocus = -1;
+            currentHashtags = [];
 
             if (!q) return;
 
@@ -253,6 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(r => r.json())
                 .then(data => {
                     if (data.hashtags && data.hashtags.length) {
+                        currentHashtags = data.hashtags;
                         data.hashtags.forEach(h => {
                             let div = document.createElement('div');
                             div.className = 'list-group-item list-group-item-action d-flex justify-content-between';
@@ -279,11 +285,51 @@ document.addEventListener('DOMContentLoaded', function () {
                     } else {
                         let div = document.createElement('div');
                         div.className = 'list-group-item text-muted';
-                        div.textContent = 'Hashtag bulunamadı';
+                        div.textContent = 'Etiket bulunamadı';
                         resultsDiv.appendChild(div);
                     }
                 });
         });
+
+        // Keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            let items = resultsDiv.querySelectorAll('.list-group-item-action');
+
+            if (e.keyCode === 40) {
+                // Arrow Down
+                e.preventDefault();
+                currentFocus++;
+                if (currentFocus >= items.length) currentFocus = 0;
+                highlightHashtagItem(items, currentFocus);
+            }
+            else if (e.keyCode === 38) {
+                // Arrow Up
+                e.preventDefault();
+                currentFocus--;
+                if (currentFocus < 0) currentFocus = items.length - 1;
+                highlightHashtagItem(items, currentFocus);
+            }
+            else if (e.keyCode === 13) {
+                // Enter
+                e.preventDefault();
+                if (currentFocus > -1 && currentFocus < items.length && currentHashtags[currentFocus]) {
+                    filterByHashtag(currentHashtags[currentFocus].name);
+                    searchInput.value = '';
+                    resultsDiv.innerHTML = '';
+                }
+            }
+        });
+
+        function highlightHashtagItem(items, index) {
+            // Remove active class from all items
+            for (let i = 0; i < items.length; i++) {
+                items[i].classList.remove('active');
+            }
+            // Add active class to current item
+            if (index >= 0 && index < items.length) {
+                items[index].classList.add('active');
+            }
+        }
     }
 
     function highlightAndZoomToNode(targetNode) {
