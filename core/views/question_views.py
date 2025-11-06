@@ -27,7 +27,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
-from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, Kenarda, UserProfile
+from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, Kenarda, UserProfile, QuestionFollow, AnswerFollow
 from ..forms import AnswerForm, QuestionForm, StartingQuestionForm
 from ..querysets import get_today_questions_queryset
 from ..utils import paginate_queryset
@@ -47,7 +47,7 @@ def get_user_questions(request):
     return _get_user_questions(request)
 
 
-def question_detail(request, question_id):
+def question_detail(request, slug):
     # Public view - anyone can see questions and answers
 
     # Takip ettiklerim filtresi (sidebar için)
@@ -70,8 +70,8 @@ def question_detail(request, question_id):
     q_paginator = Paginator(all_questions, 20)
     all_questions_page = q_paginator.get_page(q_page_number)
 
-    # Soru nesnesini al
-    question = get_object_or_404(Question, id=question_id)
+    # Soru nesnesini al (slug ile)
+    question = get_object_or_404(Question, slug=slug)
 
     # Filtre parametreleri
     my_answers = request.GET.get('my_answers')
@@ -79,7 +79,12 @@ def question_detail(request, question_id):
     username = request.GET.get('username', '').strip()
     keyword  = request.GET.get('keyword', '').strip()
 
-    all_answers = question.answers.all().order_by('created_at')
+    # Optimize with select_related to prevent N+1 queries
+    all_answers = question.answers.select_related(
+        'user',
+        'user__userprofile'
+    ).order_by('created_at')
+
     if my_answers == 'on':
         all_answers = all_answers.filter(user=request.user)
     if followed == 'on':
@@ -102,7 +107,7 @@ def question_detail(request, question_id):
             new_answer.question = question
             new_answer.save()
             Kenarda.objects.filter(user=request.user, question=question, is_sent=False).delete()
-            return redirect('question_detail', question_id=question.id)
+            return redirect('question_detail', slug=question.slug)
     else:
         form = AnswerForm()
 
@@ -150,6 +155,21 @@ def question_detail(request, question_id):
     starting_question_ids = set(StartingQuestion.objects.values_list('question_id', flat=True))
     is_on_map = (question.id in starting_question_ids) or question.parent_questions.exists()
 
+    # Takip bilgileri
+    user_is_following_question = False
+    followed_answer_ids = []
+    if request.user.is_authenticated:
+        user_is_following_question = QuestionFollow.objects.filter(
+            user=request.user,
+            question=question
+        ).exists()
+
+        # Hangi yanıtları takip ediyor
+        followed_answer_ids = list(AnswerFollow.objects.filter(
+            user=request.user,
+            answer__in=answers_page
+        ).values_list('answer_id', flat=True))
+
     context = {
         'question': question,
         'form': form,
@@ -165,6 +185,8 @@ def question_detail(request, question_id):
         'filter_keyword': keyword,
         'is_on_map': is_on_map,
         'show_followed_only': show_followed_only,
+        'user_is_following_question': user_is_following_question,
+        'followed_answer_ids': followed_answer_ids,
     }
     return render(request, 'core/question_detail.html', context)
 
@@ -197,8 +219,8 @@ def add_question(request):
 
 
 @login_required
-def add_subquestion(request, question_id):
-    parent_question = get_object_or_404(Question, id=question_id)
+def add_subquestion(request, slug):
+    parent_question = get_object_or_404(Question, slug=slug)
     all_questions = get_today_questions_queryset()
     if request.method == 'POST':
         form = QuestionForm(request.POST)
@@ -219,7 +241,7 @@ def add_subquestion(request, question_id):
                 answer_text=answer_text
             )
             messages.success(request, 'Alt soru başarıyla eklendi.')
-            return redirect('question_detail', question_id=subquestion.id)
+            return redirect('question_detail', slug=subquestion.slug)
     else:
         form = QuestionForm()
     context = {
@@ -231,8 +253,8 @@ def add_subquestion(request, question_id):
 
 
 @login_required
-def delete_question(request, question_id):
-    question = get_object_or_404(Question, id=question_id)
+def delete_question(request, slug):
+    question = get_object_or_404(Question, slug=slug)
 
     if request.method == 'POST':
         if request.user == question.user:
@@ -250,7 +272,7 @@ def delete_question(request, question_id):
             return redirect('user_homepage')
         else:
             messages.error(request, 'Bu soruyu silme yetkiniz yok.')
-            return redirect('question_detail', question_id=question.id)
+            return redirect('question_detail', slug=question.slug)
     else:
         return render(request, 'core/confirm_delete_question.html', {'question': question})
 
@@ -284,7 +306,7 @@ def add_question_from_search(request):
             answer.user = request.user
             answer.question = question
             answer.save()
-            return redirect('question_detail', question_id=question.id)
+            return redirect('question_detail', slug=question.slug)
     else:
         answer_form = AnswerForm()
     return render(request, 'core/add_question_from_search.html', {
@@ -495,7 +517,7 @@ def generate_question_nodes(questions):
 def bkz_view(request, query):
     try:
         question = Question.objects.get(question_text__exact=query)
-        return redirect('question_detail', question_id=question.id)
+        return redirect('question_detail', slug=question.slug)
     except Question.DoesNotExist:
         # Soru bulunamazsa, add_question_from_search sayfasına yönlendirin
         return redirect(f'{reverse("add_question_from_search")}?q={query}')
@@ -527,9 +549,9 @@ def add_starting_question(request):
 
 
 @login_required
-def add_existing_subquestion(request, current_question_id):
+def add_existing_subquestion(request, slug):
     """Add current question as a subquestion to a selected parent question"""
-    current_question = get_object_or_404(Question, id=current_question_id)
+    current_question = get_object_or_404(Question, slug=slug)
 
     if request.method == 'POST':
         parent_question_id = request.POST.get('subquestion_id')  # Confusingly named in JS, but this is the parent
@@ -555,6 +577,18 @@ def add_existing_subquestion(request, current_question_id):
 
         # Bağlantıyı ekle: parent_question -> current_question
         parent_question.subquestions.add(current_question)
+
+        # Başlangıç sorusu yönetimi:
+        # Eğer current_question birilerinin başlangıç sorusuysa,
+        # o kullanıcılar için parent_question yeni başlangıç sorusu olur
+        affected_starting_questions = StartingQuestion.objects.filter(question=current_question)
+        if affected_starting_questions.exists():
+            for sq in affected_starting_questions:
+                user = sq.user
+                # Önce eski başlangıç sorusunu sil
+                sq.delete()
+                # Sonra parent'ı yeni başlangıç sorusu yap (eğer zaten değilse)
+                StartingQuestion.objects.get_or_create(user=user, question=parent_question)
 
         return JsonResponse({
             'success': True,
@@ -603,12 +637,9 @@ def search_questions_for_linking(request):
     except Question.DoesNotExist:
         return JsonResponse({'results': []})
 
-    # Kullanıcının yanıt verdiği VEYA başlangıç sorusu olarak eklediği soruları ara
-    user_starting_questions = StartingQuestion.objects.filter(user=request.user).values_list('question_id', flat=True)
-
+    # Tüm soruları ara (herkesin haritasındaki sorular dahil)
     questions = Question.objects.filter(
-        Q(question_text__icontains=query),
-        Q(users=request.user) | Q(id__in=user_starting_questions)
+        question_text__icontains=query
     ).exclude(
         id=current_question_id  # Kendisini hariç tut
     ).exclude(

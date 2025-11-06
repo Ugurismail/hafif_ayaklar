@@ -48,9 +48,18 @@ def signup(request):
             login(request, user)
             return redirect('user_homepage')
         else:
+            # Display form errors in a user-friendly way
+            field_labels = {
+                'username': 'Kullanıcı adı',
+                'email': 'E-posta',
+                'password1': 'Şifre',
+                'password2': 'Şifre (tekrar)',
+                'invitation_code': 'Davetiye kodu'
+            }
             for field, errors in form.errors.items():
+                field_label = field_labels.get(field, field)
                 for error in errors:
-                    messages.error(request, f"{field}: {error}")
+                    messages.error(request, f"{field_label}: {error}")
     else:
         form = SignupForm()
     return render(request, 'core/signup.html', {'form': form})

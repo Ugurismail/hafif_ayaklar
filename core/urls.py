@@ -24,12 +24,6 @@ urlpatterns = [
 
     # Soru İşlemleri
     path('add-question/', views.add_question, name='add_question'),
-    path('question/<int:question_id>/', views.question_detail, name='question_detail'),
-    path('question/<int:question_id>/add-answer/', views.add_answer, name='add_answer'),
-    path('question/<int:question_id>/delete/', views.delete_question, name='delete_question'),
-    path('question/<int:question_id>/add-subquestion/', views.add_subquestion, name='add_subquestion'),
-    path('question/<int:current_question_id>/add-as-subquestion/', views.add_existing_subquestion, name='add_existing_subquestion'),
-    path('question/<int:question_id>/answer/<int:answer_id>/', views.single_answer, name='single_answer'),
 
     # Yanıt İşlemleri
     path('answer/<int:answer_id>/edit/', views.edit_answer, name='edit_answer'),
@@ -45,6 +39,8 @@ urlpatterns = [
     # Arama
     path('search/', views.search, name='search'),
     path('search_suggestions/', views.search_suggestions, name='search_suggestions'),
+    path('load_more_questions/', views.load_more_questions, name='load_more_questions'),
+    path('load_more_search_results/', views.load_more_search_results, name='load_more_search_results'),
     path('reference-search/', views.reference_search, name='reference_search'),
     path('user-search/', views.user_search, name='user_search'),
     path('search-questions-for-linking/', views.search_questions_for_linking, name='search_questions_for_linking'),
@@ -86,7 +82,7 @@ urlpatterns = [
     path('polls/<int:poll_id>/', views.poll_detail, name='poll_detail'),
 
     # Tanımlar ve referanslar (diğer özel işlemler)
-    path('create-definition/<int:question_id>/', views.create_definition, name='create_definition'),
+    path('create-definition/<path:slug>/', views.create_definition, name='create_definition'),
     path('get-user-definitions/', views.get_user_definitions, name='get_user_definitions'),
     path('definition/<int:definition_id>/edit/', views.edit_definition, name='edit_definition'),
     path('definition/<int:definition_id>/delete/', views.delete_definition, name='delete_definition'),
@@ -158,14 +154,17 @@ urlpatterns = [
     path('answer/<int:answer_id>/follow/', views.follow_answer, name='follow_answer'),
     path('answer/<int:answer_id>/unfollow/', views.unfollow_answer, name='unfollow_answer'),
 
-
-
-
-    
-
-    
-
-
+    # SLUG-BASED QUESTION URLS (EN SONDA OLMALI - catch-all)
+    # Örnek: /ozgurluk-nedir/ veya /yapılacaklar/ -> question detail
+    # SPESİFİK pattern'lar ÖNCE gelmeli (single_answer, add-answer, etc.)
+    path('<path:slug>/answer/<int:answer_id>/', views.single_answer, name='single_answer'),
+    path('<path:slug>/add-answer/', views.add_answer, name='add_answer'),
+    path('<path:slug>/delete/', views.delete_question, name='delete_question'),
+    path('<path:slug>/add-subquestion/', views.add_subquestion, name='add_subquestion'),
+    path('<path:slug>/add-as-subquestion/', views.add_existing_subquestion, name='add_existing_subquestion'),
+    path('<path:slug>/filter_answers/', views.filter_answers, name='filter_answers'),
+    # EN GENEL pattern EN SONDA (catch-all)
+    path('<path:slug>/', views.question_detail, name='question_detail'),
 ]
 
 # Custom error handlers

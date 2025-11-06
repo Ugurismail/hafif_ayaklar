@@ -2,7 +2,7 @@
 {% load static custom_tags markdownify %}
 
 {% for answer in answers %}
-  <div class="card mb-3 mt-2 answer" id="answer-{{ answer.id }}">
+  <div class="card mb-3 mt-2 answer random-item-card" id="answer-{{ answer.id }}">
     <div class="card-body">
 
       {# Cevap uzun mu? 500 karakter kontrolü #}
@@ -14,6 +14,28 @@
         <!-- Tam Yanıt (başlangıçta gizli) -->
         <div class="answer-text" id="answer-full-{{ answer.id }}" style="display: none;">
           {{ answer.answer_text|highlight:search_keyword|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link }}
+
+          {# Kaynakça Bölümü #}
+          {% with bibliography=answer.answer_text|extract_bibliography %}
+            {% if bibliography %}
+              <div class="bibliography-section mt-4 pt-3 border-top">
+                <h6 class="bibliography-title">Kaynakça</h6>
+                <ol class="bibliography-list">
+                  {% for item in bibliography %}
+                    <li class="bibliography-item">
+                      {% if item.reference %}
+                        <span class="reference-citation">
+                          {{ item.reference.author_surname }}, {{ item.reference.author_name }}{% if item.reference.metin_ismi %}, <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
+                        </span>
+                      {% else %}
+                        <span class="reference-not-found">Kaynak bulunamadı (ID: {{ item.ref_id }})</span>
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+                </ol>
+              </div>
+            {% endif %}
+          {% endwith %}
         </div>
         <!-- "Tümünü Göster" linki -->
         <a href="#" class="read-more" data-answer-id="{{ answer.id }}">Tümünü Göster</a>
@@ -21,6 +43,28 @@
         <!-- 500 karakterden kısaysa doğrudan tüm metni gösteriyoruz -->
         <div class="answer-text">
           {{ answer.answer_text|highlight:search_keyword|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link }}
+
+          {# Kaynakça Bölümü #}
+          {% with bibliography=answer.answer_text|extract_bibliography %}
+            {% if bibliography %}
+              <div class="bibliography-section mt-4 pt-3 border-top">
+                <h6 class="bibliography-title">Kaynakça</h6>
+                <ol class="bibliography-list">
+                  {% for item in bibliography %}
+                    <li class="bibliography-item">
+                      {% if item.reference %}
+                        <span class="reference-citation">
+                          {{ item.reference.author_surname }}, {{ item.reference.author_name }}{% if item.reference.metin_ismi %}, <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
+                        </span>
+                      {% else %}
+                        <span class="reference-not-found">Kaynak bulunamadı (ID: {{ item.ref_id }})</span>
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+                </ol>
+              </div>
+            {% endif %}
+          {% endwith %}
         </div>
       {% endif %}
 
@@ -101,7 +145,7 @@
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu{{ answer.id }}">
               <li>
                 <button class="dropdown-item copy-link-btn"
-                        data-url="{% url 'single_answer' question.id answer.id %}">
+                        data-url="{% url 'single_answer' question.slug answer.id %}">
                   <i class="bi bi-link-45deg"></i> Linki Kopyala
                 </button>
               </li>

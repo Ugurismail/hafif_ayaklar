@@ -1,21 +1,7 @@
 // static/js/vote_save.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    // CSRF token'ını al
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                cookie = cookie.trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
+    // CSRF token'ını al (getCookie fonksiyonu base.js'de tanımlı)
     const csrftoken = getCookie('csrftoken');
 
     // **Oylama İşlevselliği** (Upvote / Downvote)
@@ -67,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         updateVoteButtonStyles(upvoteButton, downvoteButton, data.user_vote_value);
                     }
                 } else if (data.message) {
-                    alert(data.message);
+                    showToast(data.message, 'info');
                 }
             })
             .catch(error => console.error('Error:', error));

@@ -88,10 +88,11 @@ class UserProfile(models.Model):
 
 class Question(models.Model):
     question_text = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=300, unique=True, blank=True)  # SEO-friendly URL
     subquestions = models.ManyToManyField('self', symmetrical=False, related_name='parent_questions', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    from_search = models.BooleanField(default=False) 
+    from_search = models.BooleanField(default=False)
     saveditem = GenericRelation('SavedItem')
     # parent_questions alanını kaldırdık
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='questions')
@@ -100,6 +101,19 @@ class Question(models.Model):
     )
     upvotes = models.IntegerField(default=0)
     downvotes = models.IntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            import uuid
+            base_slug = slugify(self.question_text, allow_unicode=True)[:250]
+            self.slug = base_slug
+            # Eğer slug zaten varsa sonuna unique ID ekle
+            counter = 1
+            while Question.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
+                self.slug = f"{base_slug}-{counter}"
+                counter += 1
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.question_text
@@ -124,6 +138,11 @@ class Question(models.Model):
 
     class Meta:
         ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['user', '-created_at']),      # User's questions
+            models.Index(fields=['-created_at']),              # Homepage questions list
+            models.Index(fields=['question_text']),            # Search queries
+        ]
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
@@ -134,6 +153,13 @@ class Answer(models.Model):
     upvotes = models.IntegerField(default=0)
     downvotes = models.IntegerField(default=0)
     saveditem = GenericRelation('SavedItem')
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['question', '-created_at']),  # Question detail page ordering
+            models.Index(fields=['user', '-created_at']),      # User profile ordering
+            models.Index(fields=['-created_at']),              # Homepage random items
+        ]
 
     def __str__(self):
         return f"Answer to {self.question.question_text} by {self.user.username}"
@@ -554,6 +580,7 @@ class Notification(models.Model):
         ('answer_update', 'Answer Update'),        # Update to followed answer
         ('question_update', 'Question Update'),    # Update to followed question
         ('new_subquestion', 'New Subquestion'),    # New subquestion to followed question
+        ('followed_user_entry', 'Followed User Entry'),  # Entry from followed user
         ('system', 'System'),                      # System notifications
     )
 
@@ -659,6 +686,19 @@ class Notification(models.Model):
             related_question=subquestion
         )
 
+    @classmethod
+    def create_followed_user_entry_notification(cls, recipient, answer):
+        """Create notification for new entry from followed user"""
+        message = f"{answer.user.username} yeni bir entry girdi: {answer.question.question_text}"
+        return cls.objects.create(
+            recipient=recipient,
+            sender=answer.user,
+            notification_type='followed_user_entry',
+            message=message,
+            related_answer=answer,
+            related_question=answer.question
+        )
+
 
 # ========== SIGNALS FOR FOLLOW NOTIFICATIONS ==========
 
@@ -704,3 +744,21 @@ def notify_question_followers_on_update(sender, instance, created, **kwargs):
                 recipient=follow.user,
                 question=instance
             )
+
+
+@receiver(post_save, sender=Answer)
+def notify_user_followers_on_new_entry(sender, instance, created, **kwargs):
+    """Notify followers when a followed user posts a new entry"""
+    if created:
+        try:
+            author_profile = instance.user.userprofile
+            # Get all users following this author
+            followers = author_profile.followers.all()
+
+            for follower_profile in followers:
+                Notification.create_followed_user_entry_notification(
+                    recipient=follower_profile.user,
+                    answer=instance
+                )
+        except UserProfile.DoesNotExist:
+            pass

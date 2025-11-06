@@ -1,4 +1,3 @@
-
 :root {
     --secondary-button-background-color: #6c757d;
     --secondary-button-hover-background-color: #495057;
@@ -6,20 +5,20 @@
     --font-size: 16px;
     --message-bubble: #f1f5fa;
     --tbas-color: #222;
-    --background-color: #fff;
-    --text-color: #111;
-    --header-background-color: #343a40;
-    --header-text-color: #fff;
-    --link-color: #007bff;
-    --link-hover-color: #0056b3;
-    --button-background-color: #007bff;
-    --button-hover-background-color: #0056b3;
-    --button-text-color: #fff;
+    --background-color: #F5F5F5;
+    --text-color: #000000;
+    --header-background-color: #F5F5F5;
+    --header-text-color: #333333;
+    --link-color: #6E8CA7;
+    --link-hover-color: #4E647E;
+    --button-background-color: #6E8CA7;
+    --button-hover-background-color: #4E647E;
+    --button-text-color: #ffffff;
     --hover-background-color: #e9ecef;
     --icon-color: #6c757d;
     --icon-hover-color: #343a40;
     --answer-background-color: #fff;
-    --content-background-color: #f8f9fa;
+    --content-background-color: #ffffff;
     --tab-background-color: #e9ecef;
     --tab-text-color: #495057;
     --tab-active-background-color: #fff;
@@ -33,50 +32,8 @@
     --pagination-text-color: #333;
     --body-font-family: "EB Garamond", serif;
     --yanit-card-background-color: #f9f9f9;
-    /* ... diğer tüm değişkenler için default ... */
 }
 
-:root {
-    --secondary-button-background-color : {{ user.userprofile.secondary_button_background_color }};
-    --secondary-button-hover-background-color : {{ user.userprofile.secondary_button_hover_background_color }};
-    --secondary-button-text-color : {{ user.userprofile.secondary_button_text_color }};
-    --font-size: {{ user.userprofile.font_size }}px;
-
-    --message-bubble: {{ user.userprofile.message_bubble_color }};
-    --tbas-color: {{ user.userprofile.tbas_color }};
-    --background-color: {{ user.userprofile.background_color }};
-    --text-color: {{ user.userprofile.text_color }};
-    --header-background-color: {{ user.userprofile.header_background_color }};
-    --header-text-color: {{ user.userprofile.header_text_color }};
-    --link-color: {{ user.userprofile.link_color }};
-    --link-hover-color: {{ user.userprofile.link_hover_color }};
-    --button-background-color: {{ user.userprofile.button_background_color }};
-    --button-hover-background-color: {{ user.userprofile.button_hover_background_color }};
-    --button-text-color: {{ user.userprofile.button_text_color }};
-    --hover-background-color: {{ user.userprofile.hover_background_color }};
-    --icon-color: {{ user.userprofile.icon_color }};
-    --icon-hover-color: {{ user.userprofile.icon_hover_color }};
-    --answer-background-color: {{ user.userprofile.answer_background_color }};
-    --content-background-color: {{ user.userprofile.content_background_color }};
-    --tab-background-color: {{ user.userprofile.tab_background_color }};
-    --tab-text-color: {{ user.userprofile.tab_text_color }};
-    --tab-active-background-color: {{ user.userprofile.tab_active_background_color }};
-    --tab-active-text-color: {{ user.userprofile.tab_active_text_color }};
-    --dropdown-text-color: {{ user.userprofile.dropdown_text_color }};
-    --dropdown-hover-background-color: {{ user.userprofile.dropdown_hover_background_color }};
-    --dropdown-hover-text-color: {{ user.userprofile.dropdown_hover_text_color }};
-    --nav-link-hover-color: {{ user.userprofile.nav_link_hover_color }};
-    --nav-link-hover-bg: {{ user.userprofile.nav_link_hover_bg }};
-
-    --pagination-background-color: {{ user.userprofile.pagination_background_color }};
-    --pagination-text-color: {{ user.userprofile.pagination_text_color }};
-    /* --pagination-active-background-color: {{ user.userprofile.pagination_active_background_color }};
-    --pagination-active-text-color: {{ user.userprofile.pagination_active_text_color }}; */
-    --body-font-family: "{{ user.userprofile.font_family }}";
-    --yanit-card-background-color: {{ user.userprofile.yanit_card }}
-    
-    /* vs. diğer değişkenler */
-  }
 /* General Styles */
 body {
     background-color: var(--background-color, #ffffff);
@@ -191,7 +148,6 @@ a:hover {
 .answer {
     padding: 10px;
     border-bottom: 1px solid #ddd;
-    background-color: var(--answer-background-color, #ffffff);
     position: relative;
     z-index: 1; /* Base z-index for answers */
 }
@@ -434,7 +390,7 @@ textarea.auto-expand.expanded {
 .action:has(.dropdown.show),
 div:has(> .dropdown.show),
 small:has(.dropdown.show) {
-    z-index: 1052 !important; /* Elevate parent when dropdown is open */
+    z-index: 10000 !important; /* Elevate parent when dropdown is open - must be higher than dropdown-menu */
     position: relative !important;
 }
 
@@ -442,12 +398,6 @@ small:has(.dropdown.show) {
 .baslik,
 .list-group-item {
     position: relative;
-}
-
-/* Fix for cards containing dropdowns */
-.card {
-    position: relative;
-    z-index: 1; /* Low base z-index for all cards */
 }
 
 .card-body {
@@ -503,6 +453,12 @@ small:has(.dropdown.show) {
     max-height: 300px;
     overflow-y: auto;
     background-color: var(--content-background-color, #f8f9fa);
+    border: none;
+}
+
+/* Sadece sonuç varsa border göster */
+#search-results:not(:empty),
+#user-search-results:not(:empty) {
     border: 1px solid #ccc;
 }
 
@@ -645,8 +601,10 @@ small:has(.dropdown.show) {
   }
   
 .card{
-    border: var(--background-color);
-    border-width: 10px;
+    border: 10px solid var(--background-color) !important;
+    background-color: transparent !important;
+    position: relative;
+    z-index: 1;
 }
 
 .card-header{
@@ -706,6 +664,15 @@ small:has(.dropdown.show) {
 
 .form-control:focus{
     color: var(--text-color);
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Arama kutusu için özel stiller - sadece focus'ta outline/shadow kaldır */
+#search-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .btn-outline-secondary{
@@ -921,4 +888,46 @@ a.hashtag-link:hover {
 .clickable-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Bibliography Section Styles */
+.bibliography-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 4px;
+    padding: 1rem;
+}
+
+.bibliography-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-color, #333);
+}
+
+.bibliography-list {
+    list-style-position: outside;
+    padding-left: 1.5rem;
+    margin-bottom: 0;
+}
+
+.bibliography-item {
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.reference-citation {
+    color: var(--text-color, #333);
+}
+
+.reference-citation em {
+    font-style: italic;
+}
+
+.reference-not-found {
+    color: #dc3545;
+    font-style: italic;
 }

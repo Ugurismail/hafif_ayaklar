@@ -69,7 +69,19 @@
                                 </span>
 
                                 <!-- Mesaj -->
-                                <strong class="mb-1">{{ notification.message }}</strong>
+                                <strong class="mb-1">
+                                    {% if notification.notification_type == 'mention' and notification.related_question %}
+                                        {% if notification.sender %}
+                                            <a href="{% url 'user_profile' notification.sender.username %}">{{ notification.sender.username }}</a>
+                                        {% else %}
+                                            Birisi
+                                        {% endif %}
+                                        seni bir yanıtta bahsetti:
+                                        <a href="{% url 'question_detail' notification.related_question.slug %}">{{ notification.related_question.question_text }}</a>
+                                    {% else %}
+                                        {{ notification.message }}
+                                    {% endif %}
+                                </strong>
 
                                 <!-- Zaman -->
                                 <small class="text-muted d-block">
@@ -80,11 +92,11 @@
                             <!-- Bağlantılar -->
                             <div class="ms-3">
                                 {% if notification.related_answer %}
-                                    <a href="{% url 'question_detail' notification.related_question.id %}#answer-{{ notification.related_answer.id }}" class="btn btn-sm btn-outline-primary">
+                                    <a href="{% url 'question_detail' notification.related_question.slug %}#answer-{{ notification.related_answer.id }}" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-box-arrow-up-right"></i> Git
                                     </a>
                                 {% elif notification.related_question %}
-                                    <a href="{% url 'question_detail' notification.related_question.id %}" class="btn btn-sm btn-outline-primary">
+                                    <a href="{% url 'question_detail' notification.related_question.slug %}" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-box-arrow-up-right"></i> Git
                                     </a>
                                 {% endif %}

@@ -78,23 +78,28 @@
  * (örnek kod, kendi JS dosyana da ekleyebilirsin)
  * Glider'ı oyun alanının ortasına ekler.
  */
-document.getElementById('gliderBtn').addEventListener('click', function() {
-    // Varsayalım ki window.gameOfLife nesnesi var ve .addPattern(x, y, pattern) fonksiyonu var
-    if (window.addGliderPattern) {
-        window.addGliderPattern();
-    } else if (window.gameOfLife && typeof window.gameOfLife.addPattern === 'function') {
-        // Modern yapı: gameOfLife.addPattern(row, col, patternArray)
-        const pattern = [
-            [0,1,0],
-            [0,0,1],
-            [1,1,1]
-        ];
-        // Oyun alanı 900x600, örnek olarak ortasına
-        const row = Math.floor(window.gameOfLife.rows/2)-1;
-        const col = Math.floor(window.gameOfLife.cols/2)-1;
-        window.gameOfLife.addPattern(row, col, pattern);
-    } else {
-        alert("Glider fonksiyonu, JS dosyanızda tanımlanmalı!");
+document.addEventListener('DOMContentLoaded', function() {
+    const gliderBtn = document.getElementById('gliderBtn');
+    if (gliderBtn) {
+        gliderBtn.addEventListener('click', function() {
+            // Varsayalım ki window.gameOfLife nesnesi var ve .addPattern(x, y, pattern) fonksiyonu var
+            if (window.addGliderPattern) {
+                window.addGliderPattern();
+            } else if (window.gameOfLife && typeof window.gameOfLife.addPattern === 'function') {
+                // Modern yapı: gameOfLife.addPattern(row, col, patternArray)
+                const pattern = [
+                    [0,1,0],
+                    [0,0,1],
+                    [1,1,1]
+                ];
+                // Oyun alanı 900x600, örnek olarak ortasına
+                const row = Math.floor(window.gameOfLife.rows/2)-1;
+                const col = Math.floor(window.gameOfLife.cols/2)-1;
+                window.gameOfLife.addPattern(row, col, pattern);
+            } else {
+                showToast("Glider fonksiyonu, JS dosyanızda tanımlanmalı!", "error");
+            }
+        });
     }
 });
 </script>

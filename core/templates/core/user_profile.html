@@ -57,7 +57,7 @@
       <div class="card mb-4 shadow-sm">
         <div class="card-header bg-light">
           <h6 class="mb-0">
-            <a href="{% url 'question_detail' pinned_entry.answer.question.id %}" class="text-decoration-none">
+            <a href="{% url 'question_detail' pinned_entry.answer.question.slug %}" class="text-decoration-none">
               {{ pinned_entry.answer.question.question_text }}
             </a>
           </h6>
@@ -223,19 +223,16 @@
                   <div class="card-body">
                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
                       <div>
-                        <a href="{% url 'question_detail' answer.question.id %}" class="fw-bold text-decoration-none">
+                        <a href="{% url 'question_detail' answer.question.slug %}" class="fw-bold text-decoration-none">
                           {{ answer.question.question_text }}
                         </a>
                         <span class="text-muted ms-2 small">({{ answer.created_at|date:"d M Y H:i" }})</span>
                       </div>
                       {% if answer.user == request.user %}
-                        <form action="{% url 'delete_answer' answer.id %}" method="post" class="ms-md-3 mt-2 mt-md-0 d-inline">
-                          {% csrf_token %}
-                          <button type="submit" class="btn btn-sm btn-outline-danger"
-                                  onclick="return confirm('Bu yanıtı silmek istediğinize emin misiniz?');">
-                            Sil
-                          </button>
-                        </form>
+                        <button type="button" class="btn btn-sm btn-outline-danger delete-answer-btn"
+                                data-answer-id="{{ answer.id }}">
+                          Sil
+                        </button>
                       {% endif %}
                     </div>
                     <div class="mt-2">
@@ -372,7 +369,7 @@
                 </p>
               {% elif most_upvoted_entry|instance_of:'Answer' %}
                 <p>Yanıt:
-                  <a href="{% url 'question_detail' most_upvoted_entry.question.id %}" class="text-decoration-none">
+                  <a href="{% url 'question_detail' most_upvoted_entry.question.slug %}" class="text-decoration-none">
                     {{ most_upvoted_entry.question.question_text }}
                   </a>
                   ({{ most_upvoted_entry.upvotes }} upvotes)
@@ -392,7 +389,7 @@
                 </p>
               {% elif most_downvoted_entry|instance_of:'Answer' %}
                 <p>Yanıt:
-                  <a href="{% url 'question_detail' most_downvoted_entry.question.id %}" class="text-decoration-none">
+                  <a href="{% url 'question_detail' most_downvoted_entry.question.slug %}" class="text-decoration-none">
                     {{ most_downvoted_entry.question.question_text }}
                   </a>
                   ({{ most_downvoted_entry.downvotes }} downvotes)
@@ -411,7 +408,7 @@
                 </p>
               {% elif most_saved_entry|instance_of:'Answer' %}
                 <p>Yanıt:
-                  <a href="{% url 'question_detail' most_saved_entry.question.id %}" class="text-decoration-none">
+                  <a href="{% url 'question_detail' most_saved_entry.question.slug %}" class="text-decoration-none">
                     {{ most_saved_entry.question.question_text }}
                   </a>
                 </p>
@@ -445,7 +442,7 @@
                   {% for definition in definitions_page.object_list %}
                     <tr>
                       <td>
-                        <a href="{% url 'question_detail' definition.question.id %}" class="text-decoration-none">
+                        <a href="{% url 'question_detail' definition.question.slug %}" class="text-decoration-none">
                           {{ definition.question.question_text }}
                         </a>
                       </td>
@@ -453,10 +450,10 @@
                       <td>
                         {% if definition.user == user %}
                         <a href="{% url 'edit_definition' definition.id %}?tab=tanimlar" class="btn btn-sm btn-primary">Düzenle</a>
-                        <form action="{% url 'delete_definition' definition.id %}?tab=tanimlar" method="post" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Bu tanımı silmek istediğinize emin misiniz?');">Sil</button>
-                        </form>
+                        <button type="button" class="btn btn-sm btn-secondary delete-definition-btn"
+                                data-definition-id="{{ definition.id }}">
+                          Sil
+                        </button>
                     {% endif %}
                       </td>
                     </tr>
@@ -559,7 +556,7 @@
                     <div class="mb-3 p-2 border rounded position-relative">
                       <p>
                         <strong>Yanıt:</strong>
-                        <a href="{% url 'question_detail' saved.object.question.id %}#answer-{{ saved.object.id }}" class="text-decoration-none">
+                        <a href="{% url 'question_detail' saved.object.question.slug %}#answer-{{ saved.object.id }}" class="text-decoration-none">
                           {{ saved.object.question.question_text|truncatewords:20 }}
                         </a>
                       </p>
@@ -699,10 +696,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     '<td>'+ def.definition_text +'</td>'+
                     '<td>'+
                       '<a href="/edit_definition/'+ def.id + '/?tab=tanimlar" class="btn btn-sm btn-primary">Düzenle</a> '+
-                      '<form action="/delete_definition/'+ def.id + '/?tab=tanimlar" method="post" class="d-inline">'+
-                        '<input type="hidden" name="csrfmiddlewaretoken" value="'+ csrfToken +'">'+
-                        '<button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm(\'Bu tanımı silmek istediğinize emin misiniz?\');">Sil</button>'+
-                      '</form>'+
+                      '<button type="button" class="btn btn-sm btn-secondary delete-definition-btn" data-definition-id="'+ def.id +'">Sil</button>'+
                     '</td>'+
                   '</tr>';
         container.append(row);
@@ -972,6 +966,74 @@ function debounce(func, delay) {
         }
       }
     });
+  });
+
+  // 10. Yanıt silme işlemi (modal ile)
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('delete-answer-btn')) {
+      e.preventDefault();
+      var answerId = e.target.getAttribute('data-answer-id');
+
+      showConfirm(
+        'Bu yanıtı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+        'Yanıtı Sil',
+        'Sil',
+        'btn-danger'
+      ).then(function(confirmed) {
+        if (confirmed) {
+          // CSRF token'ı al
+          var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+          // Form oluştur ve gönder
+          var form = document.createElement('form');
+          form.method = 'POST';
+          form.action = '/answer/' + answerId + '/delete/';
+
+          var csrfInput = document.createElement('input');
+          csrfInput.type = 'hidden';
+          csrfInput.name = 'csrfmiddlewaretoken';
+          csrfInput.value = csrfToken;
+          form.appendChild(csrfInput);
+
+          document.body.appendChild(form);
+          form.submit();
+        }
+      });
+    }
+  });
+
+  // 11. Tanım silme işlemi (modal ile)
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('delete-definition-btn')) {
+      e.preventDefault();
+      var definitionId = e.target.getAttribute('data-definition-id');
+
+      showConfirm(
+        'Bu tanımı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+        'Tanımı Sil',
+        'Sil',
+        'btn-danger'
+      ).then(function(confirmed) {
+        if (confirmed) {
+          // CSRF token'ı al
+          var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+          // Form oluştur ve gönder
+          var form = document.createElement('form');
+          form.method = 'POST';
+          form.action = '/definition/' + definitionId + '/delete/?tab=tanimlar';
+
+          var csrfInput = document.createElement('input');
+          csrfInput.type = 'hidden';
+          csrfInput.name = 'csrfmiddlewaretoken';
+          csrfInput.value = csrfToken;
+          form.appendChild(csrfInput);
+
+          document.body.appendChild(form);
+          form.submit();
+        }
+      });
+    }
   });
 </script>
 {% endblock extra_js %}

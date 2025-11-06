@@ -94,16 +94,13 @@ def user_homepage(request):
 
     all_questions = paginate_queryset(all_questions_qs, request, 'page', 20)
 
-    # 2. Rastgele Cevaplar -- OPTİMİZE (ID ile çek, sonra select_related)
-    answer_ids = list(Answer.objects.values_list('id', flat=True))
-    if len(answer_ids) > 20:
-        random_ids = random.sample(answer_ids, 20)
-    else:
-        random_ids = answer_ids
-    random_items_qs = Answer.objects.filter(id__in=random_ids).select_related('question', 'user')
-
-    # Sıralama tutarsız olmasın diye aynı sırayı koru:
-    random_items = sorted(list(random_items_qs), key=lambda x: random_ids.index(x.id)) if random_ids else []
+    # 2. Rastgele Cevaplar -- OPTİMİZE (direkt order_by('?') kullan, daha hızlı)
+    # values_list tüm tabloyı tararsa çok yavaş olur, bunun yerine doğrudan rastgele order kullan
+    random_items = list(Answer.objects.select_related(
+        'question',
+        'user',
+        'user__userprofile'
+    ).order_by('?')[:20])
 
     # 3. Başlangıç Soruları (sadece login olmuş kullanıcılar için) - Using new utility
     if request.user.is_authenticated:
@@ -283,25 +280,71 @@ def about(request):
 
 def search_suggestions(request):
     query = request.GET.get('q', '')
+    offset = int(request.GET.get('offset', 0))
+    limit = int(request.GET.get('limit', 20))  # Her seferinde 20 sonuç
+
     suggestions = []
 
-    # Kullanıcıları ara
-    users = User.objects.filter(username__icontains=query)
-    for user in users:
-        suggestions.append({
-            'label': '@' + user.username,
-            'url': reverse('user_profile', args=[user.username])
-        })
+    # Kullanıcıları ara (toplam kullanıcı sayısı genelde az olduğu için limit yok)
+    if offset == 0:  # Sadece ilk yüklemede kullanıcıları göster
+        users = User.objects.filter(username__icontains=query)[:10]  # Max 10 kullanıcı
+        for user in users:
+            suggestions.append({
+                'type': 'user',
+                'label': '@' + user.username,
+                'url': reverse('user_profile', args=[user.username])
+            })
 
-    # Soruları ara
-    questions = Question.objects.filter(question_text__icontains=query)
+    # Soruları ara (sayfalama ile)
+    questions = Question.objects.filter(
+        question_text__icontains=query
+    ).order_by('-created_at')[offset:offset + limit]
+
     for question in questions:
         suggestions.append({
+            'type': 'question',
             'label': question.question_text,
-            'url': reverse('question_detail', args=[question.id])
+            'url': reverse('question_detail', args=[question.slug])
         })
 
-    return JsonResponse({'suggestions': suggestions})
+    # Toplam soru sayısını hesapla
+    total_questions = Question.objects.filter(question_text__icontains=query).count()
+    has_more = (offset + limit) < total_questions
+
+    return JsonResponse({
+        'suggestions': suggestions,
+        'has_more': has_more,
+        'total': total_questions,
+        'next_offset': offset + limit if has_more else None
+    })
+
+
+def load_more_questions(request):
+    """
+    AJAX endpoint for lazy loading sidebar questions
+    """
+    offset = int(request.GET.get('offset', 0))
+    limit = int(request.GET.get('limit', 20))
+
+    questions = Question.objects.select_related('user').annotate(
+        answers_count=Count('answers')
+    ).order_by('-created_at')[offset:offset + limit]
+
+    total_questions = Question.objects.count()
+    has_more = (offset + limit) < total_questions
+
+    questions_data = [{
+        'slug': q.slug,
+        'text': q.question_text,
+        'answers_count': q.answers_count
+    } for q in questions]
+
+    return JsonResponse({
+        'questions': questions_data,
+        'has_more': has_more,
+        'total': total_questions,
+        'next_offset': offset + limit if has_more else None
+    })
 
 
 @login_required
@@ -329,7 +372,7 @@ def search(request):
             ).order_by('-usage_count')[:5]
 
             results += [
-                {'type': 'question', 'id': q.id, 'text': q.question_text, 'url': reverse('question_detail', args=[q.id])}
+                {'type': 'question', 'id': q.id, 'slug': q.slug, 'text': q.question_text, 'url': reverse('question_detail', args=[q.slug])}
                 for q in questions
             ]
             results += [
@@ -466,6 +509,129 @@ def search(request):
     return render(request, 'core/search_results.html', context)
 
 
+@login_required
+def load_more_search_results(request):
+    """
+    AJAX endpoint for lazy loading advanced search results
+    """
+    # GET parametrelerini al
+    q_param = request.GET.get('q', '').strip()
+    username = request.GET.get('username', '').strip()
+    date_from = request.GET.get('date_from', '').strip()
+    date_to = request.GET.get('date_to', '').strip()
+    keywords = request.GET.get('keywords', '').strip()
+    hashtag_param = request.GET.get('hashtag', '').strip()
+    followed_only = request.GET.get('followed_only', '') == '1'
+    search_in = request.GET.get('search_in', 'all')
+    offset = int(request.GET.get('offset', 0))
+    limit = int(request.GET.get('limit', 15))
+
+    # Temel querysetler
+    questions = Question.objects.all()
+    answers = Answer.objects.all()
+
+    # Basit q araması
+    if q_param:
+        questions = questions.filter(question_text__icontains=q_param)
+        answers = answers.filter(answer_text__icontains=q_param)
+
+    # Gelişmiş filtreler
+    if username:
+        questions = questions.filter(user__username__icontains=username)
+        answers = answers.filter(user__username__icontains=username)
+    if date_from:
+        questions = questions.filter(created_at__date__gte=date_from)
+        answers = answers.filter(created_at__date__gte=date_from)
+    if date_to:
+        questions = questions.filter(created_at__date__lte=date_to)
+        answers = answers.filter(created_at__date__lte=date_to)
+    if keywords:
+        questions = questions.filter(question_text__icontains=keywords)
+        answers = answers.filter(answer_text__icontains=keywords)
+
+    # Hashtag filtresi
+    if hashtag_param:
+        from core.models import Hashtag
+        try:
+            hashtag = Hashtag.objects.get(name__iexact=hashtag_param)
+            question_ids = hashtag.usages.filter(
+                question__isnull=False
+            ).values_list('question_id', flat=True)
+            answer_ids = hashtag.usages.filter(
+                answer__isnull=False
+            ).values_list('answer_id', flat=True)
+
+            questions = questions.filter(id__in=question_ids)
+            answers = answers.filter(id__in=answer_ids)
+        except Hashtag.DoesNotExist:
+            questions = Question.objects.none()
+            answers = Answer.objects.none()
+
+    # Takip ettiklerim filtresi
+    if followed_only and request.user.is_authenticated:
+        try:
+            user_profile = request.user.userprofile
+            followed_user_ids = user_profile.following.values_list('id', flat=True)
+            questions = questions.filter(user_id__in=followed_user_ids)
+            answers = answers.filter(user_id__in=followed_user_ids)
+        except UserProfile.DoesNotExist:
+            questions = Question.objects.none()
+            answers = Answer.objects.none()
+
+    # Arama yeri seçimi
+    if search_in == 'question':
+        answers = Answer.objects.none()
+    elif search_in == 'answer':
+        questions = Question.objects.none()
+
+    # Sonuçları birleştir, tarihe göre sırala
+    combined_results = [
+        {"type": "question", "object": q, "created_at": q.created_at}
+        for q in questions
+    ] + [
+        {"type": "answer", "object": a, "created_at": a.created_at}
+        for a in answers
+    ]
+    combined_results.sort(key=lambda x: x['created_at'], reverse=False)
+
+    # Sayfalama için dilimle
+    total_results = len(combined_results)
+    paginated_results = combined_results[offset:offset + limit]
+    has_more = (offset + limit) < total_results
+
+    # JSON formatında döndür
+    results_data = []
+    for item in paginated_results:
+        if item['type'] == 'question':
+            q = item['object']
+            results_data.append({
+                'type': 'question',
+                'id': q.id,
+                'slug': q.slug,
+                'text': q.question_text,
+                'username': q.user.username,
+                'created_at': q.created_at.strftime('%d %b %Y, %H:%M')
+            })
+        elif item['type'] == 'answer':
+            a = item['object']
+            results_data.append({
+                'type': 'answer',
+                'id': a.id,
+                'text': a.answer_text,
+                'question_text': a.question.question_text,
+                'question_slug': a.question.slug,
+                'username': a.user.username,
+                'created_at': a.created_at.strftime('%d %b %Y, %H:%M')
+            })
+
+    return JsonResponse({
+        'results': results_data,
+        'has_more': has_more,
+        'total': total_results,
+        'next_offset': offset + limit if has_more else None
+    })
+
+
 def user_search(request):
     query = request.GET.get('q', '').strip()
     users = User.objects.filter(username__icontains=query)[:10]
@@ -529,12 +695,12 @@ def shuffle_questions(request):
     # Sırayı karıştır, başlıkları çek
     questions = (Question.objects
                  .filter(id__in=selected_ids)
-                 .values('id', 'question_text'))
+                 .values('id', 'slug', 'question_text'))
     # Rastgele sıralamayı korumak için shuffle
     questions = list(questions)
     random.shuffle(questions)
     return JsonResponse({'questions': [
-        {'id': q['id'], 'text': q['question_text']} for q in questions
+        {'id': q['id'], 'slug': q['slug'], 'text': q['question_text']} for q in questions
     ]})
 
 
@@ -894,13 +1060,13 @@ def download_entries_pdf(request, username):
 
 
 @login_required
-def filter_answers(request, question_id):
+def filter_answers(request, slug):
     """
     Ajax filtre endpoint'i.
     Soruya ait yanıtları, my_answers / followed / username / keyword'e göre süzer
     ve 'core/_answers_list.html' partial'ını döndürür.
     """
-    question = get_object_or_404(Question, id=question_id)
+    question = get_object_or_404(Question, slug=slug)
 
     # Parametreler
     my_answers = request.GET.get('my_answers')

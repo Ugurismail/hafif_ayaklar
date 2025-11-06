@@ -19,9 +19,9 @@
                 <td>
                   {% if sonuc.user == user %}
                     <b>Sen (<i class="bi bi-person"></i>)</b>
-                    <form action="{% url 'cikis_sonuc_sil' sonuc.id %}" method="post" class="d-inline-block" onsubmit="return confirm('Sonucunuzu silmek istediğinize emin misiniz?');">
+                    <form action="{% url 'cikis_sonuc_sil' sonuc.id %}" method="post" class="d-inline-block delete-result-form" id="delete-result-form-{{ sonuc.id }}">
                       {% csrf_token %}
-                      <button type="submit" class="btn btn-sm btn-primary ms-1">Sil</button>
+                      <button type="submit" class="btn btn-sm btn-primary ms-1 delete-result-btn" data-result-id="{{ sonuc.id }}">Sil</button>
                     </form>
                   {% else %}
                     <span style="font-size:1.3em; color:#ffd700;">&#9733; Anonim</span>
@@ -49,4 +49,23 @@
     <a href="{% url 'cikis_test_list' %}" class="btn btn-secondary btn-sm">Tüm Testlere Dön</a>
     <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-primary btn-sm ms-2">Tekrar Çöz</a>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle test result deletion with confirmation dialog
+  const deleteResultBtns = document.querySelectorAll('.delete-result-btn');
+  deleteResultBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const resultId = this.getAttribute('data-result-id');
+      const form = document.getElementById('delete-result-form-' + resultId);
+      showConfirm('Sonucunuzu silmek istediğinize emin misiniz?', 'Sonucu Sil', 'Evet, Sil', 'btn-danger').then(result => {
+        if (result) {
+          form.submit();
+        }
+      });
+    });
+  });
+});
+</script>
 {% endblock %}

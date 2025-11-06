@@ -6,11 +6,26 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-2">
-            <h4>Tüm Sorular</h4>
-            <ul class="list-unstyled">
+            <h4 style="display: flex; justify-content: center; align-items: center; gap: 18px; min-height: 38px; margin-bottom: 0.5rem;">
+                <a href="#" id="random-question-btn" title="Rastgele Başlık Diz" class="vote-btn2 d-flex align-items-center justify-content-center"
+                   style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
+                    <i class="bi bi-shuffle" style="font-size: 1.25em;"></i>
+                </a>
+                <a href="#" id="shuffle-btn" title="Rastgele Başlığa Git" class="vote-btn2 d-flex align-items-center justify-content-center"
+                   style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
+                    <i class="bi bi-asterisk" style="font-size: 1.25em"></i>
+                </a>
+                <a href="?followed={% if show_followed_only %}0{% else %}1{% endif %}" id="followed-filter-btn"
+                   title="{% if show_followed_only %}Tümünü Göster{% else %}Sadece Takip Ettiklerim{% endif %}"
+                   class="vote-btn2 d-flex align-items-center justify-content-center {% if show_followed_only %}active-filter{% endif %}"
+                   style="width: 32px; height: 32px; border-radius: 50%; transition: all 0.2s;">
+                    <i class="bi bi-people-fill" style="font-size: 1.25em;"></i>
+                </a>
+            </h4>
+            <ul class="list-unstyled" id="questions-list">
                 {% for question in all_questions %}
                 <li class="tbas-color d-flex justify-content-between align-items-center mt-2 baslik">
-                    <a href="{% url 'question_detail' question.id %}"
+                    <a href="{% url 'question_detail' question.slug %}"
                       class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
                         <span>{{ question.question_text }}</span>
                         <small class="ms-2">{{ question.answers_count }}</small>
@@ -22,12 +37,12 @@
         </div>
         <div class="col-md-10 mesaj-listesi">
             <h2>Mesajlar</h2>
-            {% if conversations %}
+            {% if page_obj %}
                 <ul class="list-group mesaj-listesi">
-                    {% for other_user, convo_data in conversations.items %}
-                        {% with latest_message=convo_data.messages.0 %}
+                    {% for convo in page_obj %}
+                        {% with latest_message=convo.messages.0 other_user=convo.user %}
                         <a href="{% url 'message_detail' other_user.username %}" class="text-decoration-none text-dark">
-                            <li class="list-group-item d-flex justify-content-between align-items-center {% if convo_data.unread_count > 0 %}unread-conversation{% endif %}">
+                            <li class="list-group-item d-flex justify-content-between align-items-center {% if convo.unread_count > 0 %}unread-conversation{% endif %}">
                                 <div class="d-flex align-items-center">
                                     <!-- User Avatar -->
                                     {% if other_user.userprofile.photo %}
@@ -48,8 +63,8 @@
                                 </div>
                                 <div class="text-end">
                                     <small class="text-muted d-block">{{ latest_message.timestamp|date:"d M Y H:i" }}</small>
-                                    {% if convo_data.unread_count > 0 %}
-                                        <span class="badge">{{ convo_data.unread_count }}</span>
+                                    {% if convo.unread_count > 0 %}
+                                        <span class="badge">{{ convo.unread_count }}</span>
                                     {% endif %}
                                 </div>
                             </li>
@@ -57,10 +72,55 @@
                         {% endwith %}
                     {% endfor %}
                 </ul>
+                {% include 'core/pagination.html' with page_obj=page_obj page_param='message_page' %}
             {% else %}
                 <p>Henüz bir mesajınız yok.</p>
             {% endif %}
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Shuffle butonu (sol frame'i random doldurur)
+    document.getElementById('random-question-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        fetch("{% url 'shuffle_questions' %}")
+        .then(response => response.json())
+        .then(data => {
+            const questionsList = document.getElementById('questions-list');
+            if (!questionsList) {
+                showToast('Soruları listeleyecek alan bulunamadı!', 'error');
+                return;
+            }
+            questionsList.innerHTML = '';
+            data.questions.forEach(function(q) {
+                const link = `/${q.slug}/`;
+                questionsList.innerHTML += `
+                    <li class="tbas-color baslik d-flex justify-content-between align-items-center mt-2">
+                        <a href="${link}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
+                            <span>${q.text}</span>
+                        </a>
+                    </li>
+                `;
+            });
+        });
+    });
+
+    // Rastgele başlığa git butonu
+    document.getElementById('shuffle-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        fetch("{% url 'shuffle_questions' %}")
+        .then(response => response.json())
+        .then(data => {
+            if (data.questions && data.questions.length > 0) {
+                const q = data.questions[Math.floor(Math.random() * data.questions.length)];
+                const link = `/${q.slug}/`;
+                window.location.href = link;
+            }
+        });
+    });
+});
+</script>
+
 {% endblock %}

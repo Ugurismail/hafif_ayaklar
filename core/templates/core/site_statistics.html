@@ -101,7 +101,7 @@
             <h3 class="mt-3">En Çok Beğenilen Sorular</h3>
             <ul class="mb-4">
                 {% for question in top_liked_questions %}
-                    <li><a href="{% url 'question_detail' question.id %}">{{ question.question_text }}</a> - {{ question.like_count }} beğeni</li>
+                    <li><a href="{% url 'question_detail' question.slug %}">{{ question.question_text }}</a> - {{ question.like_count }} beğeni</li>
                 {% endfor %}
             </ul>
             <h3>En Çok Beğenilen Yanıtlar</h3>
@@ -117,7 +117,7 @@
             <h3 class="mt-3">En Çok Kaydedilen Sorular</h3>
             <ul class="mb-4">
                 {% for question in top_saved_questions %}
-                    <li><a href="{% url 'question_detail' question.id %}">{{ question.question_text }}</a> - {{ question.save_count }} kez kaydedildi</li>
+                    <li><a href="{% url 'question_detail' question.slug %}">{{ question.question_text }}</a> - {{ question.save_count }} kez kaydedildi</li>
                 {% endfor %}
             </ul>
             <h3>En Çok Kaydedilen Yanıtlar</h3>

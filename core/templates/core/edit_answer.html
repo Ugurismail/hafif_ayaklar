@@ -11,7 +11,7 @@
             <ul class="list-unstyled">
                 {% for question in all_questions %}
                 <li class="tbas-color d-flex justify-content-between align-items-center mt-2 ">
-                    <a href="{% url 'question_detail' question.id %}" class="text-dark text-decoration-none d-flex justify-content-between align-items-center w-100">
+                    <a href="{% url 'question_detail' question.slug %}" class="text-dark text-decoration-none d-flex justify-content-between align-items-center w-100">
                         <span class="tbas-color">{{ question.question_text }}</span> 
                         <small class="tbas-color">{{ question.answers_count }}</small>
                     </a>
@@ -71,7 +71,7 @@
                 <ul class="list-unstyled">
                     {% for item in starting_questions %}
                     <li class="text-dark text-decoration-none d-flex justify-content-between align-items-center mt-2 baslik">
-                        <a href="{% url 'question_detail' item.question.id %}" class="text-dark text-decoration-none d-flex justify-content-between align-items-center w-100">
+                        <a href="{% url 'question_detail' item.question.slug %}" class="text-dark text-decoration-none d-flex justify-content-between align-items-center w-100">
                             <span>{{ item.question.question_text }}</span> 
                             <small>{{ item.total_subquestions }}</small>
                         </a>
@@ -259,19 +259,19 @@
         .then(response => response.json())
         .then(data => {
           if (data.status === 'success') {
-            alert("Kaynak başarıyla eklendi!");
+            showToast("Kaynak başarıyla eklendi!", 'success');
             kaynakForm.reset();
             // Otomatik olarak "Kaynak Seç" sekmesine geç
             kaynakSecTab.click();
             kaynaklariListele();
           } else {
             console.log(data.errors);
-            alert("Form hatası: " + JSON.stringify(data.errors));
+            showToast("Form hatası: " + JSON.stringify(data.errors), 'error');
           }
         })
         .catch(err => {
           console.error(err);
-          alert("Bir hata oluştu.");
+          showToast("Bir hata oluştu.", 'error');
         });
       });
     
@@ -297,7 +297,7 @@
           })
           .catch(err => {
             console.error(err);
-            alert("Liste yüklenirken hata oluştu.");
+            showToast("Liste yüklenirken hata oluştu.", 'error');
           });
       }
     
@@ -305,13 +305,13 @@
       seciliKaynakEkleBtn.addEventListener('click', function() {
         const secili = document.querySelector('input[name="kaynakSecimi"]:checked');
         if (!secili) {
-          alert("Lütfen bir kaynak seçin.");
+          showToast("Lütfen bir kaynak seçin.", 'warning');
           return;
         }
         const refId = secili.value;
         const answerTextArea = document.getElementById('id_answer_text');
         if (!answerTextArea) {
-          alert("Yanıt textarea bulunamadı!");
+          showToast("Yanıt textarea bulunamadı!", 'error');
           return;
         }
         // Metin sonuna [ (kaynak:REF_ID) ] ekle

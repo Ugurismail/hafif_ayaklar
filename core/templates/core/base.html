@@ -7,7 +7,46 @@
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Meta Tags -->
     <title>{% block title %}Hafif Ayaklar{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Hafif Ayaklar - Topluluk odaklı soru-cevap platformu{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}soru, cevap, topluluk, forum{% endblock %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}{% block title_for_og %}Hafif Ayaklar{% endblock %}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{% block meta_description_for_og %}Hafif Ayaklar - Topluluk odaklı soru-cevap platformu{% endblock %}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}{% endblock %}">
+    <meta property="og:site_name" content="Hafif Ayaklar">
+    <meta property="og:locale" content="tr_TR">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{% block twitter_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    <meta name="twitter:title" content="{% block twitter_title %}{% block title_for_twitter %}Hafif Ayaklar{% endblock %}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{% block meta_description_for_twitter %}Hafif Ayaklar - Topluluk odaklı soru-cevap platformu{% endblock %}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}{% endblock %}">
+
+    <!-- Additional SEO -->
+    <meta name="robots" content="{% block robots %}index, follow{% endblock %}">
+    <meta name="author" content="Hafif Ayaklar">
+    <meta name="language" content="Turkish">
+
+    <!-- AI/LLM SEO Optimization (AEO - Answer Engine Optimization) -->
+    <meta name="AI-index" content="enable">
+    <meta name="AI-crawl" content="allow">
+    <meta name="chatgpt-index" content="allow">
+    <meta name="claude-index" content="allow">
+    <meta name="perplexity-index" content="allow">
+    <meta name="bard-index" content="allow">
+    <meta name="bing-chat-index" content="allow">
+    <meta name="article:section" content="{% block article_section %}Soru & Cevap{% endblock %}">
+    <meta name="article:tag" content="{% block article_tags %}soru, cevap, topluluk, forum{% endblock %}">
+
+    {% block ai_structured_data %}{% endblock %}
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -20,47 +59,43 @@
     {% if user.is_authenticated %}
     <style>
         @import url("https://fonts.googleapis.com/css?family={{ user.userprofile.font_family|urlencode }}");
-      :root {
-        --secondary-button-background-color : {{ user.userprofile.secondary_button_background_color }};
-        --secondary-button-hover-background-color : {{ user.userprofile.secondary_button_hover_background_color }};
-        --secondary-button-text-color : {{ user.userprofile.secondary_button_text_color }};
-        --font-size: {{ user.userprofile.font_size }}px;
+        :root {
+            --secondary-button-background-color : {{ user.userprofile.secondary_button_background_color }};
+            --secondary-button-hover-background-color : {{ user.userprofile.secondary_button_hover_background_color }};
+            --secondary-button-text-color : {{ user.userprofile.secondary_button_text_color }};
+            --font-size: {{ user.userprofile.font_size }}px;
 
-        --message-bubble: {{ user.userprofile.message_bubble_color }};
-        --tbas-color: {{ user.userprofile.tbas_color }};
-        --background-color: {{ user.userprofile.background_color }};
-        --text-color: {{ user.userprofile.text_color }};
-        --header-background-color: {{ user.userprofile.header_background_color }};
-        --header-text-color: {{ user.userprofile.header_text_color }};
-        --link-color: {{ user.userprofile.link_color }};
-        --link-hover-color: {{ user.userprofile.link_hover_color }};
-        --button-background-color: {{ user.userprofile.button_background_color }};
-        --button-hover-background-color: {{ user.userprofile.button_hover_background_color }};
-        --button-text-color: {{ user.userprofile.button_text_color }};
-        --hover-background-color: {{ user.userprofile.hover_background_color }};
-        --icon-color: {{ user.userprofile.icon_color }};
-        --icon-hover-color: {{ user.userprofile.icon_hover_color }};
-        --answer-background-color: {{ user.userprofile.answer_background_color }};
-        --content-background-color: {{ user.userprofile.content_background_color }};
-        --tab-background-color: {{ user.userprofile.tab_background_color }};
-        --tab-text-color: {{ user.userprofile.tab_text_color }};
-        --tab-active-background-color: {{ user.userprofile.tab_active_background_color }};
-        --tab-active-text-color: {{ user.userprofile.tab_active_text_color }};
-        --dropdown-text-color: {{ user.userprofile.dropdown_text_color }};
-        --dropdown-hover-background-color: {{ user.userprofile.dropdown_hover_background_color }};
-        --dropdown-hover-text-color: {{ user.userprofile.dropdown_hover_text_color }};
-        --nav-link-hover-color: {{ user.userprofile.nav_link_hover_color }};
-        --nav-link-hover-bg: {{ user.userprofile.nav_link_hover_bg }};
+            --message-bubble: {{ user.userprofile.message_bubble_color }};
+            --tbas-color: {{ user.userprofile.tbas_color }};
+            --background-color: {{ user.userprofile.background_color }};
+            --text-color: {{ user.userprofile.text_color }};
+            --header-background-color: {{ user.userprofile.header_background_color }};
+            --header-text-color: {{ user.userprofile.header_text_color }};
+            --link-color: {{ user.userprofile.link_color }};
+            --link-hover-color: {{ user.userprofile.link_hover_color }};
+            --button-background-color: {{ user.userprofile.button_background_color }};
+            --button-hover-background-color: {{ user.userprofile.button_hover_background_color }};
+            --button-text-color: {{ user.userprofile.button_text_color }};
+            --hover-background-color: {{ user.userprofile.hover_background_color }};
+            --icon-color: {{ user.userprofile.icon_color }};
+            --icon-hover-color: {{ user.userprofile.icon_hover_color }};
+            --answer-background-color: {{ user.userprofile.answer_background_color }};
+            --content-background-color: {{ user.userprofile.content_background_color }};
+            --tab-background-color: {{ user.userprofile.tab_background_color }};
+            --tab-text-color: {{ user.userprofile.tab_text_color }};
+            --tab-active-background-color: {{ user.userprofile.tab_active_background_color }};
+            --tab-active-text-color: {{ user.userprofile.tab_active_text_color }};
+            --dropdown-text-color: {{ user.userprofile.dropdown_text_color }};
+            --dropdown-hover-background-color: {{ user.userprofile.dropdown_hover_background_color }};
+            --dropdown-hover-text-color: {{ user.userprofile.dropdown_hover_text_color }};
+            --nav-link-hover-color: {{ user.userprofile.nav_link_hover_color }};
+            --nav-link-hover-bg: {{ user.userprofile.nav_link_hover_bg }};
 
-        --pagination-background-color: {{ user.userprofile.pagination_background_color }};
-        --pagination-text-color: {{ user.userprofile.pagination_text_color }};
-        /* --pagination-active-background-color: {{ user.userprofile.pagination_active_background_color }};
-        --pagination-active-text-color: {{ user.userprofile.pagination_active_text_color }}; */
-        --body-font-family: "{{ user.userprofile.font_family }}";
-        --yanit-card-background-color: {{ user.userprofile.yanit_card }}
-        
-        /* vs. diğer değişkenler */
-      }
+            --pagination-background-color: {{ user.userprofile.pagination_background_color }};
+            --pagination-text-color: {{ user.userprofile.pagination_text_color }};
+            --body-font-family: "{{ user.userprofile.font_family }}";
+            --yanit-card-background-color: {{ user.userprofile.yanit_card }};
+        }
     </style>
     {% endif %}
     
@@ -108,8 +143,8 @@
                     <li class="nav-item d-none d-md-block">
                         <a class="nav-link position-relative" href="{% url 'notification_list' %}" title="Bildirimler">
                             <i class="bi bi-bell"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-badge" style="display: none;">
-                                0
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-badge" style="{% if unread_notification_count == 0 %}display: none;{% endif %}">
+                                {{ unread_notification_count }}
                             </span>
                         </a>
                     </li>
@@ -120,7 +155,8 @@
                             <span class="d-inline d-md-none ms-1">Müteferrik</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="extraMenu">
-                            <!-- Philopaidia / Oyunlar -->
+                            {% comment %}
+                            <!-- Philopaidia / Oyunlar - GEÇİCİ OLARAK DEVRE DIŞI -->
                             <li><h6 class="dropdown-header"><i class="bi bi-controller"></i> Philopaidia</h6></li>
                             <li>
                                 <a class="dropdown-item" href="{% url 'game_of_life' %}">
@@ -130,11 +166,6 @@
                             <li>
                                 <a class="dropdown-item" href="{% url 'iat_start' %}">
                                     <i class="fa-solid fa-brain"></i> Implicit Association Test (IAT)
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'delphoi_home' %}">
-                                    <i class="fa-solid fa-hat-wizard"></i> Delphoi Kahini
                                 </a>
                             </li>
                             <li>
@@ -148,6 +179,7 @@
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
+                            {% endcomment %}
 
                             <!-- Diğer Öğeler -->
                             <li>
@@ -185,9 +217,11 @@
                                     <i class="bi bi-people"></i> Tüm Kullanıcılar
                                 </a>
                             </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <!-- Delphoi Kahini -->
                             <li>
-                                <a class="dropdown-item" href="https://www.typingme.com/10-parmak-klavye-q/10-parmak-q.php">
-                                    <i class="bi bi-keyboard"></i> On Parmak
+                                <a class="dropdown-item" href="{% url 'delphoi_home' %}">
+                                    <i class="fa-solid fa-hat-wizard"></i> Delphoi Kahini
                                 </a>
                             </li>
                             <li>
@@ -202,17 +236,12 @@
                         </ul>
                     </li>
                     <!-- Mesajlar -->
-                    <li>
-                        <a class="nav-link position-relative" href="{% url 'message_list' %}">
-                            {% if unread_message_count == 0 %}
-                                <i class="bi bi-envelope" id="message-icon"></i>
-                            {% elif unread_message_count > 0 %}
-                                <i class="msg bi bi-envelope" id="message-icon">
-                                    <span class="position-absolute top-10 start-100 badge translate-middle">
-                                        {{ unread_message_count }}
-                                    </span>
-                                </i>
-                            {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="{% url 'message_list' %}" title="Mesajlar">
+                            <i class="bi bi-envelope" id="message-icon"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="message-badge" style="{% if unread_message_count == 0 %}display: none;{% endif %}">
+                                {{ unread_message_count }}
+                            </span>
                             <span class="d-inline d-md-none ms-1">Mesajlar</span>
                         </a>
                     </li>
@@ -222,7 +251,7 @@
                         <a class="nav-link" href="{% url 'login' %}">Giriş Yap</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'signup' %}">Kayıt Ol</a>
+                        <a class="nav-link" href="{% url 'signup' %}">Yazar Ol</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -382,6 +411,10 @@
   </div>
     {% endif %}
 
+    <!-- Toast Container for General Messages -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 10000;" id="toastContainer">
+    </div>
+
     <!-- Modal -->
     <div class="modal fade" id="addSentenceModal" tabindex="-1" aria-labelledby="addSentenceModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
@@ -410,6 +443,7 @@
     <script src="{% static 'js/base.js' %}"></script>
     <script src="{% static 'js/message_notifications.js' %}"></script>
     <script src="{% static 'js/animations.js' %}"></script>
+    <script src="{% static 'js/dropdown_zindex.js' %}"></script>
 
     {% block extra_js %}{% endblock %}
     <!-- Navbar küçülme ve transparanlık efekti -->
@@ -471,7 +505,7 @@
             headers: {'X-CSRFToken': csrftoken},
             success: function(data) {
                 if(data.status == 'success') {
-                    alert(data.message);
+                    showToast(data.message, 'success');
                     $('#addRandomSentenceForm textarea[name="sentence"]').val('');
                     var addModalEl = document.getElementById('addSentenceModal');
                     var addModal   = bootstrap.Modal.getInstance(addModalEl);
@@ -483,7 +517,7 @@
                             errorMsg += err.message + "\n";
                         });
                     }
-                    alert(errorMsg);
+                    showToast(errorMsg, 'error');
                 }
             }
         });
@@ -501,12 +535,12 @@
             headers: { 'X-CSRFToken': csrftoken },
             success: function(data) {
                 if(data.status === 'success') {
-                    // İsteğe göre toast'ı kapatabilir, 
+                    // İsteğe göre toast'ı kapatabilir,
                     // veya "Bu cümle bir daha gösterilmeyecek" mesajı verebilirsiniz.
                     toast.hide();
-                    alert(data.message);
+                    showToast(data.message, 'success');
                 } else {
-                    alert(data.message || "Bir hata oluştu.");
+                    showToast(data.message || "Bir hata oluştu.", 'error');
                 }
             }
         });
@@ -543,5 +577,132 @@
     }
 });
  </script>
+
+ <!-- Global Confirm Modal -->
+ <div class="modal fade" id="globalConfirmModal" tabindex="-1" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered">
+     <div class="modal-content">
+       <div class="modal-header">
+         <h5 class="modal-title" id="globalConfirmTitle">
+           <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+           <span id="globalConfirmTitleText">Onay</span>
+         </h5>
+         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+       </div>
+       <div class="modal-body" id="globalConfirmBody">
+         Emin misiniz?
+       </div>
+       <div class="modal-footer">
+         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+         <button type="button" class="btn btn-primary" id="globalConfirmBtn">Tamam</button>
+       </div>
+     </div>
+   </div>
+ </div>
+
+ <!-- Toast Container for Notifications -->
+ <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    <!-- Success Toast -->
+    <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="bi bi-check-circle me-2"></i>
+          <span id="successToastMessage"></span>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="bi bi-x-circle me-2"></i>
+          <span id="errorToastMessage"></span>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+
+    <!-- Warning Toast -->
+    <div id="warningToast" class="toast align-items-center text-dark bg-warning border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <span id="warningToastMessage"></span>
+        </div>
+        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+
+    <!-- Info Toast -->
+    <div id="infoToast" class="toast align-items-center text-white bg-info border-0" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="bi bi-info-circle me-2"></i>
+          <span id="infoToastMessage"></span>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Toast & Confirm Functions -->
+  <script>
+    // Improved Toast Function with types
+    function showToast(message, type = 'success', duration = 3000) {
+      const toastEl = document.getElementById(type + 'Toast');
+      const messageEl = document.getElementById(type + 'ToastMessage');
+
+      if (!toastEl || !messageEl) {
+        console.error('Toast element not found:', type);
+        return;
+      }
+
+      messageEl.textContent = message;
+      const toast = new bootstrap.Toast(toastEl, {
+        autohide: true,
+        delay: duration
+      });
+      toast.show();
+    }
+
+    // Global Confirm Dialog (replaces window.confirm)
+    function showConfirm(message, title = 'Onay', btnText = 'Tamam', btnClass = 'btn-primary') {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('globalConfirmModal');
+        const titleEl = document.getElementById('globalConfirmTitleText');
+        const bodyEl = document.getElementById('globalConfirmBody');
+        const confirmBtn = document.getElementById('globalConfirmBtn');
+
+        titleEl.textContent = title;
+        bodyEl.textContent = message;
+        confirmBtn.textContent = btnText;
+        confirmBtn.className = 'btn ' + btnClass;
+
+        const bsModal = new bootstrap.Modal(modal);
+
+        // Remove old listeners
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+        newConfirmBtn.onclick = () => {
+          bsModal.hide();
+          resolve(true);
+        };
+
+        modal.addEventListener('hidden.bs.modal', () => {
+          resolve(false);
+        }, { once: true });
+
+        bsModal.show();
+      });
+    }
+
+    // Backwards compatibility
+    function showToastOld(message, title = 'Başarılı', duration = 3000) {
+      showToast(message, 'success', duration);
+    }
+  </script>
 </body>
 </html>

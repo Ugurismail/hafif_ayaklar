@@ -11,6 +11,7 @@ Message-related views
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -36,7 +37,7 @@ def message_list(request):
     user_ids.discard(request.user.id)
     other_users = User.objects.filter(id__in=user_ids)
 
-    conversation_dict = {}
+    conversation_list = []
     for other_user in other_users:
         messages_with_user = messages.filter(
             Q(sender=other_user, recipient=request.user) |
@@ -49,18 +50,36 @@ def message_list(request):
             is_read=False
         ).count()
 
-        conversation_dict[other_user] = {
+        # En son mesajın zamanını al (sıralama için)
+        last_message = messages_with_user.first()
+        last_message_time = last_message.timestamp if last_message else None
+
+        conversation_list.append({
+            'user': other_user,
             'messages': messages_with_user,
             'unread_count': unread_count,
-        }
+            'last_message_time': last_message_time,
+        })
+
+    # En son mesaja göre sırala (en yeni en üstte)
+    conversation_list.sort(key=lambda x: x['last_message_time'] if x['last_message_time'] else timezone.datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+
+    # Pagination: 20 konuşma per page
+    paginator = Paginator(conversation_list, 20)
+    page_number = request.GET.get('message_page', 1)
+    page_obj = paginator.get_page(page_number)
 
     all_questions = get_today_questions_queryset().annotate(
         answers_count=Count('answers')
     )
 
+    # Get show_followed_only parameter for the filter icon
+    show_followed_only = request.GET.get('followed', '0') == '1'
+
     context = {
-        'conversations': conversation_dict,
+        'page_obj': page_obj,
         'all_questions': all_questions,
+        'show_followed_only': show_followed_only,
     }
     return render(request, 'core/message_list.html', context)
 
@@ -91,10 +110,14 @@ def message_detail(request, username):
             return redirect('message_detail', username=username)
     all_questions = get_today_questions_queryset()
 
+    # Get show_followed_only parameter for the filter icon
+    show_followed_only = request.GET.get('followed', '0') == '1'
+
     context = {
         'other_user': other_user,
         'messages': messages,
         'all_questions': all_questions,
+        'show_followed_only': show_followed_only,
     }
     return render(request, 'core/message_detail.html', context)
 

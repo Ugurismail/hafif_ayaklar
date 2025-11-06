@@ -17,6 +17,12 @@ def notification_list(request):
     """
     Display list of notifications for the logged-in user
     """
+    # Mark all unread notifications as read when user visits the page
+    Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    ).update(is_read=True)
+
     # Get all notifications for the current user
     notifications = Notification.objects.filter(
         recipient=request.user
@@ -37,11 +43,8 @@ def notification_list(request):
     # Paginate
     notifications_page = paginate_queryset(notifications, request, 'page', 20)
 
-    # Get unread count
-    unread_count = Notification.objects.filter(
-        recipient=request.user,
-        is_read=False
-    ).count()
+    # Get unread count (will be 0 after marking all as read)
+    unread_count = 0
 
     context = {
         'notifications': notifications_page,
@@ -116,7 +119,7 @@ def follow_question(request, question_id):
             'message': 'Başlık takip ediliyor' if created else 'Zaten takip ediyorsunuz'
         })
 
-    return redirect('question_detail', question_id=question_id)
+    return redirect('question_detail', slug=question.slug)
 
 
 @login_required
@@ -140,7 +143,7 @@ def unfollow_question(request, question_id):
             'message': 'Başlık takipten çıkarıldı' if deleted_count > 0 else 'Zaten takip etmiyorsunuz'
         })
 
-    return redirect('question_detail', question_id=question_id)
+    return redirect('question_detail', slug=question.slug)
 
 
 @login_required
@@ -164,7 +167,7 @@ def follow_answer(request, answer_id):
             'message': 'Yanıt takip ediliyor' if created else 'Zaten takip ediyorsunuz'
         })
 
-    return redirect('question_detail', question_id=answer.question.id)
+    return redirect('question_detail', slug=answer.question.slug)
 
 
 @login_required
@@ -188,4 +191,4 @@ def unfollow_answer(request, answer_id):
             'message': 'Yanıt takipten çıkarıldı' if deleted_count > 0 else 'Zaten takip etmiyorsunuz'
         })
 
-    return redirect('question_detail', question_id=answer.question.id)
+    return redirect('question_detail', slug=answer.question.slug)

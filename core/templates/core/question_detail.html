@@ -3,6 +3,26 @@
   {% load custom_tags %}
   {% load markdownify %}
 
+  {% block title %}{{ question.question_text }} - Hafif Ayaklar{% endblock %}
+
+  {% block meta_description %}{{ question.question_text }}{% if answers_page %} - En beğenilen yanıt: {{ answers_page.0.answer_text|striptags|truncatewords:25 }} ({{ answers_page|length }} topluluk yanıtı){% endif %} | Hafif Ayaklar{% endblock %}
+
+  {% block meta_keywords %}{{ question.question_text }}, soru, cevap, tartışma{% endblock %}
+
+  {% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}/{{ question.slug }}/{% endblock %}
+
+  {% block og_type %}article{% endblock %}
+  {% block og_title %}{{ question.question_text }}{% endblock %}
+  {% block og_description %}{{ question.question_text }}{% if answers_page %} - {{ answers_page|length }} yanıt{% endif %}{% endblock %}
+  {% block og_url %}{{ request.scheme }}://{{ request.get_host }}/{{ question.slug }}/{% endblock %}
+
+  {% block twitter_title %}{{ question.question_text }}{% endblock %}
+  {% block twitter_description %}{{ question.question_text }}{% if answers_page %} - {{ answers_page|length }} yanıt{% endif %}{% endblock %}
+  {% block twitter_url %}{{ request.scheme }}://{{ request.get_host }}/{{ question.slug }}/{% endblock %}
+
+  {% block article_section %}{{ question.question_text }}{% endblock %}
+  {% block article_tags %}{{ question.question_text }}, soru, cevap{% if answers_page %}, {{ answers_page|length }} yanıt{% endif %}{% endblock %}
+
   {% block extra_css %}
   <style>
       .active-filter {
@@ -40,7 +60,7 @@
             <ul class="list-unstyled" id="questions-list">
               {% for question in all_questions_page %}
               <li class="d-flex justify-content-between align-items-center mt-2 baslik">
-                  <a href="{% url 'question_detail' question.id %}"
+                  <a href="{% url 'question_detail' question.slug %}"
                     class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
                       <span>{{ question.question_text }}</span>
                       <small class="ms-2">{{ question.answers_count }}</small>
@@ -176,6 +196,14 @@
                 <span class="save-count icon-number">{{ question_save_count }}</span>
 
                 {% if user.is_authenticated %}
+                <!-- Takip Et -->
+                <a href="#"
+                   class="follow-question-btn ms-2"
+                   data-question-id="{{ question.id }}"
+                   title="{% if user_is_following_question %}Takibi Bırak{% else %}Takip Et{% endif %}">
+                  <i class="bi {% if user_is_following_question %}bi-bell-fill text-primary{% else %}bi-bell{% endif %}"></i>
+                </a>
+
                 <!-- Mevcut Başlığı Bağla -->
                 <a href="#"
                    class="save-btn ms-2"
@@ -199,7 +227,7 @@
             <!-- YANITLAR LİSTESİ (Kapsayıcı) -->
             <div id="answersContainer">
               {% for answer in answers_page %}
-                <div class="card mb-3 mt-2 answer" id="answer-{{ answer.id }}">
+                <div class="card mb-3 mt-2 answer random-item-card" id="answer-{{ answer.id }}">
                   <div class="card-body">
                     {% if answer.answer_text|length > 1000 %}
                       <div class="answer-text" id="answer-summary-{{ answer.id }}">
@@ -207,11 +235,55 @@
                       </div>
                       <div class="answer-text" id="answer-full-{{ answer.id }}" style="display: none;">
                         {{ answer.answer_text|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+
+                        {# Kaynakça Bölümü #}
+                        {% with bibliography=answer.answer_text|extract_bibliography %}
+                          {% if bibliography %}
+                            <div class="bibliography-section mt-4 pt-3 border-top">
+                              <h6 class="bibliography-title">Kaynakça</h6>
+                              <ol class="bibliography-list">
+                                {% for item in bibliography %}
+                                  <li class="bibliography-item">
+                                    {% if item.reference %}
+                                      <span class="reference-citation">
+                                        {{ item.reference.author_surname }}, {{ item.reference.author_name }}{% if item.reference.metin_ismi %}, <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
+                                      </span>
+                                    {% else %}
+                                      <span class="reference-not-found">Kaynak bulunamadı (ID: {{ item.ref_id }})</span>
+                                    {% endif %}
+                                  </li>
+                                {% endfor %}
+                              </ol>
+                            </div>
+                          {% endif %}
+                        {% endwith %}
                       </div>
                       <a href="#" class="read-more" data-answer-id="{{ answer.id }}">Tümünü Göster</a>
                     {% else %}
                       <div class="answer-text">
                         {{ answer.answer_text|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+
+                        {# Kaynakça Bölümü #}
+                        {% with bibliography=answer.answer_text|extract_bibliography %}
+                          {% if bibliography %}
+                            <div class="bibliography-section mt-4 pt-3 border-top">
+                              <h6 class="bibliography-title">Kaynakça</h6>
+                              <ol class="bibliography-list">
+                                {% for item in bibliography %}
+                                  <li class="bibliography-item">
+                                    {% if item.reference %}
+                                      <span class="reference-citation">
+                                        {{ item.reference.author_surname }}, {{ item.reference.author_name }}{% if item.reference.metin_ismi %}, <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
+                                      </span>
+                                    {% else %}
+                                      <span class="reference-not-found">Kaynak bulunamadı (ID: {{ item.ref_id }})</span>
+                                    {% endif %}
+                                  </li>
+                                {% endfor %}
+                              </ol>
+                            </div>
+                          {% endif %}
+                        {% endwith %}
                       </div>
                     {% endif %}
           
@@ -234,12 +306,12 @@
                         <span class="icon-number" id="answer-downvotes-{{ answer.id }}">{{ answer.downvotes }}</span>
           
                         <a href="#" class="save-btn ms-2"
-                          data-content-type="answer" data-object-id="{{ answer.id }}" 
+                          data-content-type="answer" data-object-id="{{ answer.id }}"
                           title="Kaydet">
                           <i class="{% if answer.id in saved_answer_ids %}bi bi-bookmark-fill{% else %}bi bi-bookmark{% endif %}"></i>
                         </a>
                         <span class="save-count icon-number">{{ answer_save_dict|get_item:answer.id|default:"0" }}</span>
-          
+
                         {% if answer.user == request.user %}
                         {% if answer.user == request.user %}
                           {% if answer.definition %}
@@ -281,7 +353,7 @@
                           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu{{ answer.id }}">
                             <li>
                               <button class="dropdown-item copy-link-btn"
-                                      data-url="{% url 'single_answer' question.id answer.id %}">
+                                      data-url="{% url 'single_answer' question.slug answer.id %}">
                                 <i class="bi bi-link-45deg"></i> Linki Kopyala
                               </button>
                             </li>
@@ -392,14 +464,14 @@
                   <div class="row g-2">  <!-- Satır ekledik, boşluk için g-2 kullanıldı -->
                       {% if question.parent_questions.count == 0 %}
                       <div class="col-12 d-grid">
-                          <a href="{% url 'add_subquestion' question.id %}" class="btn btn-outline-secondary btn-sm">
+                          <a href="{% url 'add_subquestion' question.slug %}" class="btn btn-outline-secondary btn-sm">
                               <i class="bi bi-chevron-double-down" title="Alt Soru Ekle"> Alt Soru Ekle</i>
                           </a>
                       </div>
 
                       {% elif question.parent_questions.count > 0 %}
                       <div class="col-6 d-grid">
-                          <a href="{% url 'add_subquestion' question.id %}" class="btn btn-outline-secondary btn-sm">
+                          <a href="{% url 'add_subquestion' question.slug %}" class="btn btn-outline-secondary btn-sm">
                               <i class="bi bi-chevron-double-down" title="Alt Soru Ekle"> Alt Soru Ekle</i>
                           </a>
                       </div>
@@ -409,7 +481,7 @@
                       {% if question.parent_questions.count == 1 %}
                           {% with parent=question.parent_questions.first %}
                               <div class="col-6 d-grid">
-                                  <a href="{% url 'question_detail' parent.id %}" class="btn btn-outline-secondary btn-sm">
+                                  <a href="{% url 'question_detail' parent.slug %}" class="btn btn-outline-secondary btn-sm">
                                       <i class="bi bi-chevron-double-up" title="Üst Soruya Git"> Üst Soruya Git</i>
                                   </a>
                               </div>
@@ -460,7 +532,7 @@
                           {% for subquestion in question.subquestions.all %}
                               <li class="list-group-item d-flex justify-content-between align-items-center">
                                   <div>
-                                      <a href="{% url 'question_detail' subquestion.id %}">
+                                      <a href="{% url 'question_detail' subquestion.slug %}">
                                           {{ subquestion.question_text }}
                                       </a>
                                       <br>
@@ -513,7 +585,7 @@
     </div>
   </div>
   <!-- TANIM MODAL -->
-  <div class="modal fade" id="definitionModal" tabindex="-1" aria-labelledby="definitionModalLabel" aria-hidden="true">
+  <div class="modal fade" id="definitionModal" tabindex="-1" aria-labelledby="definitionModalLabel" aria-hidden="true" data-question-slug="{{ question.slug }}">
       <div class="modal-dialog modal-lg"> <!-- modal-lg: genişlik için -->
         <div class="modal-content">
     
@@ -632,14 +704,44 @@
           <div class="modal-body">
             <ul class="list-group">
                 <li class="list-group-item">
-                    <a href="#" id="shareTwitter" target="_blank">
-                        <i class="bi bi-twitter"></i> X (Twitter) ile Paylaş
+                    <a href="#" id="shareTwitter" target="_blank" class="text-decoration-none">
+                        <i class="bi bi-twitter text-primary"></i> X (Twitter) ile Paylaş
                     </a>
                 </li>
                 <li class="list-group-item">
-                    <a href="#" id="shareFacebook" target="_blank">
-                        <i class="bi bi-facebook"></i> Facebook ile Paylaş
+                    <a href="#" id="shareFacebook" target="_blank" class="text-decoration-none">
+                        <i class="bi bi-facebook text-primary"></i> Facebook ile Paylaş
                     </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="#" id="shareWhatsApp" target="_blank" class="text-decoration-none">
+                        <i class="bi bi-whatsapp text-success"></i> WhatsApp ile Paylaş
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="#" id="shareTelegram" target="_blank" class="text-decoration-none">
+                        <i class="bi bi-telegram text-info"></i> Telegram ile Paylaş
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="#" id="shareLinkedIn" target="_blank" class="text-decoration-none">
+                        <i class="bi bi-linkedin text-primary"></i> LinkedIn ile Paylaş
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="#" id="shareReddit" target="_blank" class="text-decoration-none">
+                        <i class="bi bi-reddit text-danger"></i> Reddit ile Paylaş
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <a href="#" id="shareEmail" class="text-decoration-none">
+                        <i class="bi bi-envelope"></i> E-posta ile Paylaş
+                    </a>
+                </li>
+                <li class="list-group-item">
+                    <button class="btn btn-sm w-100 text-start" id="shareCopyLink" style="border: none; background: none; padding: 0;">
+                        <i class="bi bi-link-45deg"></i> Linki Kopyala
+                    </button>
                 </li>
             </ul>
           </div>
@@ -689,17 +791,34 @@
           });
       });
 
-      // Link Kopyala İşlevi
+      // Link Kopyala İşlevi (Toast ile)
       $('.copy-link-btn').click(function(e) {
           e.preventDefault();
           var url = $(this).data('url');
-          var tempInput = $("<input>");
-          $("body").append(tempInput);
           var absoluteLink = window.location.origin + url;
-          tempInput.val(absoluteLink).select();
-          document.execCommand("copy");
-          tempInput.remove();
-          alert("Link kopyalandı!");
+
+          // Modern clipboard API kullan
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(absoluteLink).then(function() {
+                  showToast('Link panoya kopyalandı!', 'Başarılı', 3000);
+              }).catch(function() {
+                  // Fallback eski yöntem
+                  var tempInput = $("<input>");
+                  $("body").append(tempInput);
+                  tempInput.val(absoluteLink).select();
+                  document.execCommand("copy");
+                  tempInput.remove();
+                  showToast('Link panoya kopyalandı!', 'Başarılı', 3000);
+              });
+          } else {
+              // Fallback eski yöntem
+              var tempInput = $("<input>");
+              $("body").append(tempInput);
+              tempInput.val(absoluteLink).select();
+              document.execCommand("copy");
+              tempInput.remove();
+              showToast('Link panoya kopyalandı!', 'Başarılı', 3000);
+          }
       });
 
       // Paylaş (Share) İşlevi
@@ -711,20 +830,54 @@
           $('#shareModal').modal('show');
       });
       
-      // Soru ID'sini şablondan alıyoruz (paylaş URL'sinde kullanılacak)
-      var questionId = "{{ question.id }}";
+      // Soru slug'ını şablondan alıyoruz (paylaş URL'sinde kullanılacak)
+      var questionSlug = "{{ question.slug }}";
       // Django URL şablonundan, paylaşım linki için bir template URL oluşturuyoruz.
       // "0" placeholder olarak kullanılıyor; modal açıldığında bu değeri currentAnswerId ile değiştireceğiz.
-      var shareUrlTemplate = "{% url 'single_answer' question.id 0 %}";
+      var shareUrlTemplate = "{% url 'single_answer' question.slug 0 %}";
       
       $('#shareModal').on('shown.bs.modal', function () {
           // "0" kısmını currentAnswerId ile değiştiriyoruz
           var shareUrl = shareUrlTemplate.replace('/0/', '/' + currentAnswerId + '/');
           var absoluteLink = window.location.origin + shareUrl;
-          var twitterUrl = "https://twitter.com/intent/tweet?url=" + encodeURIComponent(absoluteLink);
+          var questionTitle = "{{ question.question_text|escapejs }}";
+
+          // Paylaşım URL'lerini oluştur
+          var twitterUrl = "https://twitter.com/intent/tweet?url=" + encodeURIComponent(absoluteLink) + "&text=" + encodeURIComponent(questionTitle);
           var facebookUrl = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(absoluteLink);
+          var whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(questionTitle + " " + absoluteLink);
+          var telegramUrl = "https://t.me/share/url?url=" + encodeURIComponent(absoluteLink) + "&text=" + encodeURIComponent(questionTitle);
+          var linkedinUrl = "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(absoluteLink);
+          var redditUrl = "https://reddit.com/submit?url=" + encodeURIComponent(absoluteLink) + "&title=" + encodeURIComponent(questionTitle);
+          var emailUrl = "mailto:?subject=" + encodeURIComponent(questionTitle) + "&body=" + encodeURIComponent("Bu yanıta göz atmanı öneririm: " + absoluteLink);
+
+          // Link'leri ata
           $('#shareTwitter').attr('href', twitterUrl);
           $('#shareFacebook').attr('href', facebookUrl);
+          $('#shareWhatsApp').attr('href', whatsappUrl);
+          $('#shareTelegram').attr('href', telegramUrl);
+          $('#shareLinkedIn').attr('href', linkedinUrl);
+          $('#shareReddit').attr('href', redditUrl);
+          $('#shareEmail').attr('href', emailUrl);
+
+          // Linki Kopyala butonu
+          $('#shareCopyLink').off('click').on('click', function(e) {
+              e.preventDefault();
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(absoluteLink).then(function() {
+                      showToast('Link panoya kopyalandı!', 'Başarılı', 3000);
+                      $('#shareModal').modal('hide');
+                  });
+              } else {
+                  var tempInput = $("<input>");
+                  $("body").append(tempInput);
+                  tempInput.val(absoluteLink).select();
+                  document.execCommand("copy");
+                  tempInput.remove();
+                  showToast('Link panoya kopyalandı!', 'Başarılı', 3000);
+                  $('#shareModal').modal('hide');
+              }
+          });
       });
 
           // Yanıt Silme İşlevi
@@ -769,7 +922,7 @@
       document.addEventListener('DOMContentLoaded', function() {
           const filterForm  = document.getElementById('filterForm');
           const answersDiv  = document.getElementById('answersContainer');
-          const questionId  = document.getElementById('answer_form_question_id').value;
+          const questionSlug = "{{ question.slug }}";
         
           // Filtre formundaki input'lara change/keyup event ekle
           filterForm.querySelectorAll('input').forEach(function(elem) {
@@ -793,7 +946,7 @@
           function doFilterAjax() {
               const formData = new FormData(filterForm);
               const queryParams = new URLSearchParams(formData);
-              const url = `/question/${questionId}/filter_answers/?` + queryParams.toString();
+              const url = `/${questionSlug}/filter_answers/?` + queryParams.toString();
               fetch(url, {
                   method: 'GET',
                   headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -967,11 +1120,11 @@ document.getElementById('sabaha-birak-btn').onclick = function(e) {
         if (data.status === 'ok') {
             document.getElementById('sabahabirak-feedback').style.display = 'inline';
         } else {
-            alert('Bir hata oluştu: ' + (data.error || ''));
+            showToast('Bir hata oluştu: ' + (data.error || ''), 'error');
         }
     })
     .catch(err => {
-        alert('Sunucu hatası: ' + err);
+        showToast('Sunucu hatası: ' + err, 'error');
     });
 };
 
@@ -990,7 +1143,7 @@ document.getElementById('sabaha-birak-btn').onclick = function(e) {
                     // Modal kullanıyorsan modalı da açabilirsin, örn:
                     // $('#yanitModal').modal('show');
                 } else {
-                    alert('Yanıt kutusu bulunamadı. Ana sayfada değilseniz orada deneyin.');
+                    showToast('Yanıt kutusu bulunamadı. Ana sayfada değilseniz orada deneyin.', 'warning');
                 }
             });
         });
@@ -1019,12 +1172,12 @@ document.getElementById('sabaha-birak-btn').onclick = function(e) {
       .then(data => {
           const questionsList = document.getElementById('questions-list');
           if (!questionsList) {
-              alert('Soruları listeleyecek alan bulunamadı! (questions-list)');
+              showToast('Soruları listeleyecek alan bulunamadı!', 'error');
               return;
           }
           questionsList.innerHTML = '';
           data.questions.forEach(function(q) {
-              const link = "{% url 'question_detail' 12345 %}".replace('12345', q.id);
+              const link = `/${q.slug}/`;
               questionsList.innerHTML += `
                   <li class="tbas-color baslik d-flex justify-content-between align-items-center mt-2">
                       <a href="${link}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
@@ -1044,15 +1197,57 @@ document.getElementById('sabaha-birak-btn').onclick = function(e) {
       .then(data => {
           if (data.questions && data.questions.length > 0) {
               const q = data.questions[Math.floor(Math.random() * data.questions.length)];
-              const link = "{% url 'question_detail' 12345 %}".replace('12345', q.id);
+              const link = `/${q.slug}/`;
               window.location.href = link;
           }
       });
   });
 });
 
+// Takip butonları
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('[name=csrf-token]').content;
+
+    // Başlık takip butonu
+    const followQuestionBtn = document.querySelector('.follow-question-btn');
+    if (followQuestionBtn) {
+        followQuestionBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const questionId = this.dataset.questionId;
+            const icon = this.querySelector('i');
+            const isFollowing = icon.classList.contains('bi-bell-fill');
+
+            const url = isFollowing
+                ? `/question/${questionId}/unfollow/`
+                : `/question/${questionId}/follow/`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (isFollowing) {
+                        icon.classList.remove('bi-bell-fill', 'text-primary');
+                        icon.classList.add('bi-bell');
+                        this.title = 'Takip Et';
+                    } else {
+                        icon.classList.remove('bi-bell');
+                        icon.classList.add('bi-bell-fill', 'text-primary');
+                        this.title = 'Takibi Bırak';
+                    }
+                }
+            });
+        });
+    }
+});
+
 </script>
-  
+
 
 <!-- kelime sayma -->
 <script>
@@ -1116,6 +1311,84 @@ document.getElementById('sabaha-birak-btn').onclick = function(e) {
   {% include 'core/link_existing_question_modal.html' %}
 
   <script src="{% static 'js/link_existing_question.js' %}"></script>
+
+  <!-- Schema.org JSON-LD for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "QAPage",
+    "mainEntity": {
+      "@type": "Question",
+      "name": "{{ question.question_text|escapejs }}",
+      "text": "{{ question.question_text|escapejs }}",
+      "answerCount": {{ answers_page|length|default:0 }},
+      "upvoteCount": {{ question.upvotes|default:0 }},
+      "dateCreated": "{{ question.created_at|date:'c' }}",
+      "author": {
+        "@type": "Person",
+        "name": "{{ question.user.username|escapejs }}"
+      }{% if answers_page %},
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ answers_page.0.answer_text|striptags|truncatewords:50|escapejs }}",
+        "upvoteCount": {{ answers_page.0.upvotes|default:0 }},
+        "dateCreated": "{{ answers_page.0.created_at|date:'c' }}",
+        "author": {
+          "@type": "Person",
+          "name": "{{ answers_page.0.user.username|escapejs }}"
+        }
+      }{% if answers_page|length > 1 %},
+      "suggestedAnswer": [
+        {% for answer in answers_page|slice:"1:" %}
+        {
+          "@type": "Answer",
+          "text": "{{ answer.answer_text|striptags|truncatewords:50|escapejs }}",
+          "upvoteCount": {{ answer.upvotes|default:0 }},
+          "dateCreated": "{{ answer.created_at|date:'c' }}",
+          "author": {
+            "@type": "Person",
+            "name": "{{ answer.user.username|escapejs }}"
+          }
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]{% endif %}{% endif %}
+    }
+  }
+  </script>
+
+  <!-- AI-Optimized FAQPage Schema for Better AI Discovery -->
+  {% if answers_page %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "{{ question.question_text|escapejs }}",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "{{ answers_page.0.answer_text|striptags|escapejs }}",
+          "upvoteCount": {{ answers_page.0.upvotes|default:0 }},
+          "author": {
+            "@type": "Person",
+            "name": "{{ answers_page.0.user.username|escapejs }}"
+          },
+          "dateCreated": "{{ answers_page.0.created_at|date:'c' }}"
+        }
+      }
+    ],
+    "headline": "{{ question.question_text|escapejs }}",
+    "description": "{{ question.question_text|escapejs }} - {{ answers_page|length }} topluluk yanıtı",
+    "datePublished": "{{ question.created_at|date:'c' }}",
+    "dateModified": "{{ question.updated_at|date:'c' }}",
+    "author": {
+      "@type": "Person",
+      "name": "{{ question.user.username|escapejs }}"
+    }
+  }
+  </script>
+  {% endif %}
 
   {% endblock %}
 

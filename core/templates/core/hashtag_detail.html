@@ -26,7 +26,7 @@
                         <!-- Answer Card -->
                         <div class="card mb-3 clickable-card" style="cursor: pointer;" onclick="window.location.href='{% url 'single_answer' item.question.id item.object.id %}'">
                             <div class="card-header">
-                                <a href="{% url 'question_detail' item.question.id %}" class="text-decoration-none" onclick="event.stopPropagation();">
+                                <a href="{% url 'question_detail' item.question.slug %}" class="text-decoration-none" onclick="event.stopPropagation();">
                                     <strong>{{ item.question.question_text }}</strong>
                                 </a>
                             </div>

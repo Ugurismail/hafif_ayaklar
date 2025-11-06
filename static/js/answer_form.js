@@ -179,7 +179,7 @@ var referenceModalElem = document.getElementById('referenceModal');
           var refMarkup = `(ref:${selectedText})`;
           insertTextAtCursor(textarea, refMarkup);
       } else {
-          alert('Lütfen renkli bağlantı yapmak istediğiniz metni seçiniz.');
+          showToast('Lütfen renkli bağlantı yapmak istediğiniz metni seçiniz.', 'warning');
       }
     });
   }
@@ -227,14 +227,18 @@ var referenceModalElem = document.getElementById('referenceModal');
     createDefinitionForm.addEventListener('submit', function(e) {
       e.preventDefault();
       var definitionText = document.getElementById('definitionText').value;
-      var questionIdElem = document.getElementById('answer_form_question_id');
-      if (!questionIdElem) {
-        alert("Soru ID bulunamadı (answer_form_question_id).");
+      var definitionModalElem = document.getElementById('definitionModal');
+      if (!definitionModalElem) {
+        showToast("Tanım modal bulunamadı.", 'error');
         return;
       }
-      var questionId = questionIdElem.value;
+      var questionSlug = definitionModalElem.dataset.questionSlug;
+      if (!questionSlug) {
+        showToast("Soru slug bulunamadı.", 'error');
+        return;
+      }
 
-      fetch(`/create-definition/${questionId}/`, {
+      fetch(`/create-definition/${questionSlug}/`, {
         method: 'POST',
         headers: {
           'X-CSRFToken': getCookie('csrftoken'),
@@ -245,22 +249,22 @@ var referenceModalElem = document.getElementById('referenceModal');
       .then(res => res.json())
       .then(data => {
          if (data.status === 'success') {
-           alert("Tanım kaydedildi!");
-           // Modal’ı kapat
+           showToast("Tanım kaydedildi!", 'success');
+           // Modal'ı kapat
            let modalInstance = bootstrap.Modal.getInstance(definitionModalElem);
            if (modalInstance) {
              modalInstance.hide();
            }
            document.getElementById('definitionText').value = "";
            // Sayfayı yenile
-           location.reload();
+           setTimeout(() => location.reload(), 1000);
          } else {
-           alert("Hata oluştu: " + JSON.stringify(data.errors || data));
+           showToast("Hata oluştu: " + JSON.stringify(data.errors || data), 'error');
          }
       })
       .catch(err => {
         console.error(err);
-        alert("Sunucu veya ağ hatası oluştu.");
+        showToast("Sunucu veya ağ hatası oluştu.", 'error');
       });
     });
   }
@@ -362,7 +366,7 @@ var referenceModalElem = document.getElementById('referenceModal');
       })
       .catch(err => {
         console.error(err);
-        alert("Tanımlar (kullanıcı) yüklenirken hata oluştu.");
+        showToast("Tanımlar (kullanıcı) yüklenirken hata oluştu.", 'error');
       });
   }
 
@@ -370,7 +374,7 @@ var referenceModalElem = document.getElementById('referenceModal');
     insertUserDefinitionBtn.addEventListener('click', function() {
       let checked = document.querySelector('input[name="userDef"]:checked');
       if (!checked) {
-        alert("Lütfen bir tanım seçiniz.");
+        showToast("Lütfen bir tanım seçiniz.", 'warning');
         return;
       }
       let item = JSON.parse(checked.value);
@@ -379,7 +383,7 @@ var referenceModalElem = document.getElementById('referenceModal');
 
       let answerTextarea = document.querySelector('textarea[name="answer_text"]');
       if (!answerTextarea) {
-        alert("Yanıt textarea bulunamadı!");
+        showToast("Yanıt textarea bulunamadı!", 'error');
         return;
       }
 
@@ -492,7 +496,7 @@ var referenceModalElem = document.getElementById('referenceModal');
       })
       .catch(err => {
         console.error(err);
-        alert("Genel tanımlar alınırken hata oluştu.");
+        showToast("Genel tanımlar alınırken hata oluştu.", 'error');
       });
   }
 
@@ -500,14 +504,14 @@ var referenceModalElem = document.getElementById('referenceModal');
     insertGlobalDefinitionBtn.addEventListener('click', function(e) {
       var checkedRadio = document.querySelector('input[name="globalDef"]:checked');
       if(!checkedRadio) {
-        alert("Lütfen bir tanım seçin.");
+        showToast("Lütfen bir tanım seçin.", 'warning');
         return;
       }
       var item = JSON.parse(checkedRadio.value);
       // item => {id, question_text, definition_text, usage_count_all, username...}
       var answerTextarea = document.querySelector('textarea[name="answer_text"]');
       if(!answerTextarea) {
-        alert("Yanıt textarea bulunamadı!");
+        showToast("Yanıt textarea bulunamadı!", 'error');
         return;
       }
       var insertStr = `(tanim:${item.question_text}:${item.id})`;

@@ -5,11 +5,26 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-2">
-            <h4>Tüm Sorular</h4>
-            <ul class="list-unstyled">
+            <h4 style="display: flex; justify-content: center; align-items: center; gap: 18px; min-height: 38px; margin-bottom: 0.5rem;">
+                <a href="#" id="random-question-btn" title="Rastgele Başlık Diz" class="vote-btn2 d-flex align-items-center justify-content-center"
+                   style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
+                    <i class="bi bi-shuffle" style="font-size: 1.25em;"></i>
+                </a>
+                <a href="#" id="shuffle-btn" title="Rastgele Başlığa Git" class="vote-btn2 d-flex align-items-center justify-content-center"
+                   style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
+                    <i class="bi bi-asterisk" style="font-size: 1.25em"></i>
+                </a>
+                <a href="?followed={% if show_followed_only %}0{% else %}1{% endif %}" id="followed-filter-btn"
+                   title="{% if show_followed_only %}Tümünü Göster{% else %}Sadece Takip Ettiklerim{% endif %}"
+                   class="vote-btn2 d-flex align-items-center justify-content-center {% if show_followed_only %}active-filter{% endif %}"
+                   style="width: 32px; height: 32px; border-radius: 50%; transition: all 0.2s;">
+                    <i class="bi bi-people-fill" style="font-size: 1.25em;"></i>
+                </a>
+            </h4>
+            <ul class="list-unstyled" id="questions-list">
                 {% for question in all_questions %}
                 <li class="tbas-color d-flex justify-content-between align-items-center mt-2 baslik">
-                    <a href="{% url 'question_detail' question.id %}"
+                    <a href="{% url 'question_detail' question.slug %}"
                       class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
                         <span>{{ question.question_text }}</span>
                         <small class="ms-2">{{ question.answers_count }}</small>
@@ -78,6 +93,47 @@
         if (chatContainer) {
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Shuffle butonu (sol frame'i random doldurur)
+        document.getElementById('random-question-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch("{% url 'shuffle_questions' %}")
+            .then(response => response.json())
+            .then(data => {
+                const questionsList = document.getElementById('questions-list');
+                if (!questionsList) {
+                    showToast('Soruları listeleyecek alan bulunamadı!', 'error');
+                    return;
+                }
+                questionsList.innerHTML = '';
+                data.questions.forEach(function(q) {
+                    const link = `/${q.slug}/`;
+                    questionsList.innerHTML += `
+                        <li class="tbas-color baslik d-flex justify-content-between align-items-center mt-2">
+                            <a href="${link}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
+                                <span>${q.text}</span>
+                            </a>
+                        </li>
+                    `;
+                });
+            });
+        });
+
+        // Rastgele başlığa git butonu
+        document.getElementById('shuffle-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch("{% url 'shuffle_questions' %}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.questions && data.questions.length > 0) {
+                    const q = data.questions[Math.floor(Math.random() * data.questions.length)];
+                    const link = `/${q.slug}/`;
+                    window.location.href = link;
+                }
+            });
+        });
     });
 </script>
 {% endblock %}

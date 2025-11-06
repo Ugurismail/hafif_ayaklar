@@ -1,5 +1,74 @@
 /* base.js */
 
+/**
+ * Show a toast notification
+ * @param {string} message - The message to display
+ * @param {string} type - Type of toast: 'success', 'error', 'warning', 'info'
+ * @param {number} duration - Duration in ms before auto-hide (default: 4000)
+ */
+function showToast(message, type = 'info', duration = 4000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    // Create unique ID for this toast
+    const toastId = 'toast-' + Date.now();
+
+    // Determine icon and color based on type
+    let icon, bgClass, textClass;
+    switch(type) {
+        case 'success':
+            icon = 'bi-check-circle-fill';
+            bgClass = 'bg-success';
+            textClass = 'text-white';
+            break;
+        case 'error':
+            icon = 'bi-x-circle-fill';
+            bgClass = 'bg-danger';
+            textClass = 'text-white';
+            break;
+        case 'warning':
+            icon = 'bi-exclamation-triangle-fill';
+            bgClass = 'bg-warning';
+            textClass = 'text-dark';
+            break;
+        case 'info':
+        default:
+            icon = 'bi-info-circle-fill';
+            bgClass = 'bg-info';
+            textClass = 'text-white';
+    }
+
+    // Create toast element
+    const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center ${bgClass} ${textClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi ${icon} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+
+    // Append to container
+    container.insertAdjacentHTML('beforeend', toastHtml);
+
+    // Get the toast element and show it
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, {
+        autohide: true,
+        delay: duration
+    });
+
+    // Remove from DOM after hidden
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        toastElement.remove();
+    });
+
+    toast.show();
+}
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -20,6 +89,10 @@ function getCookie(name) {
  * böylece Enter'a basıldığında bakabiliriz.
  */
 let lastSearchResults = [];
+let currentSearchQuery = '';
+let currentSearchOffset = 0;
+let hasMoreResults = false;
+let isLoadingMore = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     var searchInput = document.getElementById('search-input');
@@ -28,63 +101,117 @@ document.addEventListener('DOMContentLoaded', function() {
     var query = '';
     var currentFocus = -1;  // Ok tuşlarıyla hangi item seçili
 
+    function loadSearchResults(isLoadMore = false) {
+        const q = currentSearchQuery;
+        const offset = isLoadMore ? currentSearchOffset : 0;
+
+        if (!isLoadMore) {
+            currentSearchOffset = 0;
+            lastSearchResults = [];
+        }
+
+        isLoadingMore = true;
+
+        fetch('/search_suggestions/?q=' + encodeURIComponent(q) + '&offset=' + offset + '&limit=20', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            isLoadingMore = false;
+
+            // Debug: Kaç sonuç geldi?
+            console.log(`Gelen sonuç sayısı: ${data.suggestions.length}, Toplam: ${data.total}, Daha var mı: ${data.has_more}`);
+
+            // Gelen sonuçları ekle
+            data.suggestions.forEach(function(item) {
+                lastSearchResults.push(item);
+
+                var div = document.createElement('div');
+                div.classList.add('list-group-item');
+
+                div.textContent = item.label;
+                div.dataset.type = item.type;
+                if (item.type === 'question') {
+                    // URL'den slug'ı çıkar (örn: /slug/ -> slug)
+                    const slug = item.url.split('/').filter(s => s).pop();
+                    div.dataset.slug = slug;
+                } else if (item.type === 'user') {
+                    // URL'den username'i çıkar (örn: /profile/username/ -> username)
+                    const username = item.url.split('/').filter(s => s).pop();
+                    div.dataset.username = username;
+                }
+                searchResults.appendChild(div);
+            });
+
+            // "Daha Fazla Göster" butonunu güncelle veya ekle
+            hasMoreResults = data.has_more;
+            let loadMoreBtn = document.getElementById('load-more-search-btn');
+
+            if (hasMoreResults) {
+                currentSearchOffset = data.next_offset;
+
+                if (!loadMoreBtn) {
+                    loadMoreBtn = document.createElement('button');
+                    loadMoreBtn.id = 'load-more-search-btn';
+                    loadMoreBtn.className = 'btn btn-sm btn-outline-primary w-100 mt-2';
+                    loadMoreBtn.textContent = '20 Sonuç Daha Göster';
+                    loadMoreBtn.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        loadSearchResults(true);
+                    };
+                    searchResults.appendChild(loadMoreBtn);
+                } else {
+                    loadMoreBtn.style.display = 'block';
+                }
+            } else {
+                if (loadMoreBtn) {
+                    loadMoreBtn.style.display = 'none';
+                }
+            }
+
+            // Eğer hiç sonuç yoksa "Yeni başlık oluştur" seçeneği göster
+            if (!isLoadMore && lastSearchResults.length === 0) {
+                var div = document.createElement('div');
+                div.classList.add('list-group-item');
+                div.dataset.type = 'no-results';
+
+                var span = document.createElement('span');
+                span.textContent = 'Sonuç bulunamadı. ';
+
+                var a = document.createElement('a');
+                a.href = '#';
+                a.id = 'create-new-question';
+                a.textContent = 'Yeni başlık oluştur';
+
+                div.appendChild(span);
+                div.appendChild(a);
+                searchResults.appendChild(div);
+            }
+
+            searchResults.style.display = 'block';
+            currentFocus = -1;
+        })
+        .catch(error => {
+            console.error('Arama hatası:', error);
+            isLoadingMore = false;
+        });
+    }
+
     searchInput.addEventListener('input', function() {
         query = this.value.trim();
+        currentSearchQuery = query;
+
         if (query.length > 0) {
-            fetch('/search/?q=' + encodeURIComponent(query), {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Search results:', data.results);  // Debug
-                lastSearchResults = data.results;  // Global olarak sakla
-
-                // Önceki sonuçları temizle
-                searchResults.innerHTML = '';
-
-                if (data.results.length > 0) {
-                    // Gelen tüm sonuçlar için <div> ekle
-                    data.results.forEach(function(item) {
-                        var div = document.createElement('div');
-                        div.classList.add('list-group-item');
-
-                        div.textContent = item.text;
-                        div.dataset.type = item.type;
-                        if (item.type === 'question') {
-                            div.dataset.id = item.id;
-                        } else if (item.type === 'user') {
-                            div.dataset.username = item.username;
-                        } else if (item.type === 'hashtag') {
-                            div.dataset.url = item.url;
-                        }
-                        searchResults.appendChild(div);
-                    });
-                } else {
-                    // Sonuç bulunamadı => "Yeni başlık oluştur" seçeneği
-                    var div = document.createElement('div');
-                    div.classList.add('list-group-item');
-                    div.dataset.type = 'no-results';
-
-                    var span = document.createElement('span');
-                    span.textContent = 'Sonuç bulunamadı. ';
-
-                    var a = document.createElement('a');
-                    a.href = '#';
-                    a.id = 'create-new-question';
-                    a.textContent = 'Yeni başlık oluştur';
-
-                    div.appendChild(span);
-                    div.appendChild(a);
-                    searchResults.appendChild(div);
-                }
-                searchResults.style.display = 'block';
-                currentFocus = -1;
-            });
+            // Önceki sonuçları temizle
+            searchResults.innerHTML = '';
+            loadSearchResults(false);
         } else {
             searchResults.style.display = 'none';
             lastSearchResults = [];
+            currentSearchOffset = 0;
         }
     });
 
@@ -107,16 +234,14 @@ document.addEventListener('DOMContentLoaded', function() {
         else if (target.classList.contains('list-group-item')) {
             var type = target.dataset.type;
             if (type === 'question') {
-                var id = target.dataset.id;
-                window.location.href = '/question/' + id + '/';
+                var slug = target.dataset.slug;
+                if (slug) {
+                    window.location.href = '/' + slug + '/';  // SEO-friendly slug URL
+                }
             } else if (type === 'user') {
                 var username = target.dataset.username;
-                window.location.href = '/profile/' + username + '/';
-            } else if (type === 'hashtag') {
-                var url = target.dataset.url;
-                console.log('Hashtag clicked, URL:', url);  // Debug
-                if (url) {
-                    window.location.href = url;
+                if (username) {
+                    window.location.href = '/profile/' + username + '/';
                 }
             }
         }
@@ -160,27 +285,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // 2) Hiçbir sonuç "aktif" değil => 
+            // 2) Hiçbir sonuç "aktif" değil =>
             //    Kullanıcının girdiği metinle tam eşleşen bir "question" var mı diye bakalım.
-            const typed = searchInput.value.trim();
+            const typed = searchInput.value.trim().toLowerCase();
 
-            // lastSearchResults içinde "text.toLowerCase() === typed" olan question var mı?
+            // lastSearchResults içinde "label.toLowerCase() === typed" olan question var mı?
             let exactQuestion = lastSearchResults.find(res => {
                 if (res.type === 'question') {
-                    return res.text.toLowerCase() === typed;
+                    return res.label.toLowerCase() === typed;
                 }
                 return false;
             });
 
             if (exactQuestion) {
                 // Tam eşleşme bulduk => o başlığa git
-                window.location.href = '/question/' + exactQuestion.id + '/';
+                window.location.href = exactQuestion.url;
             } else {
                 // Tam eşleşme yok => yeni başlık
-                // (Arama sonuçlarında başka partial match'ler olabilir ama user Enter basınca 
+                // (Arama sonuçlarında başka partial match'ler olabilir ama user Enter basınca
                 //  "ben bu kelimeyle yeni başlık açmak istiyorum" demek.)
-                if (typed) {
-                    window.location.href = '/add_question_from_search/?q=' + encodeURIComponent(typed);
+                if (searchInput.value.trim()) {
+                    window.location.href = '/add_question_from_search/?q=' + encodeURIComponent(searchInput.value.trim());
                 }
             }
         }
@@ -197,23 +322,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * ========== Dropdown Z-Index Fix ==========
-     * Ensures dropdown menus appear above all cards
+     * ========== Bildirim Badge Güncellemesi ==========
+     * Checks for unread notifications and updates the badge
      */
-    document.addEventListener('show.bs.dropdown', function(event) {
-        // Find the closest card to the dropdown
-        var card = event.target.closest('.card');
-        if (card) {
-            // Add a class to elevate this card
-            card.classList.add('dropdown-active-card');
-        }
-    });
+    function updateNotificationBadge() {
+        fetch('/notifications/unread-count/')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('notification-badge');
+                if (badge) {
+                    if (data.count > 0) {
+                        badge.textContent = data.count;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => console.error('Bildirim badge güncellenemedi:', error));
+    }
 
-    document.addEventListener('hide.bs.dropdown', function(event) {
-        // Remove the elevation class when dropdown closes
-        var card = event.target.closest('.card');
-        if (card) {
-            card.classList.remove('dropdown-active-card');
-        }
-    });
+    // İlk yüklemede kontrol et
+    updateNotificationBadge();
+
+    // Her 60 saniyede bir kontrol et (performans için)
+    setInterval(updateNotificationBadge, 60000);
 });

@@ -13,7 +13,7 @@
               <h5 class="card-title">
                 <i class="bi bi-chat-square-text"></i>
                 {% if t.question %}
-                  <a href="{% url 'question_detail' t.question.id %}" class="text-decoration-none">
+                  <a href="{% url 'question_detail' t.question.slug %}" class="text-decoration-none">
                     {{ t.question.question_text|truncatechars:60 }}
                   </a>
                 {% else %}
@@ -27,12 +27,12 @@
                   <button class="btn btn-sm btn-outline-primary me-1 yukle-btn"
                           data-taslak-id="{{ t.id }}"
                           data-taslak-content="{{ t.content|escapejs }}"
-                          data-question-id="{{ t.question.id }}">
+                          data-question-slug="{{ t.question.slug }}">
                     Yeniden Düzenle
                   </button>
                   <button class="btn btn-sm btn-outline-success me-1 gonder-btn"
                           data-taslak-id="{{ t.id }}"
-                          data-question-id="{{ t.question.id }}"
+                          data-question-slug="{{ t.question.slug }}"
                           data-taslak-content="{{ t.content|escapejs }}">
                     Doğrudan Gönder
                   </button>
@@ -52,6 +52,75 @@
   </div>
 </div>
 
+<!-- Silme Onay Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmModalLabel">
+          <i class="bi bi-exclamation-triangle text-warning"></i> Taslak Sil
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Bu taslağı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+          <i class="bi bi-trash"></i> Sil
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gönder Onay Modal -->
+<div class="modal fade" id="sendConfirmModal" tabindex="-1" aria-labelledby="sendConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="sendConfirmModalLabel">
+          <i class="bi bi-send text-success"></i> Yanıtı Gönder
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Taslak içeriğiyle yanıtı göndermek istediğinizden emin misiniz?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+        <button type="button" class="btn btn-success" id="confirmSendBtn">
+          <i class="bi bi-send"></i> Gönder
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+  <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="bi bi-check-circle me-2"></i>
+        <span id="successToastMessage"></span>
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+
+  <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        <i class="bi bi-x-circle me-2"></i>
+        <span id="errorToastMessage"></span>
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
 <style>
 .kenarda-card {
   transition: box-shadow .2s, transform .2s;
@@ -65,53 +134,102 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  let currentTaslakId = null;
+
+  // Toast gösterme fonksiyonu
+  function showToast(type, message) {
+    const toastEl = document.getElementById(type + 'Toast');
+    const messageEl = document.getElementById(type + 'ToastMessage');
+    messageEl.textContent = message;
+    const toast = new bootstrap.Toast(toastEl, {
+      autohide: true,
+      delay: 3000
+    });
+    toast.show();
+  }
+
   // Yeniden Düzenle
   document.querySelectorAll('.yukle-btn').forEach(function(btn) {
     btn.onclick = function() {
       var content = btn.getAttribute('data-taslak-content');
-      var questionId = btn.getAttribute('data-question-id');
-      if (!questionId) {
-        alert("Soruya bağlı taslak değil!");
+      var questionSlug = btn.getAttribute('data-question-slug');
+      if (!questionSlug) {
+        showToast('error', 'Soruya bağlı taslak değil!');
         return;
       }
-      window.location.href = "/question/" + questionId + "/?draft=" + encodeURIComponent(content);
+      window.location.href = "/" + questionSlug + "/?draft=" + encodeURIComponent(content);
     }
   });
 
-  // Sil
+  // Sil - Modal aç
   document.querySelectorAll('.sil-btn').forEach(function(btn) {
     btn.onclick = function() {
-      if(confirm('Bu taslağı silmek istediğinize emin misiniz?')) {
-        fetch("/kenarda/sil/" + btn.getAttribute('data-taslak-id') + "/", {
-          method: "POST",
-          headers: {'X-CSRFToken': '{{ csrf_token }}'},
-        })
-        .then(r => r.json()).then(data => {
-          if(data.status == "ok") location.reload();
-        });
-      }
+      currentTaslakId = btn.getAttribute('data-taslak-id');
+      const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+      deleteModal.show();
     }
   });
 
-  // Doğrudan Gönder
+  // Silme onayı
+  document.getElementById('confirmDeleteBtn').onclick = function() {
+    if (!currentTaslakId) return;
+
+    fetch("/kenarda/sil/" + currentTaslakId + "/", {
+      method: "POST",
+      headers: {'X-CSRFToken': '{{ csrf_token }}'},
+    })
+    .then(r => r.json()).then(data => {
+      const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+      deleteModal.hide();
+
+      if(data.status == "ok") {
+        showToast('success', 'Taslak başarıyla silindi!');
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showToast('error', 'Taslak silinemedi!');
+      }
+    })
+    .catch(err => {
+      const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+      deleteModal.hide();
+      showToast('error', 'Bir hata oluştu!');
+    });
+  };
+
+  // Doğrudan Gönder - Modal aç
   document.querySelectorAll('.gonder-btn').forEach(function(btn) {
     btn.onclick = function() {
-      if(confirm("Taslak içeriğiyle yanıtı göndermek istediğinizden emin misiniz?")) {
-        fetch("/kenarda/gonder/" + btn.getAttribute('data-taslak-id') + "/", {
-          method: "POST",
-          headers: {'X-CSRFToken': '{{ csrf_token }}'},
-        })
-        .then(r => r.json()).then(data => {
-          if(data.status == "ok") {
-            alert("Yanıt gönderildi!");
-            location.reload();
-          } else {
-            alert("Gönderilemedi.");
-          }
-        });
-      }
+      currentTaslakId = btn.getAttribute('data-taslak-id');
+      const sendModal = new bootstrap.Modal(document.getElementById('sendConfirmModal'));
+      sendModal.show();
     }
   });
+
+  // Gönderme onayı
+  document.getElementById('confirmSendBtn').onclick = function() {
+    if (!currentTaslakId) return;
+
+    fetch("/kenarda/gonder/" + currentTaslakId + "/", {
+      method: "POST",
+      headers: {'X-CSRFToken': '{{ csrf_token }}'},
+    })
+    .then(r => r.json()).then(data => {
+      const sendModal = bootstrap.Modal.getInstance(document.getElementById('sendConfirmModal'));
+      sendModal.hide();
+
+      if(data.status == "ok") {
+        showToast('success', 'Yanıt başarıyla gönderildi!');
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showToast('error', 'Yanıt gönderilemedi!');
+      }
+    })
+    .catch(err => {
+      const sendModal = bootstrap.Modal.getInstance(document.getElementById('sendConfirmModal'));
+      sendModal.hide();
+      showToast('error', 'Bir hata oluştu!');
+    });
+  };
 });
 </script>
 {% endblock %}

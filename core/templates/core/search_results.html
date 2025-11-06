@@ -31,14 +31,14 @@
         {% elif item.type == "answer" %}
         <li class="list-group-item py-3">
           <span class="badge bg-success me-2">Yanıt/Girdi</span>
-          <a href="{% url 'question_detail' item.object.question.id %}">
+          <a href="{% url 'question_detail' item.object.question.slug %}">
             <span class="fw-bold">{{ item.object.question.question_text|truncatechars:55 }}</span>
           </a>
           <div class="ms-4 mt-1">
             <span class="text-secondary">
               <i class="bi bi-chat-right-dots"></i>
               {{ item.object.answer_text|truncatewords:18 }}
-              <a href="{% url 'question_detail' item.object.question.id %}#answer-{{ item.object.id }}" class="ms-1">→</a>
+              <a href="{% url 'question_detail' item.object.question.slug %}#answer-{{ item.object.id }}" class="ms-1">→</a>
             </span>
           </div>
           <div class="text-muted small mt-1">

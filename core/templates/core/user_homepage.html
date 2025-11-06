@@ -40,7 +40,7 @@
                 <ul class="list-unstyled" id="questions-list">
                     {% for question in all_questions %}
                     <li class="tbas-color baslik d-flex justify-content-between align-items-center mt-2">
-                        <a href="{% url 'question_detail' question.id %}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
+                        <a href="{% url 'question_detail' question.slug %}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
                             <span>{{ question.question_text }}</span>
                             <small class="">{{ question.answers_count }}</small>
                         </a>
@@ -58,7 +58,7 @@
                 <div class="card mb-3 random-item-card">
                     <!-- Question Title -->
                     <div class="card-header">
-                        <a href="{% url 'question_detail' answer.question.id %}" class="text-decoration-none">
+                        <a href="{% url 'question_detail' answer.question.slug %}" class="text-decoration-none">
                             {{ answer.question.question_text }}
                         </a>
                     </div>
@@ -140,9 +140,9 @@
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu{{ answer.id }}">
                                         <li>
-                                            <a class="dropdown-item copy-link-btn" 
-                                            href="#" 
-                                            data-url="{% url 'single_answer' answer.question.id answer.id %}">
+                                            <a class="dropdown-item copy-link-btn"
+                                            href="#"
+                                            data-url="{% url 'single_answer' answer.question.slug answer.id %}">
                                            <i class="bi bi-link-45deg"></i> Linki Kopyala
                                          </a>
                                          
@@ -185,11 +185,11 @@
                     <ul class="list-unstyled">
                         {% for item in starting_questions %}
                         <li class="text-decoration-none d-flex justify-content-between align-items-center mt-2">
-                            <a href="{% url 'question_detail' item.question.id %}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
-                                <span>{{ item.question.question_text }}</span> 
+                            <a href="{% url 'question_detail' item.question.slug %}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
+                                <span>{{ item.question.question_text }}</span>
                                 <small>{{ item.total_subquestions }}</small>
                             </a>
-                            
+
                         </li>
                         {% endfor %}
                     </ul>
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tempInput.val(absoluteLink).select();
         document.execCommand("copy");
         tempInput.remove();
-        alert("Link kopyalandı!");
+        showToast("Link kopyalandı!", 'success');
     });
 
     // Paylaş İşlevi (Düzeltilmiş)
@@ -492,12 +492,12 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             const questionsList = document.getElementById('questions-list');
             if (!questionsList) {
-                alert('Soruları listeleyecek alan bulunamadı! (questions-list)');
+                showToast('Soruları listeleyecek alan bulunamadı!', 'error');
                 return;
             }
             questionsList.innerHTML = '';
             data.questions.forEach(function(q) {
-                const link = "{% url 'question_detail' 12345 %}".replace('12345', q.id);
+                const link = `/${q.slug}/`;
                 questionsList.innerHTML += `
                     <li class="tbas-color baslik d-flex justify-content-between align-items-center mt-2">
                         <a href="${link}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.questions && data.questions.length > 0) {
                 const q = data.questions[Math.floor(Math.random() * data.questions.length)];
-                const link = "{% url 'question_detail' 12345 %}".replace('12345', q.id);
+                const link = `/${q.slug}/`;
                 window.location.href = link;
             }
         });

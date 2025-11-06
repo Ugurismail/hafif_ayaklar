@@ -19,7 +19,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
-from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, UserProfile
+from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, UserProfile, QuestionFollow, AnswerFollow
 from ..forms import AnswerForm
 from ..querysets import get_today_questions_queryset
 from ..utils import paginate_queryset
@@ -43,16 +43,16 @@ def get_user_answers(request):
             'id': answer.id,
             'question_text': answer.question.question_text,
             'answer_text': answer.answer_text[:80] + '...' if len(answer.answer_text) > 80 else answer.answer_text,
-            'detail_url': reverse('single_answer', args=[answer.question.id, answer.id]),
-            'question_url': reverse('question_detail', args=[answer.question.id]),
+            'detail_url': reverse('single_answer', args=[answer.question.slug, answer.id]),
+            'question_url': reverse('question_detail', args=[answer.question.slug]),
             'created_at': answer.created_at.strftime("%d %b %Y %H:%M"),
         })
     return JsonResponse({'answers': data})
 
 
 @login_required
-def add_answer(request, question_id):
-    question = get_object_or_404(Question, id=question_id)
+def add_answer(request, slug):
+    question = get_object_or_404(Question, slug=slug)
     if request.method == 'POST':
         form = AnswerForm(request.POST)
         if form.is_valid():
@@ -63,7 +63,7 @@ def add_answer(request, question_id):
             from ..models import Kenarda
             silinen = Kenarda.objects.filter(user=request.user, question=question, is_sent=False)
             deleted_count, _ = silinen.delete()
-            return redirect('question_detail', question_id=question.id)
+            return redirect('question_detail', slug=question.slug)
     else:
         form = AnswerForm()
     return render(request, 'core/add_answer.html', {'form': form, 'question': question})
@@ -84,7 +84,7 @@ def edit_answer(request, answer_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Yanıt başarıyla güncellendi.')
-            return redirect('question_detail', question_id=answer.question.id)
+            return redirect('question_detail', slug=answer.question.slug)
     else:
         form = AnswerForm(instance=answer)
 
@@ -110,9 +110,9 @@ def delete_answer(request, answer_id):
             return redirect('user_homepage')
 
 
-def single_answer(request, question_id, answer_id):
+def single_answer(request, slug, answer_id):
     # Public view - anyone can see single answer
-    question = get_object_or_404(Question, id=question_id)
+    question = get_object_or_404(Question, slug=slug)
     focused_answer = get_object_or_404(Answer, id=answer_id, question=question)
 
     # Takip ettiklerim filtresi (sidebar için)
@@ -148,7 +148,7 @@ def single_answer(request, question_id, answer_id):
             new_answer.question = question
             new_answer.user = request.user
             new_answer.save()
-            return redirect('single_answer', question_id=question.id, answer_id=new_answer.id)
+            return redirect('single_answer', slug=question.slug, answer_id=new_answer.id)
     else:
         form = AnswerForm() if request.user.is_authenticated else None
 
@@ -182,6 +182,24 @@ def single_answer(request, question_id, answer_id):
     else:
         question.user_vote_value = 0
 
+    # Takip bilgileri
+    user_is_following_question = False
+    followed_answer_ids = []
+    user_is_following_focused_answer = False
+    if request.user.is_authenticated:
+        user_is_following_question = QuestionFollow.objects.filter(
+            user=request.user,
+            question=question
+        ).exists()
+
+        # Hangi yanıtları takip ediyor
+        followed_answer_ids = list(AnswerFollow.objects.filter(
+            user=request.user,
+            answer__in=all_answers
+        ).values_list('answer_id', flat=True))
+
+        user_is_following_focused_answer = focused_answer.id in followed_answer_ids
+
     context = {
         'question': question,
         'focused_answer': focused_answer,
@@ -195,5 +213,8 @@ def single_answer(request, question_id, answer_id):
         'is_on_map': is_on_map,
         'user_has_saved_question': user_has_saved_question,
         'question_save_count': question_save_count,
+        'user_is_following_question': user_is_following_question,
+        'followed_answer_ids': followed_answer_ids,
+        'user_is_following_focused_answer': user_is_following_focused_answer,
     }
     return render(request, 'core/single_answer.html', context)

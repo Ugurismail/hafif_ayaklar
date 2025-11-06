@@ -1,59 +1,69 @@
 {% if page_obj.has_other_pages %}
-<nav aria-label="Sayfalar" class="mt-3">
-    <ul class="pagination pagination-sm justify-content-center mb-0 custom-pagination">
-        <!-- Önceki Sayfa -->
+<nav aria-label="Sayfalar" class="mt-3 mb-3">
+    <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+        <!-- Önceki Buton -->
         {% if page_obj.has_previous %}
-        <li class="page-item">
-            <a class="page-link"
-               href="?{% for key, value in request.GET.items %}{% if key != page_param %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}{{ page_param }}={{ page_obj.previous_page_number }}"
-               aria-label="Önceki">
-                <span aria-hidden="true">&lsaquo;</span>
-            </a>
-        </li>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="?{% for key, value in request.GET.items %}{% if key != page_param %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}{{ page_param }}={{ page_obj.previous_page_number }}"
+           title="Önceki Sayfa">
+            <i class="bi bi-chevron-left"></i>
+        </a>
         {% else %}
-        <li class="page-item disabled">
-            <span class="page-link">
-                <span aria-hidden="true">&lsaquo;</span>
-            </span>
-        </li>
+        <button class="btn btn-sm btn-outline-secondary" disabled>
+            <i class="bi bi-chevron-left"></i>
+        </button>
         {% endif %}
 
-        <!-- Sayfa Seçici -->
-        <li class="page-item">
-            <select class="form-select form-select-sm"
-                    onchange="location.href='?{% for key, value in request.GET.items %}{% if key != page_param %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}{{ page_param }}=' + this.value;"
-                    style="width: auto; display: inline-block;">
-                {% for num in page_obj.paginator.page_range %}
-                    <option value="{{ num }}" {% if page_obj.number == num %}selected{% endif %}>
-                        {{ num }}
-                    </option>
-                {% endfor %}
-            </select>
-        </li>
+        <!-- Sayfa Atlama -->
+        <div class="d-flex align-items-center gap-1">
+            <input type="number"
+                   id="page-jump-{{ page_param }}"
+                   class="form-control form-control-sm text-center"
+                   style="width: 60px;"
+                   min="1"
+                   max="{{ page_obj.paginator.num_pages }}"
+                   value="{{ page_obj.number }}"
+                   title="Sayfa numarası girin">
+            <span class="text-muted small">/ {{ page_obj.paginator.num_pages }}</span>
+        </div>
 
-        <!-- Toplam Sayfa Sayısı -->
-        <li class="page-item disabled">
-            <span class="page-link" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">
-                {{ page_obj.paginator.num_pages }}
-            </span>
-        </li>
-
-        <!-- Sonraki Sayfa -->
+        <!-- Sonraki Buton -->
         {% if page_obj.has_next %}
-        <li class="page-item">
-            <a class="page-link"
-               href="?{% for key, value in request.GET.items %}{% if key != page_param %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}{{ page_param }}={{ page_obj.next_page_number }}"
-               aria-label="Sonraki">
-                <span aria-hidden="true">&rsaquo;</span>
-            </a>
-        </li>
+        <a class="btn btn-sm btn-outline-secondary"
+           href="?{% for key, value in request.GET.items %}{% if key != page_param %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}{{ page_param }}={{ page_obj.next_page_number }}"
+           title="Sonraki Sayfa">
+            <i class="bi bi-chevron-right"></i>
+        </a>
         {% else %}
-        <li class="page-item disabled">
-            <span class="page-link">
-                <span aria-hidden="true">&rsaquo;</span>
-            </span>
-        </li>
+        <button class="btn btn-sm btn-outline-secondary" disabled>
+            <i class="bi bi-chevron-right"></i>
+        </button>
         {% endif %}
-    </ul>
+    </div>
 </nav>
+
+<script>
+function jumpToPage{{ page_param }}(e) {
+    e.preventDefault();
+    const input = document.getElementById('page-jump-{{ page_param }}');
+    const pageNum = parseInt(input.value);
+    const maxPages = {{ page_obj.paginator.num_pages }};
+
+    if (pageNum >= 1 && pageNum <= maxPages) {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('{{ page_param }}', pageNum);
+        window.location.href = currentUrl.toString();
+    } else {
+        input.value = {{ page_obj.number }};
+        alert('Lütfen 1 ile ' + maxPages + ' arasında bir sayfa numarası girin.');
+    }
+}
+
+// Enter tuşu ile de gidebilsin
+document.getElementById('page-jump-{{ page_param }}').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        jumpToPage{{ page_param }}(e);
+    }
+});
+</script>
 {% endif %}

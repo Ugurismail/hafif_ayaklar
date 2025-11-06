@@ -126,7 +126,7 @@ def poll_question_redirect(request, poll_id):
     poll = get_object_or_404(Poll, id=poll_id)
     if poll.related_question:
         # Soru mevcutsa direkt oraya git
-        return redirect('question_detail', question_id=poll.related_question.id)
+        return redirect('question_detail', slug=poll.related_question.slug)
     else:
         # Yeni başlık oluştur
         q = Question.objects.create(
@@ -136,7 +136,7 @@ def poll_question_redirect(request, poll_id):
         q.users.add(request.user)
         poll.related_question = q
         poll.save()
-        return redirect('question_detail', question_id=q.id)
+        return redirect('question_detail', slug=q.slug)
 
 
 @login_required

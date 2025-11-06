@@ -240,3 +240,58 @@ def safe_markdownify(text, arg='default'):
         markdown_result = markdown_result.replace(placeholder, hashtag_html)
 
     return mark_safe(markdown_result)
+
+@register.filter
+def extract_bibliography(text):
+    """
+    Extract unique references from text and return them as a list of dicts.
+    Each dict contains {'number': int, 'reference': Reference, 'pages': list}.
+    This maintains the same numbering order as reference_link filter.
+    Returns a list suitable for rendering the bibliography section.
+    """
+    if not text:
+        return []
+
+    reference_map = {}
+    reference_pages = {}  # Store page numbers for each reference
+    current_index = 1
+
+    pattern = r'\(kaynak:(\d+)(?:,\s*sayfa:([^)]+))?\)'
+    matches = re.finditer(pattern, text)
+
+    for match in matches:
+        ref_id_str = match.group(1)
+        sayfa = match.group(2)  # Optional: None or string (12-14, 123a etc.)
+        ref_id = int(ref_id_str)
+
+        if ref_id not in reference_map:
+            reference_map[ref_id] = current_index
+            reference_pages[ref_id] = []
+            current_index += 1
+
+        # Collect page numbers if they exist
+        if sayfa:
+            page_str = sayfa.strip()
+            if page_str not in reference_pages[ref_id]:
+                reference_pages[ref_id].append(page_str)
+
+    # Build the bibliography list
+    bibliography = []
+    for ref_id, ref_num in sorted(reference_map.items(), key=lambda x: x[1]):
+        try:
+            ref_obj = Reference.objects.get(id=ref_id)
+            pages = reference_pages.get(ref_id, [])
+            bibliography.append({
+                'number': ref_num,
+                'reference': ref_obj,
+                'pages': pages
+            })
+        except Reference.DoesNotExist:
+            bibliography.append({
+                'number': ref_num,
+                'reference': None,
+                'ref_id': ref_id,
+                'pages': []
+            })
+
+    return bibliography

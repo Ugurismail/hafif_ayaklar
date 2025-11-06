@@ -9,15 +9,22 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            var messageIcon = document.getElementById('message-icon');
-            if (data.unread_count > 0) {
-                messageIcon.classList.add('msg');
-            } else {
-                messageIcon.classList.remove('msg');
+            const messageBadge = document.getElementById('message-badge');
+            if (messageBadge) {
+                if (data.unread_count > 0) {
+                    messageBadge.textContent = data.unread_count;
+                    messageBadge.style.display = 'inline-block';
+                } else {
+                    messageBadge.style.display = 'none';
+                }
             }
-        });
+        })
+        .catch(error => console.error('Mesaj sayısı güncellenemedi:', error));
     }
 
-    // Her 30 saniyede bir yeni mesajları kontrol et
-    setInterval(checkNewMessages, 30000);
+    // İlk yüklemede kontrol et
+    checkNewMessages();
+
+    // Her 60 saniyede bir yeni mesajları kontrol et (performans için)
+    setInterval(checkNewMessages, 60000);
 });

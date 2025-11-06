@@ -7,12 +7,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!modal || !searchInput || !resultsDiv) return;
 
-    // Get question ID from URL or hidden input
-    const questionId = document.getElementById('answer_form_question_id')?.value ||
-        window.location.pathname.match(/\/question\/(\d+)\//)?.[1];
+    // Get question slug from data attribute or URL
+    const questionSlug = modal.dataset.questionSlug ||
+        window.location.pathname.split('/').filter(p => p).slice(-1)[0];
 
-    if (!questionId) {
-        console.error('Question ID not found');
+    // Also try to get question ID for search API (if available)
+    const questionId = document.getElementById('answer_form_question_id')?.value;
+
+    if (!questionSlug) {
+        console.error('Question slug not found');
         return;
     }
 
@@ -96,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Get CSRF token
         const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        fetch(`/question/${questionId}/add-as-subquestion/`, {
+        fetch(`/${questionSlug}/add-as-subquestion/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',

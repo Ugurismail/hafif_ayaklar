@@ -238,18 +238,18 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    alert("Kaynak başarıyla eklendi!");
+                    showToast("Kaynak başarıyla eklendi!", 'success');
                     kaynakForm.reset();
                     // Kaynak Seç sekmesine geç ve kaynakları ilk sayfadan göster
                     if (kaynakSecTab) kaynakSecTab.click();
                     if (kaynakAraInput) kaynakAraInput.value = '';
                     kaynaklariListele('', 1);
                 } else {
-                    alert("Kaynak eklenirken hata:\n" + JSON.stringify(data.errors));
+                    showToast("Kaynak eklenirken hata:\n" + JSON.stringify(data.errors), 'error');
                 }
             })
             .catch(err => {
-                alert("Bir hata oluştu.");
+                showToast("Bir hata oluştu.", 'error');
             });
         });
     }
@@ -295,14 +295,14 @@
         newBtn.addEventListener('click', function() {
             const secili = document.querySelector('input[name="kaynakSecimi"]:checked');
             if (!secili) {
-                alert("Lütfen bir kaynak seçin.");
+                showToast("Lütfen bir kaynak seçin.", 'warning');
                 return;
             }
             const refId = secili.value;
             let sayfaStr = sayfaInput ? sayfaInput.value.trim() : '';
             const answerTextArea = document.getElementById('id_answer_text');
             if (!answerTextArea) {
-                alert("Yanıt metin alanı (#id_answer_text) bulunamadı!");
+                showToast("Yanıt metin alanı (#id_answer_text) bulunamadı!", 'error');
                 return;
             }
             let ekMetin = sayfaStr ? ` (kaynak:${refId}, sayfa:${sayfaStr}) ` : ` (kaynak:${refId}) `;

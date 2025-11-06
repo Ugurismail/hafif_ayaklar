@@ -734,7 +734,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function exportSVG() {
         const svgElement = d3.select("#chart svg").node();
         if (!svgElement) {
-            alert('Harita henüz yüklenmedi!');
+            showToast('Harita henüz yüklenmedi!', 'warning');
             return;
         }
 
@@ -764,7 +764,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function exportPNG() {
         const svgElement = d3.select("#chart svg").node();
         if (!svgElement) {
-            alert('Harita henüz yüklenmedi!');
+            showToast('Harita henüz yüklenmedi!', 'warning');
             return;
         }
 
@@ -784,7 +784,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const scale = parseFloat(scaleInput);
         if (isNaN(scale) || scale < 1 || scale > 4) {
-            alert('Geçersiz değer! 1-4 arası bir sayı girin.');
+            showToast('Geçersiz değer! 1-4 arası bir sayı girin.', 'error');
             return;
         }
 
@@ -844,7 +844,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         img.onerror = function() {
-            alert('PNG oluşturulurken hata oluştu. Lütfen tekrar deneyin.');
+            showToast('PNG oluşturulurken hata oluştu. Lütfen tekrar deneyin.', 'error');
             URL.revokeObjectURL(url);
         };
 

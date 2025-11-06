@@ -29,8 +29,8 @@ from ..forms import DefinitionForm, ReferenceForm
 
 @login_required
 @require_POST
-def create_definition(request, question_id):
-    question = get_object_or_404(Question, id=question_id)
+def create_definition(request, slug):
+    question = get_object_or_404(Question, slug=slug)
     if request.method == 'POST':
         body = request.body.decode('utf-8')
         data = json.loads(body)
@@ -140,7 +140,7 @@ def edit_definition(request, definition_id):
                 definition.save()
             messages.success(request, 'Tanım güncellendi.')
             # Değişikliklerin hemen görünmesi için, düzenlemeden sonra ilgili soru detayına yönlendirebilirsiniz:
-            return redirect('question_detail', question_id=definition.question.id)
+            return redirect('question_detail', slug=definition.question.slug)
         else:
             messages.error(request, 'Form hataları: %s' % form.errors)
     else:
