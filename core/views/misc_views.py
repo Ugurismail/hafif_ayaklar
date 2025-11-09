@@ -286,7 +286,7 @@ def search_suggestions(request):
     suggestions = []
 
     # Kullanıcıları ara (toplam kullanıcı sayısı genelde az olduğu için limit yok)
-    if offset == 0:  # Sadece ilk yüklemede kullanıcıları göster
+    if offset == 0:  # Sadece ilk yüklemede kullanıcıları ve etiketleri göster
         users = User.objects.filter(username__icontains=query)[:10]  # Max 10 kullanıcı
         for user in users:
             suggestions.append({
@@ -294,6 +294,20 @@ def search_suggestions(request):
                 'label': '@' + user.username,
                 'url': reverse('user_profile', args=[user.username])
             })
+
+        # Hashtag araması - # ile başlıyorsa veya hashtag içeriyorsa
+        from core.models import Hashtag
+        hashtag_query = query.lstrip('#')
+        if hashtag_query:  # Boş değilse ara
+            hashtags = Hashtag.objects.filter(name__icontains=hashtag_query).annotate(
+                usage_count=Count('usages')
+            ).order_by('-usage_count')[:5]  # Max 5 hashtag
+            for hashtag in hashtags:
+                suggestions.append({
+                    'type': 'hashtag',
+                    'label': '#' + hashtag.name,
+                    'url': reverse('hashtag_view', args=[hashtag.name])
+                })
 
     # Soruları ara (sayfalama ile)
     questions = Question.objects.filter(

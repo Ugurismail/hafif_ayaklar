@@ -60,7 +60,7 @@
             <ul class="list-unstyled" id="questions-list">
               {% for question in all_questions_page %}
               <li class="d-flex justify-content-between align-items-center mt-2 baslik">
-                  <a href="{% url 'question_detail' question.slug %}"
+                  <a href="{% url 'question_detail' question.slug %}{% if show_followed_only %}?followed=1{% endif %}"
                     class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
                       <span>{{ question.question_text }}</span>
                       <small class="ms-2">{{ question.answers_count }}</small>

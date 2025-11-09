@@ -32,7 +32,7 @@ def get_user_answers(request):
     q = request.GET.get('q', '').strip()
     user = get_object_or_404(User, username=username) if username else request.user
 
-    answers = Answer.objects.filter(user=user)
+    answers = Answer.objects.filter(user=user).select_related('question')
     if q:
         answers = answers.filter(
             Q(answer_text__icontains=q) | Q(question__question_text__icontains=q)

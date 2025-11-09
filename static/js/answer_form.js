@@ -97,10 +97,14 @@ var referenceModalElem = document.getElementById('referenceModal');
     });
   }
 
+  // Keyboard navigation state
+  var currentFocusBkz = -1;
+
   // Arama işlemi
   if (referenceSearchInput && referenceSearchResults && noResultsDiv) {
     referenceSearchInput.addEventListener('input', function () {
       var query = this.value.trim();
+      currentFocusBkz = -1; // Reset focus on new input
       if (query.length > 0) {
         fetch('/reference-search/?q=' + encodeURIComponent(query), {
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -134,7 +138,53 @@ var referenceModalElem = document.getElementById('referenceModal');
         referenceModal.hide();
       }
     });
-  
+
+    // Keyboard navigation for (bkz:) results
+    referenceSearchInput.addEventListener('keydown', function(e) {
+      var items = referenceSearchResults.querySelectorAll('.list-group-item');
+
+      if (e.keyCode === 40) {
+        // Arrow Down
+        e.preventDefault();
+        currentFocusBkz++;
+        if (currentFocusBkz >= items.length) currentFocusBkz = 0;
+        highlightBkzItem(items);
+      }
+      else if (e.keyCode === 38) {
+        // Arrow Up
+        e.preventDefault();
+        currentFocusBkz--;
+        if (currentFocusBkz < 0) currentFocusBkz = items.length - 1;
+        highlightBkzItem(items);
+      }
+      else if (e.keyCode === 13) {
+        // Enter key
+        e.preventDefault();
+        if (currentFocusBkz > -1 && currentFocusBkz < items.length) {
+          // Select the highlighted item
+          items[currentFocusBkz].click();
+        } else {
+          // No item selected, use "ekle" button behavior
+          var query = referenceSearchInput.value.trim();
+          if (query.length > 0) {
+            insertBkzReference(query);
+            referenceModal.hide();
+          }
+        }
+      }
+    });
+
+    function highlightBkzItem(items) {
+      // Remove active class from all items
+      for (var i = 0; i < items.length; i++) {
+        items[i].classList.remove('active');
+      }
+      // Add active class to current item
+      if (currentFocusBkz >= 0 && currentFocusBkz < items.length) {
+        items[currentFocusBkz].classList.add('active');
+      }
+    }
+
     // "ekle" butonuna tıklama
     if (addCurrentQueryBtn) {
       addCurrentQueryBtn.addEventListener('click', function () {

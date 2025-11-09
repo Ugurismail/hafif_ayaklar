@@ -577,9 +577,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     .on("click", function (event) {
                         event.stopPropagation();
                         if (user.isMore) {
-                            window.location.href = `/question/${d.question_id}/`;
+                            window.location.href = `/${d.slug}/`;
                         } else {
-                            window.location.href = `/question/${d.question_id}/answer/${user.answer_id}/`;
+                            window.location.href = `/${d.slug}/answer/${user.answer_id}/`;
                         }
                     });
 
@@ -612,7 +612,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .style("cursor", "pointer")
             .on("click", function (event) {
                 event.stopPropagation();
-                window.location.href = `/question/${d.question_id}/`;
+                window.location.href = `/${d.slug}/`;
             });
         group.append("rect")
             .attr("x", btnX).attr("y", btnY)

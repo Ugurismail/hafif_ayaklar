@@ -169,6 +169,15 @@ mark{
     text-align: justify;
 }
 
+/* Paragraph spacing for answer text */
+.answer-text p {
+    margin-bottom: 1em;
+}
+
+.answer-text p:last-child {
+    margin-bottom: 0;
+}
+
 /* Tabs */
 .nav-tabs .nav-link {
     background-color: var(--tab-background-color, #e9ecef);

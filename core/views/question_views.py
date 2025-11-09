@@ -454,6 +454,7 @@ def generate_question_nodes(questions):
 
     question_ids = set(q.id for q in questions)
 
+    # Build nodes first
     for question in questions:
         user_entries = []
 
@@ -493,20 +494,39 @@ def generate_question_nodes(questions):
             "label": question.question_text,
             "users": user_entries,
             "user_ids": user_ids,  # Add user_ids for statistics calculation
-            "size": 20 + 10 * (len(user_entries) - 1),
+            "size": 20 + 10 * (len(user_entries) - 1),  # Will be updated based on links
             "color": node_color,
             "question_id": question.id,
             "question_ids": [question.id],
+            "slug": question.slug,  # Add slug for navigation
         }
         nodes.append(node)
+
+    # Build links and count connections per node
+    link_count = {}  # Track how many links each node has
 
     for question in questions:
         for subquestion in question.subquestions.all():
             if subquestion.id in question_ids:
+                parent_id = f"q{question.id}"
+                child_id = f"q{subquestion.id}"
+
                 links.append({
-                    "source": f"q{question.id}",
-                    "target": f"q{subquestion.id}",
+                    "source": parent_id,
+                    "target": child_id,
                 })
+
+                # Increment link count for both nodes
+                link_count[parent_id] = link_count.get(parent_id, 0) + 1
+                link_count[child_id] = link_count.get(child_id, 0) + 1
+
+    # Update node sizes based on link count (each link adds 0.1 to size)
+    for node in nodes:
+        node_id = node["id"]
+        num_links = link_count.get(node_id, 0)
+        # Base size + user-based size + link-based size (0.1 per link)
+        base_size = 20 + 10 * (len(node["users"]) - 1)
+        node["size"] = base_size + (num_links * 0.1)
 
     return {
         "nodes": nodes,

@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 div.textContent = item.label;
                 div.dataset.type = item.type;
+                div.dataset.url = item.url; // Store full URL for all types
                 if (item.type === 'question') {
                     // URL'den slug'ı çıkar (örn: /slug/ -> slug)
                     const slug = item.url.split('/').filter(s => s).pop();
@@ -141,6 +142,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // URL'den username'i çıkar (örn: /profile/username/ -> username)
                     const username = item.url.split('/').filter(s => s).pop();
                     div.dataset.username = username;
+                } else if (item.type === 'hashtag') {
+                    // For hashtag, just use the full URL
+                    // No need to extract, we'll use dataset.url
                 }
                 searchResults.appendChild(div);
             });
@@ -242,6 +246,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 var username = target.dataset.username;
                 if (username) {
                     window.location.href = '/profile/' + username + '/';
+                }
+            } else if (type === 'hashtag') {
+                // Use full URL directly from backend
+                var url = target.dataset.url;
+                if (url) {
+                    window.location.href = url;
                 }
             }
         }
