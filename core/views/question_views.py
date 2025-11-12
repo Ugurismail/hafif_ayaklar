@@ -61,7 +61,8 @@ def question_detail(request, slug):
     if show_followed_only and request.user.is_authenticated:
         try:
             user_profile = request.user.userprofile
-            followed_user_ids = user_profile.following.values_list('id', flat=True)
+            # UserProfile'dan User ID'lerini al
+            followed_user_ids = user_profile.following.values_list('user_id', flat=True)
             all_questions = all_questions.filter(user_id__in=followed_user_ids)
         except UserProfile.DoesNotExist:
             all_questions = Question.objects.none()
@@ -206,16 +207,42 @@ def add_question(request):
             question.save()
             # Başlangıç sorusu olarak ekle
             StartingQuestion.objects.create(user=request.user, question=question)
-            # Yanıtı kaydet
-            Answer.objects.create(
+
+            # Tanım varsa al (Definition modeli için)
+            definition_text = request.POST.get('definition_text', '').strip()
+
+            # Yanıt metnini al (frontend zaten tanımı eklemiş olabilir)
+            answer_text = form.cleaned_data.get('answer_text', '').strip()
+
+            # Yanıt oluştur
+            answer = Answer.objects.create(
                 question=question,
                 user=request.user,
-                answer_text=form.cleaned_data.get('answer_text', '')
+                answer_text=answer_text  # Frontend zaten birleştirdi
             )
+
+            # Eğer tanım girilmişse, Definition oluştur
+            if definition_text:
+                from ..models import Definition
+                Definition.objects.create(
+                    user=request.user,
+                    question=question,
+                    definition_text=definition_text,
+                    answer=answer
+                )
+
             return redirect('user_homepage')
     else:
         form = QuestionForm()
-    return render(request, 'core/add_question.html', {'form': form})
+
+    # Kullanıcının önceki tanımlarını getir
+    from ..models import Definition
+    user_definitions = Definition.objects.filter(user=request.user).select_related('question').order_by('-created_at')[:10]
+
+    return render(request, 'core/add_question.html', {
+        'form': form,
+        'user_definitions': user_definitions,
+    })
 
 
 @login_required
@@ -227,6 +254,8 @@ def add_subquestion(request, slug):
         if form.is_valid():
             subquestion_text = form.cleaned_data['question_text']
             answer_text = form.cleaned_data.get('answer_text', '')
+            definition_text = request.POST.get('definition_text', '')
+
             # Yeni veya mevcut alt soruyu oluştururken 'user' bilgisini ekliyoruz
             subquestion, created = Question.objects.get_or_create(
                 question_text=subquestion_text,
@@ -234,20 +263,38 @@ def add_subquestion(request, slug):
             )
             subquestion.users.add(request.user)
             parent_question.subquestions.add(subquestion)
+
             # Yanıtı kaydet
-            Answer.objects.create(
+            answer = Answer.objects.create(
                 question=subquestion,
                 user=request.user,
                 answer_text=answer_text
             )
+
+            # Eğer tanım girilmişse, Definition oluştur
+            if definition_text:
+                from ..models import Definition
+                Definition.objects.create(
+                    user=request.user,
+                    question=subquestion,
+                    definition_text=definition_text,
+                    answer=answer
+                )
+
             messages.success(request, 'Alt soru başarıyla eklendi.')
             return redirect('question_detail', slug=subquestion.slug)
     else:
         form = QuestionForm()
+
+    # Kullanıcının önceki tanımlarını getir
+    from ..models import Definition
+    user_definitions = Definition.objects.filter(user=request.user).select_related('question').order_by('-created_at')[:10]
+
     context = {
         'form': form,
         'parent_question': parent_question,
         'all_questions': all_questions,
+        'user_definitions': user_definitions,
     }
     return render(request, 'core/add_subquestion.html', context)
 
@@ -301,18 +348,42 @@ def add_question_from_search(request):
             # Kullanıcıyı soru ile ilişkilendir
             question.users.add(request.user)
 
+            # Tanım varsa al (Definition modeli için)
+            definition_text = request.POST.get('definition_text', '').strip()
+
+            # Yanıt metnini al (frontend zaten tanımı eklemiş olabilir)
+            answer_text = answer_form.cleaned_data.get('answer_text', '').strip()
+
             # Yeni yanıt oluştur
             answer = answer_form.save(commit=False)
             answer.user = request.user
             answer.question = question
+            answer.answer_text = answer_text  # Frontend zaten birleştirdi
             answer.save()
+
+            # Eğer tanım girilmişse, Definition oluştur
+            if definition_text:
+                from ..models import Definition
+                Definition.objects.create(
+                    user=request.user,
+                    question=question,
+                    definition_text=definition_text,
+                    answer=answer
+                )
+
             return redirect('question_detail', slug=question.slug)
     else:
         answer_form = AnswerForm()
+
+    # Kullanıcının önceki tanımlarını getir
+    from ..models import Definition
+    user_definitions = Definition.objects.filter(user=request.user).select_related('question').order_by('-created_at')[:10]
+
     return render(request, 'core/add_question_from_search.html', {
         'query': query,
         'answer_form': answer_form,
         'all_questions': all_questions,
+        'user_definitions': user_definitions,
     })
 
 
@@ -557,15 +628,43 @@ def add_starting_question(request):
             question.users.add(request.user)
             question.save()
             StartingQuestion.objects.create(user=request.user, question=question)
-            Answer.objects.create(
+
+            # Tanım varsa al (Definition modeli için)
+            definition_text = request.POST.get('definition_text', '').strip()
+
+            # Yanıt metnini al (frontend zaten tanımı eklemiş olabilir)
+            answer_text = form.cleaned_data['answer_text'].strip()
+
+            # Yanıt oluştur
+            answer = Answer.objects.create(
                 question=question,
                 user=request.user,
-                answer_text=form.cleaned_data['answer_text']
+                answer_text=answer_text  # Frontend zaten birleştirdi
             )
+
+            # Eğer tanım girilmişse, Definition oluştur
+            if definition_text:
+                from ..models import Definition
+                Definition.objects.create(
+                    user=request.user,
+                    question=question,
+                    definition_text=definition_text,
+                    answer=answer
+                )
+
             return redirect('user_homepage')
     else:
         form = StartingQuestionForm()
-    return render(request, 'core/add_starting_question.html', {'form': form, 'all_questions': all_questions})
+
+    # Kullanıcının önceki tanımlarını getir
+    from ..models import Definition
+    user_definitions = Definition.objects.filter(user=request.user).select_related('question').order_by('-created_at')[:10]
+
+    return render(request, 'core/add_starting_question.html', {
+        'form': form,
+        'all_questions': all_questions,
+        'user_definitions': user_definitions,
+    })
 
 
 @login_required
@@ -673,3 +772,41 @@ def search_questions_for_linking(request):
     } for q in questions]
 
     return JsonResponse({'results': results})
+
+
+@login_required
+def unlink_from_parent(request, slug, parent_id):
+    """
+    Child question'ın perspective'inden: Bu soruyu belirtilen parent'tan ayırır.
+    Eğer unlinking sonrası soru orphan kalırsa (hiç parent'ı yoksa),
+    otomatik olarak StartingQuestion olarak eklenir.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST metodu gerekli'}, status=400)
+
+    # Current question (child)
+    current_question = get_object_or_404(Question, slug=slug)
+    # Parent question
+    parent_question = get_object_or_404(Question, id=parent_id)
+
+    # İlişkinin gerçekten var olup olmadığını kontrol et
+    if not current_question.parent_questions.filter(id=parent_id).exists():
+        return JsonResponse({'success': False, 'error': 'Bu soru zaten üst soru değil'}, status=400)
+
+    # İlişkiyi kaldır
+    parent_question.subquestions.remove(current_question)
+
+    # Orphan kontrolü: Eğer hiç parent kalmadıysa, StartingQuestion olarak ekle
+    if current_question.parent_questions.count() == 0:
+        # Eğer zaten StartingQuestion değilse ekle
+        if not StartingQuestion.objects.filter(question=current_question).exists():
+            # Question'ın sahibi tarafından starting question olarak ekle
+            StartingQuestion.objects.create(
+                user=current_question.user,
+                question=current_question
+            )
+
+    return JsonResponse({
+        'success': True,
+        'message': f'"{parent_question.question_text}" sorusundan bağlantı kaldırıldı'
+    })

@@ -9,11 +9,11 @@
       {% if answer.answer_text|length > 500 %}
         <!-- Kısaltılmış Yanıt -->
         <div class="answer-text" id="answer-summary-{{ answer.id }}">
-          {{ answer.answer_text|slice:":500"|highlight:search_keyword|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link }} ...
+          {{ answer.answer_text|slice:":500"|highlight:search_keyword|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
         </div>
         <!-- Tam Yanıt (başlangıçta gizli) -->
         <div class="answer-text" id="answer-full-{{ answer.id }}" style="display: none;">
-          {{ answer.answer_text|highlight:search_keyword|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link }}
+          {{ answer.answer_text|highlight:search_keyword|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
 
           {# Kaynakça Bölümü #}
           {% with bibliography=answer.answer_text|extract_bibliography %}
@@ -42,7 +42,7 @@
       {% else %}
         <!-- 500 karakterden kısaysa doğrudan tüm metni gösteriyoruz -->
         <div class="answer-text">
-          {{ answer.answer_text|highlight:search_keyword|markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link }}
+          {{ answer.answer_text|highlight:search_keyword|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
 
           {# Kaynakça Bölümü #}
           {% with bibliography=answer.answer_text|extract_bibliography %}
@@ -158,7 +158,7 @@
                 <form action="{% url 'pin_entry' answer_id=answer.id %}" method="post">
                   {% csrf_token %}
                   <button type="submit" class="dropdown-item">
-                    <i class="bi bi-pin-angle"></i> Profil Sabitle
+                    <i class="bi bi-pin-angle"></i> Profile Sabitle
                   </button>
                 </form>
               </li>

@@ -17,9 +17,12 @@ from django.urls import reverse
 from ..models import Vote, SavedItem, PinnedEntry, Answer
 
 
-@login_required
 def vote(request):
     if request.method == 'POST':
+        # Login kontrolü
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Oy verebilmek için üye olmalısınız.'}, status=403)
+
         content_type = request.POST.get('content_type')
         object_id = request.POST.get('object_id')
         value = request.POST.get('value')
@@ -30,13 +33,30 @@ def vote(request):
         try:
             content_type_obj = ContentType.objects.get(model=content_type)
             model_class = content_type_obj.model_class()
-            obj = model_class.objects.get(id=object_id)
-        except (ContentType.DoesNotExist, model_class.DoesNotExist):
-            return JsonResponse({'error': 'Invalid content_type or object_id'}, status=400)
 
-        value = int(value)
-        if value not in [1, -1]:
-            return JsonResponse({'error': 'Invalid vote value'}, status=400)
+            if model_class is None:
+                return JsonResponse({'error': 'Invalid content type'}, status=400)
+
+            # object_id'yi integer'a çevir
+            try:
+                object_id = int(object_id)
+            except (ValueError, TypeError):
+                return JsonResponse({'error': 'Invalid object_id format'}, status=400)
+
+            obj = model_class.objects.get(id=object_id)
+        except ContentType.DoesNotExist:
+            return JsonResponse({'error': 'Invalid content_type'}, status=400)
+        except Exception as e:
+            # Model's DoesNotExist veya diğer hatalar
+            return JsonResponse({'error': 'Object not found'}, status=404)
+
+        # Vote value validation
+        try:
+            value = int(value)
+            if value not in [1, -1]:
+                return JsonResponse({'error': 'Invalid vote value'}, status=400)
+        except (ValueError, TypeError):
+            return JsonResponse({'error': 'Invalid vote value format'}, status=400)
 
         # Get or create the vote
         vote_obj, created = Vote.objects.get_or_create(
@@ -73,9 +93,12 @@ def vote(request):
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
-@login_required
 def save_item(request):
     if request.method == 'POST':
+        # Login kontrolü
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Kaydetmek için üye olmalısınız.'}, status=403)
+
         content_type = request.POST.get('content_type')
         object_id = request.POST.get('object_id')
 
@@ -148,7 +171,7 @@ def get_saved_items(request):
                 'type': item.content_type.model,
                 'id': instance.id,
                 'text': text[:80] + '...' if len(text) > 80 else text,
-                'detail_url': reverse('question_detail', args=[instance.id]) if item.content_type.model == 'question' else reverse('single_answer', args=[instance.question.id, instance.id]),
+                'detail_url': reverse('question_detail', args=[instance.slug]) if item.content_type.model == 'question' else reverse('single_answer', args=[instance.question.slug, instance.id]),  # Use slug instead of id
             })
     return JsonResponse({'saved_items': filtered_items})
 

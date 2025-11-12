@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from core.sitemaps import QuestionSitemap, UserProfileSitemap, StaticViewSitemap
 from django.views.generic import TemplateView
+import os
 
 sitemaps = {
     'questions': QuestionSitemap,
@@ -12,8 +13,11 @@ sitemaps = {
     'static': StaticViewSitemap,
 }
 
+# Configurable admin URL path for security
+ADMIN_URL_PATH = os.environ.get('ADMIN_URL_PATH', 'admin')
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path(f'{ADMIN_URL_PATH}/', admin.site.urls),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots_txt'),
     path('', include('core.urls')),

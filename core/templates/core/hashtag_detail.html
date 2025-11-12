@@ -33,12 +33,12 @@
                             <div class="card-body">
                                 {% if item.object.answer_text|length > 500 %}
                                     <div class="answer-text">
-                                        {{ item.object.answer_text|slice:":500"|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+                                        {{ item.object.answer_text|slice:":500"|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
                                     </div>
                                     <a href="{% url 'single_answer' item.question.id item.object.id %}" class="btn btn-sm btn-link" onclick="event.stopPropagation();">Devamını oku</a>
                                 {% else %}
                                     <div class="answer-text">
-                                        {{ item.object.answer_text|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                                        {{ item.object.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
                                     </div>
                                 {% endif %}
                                 <div class="mt-2 text-muted small">

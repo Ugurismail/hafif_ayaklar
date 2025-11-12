@@ -86,7 +86,8 @@ def user_homepage(request):
     if show_followed_only and request.user.is_authenticated:
         try:
             user_profile = request.user.userprofile
-            followed_user_ids = user_profile.following.values_list('id', flat=True)
+            # UserProfile'dan User ID'lerini al
+            followed_user_ids = user_profile.following.values_list('user_id', flat=True)
             all_questions_qs = all_questions_qs.filter(user_id__in=followed_user_ids)
         except UserProfile.DoesNotExist:
             # Kullanıcının profili yoksa boş sonuç döndür
@@ -458,7 +459,8 @@ def search(request):
     if followed_only and request.user.is_authenticated:
         try:
             user_profile = request.user.userprofile
-            followed_user_ids = user_profile.following.values_list('id', flat=True)
+            # UserProfile'dan User ID'lerini al
+            followed_user_ids = user_profile.following.values_list('user_id', flat=True)
             questions = questions.filter(user_id__in=followed_user_ids)
             answers = answers.filter(user_id__in=followed_user_ids)
         except UserProfile.DoesNotExist:
@@ -585,7 +587,8 @@ def load_more_search_results(request):
     if followed_only and request.user.is_authenticated:
         try:
             user_profile = request.user.userprofile
-            followed_user_ids = user_profile.following.values_list('id', flat=True)
+            # UserProfile'dan User ID'lerini al
+            followed_user_ids = user_profile.following.values_list('user_id', flat=True)
             questions = questions.filter(user_id__in=followed_user_ids)
             answers = answers.filter(user_id__in=followed_user_ids)
         except UserProfile.DoesNotExist:
@@ -664,6 +667,12 @@ def reference_search(request):
                 'text': question.question_text
             })
     return JsonResponse({'results': results})
+
+
+def custom_400_view(request, exception):
+    response = render(request, 'core/400.html')
+    response.status_code = 400
+    return response
 
 
 def custom_404_view(request, exception):

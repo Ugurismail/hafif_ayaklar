@@ -26,7 +26,7 @@
                     <h3>Başlangıç Sorusu Ekle</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" id="questionForm">
                         {% csrf_token %}
                         <div class="form-group">
                             {{ form.question_text.label_tag }}
@@ -63,19 +63,37 @@
                                 <button type="button" class="btn btn-sm btn-outline-secondary insert-ref-link-btn me-2"
                                         title="Renklendir/Yönlendir">
                                     <i class="bi bi-box-arrow-in-up-right"></i> hede
-                                </button>    
+                                </button>
+
+                                <!-- TANIM MODAL BUTONU -->
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-2"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#definitionModal"
+                                        title="Tanım">
+                                    <i class="bi bi-book"></i> Tanım
+                                </button>
+
                                 <!-- KAYNAK MODAL BUTONU -->
-                                <button type="button" 
+                                <button type="button"
                                 class="btn btn-sm btn-outline-secondary me-2"
                                 data-bs-toggle="modal"
                                 data-bs-target="#kaynakRefModal"
                                 title="Kaynak">
                                 <i class="bi bi-journal"></i> Kaynak
                               </button>
+                                <!-- SPOILER (YILDIZ) BUTONU -->
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-2 spoiler-btn"
+                                        title="Spoiler (Yıldız)">
+                                  *
+                                </button>
                             </div>
                             {{ form.answer_text }}
                         </div>
-                        <button type="submit" class="btn btn-primary mt-2">Kaydet</button>
+
+                        <!-- Hidden input for definition -->
+                        <input type="hidden" name="definition_text" id="hiddenDefinitionText" value="">
+
+                        <button type="button" class="btn btn-primary mt-2" onclick="submitFormWithDefinition()">Kaydet</button>
                     </form>
                 </div>
             </div>
@@ -122,107 +140,104 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
         </div>
   
-        <!-- Modal body with tabs -->
+        <!-- Modal body -->
         <div class="modal-body">
           <ul class="nav nav-tabs" id="definitionTab" role="tablist">
-            <!-- 1) TANIM YAP -->
+            <!-- Sekme 1: TANIM YAP -->
             <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="tanim-yap-tab" data-bs-toggle="tab"
-                      data-bs-target="#tanim-yap" type="button" role="tab"
-                      aria-controls="tanim-yap" aria-selected="true">
+              <button class="nav-link active"
+                      id="tanim-yap-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#tanim-yap"
+                      type="button"
+                      role="tab"
+                      aria-controls="tanim-yap"
+                      aria-selected="true">
                 Tanım Yap
               </button>
             </li>
-            <!-- 2) TANIMLARIM -->
+            <!-- Sekme 2: TANIMLARIM -->
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="tanim-bul-tab" data-bs-toggle="tab"
-                      data-bs-target="#tanim-bul" type="button" role="tab"
-                      aria-controls="tanim-bul" aria-selected="false">
+              <button class="nav-link"
+                      id="tanim-bul-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#tanim-bul"
+                      type="button"
+                      role="tab"
+                      aria-controls="tanim-bul"
+                      aria-selected="false">
                 Tanımlarım
               </button>
             </li>
-            <!-- 3) GENEL TANIM -->
+            <!-- Sekme 3: GENEL TANIM -->
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="genel-tanim-tab" data-bs-toggle="tab"
-                      data-bs-target="#genel-tanim" type="button" role="tab"
-                      aria-controls="genel-tanim" aria-selected="false">
+              <button class="nav-link"
+                      id="genel-tanim-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#genel-tanim"
+                      type="button"
+                      role="tab"
+                      aria-controls="genel-tanim"
+                      aria-selected="false">
                 Genel Tanımlar
               </button>
             </li>
           </ul>
-  
-          <!-- Tab Content -->
+
+          <!-- Sekmelerin İçerikleri -->
           <div class="tab-content mt-3" id="definitionTabContent">
-            
-            <!-- TAB 1: TANIM YAP -->
+
+            <!-- (1) TANIM YAP -->
             <div class="tab-pane fade show active" id="tanim-yap" role="tabpanel" aria-labelledby="tanim-yap-tab">
               <form id="createDefinitionForm">
                 <div class="mb-3">
                   <label for="definitionText" class="form-label">Tanım (max 1000 karakter):</label>
-                  <textarea class="form-control" id="definitionText" name="definition_text"
-                            rows="3" maxlength="1000"></textarea>
+                  <textarea class="form-control"
+                            id="definitionText"
+                            name="definition_text"
+                            rows="4"
+                            maxlength="1000"
+                            placeholder="Tanımınızı girin..."></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">Kaydet</button>
               </form>
             </div>
-            
-            <!-- TAB 2: TANIMLARIM -->
+
+            <!-- (2) TANIMLARIM (Sadece bu kullanıcının tanımları) -->
             <div class="tab-pane fade" id="tanim-bul" role="tabpanel" aria-labelledby="tanim-bul-tab">
-              <div class="mb-3">
-                <label for="definitionSelect" class="form-label">Kayıtlı Tanımlarım</label>
-                <select id="definitionSelect" class="form-select">
-                  <option value="">Bir tanım seçiniz...</option>
-                </select>
-              </div>
-              <button type="button" class="btn btn-success" id="insertDefinitionBtn">Tamam</button>
+              <!-- Arama Kutusu -->
+              <input type="text" class="form-control mb-2" id="userDefSearchInput" placeholder="Tanımlarımda ara..." />
+              <!-- Liste (radio) -->
+              <ul class="list-group" id="userDefinitionsList"></ul>
+              <!-- Sayfalama Alanı -->
+              <div id="userDefPagination" class="mt-2"></div>
+              <!-- Seçili Tanımı Ekle -->
+              <button type="button" class="btn btn-primary mt-2" id="insertUserDefinitionBtn">Seçili Tanımı Ekle</button>
             </div>
-            
-            <!-- TAB 3: GENEL TANIM -->
+
+            <!-- (3) GENEL TANIM (Tüm kullanıcıların tanımları) -->
             <div class="tab-pane fade" id="genel-tanim" role="tabpanel" aria-labelledby="genel-tanim-tab">
-              <div class="mb-3">
-                <label for="allDefSearchInput" class="form-label">Tüm Tanımlarda Ara</label>
-                <input type="text" class="form-control" id="allDefSearchInput"
-                       placeholder="Arama terimi giriniz..." />
-              </div>
-              <ul class="list-group" id="allDefinitionsList">
-                <!-- JS ile doldurulacak -->
-              </ul>
-              <button type="button" class="btn btn-success mt-2" id="insertGlobalDefinitionBtn">
-                Seçili Tanımı Ekle
-              </button>
+              <!-- Arama Kutusu -->
+              <input type="text" class="form-control mb-2" id="allDefSearchInput" placeholder="Tüm tanımlarda ara..." />
+              <!-- Liste (radio) -->
+              <ul class="list-group" id="allDefinitionsList"></ul>
+              <!-- Sayfalama Alanı -->
+              <div id="allDefPagination" class="mt-2"></div>
+              <!-- Seçili Tanımı Ekle -->
+              <button type="button" class="btn btn-primary mt-2" id="insertGlobalDefinitionBtn">Seçili Tanımı Ekle</button>
             </div>
-  
-          </div><!-- tab-content -->
+
+          </div> <!-- /.tab-content -->
         </div><!-- modal-body -->
+
+        <!-- Modal Footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+        </div>
       </div><!-- modal-content -->
     </div><!-- modal-dialog -->
   </div>
   
- <!-- PAYLAŞIM MODAL -->
-<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="shareModalLabel">Paylaş</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-        </div>
-        <div class="modal-body">
-          <ul class="list-group">
-              <li class="list-group-item">
-                  <a href="#" id="shareTwitter" target="_blank">
-                      <i class="bi bi-twitter"></i> X (Twitter) ile Paylaş
-                  </a>
-              </li>
-              <li class="list-group-item">
-                  <a href="#" id="shareFacebook" target="_blank">
-                      <i class="bi bi-facebook"></i> Facebook ile Paylaş
-                  </a>
-              </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
 {% endblock %}
 
 {% block extra_js %}
@@ -241,8 +256,45 @@
 <script src="{% static 'js/vote_save.js' %}"></script>
 
 <script>
+function submitFormWithDefinition() {
+    console.log('submitFormWithDefinition çağrıldı');
+
+    const answerTextarea = document.getElementById('id_answer_text') ||
+                          document.querySelector('textarea[name="answer_text"]');
+    const hiddenDefinitionInput = document.getElementById('hiddenDefinitionText');
+    const form = document.getElementById('questionForm');
+
+    console.log('Answer textarea:', answerTextarea);
+    console.log('Definition input:', hiddenDefinitionInput);
+    console.log('Form:', form);
+
+    const answerText = answerTextarea ? answerTextarea.value.trim() : '';
+    const definitionText = hiddenDefinitionInput ? hiddenDefinitionInput.value.trim() : '';
+
+    console.log('Answer text:', answerText);
+    console.log('Definition text:', definitionText);
+
+    // Eğer tanım var ama yanıt yoksa, tanımı yanıt alanına kopyala
+    if (definitionText && !answerText) {
+        console.log('Tanımı yanıt alanına kopyalıyorum...');
+        answerTextarea.value = definitionText;
+    }
+
+    // Eğer ikisi de boşsa, uyarı ver
+    if (!definitionText && !answerText) {
+        alert('Lütfen en az bir tanım veya yanıt girin.');
+        return false;
+    }
+
+    // Formu gönder
+    console.log('Form gönderiliyor...');
+    form.submit();
+}
+</script>
+
+<script>
   document.addEventListener('DOMContentLoaded', function() {
-      // Sadece "auto-expand" sınıfına sahip textarea’ları seçiyoruz
+      // Sadece "auto-expand" sınıfına sahip textarea'ları seçiyoruz
       var textarea = document.querySelector('textarea.auto-expand');
       if (textarea) {
           // İlk odaklanmada 'expanded' sınıfını ekle
@@ -250,6 +302,8 @@
               this.classList.add('expanded');
           });
       }
+
+      // Tanım modal fonksiyonalitesi answer_form.js'de hallediliyor
   });
 </script>
 
@@ -288,23 +342,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.execCommand("copy");
         tempInput.remove();
         showToast("Link kopyalandı!", "success");
-    });
-
-    // Paylaş
-    var currentAnswerId;
-    $('.share-link').click(function(e) {
-        e.preventDefault();
-        currentAnswerId = $(this).data('answer-id');
-        $('#shareModal').modal('show');
-    });
-
-    $('#shareModal').on('shown.bs.modal', function () {
-        
-        var absoluteLink = window.location.origin + link;
-        var twitterUrl = "https://twitter.com/intent/tweet?url=" + encodeURIComponent(absoluteLink);
-        var facebookUrl = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(absoluteLink);
-        $('#shareTwitter').attr('href', twitterUrl);
-        $('#shareFacebook').attr('href', facebookUrl);
     });
 
     // Yanıt Silme

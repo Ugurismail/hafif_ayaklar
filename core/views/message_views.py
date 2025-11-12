@@ -96,18 +96,42 @@ def message_detail(request, username):
     ).order_by('timestamp')  # 'timestamp' alanına göre artan sırada
 
     if request.method == 'POST':
-        body = request.POST.get('body')
-        if body:
-            Message.objects.create(
-                sender=request.user,
-                recipient=other_user,
-                body=body,
-                timestamp=timezone.now(),
-                is_read=False
-            )
-            # Diğer kullanıcının mesajlarını okunmuş olarak işaretlemek isteğe bağlıdır
-            Message.objects.filter(sender=other_user, recipient=request.user).update(is_read=True)
+        body = request.POST.get('body', '').strip()
+
+        # Boş mesaj kontrolü
+        if not body:
+            from django.contrib import messages as django_messages
+            django_messages.error(request, 'Mesaj boş olamaz.')
             return redirect('message_detail', username=username)
+
+        # Maksimum uzunluk kontrolü
+        if len(body) > 5000:
+            from django.contrib import messages as django_messages
+            django_messages.error(request, 'Mesaj çok uzun (max 5000 karakter).')
+            return redirect('message_detail', username=username)
+
+        # Rate limiting: Son 1 dakikada kaç mesaj göndermiş?
+        from datetime import timedelta
+        recent_messages_count = Message.objects.filter(
+            sender=request.user,
+            timestamp__gte=timezone.now() - timedelta(minutes=1)
+        ).count()
+
+        if recent_messages_count >= 10:
+            from django.contrib import messages as django_messages
+            django_messages.error(request, 'Çok hızlı mesaj gönderiyorsunuz. Lütfen 1 dakika bekleyin.')
+            return redirect('message_detail', username=username)
+
+        Message.objects.create(
+            sender=request.user,
+            recipient=other_user,
+            body=body,
+            timestamp=timezone.now(),
+            is_read=False
+        )
+        # Diğer kullanıcının mesajlarını okunmuş olarak işaretlemek isteğe bağlıdır
+        Message.objects.filter(sender=other_user, recipient=request.user).update(is_read=True)
+        return redirect('message_detail', username=username)
     all_questions = get_today_questions_queryset()
 
     # Get show_followed_only parameter for the filter icon
@@ -146,7 +170,7 @@ def send_message_from_answer(request, answer_id):
 
     # İlgili yanıta ait path ve tam URL
 
-    answer_url_path = reverse('single_answer', args=[answer.question.id, answer.id])
+    answer_url_path = reverse('single_answer', args=[answer.question.slug, answer.id])  # Use slug instead of id
     answer_full_url = request.build_absolute_uri(answer_url_path)
 
     if request.method == 'POST':

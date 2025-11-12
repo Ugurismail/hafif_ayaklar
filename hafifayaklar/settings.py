@@ -8,19 +8,33 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4m3!p5t!fy=$22i7m==v!z$d#4-yq33=*1u_^e^=@cot@+9q))')
 
+# CRITICAL: Set DEBUG=False in production
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-DEBUG = True  # Local development mode
+# Parse ALLOWED_HOSTS from environment (comma-separated)
+allowed_hosts_str = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,uia1.pythonanywhere.com')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(',') if host.strip()]
 
-# DEBUG = False  # Production mode
+# CSRF Trusted Origins (for production)
+csrf_origins_str = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if csrf_origins_str:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins_str.split(',') if origin.strip()]
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'uia1.pythonanywhere.com']
-
-# CSRF_COOKIE_SECURE = True
-# SESSION_COOKIE_SECURE = True
-# SECURE_SSL_REDIRECT = True
-# SECURE_HSTS_SECONDS = 31536000  # 1 yıl
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
+# Production security settings
+# These should be enabled in production (when DEBUG=False)
+if not DEBUG:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    CSRF_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_HTTPONLY = True
+    X_FRAME_OPTIONS = 'DENY'
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
 # Application definition
 
 INSTALLED_APPS = [
@@ -172,6 +186,74 @@ LOGIN_URL = 'login'  # This should match the name of your login URL pattern
 LOGIN_REDIRECT_URL = 'user_homepage'  # Optional: Redirect after successful login
 LOGOUT_REDIRECT_URL = 'login'  # Optional: Redirect after logout
 
-CSRF_COOKIE_HTTPONLY = False
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Maximum upload size (5MB for images)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB in bytes
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB in bytes
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django_errors.log'),
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': os.environ.get('LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['error_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'core': {
+            'handlers': ['console', 'file', 'error_file'],
+            'level': os.environ.get('LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+    },
+}

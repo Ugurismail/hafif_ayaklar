@@ -35,6 +35,36 @@ document.addEventListener('DOMContentLoaded', function() {
       textarea.selectionEnd   = start + formattedText.length;
   }
 
+  //==================================================================
+  // SPOILER (YILDIZ) BUTONU
+  //==================================================================
+  var spoilerBtns = document.querySelectorAll('.spoiler-btn');
+  spoilerBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+          var textarea = document.getElementById('id_answer_text') ||
+                        document.querySelector('textarea[name="answer_text"]');
+          if (!textarea) return;
+
+          var start = textarea.selectionStart;
+          var end = textarea.selectionEnd;
+          var selectedText = textarea.value.substring(start, end);
+
+          if (!selectedText) {
+              alert('Gizlemek için bir metin seçin!');
+              return;
+          }
+
+          var before = textarea.value.substring(0, start);
+          var after = textarea.value.substring(end);
+          var spoilerText = '--gizli--' + selectedText + '--gizli--';
+
+          textarea.value = before + spoilerText + after;
+          textarea.focus();
+          textarea.selectionStart = start;
+          textarea.selectionEnd = start + spoilerText.length;
+      });
+  });
+
 
   //==================================================================
   // B) HARİCİ LİNK EKLEME (MODAL)
@@ -283,11 +313,40 @@ var referenceModalElem = document.getElementById('referenceModal');
         return;
       }
       var questionSlug = definitionModalElem.dataset.questionSlug;
+
+      // Eğer questionSlug yoksa (yeni soru oluşturma sayfasında),
+      // hidden input'a kaydet ve yanıt textarea'sına ekle
       if (!questionSlug) {
-        showToast("Soru slug bulunamadı.", 'error');
-        return;
+        var hiddenInput = document.getElementById('hiddenDefinitionText');
+        var answerTextarea = document.getElementById('id_answer_text') ||
+                            document.querySelector('textarea[name="answer_text"]');
+
+        if (hiddenInput) {
+          hiddenInput.value = definitionText;
+
+          // Yanıt textarea'sına da ekle
+          if (answerTextarea) {
+            var currentText = answerTextarea.value.trim();
+            if (currentText) {
+              // Eğer yanıt alanında metin varsa, tanımı başa ekle
+              answerTextarea.value = definitionText + '\n\n' + currentText;
+            } else {
+              // Yanıt alanı boşsa, sadece tanımı ekle
+              answerTextarea.value = definitionText;
+            }
+          }
+
+          let modalInstance = bootstrap.Modal.getInstance(definitionModalElem);
+          if (modalInstance) {
+            modalInstance.hide();
+          }
+          showToast("Tanım eklendi!", 'success');
+          document.getElementById('definitionText').value = "";
+          return;
+        }
       }
 
+      // questionSlug varsa, mevcut tanım oluşturma API'sine gönder
       fetch(`/create-definition/${questionSlug}/`, {
         method: 'POST',
         headers: {

@@ -21,7 +21,7 @@
         <div class="col-md-10">
           <div class="card">
               <div class="card-header">
-                  <h3>Başlangıç Sorusu Ekle</h3>
+                  <h3>Alt Soru Ekle</h3>
               </div>
               <div class="card-body">
                   <form method="post">
@@ -63,17 +63,31 @@
                                       title="Renklendir/Yönlendir">
                                   <i class="bi bi-box-arrow-in-up-right"></i> hede
                               </button>
+                              <!-- TANIM MODAL BUTONU -->
+                              <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="showDefinitionModalBtn"
+                                      title="Tanım">
+                                <i class="bi bi-book"></i> Tanım
+                              </button>
                               <!-- KAYNAK MODAL BUTONU -->
-                              <button type="button" 
+                              <button type="button"
                               class="btn btn-sm btn-outline-secondary me-2"
                               data-bs-toggle="modal"
                               data-bs-target="#kaynakRefModal"
                               title="Kaynak">
                               <i class="bi bi-journal"></i> Kaynak
                             </button>
+                              <!-- SPOILER (YILDIZ) BUTONU -->
+                              <button type="button" class="btn btn-sm btn-outline-secondary me-2 spoiler-btn"
+                                      title="Spoiler (Yıldız)">
+                                *
+                              </button>
                           </div>
                           {{ form.answer_text }}
                       </div>
+
+                      <!-- Hidden input for definition -->
+                      <input type="hidden" name="definition_text" id="hiddenDefinitionText" value="">
+
                       <button type="submit" class="btn btn-primary mt-3">Kaydet</button>
                   </form>
               </div>

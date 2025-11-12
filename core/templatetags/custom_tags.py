@@ -235,7 +235,15 @@ def safe_markdownify(text, arg='default'):
     # Apply markdown
     markdown_result = original_markdownify(text_with_placeholders, arg)
 
-    # Restore hashtags
+    # Add target="_blank" to all external links (not hashtag links)
+    # This makes all markdown links open in new tab
+    markdown_result = re.sub(
+        r'<a\s+href="([^"]+)"',
+        r'<a href="\1" target="_blank" rel="noopener noreferrer"',
+        markdown_result
+    )
+
+    # Restore hashtags (these will override the target="_blank" for internal links)
     for placeholder, hashtag_html in hashtag_map.items():
         markdown_result = markdown_result.replace(placeholder, hashtag_html)
 
@@ -295,3 +303,18 @@ def extract_bibliography(text):
             })
 
     return bibliography
+
+@register.filter
+def spoiler_link(text):
+    """
+    --gizli--text--gizli-- formatını * işaretine çevirir, hover'da içeriği gösterir
+    """
+    pattern = r'--gizli--(.*?)--gizli--'
+    def replace(match):
+        hidden_text = match.group(1).strip()
+        # HTML encode to prevent XSS
+        from html import escape
+        escaped_text = escape(hidden_text)
+        return f'<span class="spoiler-text" title="{escaped_text}"></span>'
+
+    return mark_safe(re.sub(pattern, replace, text, flags=re.DOTALL))

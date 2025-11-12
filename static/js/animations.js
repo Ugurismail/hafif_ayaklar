@@ -289,6 +289,41 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         document.head.appendChild(style);
     }
+
+    // ========== CLICKABLE ANSWER CARDS ==========
+    // Make answer cards clickable (go to single answer page)
+    // But don't trigger when clicking on interactive elements
+    document.querySelectorAll('.answer.random-item-card').forEach(card => {
+        card.style.cursor = 'pointer';
+
+        card.addEventListener('click', function(e) {
+            console.log('Card clicked!', e.target);
+
+            // Don't navigate if clicking on interactive elements
+            const clickedElement = e.target;
+            const isInteractive = clickedElement.closest('a, button, input, textarea, select, .vote-btn, .save-btn, .dropdown');
+
+            if (isInteractive) {
+                console.log('Interactive element clicked, skipping navigation');
+                return; // Let the interactive element handle the click
+            }
+
+            // Get the single answer URL from the copy-link button
+            const copyLinkBtn = this.querySelector('.copy-link-btn');
+            console.log('Copy link button:', copyLinkBtn);
+
+            if (copyLinkBtn) {
+                const singleAnswerUrl = copyLinkBtn.dataset.url;
+                console.log('Single answer URL:', singleAnswerUrl);
+
+                if (singleAnswerUrl) {
+                    window.location.href = singleAnswerUrl;
+                }
+            } else {
+                console.log('Copy link button not found in card');
+            }
+        });
+    });
 });
 
 // ========== EXPORT UTILITIES ==========

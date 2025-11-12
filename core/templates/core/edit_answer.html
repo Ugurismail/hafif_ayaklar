@@ -94,7 +94,7 @@
 {% include 'core/reference_modal.html' %}
 {% include 'core/kaynak_ref.html' %}
   <!-- TANIM MODAL -->
-  <div class="modal fade" id="definitionModal" tabindex="-1" aria-labelledby="definitionModalLabel" aria-hidden="true">
+  <div class="modal fade" id="definitionModal" tabindex="-1" aria-labelledby="definitionModalLabel" aria-hidden="true" data-question-slug="{{ answer.question.slug }}">
     <div class="modal-dialog modal-lg"> <!-- modal-lg: genişlik için -->
       <div class="modal-content">
   

@@ -236,6 +236,23 @@ a:hover::after {
     background-color: var(--hover-background-color, #f0f0f0);
 }
 
+/* Gelişmiş arama sonuçları sayfası - /search/ */
+.container .list-group .list-group-item {
+    transition: all 0.2s ease;
+}
+
+.container .list-group .list-group-item:hover {
+    background-color: #6E8CA7 !important;
+}
+
+.container .list-group .list-group-item:hover,
+.container .list-group .list-group-item:hover *,
+.container .list-group .list-group-item:hover a,
+.container .list-group .list-group-item:hover .text-secondary,
+.container .list-group .list-group-item:hover .text-muted {
+    color: #ffffff !important;
+}
+
 /* ========== NAVBAR SCROLL EFFECT ========== */
 
 .navbar {
@@ -388,7 +405,7 @@ textarea.auto-expand.expanded {
     background-color: var(--button-background-color, #007bff);
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 0;
-    z-index: 1;
+    z-index: -1;
 }
 
 .baslik:hover::before {
@@ -396,7 +413,6 @@ textarea.auto-expand.expanded {
 }
 
 .baslik:hover {
-    transform: translateX(3px);
     background-color: var(--hover-background-color, #f8f9fa);
 }
 
@@ -507,3 +523,13 @@ textarea.auto-expand.expanded {
 }
 
 /* Note: Removed 'contain' from .dropdown-menu as it was preventing auto-close on outside click */
+
+/* ========== CLICKABLE ANSWER CARDS ========== */
+.answer.random-item-card {
+    cursor: pointer;
+    user-select: none;
+}
+
+.answer.random-item-card:active {
+    transform: scale(0.98);
+}

@@ -1,9 +1,65 @@
-<form method="post">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    {% for field in form %}
-        {{ field.errors }}
-        {{ field.label_tag }} {{ field }}
-    {% endfor %}
-    <button type="submit">Gönder</button>
-</form>
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 800px;">
+    <h2 class="mb-4">Girdi Ekle</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ question.question_text }}</h5>
+            <p class="text-muted small">
+                <i class="bi bi-person"></i> {{ question.user.username }}
+                | <i class="bi bi-calendar"></i> {{ question.created_at|date:"d M Y, H:i" }}
+            </p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% if is_first_answer %}
+        <!-- Tanım Alanı (sadece ilk girdi için) -->
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle"></i> <strong>Bu başlığa ilk girdiyi sen ekleyeceksin!</strong>
+            <br>
+            <small>İsterseniz aşağıda bu başlık için bir tanım da girebilirsiniz. Tanım, başlığın anlamını açıklayan kısa bir metindir.</small>
+        </div>
+
+        <div class="mb-4">
+            <label for="definition_text" class="form-label fw-bold">
+                <i class="bi bi-book"></i> Tanım (İsteğe Bağlı)
+            </label>
+            <textarea
+                name="definition_text"
+                id="definition_text"
+                class="form-control"
+                rows="3"
+                maxlength="1000"
+                placeholder="Bu başlık için kısa bir tanım girin... (Max 1000 karakter)"></textarea>
+            <small class="text-muted">Örnek: "Özgürlük, bireyin kendi seçimlerini yapma ve eylemlerini belirleme yeteneğidir."</small>
+        </div>
+        {% endif %}
+
+        <!-- Girdi Alanı -->
+        <div class="mb-4">
+            <label for="{{ form.answer_text.id_for_label }}" class="form-label fw-bold">
+                <i class="bi bi-chat-left-text"></i> Girdiniz <span class="text-danger">*</span>
+            </label>
+            {{ form.answer_text.errors }}
+            {{ form.answer_text }}
+        </div>
+
+        {{ form.non_field_errors }}
+
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'question_detail' question.slug %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> İptal
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-send"></i> Gönder
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

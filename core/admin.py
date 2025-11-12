@@ -202,9 +202,13 @@ admin.site.register(Group, CustomGroupAdmin)
 # =============================================================================
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    search_fields = ['question_text']
-    list_display = ['question_text', 'user', 'created_at']
+    search_fields = ['question_text', 'slug', 'user__username']
+    list_display = ['id', 'question_text', 'user', 'created_at', 'slug']
     list_filter = ['created_at', 'user']
+    list_display_links = ['id', 'question_text']
+    readonly_fields = ['slug', 'created_at', 'updated_at']
+    ordering = ['-created_at']
+    fields = ['question_text', 'slug', 'user', 'created_at', 'updated_at']
 
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):

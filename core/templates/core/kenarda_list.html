@@ -157,6 +157,12 @@ document.addEventListener('DOMContentLoaded', function() {
         showToast('error', 'Soruya bağlı taslak değil!');
         return;
       }
+      // escapejs'in decode'u - unicode escape'leri düzelt
+      try {
+        content = decodeURIComponent(JSON.parse('"' + content.replace(/"/g, '\\"') + '"'));
+      } catch(e) {
+        // Eğer parse edilemezse olduğu gibi kullan
+      }
       window.location.href = "/" + questionSlug + "/?draft=" + encodeURIComponent(content);
     }
   });
@@ -219,7 +225,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if(data.status == "ok") {
         showToast('success', 'Yanıt başarıyla gönderildi!');
-        setTimeout(() => location.reload(), 1500);
+        // Yanıtın olduğu sayfaya yönlendir
+        setTimeout(() => {
+          window.location.href = "/" + data.question_slug + "/#answer-" + data.answer_id;
+        }, 1000);
       } else {
         showToast('error', 'Yanıt gönderilemedi!');
       }

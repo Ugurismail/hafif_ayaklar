@@ -162,13 +162,15 @@ urlpatterns = [
     path('<path:slug>/delete/', views.delete_question, name='delete_question'),
     path('<path:slug>/add-subquestion/', views.add_subquestion, name='add_subquestion'),
     path('<path:slug>/add-as-subquestion/', views.add_existing_subquestion, name='add_existing_subquestion'),
+    path('<path:slug>/unlink-from-parent/<int:parent_id>/', views.unlink_from_parent, name='unlink_from_parent'),
     path('<path:slug>/filter_answers/', views.filter_answers, name='filter_answers'),
     # EN GENEL pattern EN SONDA (catch-all)
     path('<path:slug>/', views.question_detail, name='question_detail'),
 ]
 
 # Custom error handlers
-handler404 = 'core.views.custom_404_view'
+handler400 = 'core.views.custom_400_view'
 handler403 = 'core.views.custom_403_view'
+handler404 = 'core.views.custom_404_view'
 handler500 = 'core.views.custom_500_view'
 handler502 = 'core.views.custom_502_view'

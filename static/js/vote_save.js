@@ -28,6 +28,12 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => {
                 if (!response.ok) {
+                    // 403 hatası için JSON parse et
+                    if (response.status === 403) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Yetkisiz işlem');
+                        });
+                    }
                     return response.text().then(text => { throw new Error(text); });
                 }
                 return response.json();
@@ -56,7 +62,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast(data.message, 'info');
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                showToast(error.message || 'Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
+            });
         }
     });
 
@@ -80,6 +89,12 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => {
                 if (!response.ok) {
+                    // 403 hatası için JSON parse et
+                    if (response.status === 403) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Yetkisiz işlem');
+                        });
+                    }
                     return response.text().then(text => { throw new Error(text); });
                 }
                 return response.json();
@@ -110,7 +125,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.reload();
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                showToast(error.message || 'Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
+            });
         }
     });
 

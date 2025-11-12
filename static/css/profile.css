@@ -1,0 +1,429 @@
+/*
+ * Profile Page Enhancements
+ * Premium, modern, subtle design improvements
+ * No server load - pure CSS animations
+ */
+
+/* ========== Smooth Scroll ========== */
+html {
+    scroll-behavior: smooth;
+}
+
+/* ========== Profile Card Enhancements ========== */
+.profile-photo-wrapper {
+    position: relative;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.profile-photo-wrapper:hover {
+    transform: scale(1.05);
+}
+
+.profile-photo-wrapper img {
+    transition: box-shadow 0.3s ease;
+}
+
+.profile-photo-wrapper:hover img {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Follower/Following badges */
+.follower-stats {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.stat-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== Button Enhancements ========== */
+.btn {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* ========== Tab Navigation Enhancements ========== */
+.nav-tabs {
+    border-bottom: 2px solid #e9ecef;
+}
+
+.nav-tabs .nav-link {
+    position: relative;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6E8CA7 0%, #4E647E 100%);
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
+    border-radius: 3px 3px 0 0;
+}
+
+.nav-tabs .nav-link:hover::after {
+    width: 60%;
+}
+
+.nav-tabs .nav-link.active::after {
+    width: 100%;
+}
+
+.nav-tabs .nav-link.active {
+    font-weight: 600;
+    color: #000;
+}
+
+/* Tab content fade-in */
+.tab-content {
+    animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== Card Hover Effects ========== */
+.card {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+    transition: background-color 0.3s ease;
+}
+
+.card-body {
+    transition: padding 0.3s ease;
+}
+
+/* ========== Pinned Entry Enhancement ========== */
+.pinned-entry {
+    border-left: 4px solid #6E8CA7;
+    background: linear-gradient(to right, rgba(110, 140, 167, 0.03), transparent);
+}
+
+/* ========== Entry Cards (Girdiler) ========== */
+.answer-card {
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.answer-card:hover {
+    border-left-color: #6E8CA7;
+    background-color: rgba(110, 140, 167, 0.02);
+}
+
+/* ========== Statistics Section ========== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.stat-card {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border-color: #6E8CA7;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #6E8CA7;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ========== Word List Enhancement ========== */
+.word-list {
+    list-style: none;
+    padding: 0;
+}
+
+.word-list li {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.word-list li:hover {
+    background: #e9ecef;
+    transform: translateX(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.word-count-badge {
+    background: #6E8CA7;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* ========== Form Enhancements ========== */
+.form-control, .form-select {
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #6E8CA7;
+    box-shadow: 0 0 0 0.2rem rgba(110, 140, 167, 0.15);
+    transform: translateY(-2px);
+}
+
+/* ========== Search Input Enhancement ========== */
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-input-wrapper input {
+    padding-left: 2.5rem;
+    transition: all 0.3s ease;
+}
+
+.search-input-wrapper input:focus {
+    box-shadow: 0 4px 12px rgba(110, 140, 167, 0.15);
+}
+
+/* ========== Table Enhancements ========== */
+.custom-table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.custom-table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.custom-table tbody tr:hover {
+    background-color: rgba(110, 140, 167, 0.05);
+    transform: scale(1.01);
+}
+
+/* ========== Badge Animations ========== */
+.badge {
+    transition: all 0.3s ease;
+}
+
+.badge:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ========== Link Enhancements ========== */
+a {
+    transition: all 0.2s ease;
+}
+
+a:hover {
+    opacity: 0.8;
+}
+
+/* ========== Subtle Animations for Page Load ========== */
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.profile-sidebar {
+    animation: slideInFromLeft 0.5s ease-out;
+}
+
+.profile-content {
+    animation: slideInFromRight 0.5s ease-out;
+}
+
+/* ========== Pagination Enhancement ========== */
+.pagination .page-link {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    margin: 0 4px;
+}
+
+.pagination .page-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== Modal Enhancements ========== */
+.modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    border-radius: 16px 16px 0 0;
+}
+
+.modal.fade .modal-dialog {
+    transition: transform 0.4s ease-out;
+}
+
+/* ========== Responsive Enhancements ========== */
+@media (max-width: 768px) {
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .nav-tabs .nav-link {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ========== Subtle Gradient Overlays ========== */
+.gradient-overlay {
+    position: relative;
+}
+
+.gradient-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(110, 140, 167, 0.02) 0%, transparent 100%);
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+/* ========== Loading State (for dynamic content) ========== */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* ========== Improved Spacing ========== */
+.section-spacing {
+    margin-bottom: 2rem;
+}
+
+/* ========== Enhanced Typography ========== */
+h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.card-title {
+    letter-spacing: -0.01em;
+}
+
+/* ========== Subtle Shadow Levels ========== */
+.shadow-subtle {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-medium {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.shadow-strong {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}

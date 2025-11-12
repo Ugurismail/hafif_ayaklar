@@ -11,6 +11,7 @@ from django.conf import settings
 import re
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
+from .validators import validate_image_file
 
 
 
@@ -32,9 +33,9 @@ class Invitation(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    invitation_quota = models.PositiveIntegerField(default=0) 
+    invitation_quota = models.PositiveIntegerField(default=0)
     following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
-    photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
+    photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True, validators=[validate_image_file])
 
     # Renk ayarları alanları
     background_color = models.CharField(max_length=7, default='#F5F5F5') #genel arka plan
@@ -102,6 +103,13 @@ class Question(models.Model):
     upvotes = models.IntegerField(default=0)
     downvotes = models.IntegerField(default=0)
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.upvotes and self.upvotes < 0:
+            raise ValidationError({'upvotes': 'Upvotes negatif olamaz'})
+        if self.downvotes and self.downvotes < 0:
+            raise ValidationError({'downvotes': 'Downvotes negatif olamaz'})
+
     def save(self, *args, **kwargs):
         if not self.slug:
             from django.utils.text import slugify
@@ -153,6 +161,13 @@ class Answer(models.Model):
     upvotes = models.IntegerField(default=0)
     downvotes = models.IntegerField(default=0)
     saveditem = GenericRelation('SavedItem')
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.upvotes and self.upvotes < 0:
+            raise ValidationError({'upvotes': 'Upvotes negatif olamaz'})
+        if self.downvotes and self.downvotes < 0:
+            raise ValidationError({'downvotes': 'Downvotes negatif olamaz'})
 
     class Meta:
         indexes = [

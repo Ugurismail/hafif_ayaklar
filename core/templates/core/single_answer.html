@@ -62,7 +62,7 @@
                   
                     {# Haritada Gör butonu (mevcut özelliğin değişmedi) #}
                     {% if is_on_map %}
-                      <a href="{% url 'question_map' %}?question_id={{ question.id }}" 
+                      <a href="{% url 'question_map' %}?question_id={{ question.id }}"
                          class="ms-2 text-secondary topic-small-icon"
                          title="Haritada Gör">
                         <i class="bi bi-geo-alt-fill"></i>
@@ -106,6 +106,27 @@
                        title="{% if user_is_following_question %}Takibi Bırak{% else %}Takip Et{% endif %}">
                       <i class="bi {% if user_is_following_question %}bi-bell-fill text-primary{% else %}bi-bell{% endif %}"></i>
                     </a>
+
+                    <!-- Mevcut Başlığı Bağla -->
+                    <a href="#"
+                       class="save-btn ms-2"
+                       data-bs-toggle="modal"
+                       data-bs-target="#linkExistingQuestionModal"
+                       title="Mevcut Başlığı Alt Soru Olarak Ekle">
+                      <i class="bi bi-link-45deg"></i>
+                    </a>
+
+                    <!-- Üst Sorulardan Bağlantıyı Kaldır (makas ikonu) -->
+                    {% if question.parent_questions.exists %}
+                    <a href="#"
+                       class="save-btn ms-1"
+                       data-bs-toggle="modal"
+                       data-bs-target="#unlinkParentsModal"
+                       title="Üst Sorulardan Bağlantıyı Kaldır"
+                       style="font-size: 0.85em;">
+                      <i class="bi bi-scissors"></i>
+                    </a>
+                    {% endif %}
                     {% endif %}
                 </div>
                 <!-- Sağ Kısım: Kullanıcı Bilgisi ve Tarih -->
@@ -120,7 +141,7 @@
             <!-- Odaklanılan Yanıt -->
             <div class="card mb-3">
                 <div class="card-body">
-                    <p class="auto-expand answer-text">{{ focused_answer.answer_text|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}</p>
+                    <p class="auto-expand answer-text">{{ focused_answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}</p>
 
                     {# Kaynakça Bölümü #}
                     {% with bibliography=focused_answer.answer_text|extract_bibliography %}
@@ -199,7 +220,7 @@
                                         <form action="{% url 'pin_entry' answer_id=focused_answer.id %}" method="post">
                                             {% csrf_token %}
                                             <button type="submit" class="dropdown-item">
-                                                <i class="bi bi-pin-angle"></i> Profil Sabitle
+                                                <i class="bi bi-pin-angle"></i> Profile Sabitle
                                             </button>
                                         </form>
                                     </li>
@@ -227,7 +248,7 @@
                     {% if answer.id != focused_answer.id %}
                     <div class="card mb-3">
                         <div class="card-body">
-                            <p class="answer-text">{{ answer.answer_text|safe_markdownify:"default"|bkz_link|tanim_link|reference_link|ref_link|mention_link }}</p>
+                            <p class="answer-text">{{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}</p>
 
                             {# Kaynakça Bölümü #}
                             {% with bibliography=answer.answer_text|extract_bibliography %}
@@ -266,7 +287,7 @@
                                     <a href="#" class="save-btn ms-2" data-content-type="answer" data-object-id="{{ answer.id }}" title="Kaydet">
                                         <i class="{% if answer.id in saved_answer_ids %}bi bi-bookmark-fill{% else %}bi bi-bookmark{% endif %}"></i>
                                     </a>
-                                    <span class="save-count">{{ answer_save_dict|get_item:answer.id|default:"0"|add:""|bkz_link|tanim_link|reference_link|ref_link|mention_link }}</span>
+                                    <span class="save-count">{{ answer_save_dict|get_item:answer.id|default:"0" }}</span>
                                     {% if answer.user == request.user %}
                                         <a href="{% url 'edit_answer' answer.id %}" class="ms-2" title="Düzenle">
                                             <i class="bi bi-pencil-square icon-black-white"></i>
@@ -307,7 +328,7 @@
                                                 <form action="{% url 'pin_entry' answer_id=answer.id %}" method="post">
                                                     {% csrf_token %}
                                                     <button type="submit" class="dropdown-item">
-                                                        <i class="bi bi-pin-angle"></i> Profil Sabitle
+                                                        <i class="bi bi-pin-angle"></i> Profile Sabitle
                                                     </button>
                                                 </form>
                                             </li>
@@ -359,6 +380,10 @@
                             title="Kaynak">
                         <i class="bi bi-journal"></i> Kaynak
                             </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary me-2 spoiler-btn"
+                                    title="Spoiler (Yıldız)">
+                                *
+                            </button>
                         </div>
                         {{ form.answer_text }}
                         <button type="submit" class="btn btn-primary mt-2">Yanıtla</button>
@@ -389,7 +414,7 @@
                         </a>
                         {% if question.parent_questions.count == 1 %}
                             {% with parent=question.parent_questions.first %}
-                                <a href="{% url 'question_detail' parent.id %}" class="btn btn-outline-secondary btn-sm ms-2">
+                                <a href="{% url 'question_detail' parent.slug %}" class="btn btn-outline-secondary btn-sm ms-2">
                                     <i class="bi bi-chevron-double-up" title="Üst Soruya Git"> Üst Soruya Git</i>
                                 </a>
                             {% endwith %}
@@ -408,7 +433,7 @@
                                             <ul class="list-group">
                                                 {% for parent in question.parent_questions.all %}
                                                     <li class="list-group-item">
-                                                        <a href="{% url 'question_detail' parent.id %}">{{ parent.question_text }}</a>
+                                                        <a href="{% url 'question_detail' parent.slug %}">{{ parent.question_text }}</a>
                                                     </li>
                                                 {% endfor %}
                                             </ul>
@@ -506,6 +531,73 @@
 {% include 'core/reference_modal.html' %}
 {% include 'core/kaynak_ref.html' %}
 
+<!-- Link Existing Question Modal -->
+{% include 'core/link_existing_question_modal.html' %}
+
+<!-- Unlink from Parents Modal -->
+<div class="modal fade" id="unlinkParentsModal" tabindex="-1"
+     aria-labelledby="unlinkParentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Üst Sorulardan Bağlantıyı Kaldır</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Bu soruyu bağlı olduğu üst sorulardan ayırabilirsiniz:</p>
+                <ul class="list-group unlink-parents-list">
+                    {% for parent in question.parent_questions.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <a href="{% url 'question_detail' parent.slug %}">
+                                    {{ parent.question_text }}
+                                </a>
+                                <br>
+                                <small class="text-muted">
+                                    <a href="{% url 'user_profile' parent.user.username %}">
+                                        {{ parent.user.username }}
+                                    </a>
+                                </small>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary unlink-parent"
+                                        data-parent-id="{{ parent.id }}"
+                                        data-parent-title="{{ parent.question_text }}"
+                                        title="Bağlantıyı Kaldır">
+                                    Kaldır
+                                </button>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unlink Confirmation Modal -->
+<div class="modal fade" id="unlinkConfirmModal" tabindex="-1"
+     aria-labelledby="unlinkConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="unlinkConfirmModalLabel">Bağlantıyı Kaldır</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <p id="unlinkConfirmMessage"></p>
+                <p class="text-muted small">Not: Bu soru silinmez, sadece üst soruyla olan bağlantısı kopar.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-secondary" id="confirmUnlinkBtn">Evet, Kaldır</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <!-- Delete Answer Modal -->
 <div class="modal fade" id="deleteAnswerModal" tabindex="-1" aria-labelledby="deleteAnswerModalLabel" aria-hidden="true">
@@ -530,7 +622,7 @@
 </div>
 
 <!-- TANIM MODAL -->
-<div class="modal fade" id="definitionModal" tabindex="-1" aria-labelledby="definitionModalLabel" aria-hidden="true">
+<div class="modal fade" id="definitionModal" tabindex="-1" aria-labelledby="definitionModalLabel" aria-hidden="true" data-question-slug="{{ question.slug }}">
     <div class="modal-dialog modal-lg"> <!-- modal-lg: genişlik için -->
       <div class="modal-content">
   
@@ -919,7 +1011,7 @@
 <script>
 // Takip butonları
 document.addEventListener('DOMContentLoaded', function() {
-    const csrfToken = document.querySelector('[name=csrf-token]').content;
+    const csrfToken = getCookie('csrftoken');
 
     // Başlık takip butonu
     const followQuestionBtn = document.querySelector('.follow-question-btn');
@@ -957,6 +1049,78 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+});
+</script>
+
+<script src="{% static 'js/link_existing_question.js' %}"></script>
+
+<script>
+// Üst soru bağlantısını kaldırma (child question'ın perspective'inden)
+document.addEventListener('DOMContentLoaded', function() {
+    let currentParentId = null;
+    let currentParentTitle = null;
+    const confirmModal = new bootstrap.Modal(document.getElementById('unlinkConfirmModal'));
+
+    // Kaldır butonuna tıklandığında
+    document.addEventListener('click', function(e) {
+        const unlinkBtn = e.target.closest('.unlink-parent');
+        if (!unlinkBtn) return;
+
+        e.preventDefault();
+
+        currentParentId = unlinkBtn.dataset.parentId;
+        currentParentTitle = unlinkBtn.dataset.parentTitle;
+
+        // Modal mesajını güncelle ve göster
+        document.getElementById('unlinkConfirmMessage').textContent =
+            `"${currentParentTitle}" sorusundan bağlantıyı kaldırmak istediğinize emin misiniz?`;
+        confirmModal.show();
+    });
+
+    // Onay butonuna tıklandığında
+    document.getElementById('confirmUnlinkBtn').addEventListener('click', function() {
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(`{{ request.path }}unlink-from-parent/${currentParentId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                confirmModal.hide();
+
+                // Üst soruyu listeden kaldır
+                document.querySelectorAll(`[data-parent-id="${currentParentId}"]`).forEach(function(el) {
+                    el.closest('li').remove();
+                });
+
+                const unlinkList = document.querySelector('.unlink-parents-list');
+
+                // Eğer hiç parent kalmadıysa modal'ı kapat ve sayfayı yenile
+                if (unlinkList && unlinkList.querySelectorAll('li').length === 0) {
+                    const unlinkModal = bootstrap.Modal.getInstance(document.getElementById('unlinkParentsModal'));
+                    if (unlinkModal) unlinkModal.hide();
+
+                    // Sayfayı yenile (scissors ikonunu kaldırmak için)
+                    location.reload();
+                }
+
+                showToast(data.message, 'success');
+            } else {
+                confirmModal.hide();
+                showToast('Hata: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            confirmModal.hide();
+            showToast('Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
+        });
+    });
 });
 </script>
 

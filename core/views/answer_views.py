@@ -52,21 +52,56 @@ def get_user_answers(request):
 
 @login_required
 def add_answer(request, slug):
+    from django.db import transaction
+
     question = get_object_or_404(Question, slug=slug)
+
     if request.method == 'POST':
         form = AnswerForm(request.POST)
         if form.is_valid():
-            answer = form.save(commit=False)
-            answer.question = question
-            answer.user = request.user
-            answer.save()
+            # Atomic block ile race condition önleme
+            with transaction.atomic():
+                # select_for_update ile question'ı kilitle
+                question = Question.objects.select_for_update().get(slug=slug)
+
+                # Şimdi güvenli şekilde kontrol et
+                is_first_answer = not question.answers.exists()
+
+                answer = form.save(commit=False)
+                answer.question = question
+                answer.user = request.user
+                answer.save()
+
+                # Eğer tanım girilmişse ve bu ilk girdiyse, Definition oluştur
+                definition_text = request.POST.get('definition_text', '').strip()
+                if definition_text and is_first_answer:
+                    from ..models import Definition
+                    Definition.objects.create(
+                        user=request.user,
+                        question=question,
+                        definition_text=definition_text,
+                        answer=answer
+                    )
+
+            # Transaction dışında mention bildirimleri gönder (daha hızlı)
+            from ..utils import extract_mentions, send_mention_notifications
+            mentioned_usernames = extract_mentions(answer.answer_text)
+            if mentioned_usernames:
+                send_mention_notifications(answer, mentioned_usernames)
+
+            # Taslak silme
             from ..models import Kenarda
             silinen = Kenarda.objects.filter(user=request.user, question=question, is_sent=False)
             deleted_count, _ = silinen.delete()
             return redirect('question_detail', slug=question.slug)
     else:
         form = AnswerForm()
-    return render(request, 'core/add_answer.html', {'form': form, 'question': question})
+
+    return render(request, 'core/add_answer.html', {
+        'form': form,
+        'question': question,
+        'is_first_answer': is_first_answer
+    })
 
 
 @login_required
@@ -82,7 +117,14 @@ def edit_answer(request, answer_id):
     if request.method == 'POST':
         form = AnswerForm(request.POST, instance=answer)
         if form.is_valid():
-            form.save()
+            updated_answer = form.save()
+
+            # Mention bildirimleri gönder
+            from ..utils import extract_mentions, send_mention_notifications
+            mentioned_usernames = extract_mentions(updated_answer.answer_text)
+            if mentioned_usernames:
+                send_mention_notifications(updated_answer, mentioned_usernames)
+
             messages.success(request, 'Yanıt başarıyla güncellendi.')
             return redirect('question_detail', slug=answer.question.slug)
     else:
@@ -126,7 +168,8 @@ def single_answer(request, slug, answer_id):
     if show_followed_only and request.user.is_authenticated:
         try:
             user_profile = request.user.userprofile
-            followed_user_ids = user_profile.following.values_list('id', flat=True)
+            # UserProfile'dan User ID'lerini al
+            followed_user_ids = user_profile.following.values_list('user_id', flat=True)
             all_questions_qs = all_questions_qs.filter(user_id__in=followed_user_ids)
         except UserProfile.DoesNotExist:
             all_questions_qs = Question.objects.none()

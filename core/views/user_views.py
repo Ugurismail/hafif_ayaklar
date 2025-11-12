@@ -208,12 +208,36 @@ def user_profile(request, username):
         answers_list = Answer.objects.filter(user=profile_user)
         question_texts = list(questions_list.values_list('question_text', flat=True))
         answer_texts = list(answers_list.values_list('answer_text', flat=True))
-        all_entries = [q for q in question_texts if q] + [a for a in answer_texts if a]
+
+        # Clean text from markdown references and citations
+        def clean_text_for_word_count(text):
+            if not text:
+                return ''
+            # Remove markdown links but keep the link text: [text](url) -> text (must be FIRST)
+            text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+            # Remove (kaynak:ID) and (kaynak:ID, sayfa:NUM) bibliography citations
+            text = re.sub(r'\(kaynak:\d+(?:,\s*sayfa:[^\)]+)?\)', '', text)
+            # Remove footnote references: [^ref], [1], [2], etc.
+            text = re.sub(r'\[\^[^\]]+\]', '', text)  # [^1], [^ref], etc.
+            text = re.sub(r'\[\d+\]', '', text)  # [1], [2], [3], etc.
+            # Remove (bkz: ...) references
+            text = re.sub(r'\(bkz:\s*[^\)]+\)', '', text)
+            # Remove (def: ...) references
+            text = re.sub(r'\(def:\s*[^\)]+\)', '', text)
+            # Remove HTML tags
+            text = re.sub(r'<[^>]+>', '', text)
+            return text
+
+        # Clean all texts
+        cleaned_question_texts = [clean_text_for_word_count(q) for q in question_texts if q]
+        cleaned_answer_texts = [clean_text_for_word_count(a) for a in answer_texts if a]
+        all_entries = cleaned_question_texts + cleaned_answer_texts
+
         total_words = sum(len(re.findall(r'\b\w+\b', entry)) for entry in all_entries)
         total_chars = sum(len(entry.replace(" ", "")) for entry in all_entries)
         total_entries = len(all_entries)
         avg_words_per_entry = total_words / total_entries if total_entries else 0
-        all_texts_joined = (' '.join(question_texts) + ' ' + ' '.join(answer_texts)).lower()
+        all_texts_joined = (' '.join(cleaned_question_texts) + ' ' + ' '.join(cleaned_answer_texts)).lower()
         words = re.findall(r'\b\w+\b', all_texts_joined)
         exclude_words_str = request.GET.get('exclude_words', '')
         exclude_words_list = [w.strip() for w in exclude_words_str.split(',') if w.strip()]
@@ -406,14 +430,31 @@ def user_settings(request):
 
 
 def user_list(request):
+    # Arama sorgusu
+    search_query = request.GET.get('q', '').strip()
+
+    # Kullanıcıları filtrele: is_active=True VE userprofile var olanlar
     users = User.objects.filter(is_active=True) \
-                        .exclude(id=request.user.id) \
-                        .annotate(username_lower=Lower('username')) \
-                        .order_by('username_lower')
+                        .exclude(id=request.user.id if request.user.is_authenticated else None)
+
+    # UserProfile olmayan kullanıcıları filtrele (silinmiş veya eksik profiller)
+    users = users.filter(userprofile__isnull=False)
+
+    # Arama varsa filtrele
+    if search_query:
+        users = users.filter(username__icontains=search_query)
+
+    users = users.annotate(username_lower=Lower('username')) \
+                 .order_by('username_lower')
+
     paginator = Paginator(users, 36)  # Sayfa başına 36 kullanıcı
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'core/user_list.html', {'users': page_obj})
+
+    return render(request, 'core/user_list.html', {
+        'users': page_obj,
+        'search_query': search_query
+    })
 
 
 @login_required
@@ -522,6 +563,6 @@ def get_user_questions(request):
         data.append({
             'id': question.id,
             'question_text': question.question_text,
-            'detail_url': reverse('question_detail', args=[question.id]),
+            'detail_url': reverse('question_detail', args=[question.slug]),  # Use slug instead of id
         })
     return JsonResponse({'questions': data})
