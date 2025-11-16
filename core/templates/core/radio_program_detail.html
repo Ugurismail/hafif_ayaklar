@@ -433,8 +433,13 @@ if (isDJ && isLive) {
                 {{ user.id }}
             );
 
-            // Create and publish local audio track
-            localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+            // Create and publish local audio track with noise suppression
+            localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack({
+                encoderConfig: "music_standard",  // High quality audio
+                AEC: true,  // Acoustic Echo Cancellation
+                AGC: true,  // Automatic Gain Control
+                ANS: true   // Acoustic Noise Suppression (gürültü önleme)
+            });
             await agoraClient.publish([localAudioTrack]);
 
             console.log('DJ joined and published audio successfully');
