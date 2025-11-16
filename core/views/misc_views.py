@@ -715,15 +715,16 @@ def shuffle_questions(request):
     # Rastgele 20 id seç
     sample_size = min(20, len(all_ids))
     selected_ids = random.sample(all_ids, sample_size)
-    # Sırayı karıştır, başlıkları çek
+    # Sırayı karıştır, başlıkları çek (answer count ile)
     questions = (Question.objects
                  .filter(id__in=selected_ids)
-                 .values('id', 'slug', 'question_text'))
+                 .annotate(answer_count=Count('answers'))
+                 .values('id', 'slug', 'question_text', 'answer_count'))
     # Rastgele sıralamayı korumak için shuffle
     questions = list(questions)
     random.shuffle(questions)
     return JsonResponse({'questions': [
-        {'id': q['id'], 'slug': q['slug'], 'text': q['question_text']} for q in questions
+        {'id': q['id'], 'slug': q['slug'], 'text': q['question_text'], 'answer_count': q['answer_count']} for q in questions
     ]})
 
 
