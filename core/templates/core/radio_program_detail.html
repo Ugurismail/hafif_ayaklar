@@ -486,9 +486,9 @@ const audioSourceStatus = document.getElementById('audio-source-status');
 if (shareMusicBtn) {
     shareMusicBtn.addEventListener('click', async function() {
         try {
-            // Request screen share with audio
+            // Request screen share with audio (Chrome requires video to be true)
             const stream = await navigator.mediaDevices.getDisplayMedia({
-                video: false,  // We don't need video
+                video: true,  // Required for Chrome/Brave, but we won't publish it
                 audio: {
                     echoCancellation: false,
                     noiseSuppression: false,
