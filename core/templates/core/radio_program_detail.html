@@ -138,6 +138,17 @@
                                 <p>Mikrofonunuz aktif. Konuşabilir ve müzik çalabilirsiniz.</p>
                                 <small id="audio-source-status" class="text-muted">Ses kaynağı: Mikrofon</small>
                             </div>
+
+                            <!-- Microphone Selector -->
+                            <div class="mb-3">
+                                <label for="mic-selector" class="form-label">
+                                    <i class="bi bi-mic"></i> Mikrofon Seçimi:
+                                </label>
+                                <select id="mic-selector" class="form-select" style="max-width: 400px; margin: 0 auto;">
+                                    <option value="">Yükleniyor...</option>
+                                </select>
+                            </div>
+
                             <div class="btn-group mb-3" role="group">
                                 <button id="share-music-btn" class="btn btn-success">
                                     <i class="bi bi-music-note-beamed"></i> Müzik Paylaş
@@ -251,6 +262,7 @@ let screenAudioTrack;  // For system audio (music)
 let remoteUsers = {};
 let APP_ID = null;  // Will be fetched from server
 let isSharingMusic = false;
+let selectedMicrophoneId = null;  // Selected microphone device ID
 
 // Initialize Agora Client
 if (isLive) {
@@ -445,12 +457,19 @@ if (isDJ && isLive) {
             );
 
             // Create and publish local audio track with noise suppression
-            localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack({
+            const micConfig = {
                 encoderConfig: "music_standard",  // High quality audio
                 AEC: true,  // Acoustic Echo Cancellation
                 AGC: true,  // Automatic Gain Control
                 ANS: true   // Acoustic Noise Suppression (gürültü önleme)
-            });
+            };
+
+            // Add selected microphone ID if available
+            if (selectedMicrophoneId) {
+                micConfig.microphoneId = selectedMicrophoneId;
+            }
+
+            localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack(micConfig);
             await agoraClient.publish([localAudioTrack]);
 
             console.log('DJ joined and published audio successfully');
@@ -575,6 +594,82 @@ async function switchBackToMicrophone() {
     } catch (error) {
         console.error('Error switching to microphone:', error);
         showToast('Mikrofona geçiş hatası: ' + error.message, 'error');
+    }
+}
+
+// Microphone Selection Feature (for DJs)
+const micSelector = document.getElementById('mic-selector');
+
+if (micSelector && isDJ) {
+    // Load available microphones
+    async function loadMicrophones() {
+        try {
+            const devices = await AgoraRTC.getDevices();
+            const audioInputs = devices.filter(device => device.kind === 'audioinput');
+
+            micSelector.innerHTML = '';
+
+            if (audioInputs.length === 0) {
+                micSelector.innerHTML = '<option>Mikrofon bulunamadı</option>';
+                return;
+            }
+
+            audioInputs.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.textContent = device.label || `Mikrofon ${index + 1}`;
+
+                // Select default device
+                if (device.deviceId === 'default' || index === 0) {
+                    option.selected = true;
+                    selectedMicrophoneId = device.deviceId;
+                }
+
+                micSelector.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading microphones:', error);
+            micSelector.innerHTML = '<option>Hata: Mikrofon listelenemedi</option>';
+        }
+    }
+
+    // Change microphone when selector changes
+    micSelector.addEventListener('change', async function() {
+        if (isSharingMusic) {
+            showToast('Önce müzik paylaşımını durdurun', 'warning');
+            return;
+        }
+
+        selectedMicrophoneId = this.value;
+
+        try {
+            // Stop current track
+            if (localAudioTrack) {
+                await agoraClient.unpublish([localAudioTrack]);
+                localAudioTrack.close();
+            }
+
+            // Create new track with selected microphone
+            localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack({
+                microphoneId: selectedMicrophoneId,
+                encoderConfig: "music_standard",
+                AEC: true,
+                AGC: true,
+                ANS: true
+            });
+
+            await agoraClient.publish([localAudioTrack]);
+
+            showToast('Mikrofon değiştirildi', 'success');
+        } catch (error) {
+            console.error('Error changing microphone:', error);
+            showToast('Mikrofon değiştirilemedi: ' + error.message, 'error');
+        }
+    });
+
+    // Load microphones on page load
+    if (isLive) {
+        loadMicrophones();
     }
 }
 </script>
