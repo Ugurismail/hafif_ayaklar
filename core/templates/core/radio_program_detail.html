@@ -333,6 +333,12 @@ function initializeAgora() {
     agoraClient.on("user-published", handleUserPublished);
     agoraClient.on("user-unpublished", handleUserUnpublished);
     agoraClient.on("user-left", handleUserLeft);
+    agoraClient.on("user-joined", handleUserJoined);
+}
+
+function handleUserJoined(user) {
+    // Update listener count when user joins
+    updateListenerCount();
 }
 
 async function handleUserPublished(user, mediaType) {
@@ -343,18 +349,47 @@ async function handleUserPublished(user, mediaType) {
         // Play the remote audio track
         const remoteAudioTrack = user.audioTrack;
         remoteAudioTrack.play();
-        console.log('Playing remote audio from UID:', user.uid);
     }
+    // Update listener count
+    updateListenerCount();
 }
 
 function handleUserUnpublished(user, mediaType) {
     if (mediaType === 'audio') {
         delete remoteUsers[user.uid];
     }
+    // Update listener count
+    updateListenerCount();
 }
 
 function handleUserLeft(user) {
     delete remoteUsers[user.uid];
+    // Update listener count
+    updateListenerCount();
+}
+
+// Function to update listener count from Agora channel
+function updateListenerCount() {
+    if (!agoraClient) return;
+
+    // Get total users in channel (including self)
+    const totalUsers = agoraClient.remoteUsers.length + 1; // +1 for self
+
+    // Update UI
+    const listenerCountElement = document.getElementById('listener-count');
+    if (listenerCountElement) {
+        listenerCountElement.textContent = totalUsers;
+    }
+
+    // Send to backend
+    fetch(`/radio/listener-count/${programId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ count: totalUsers })
+    }).catch(error => console.error('Error updating listener count:', error));
 }
 
 // Get Agora Token from server
@@ -536,22 +571,8 @@ if (isDJ && isLive) {
     })();
 }
 
-// Update listener count periodically (every 10 seconds)
-if (isLive) {
-    setInterval(function() {
-        fetch(`/radio/listener-count/${programId}/`, {
-            method: 'POST',
-            headers: { 'X-CSRFToken': csrftoken }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('listener-count').textContent = data.listener_count;
-            }
-        })
-        .catch(error => console.error('Error updating listener count:', error));
-    }, 10000);
-}
+// Listener count is now updated in real-time via Agora events
+// No need for periodic polling
 
 // Music Sharing Feature (for DJs)
 const shareMusicBtn = document.getElementById('share-music-btn');

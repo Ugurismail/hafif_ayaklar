@@ -396,15 +396,30 @@ def get_agora_token(request, program_id):
 def update_listener_count(request, program_id):
     """
     Dinleyici sayısını güncelleme - AJAX
-    Her X saniyede bir frontend'den çağrılacak
+    Frontend Agora SDK'den gerçek dinleyici sayısını gönderir
     """
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
     program = get_object_or_404(RadioProgram, id=program_id)
 
-    # Listener count artır (her istek bir dinleyici demek)
-    # Gerçek implementasyonda Agora.io API'sinden alınacak
+    # Get listener count from request body
+    try:
+        import json
+        data = json.loads(request.body)
+        count = data.get('count', 0)
+
+        # Update program's listener count
+        program.listener_count = count
+
+        # Update max_listeners if this is higher
+        if count > program.max_listeners:
+            program.max_listeners = count
+
+        program.save()
+    except (json.JSONDecodeError, KeyError):
+        # If no count provided, just return current count
+        pass
 
     return JsonResponse({
         'success': True,
