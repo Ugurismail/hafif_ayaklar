@@ -1,0 +1,245 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}DJ Paneli{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-mic"></i> DJ Kontrol Paneli</h1>
+                <div>
+                    <a href="{% url 'radio_home' %}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-left"></i> Radyo Ana Sayfa
+                    </a>
+                    <a href="{% url 'create_program' %}" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Yeni Program
+                    </a>
+                </div>
+            </div>
+
+            <!-- Canlı Programlarım -->
+            {% if live_programs %}
+                <div class="card mb-4 border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h3><i class="bi bi-broadcast"></i> CANLI YAYINLARIM</h3>
+                    </div>
+                    <div class="card-body">
+                        {% for program in live_programs %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="card-title">
+                                                <span class="badge bg-danger blink-animation">CANLI</span>
+                                                {{ program.title }}
+                                            </h5>
+                                            <p class="text-muted mb-2">
+                                                <i class="bi bi-clock"></i> {{ program.start_time|date:"H:i" }} - {{ program.end_time|date:"H:i" }}
+                                                <span class="ms-2"><i class="bi bi-people"></i> {{ program.listener_count }} dinleyici</span>
+                                            </p>
+                                            {% if program.description %}
+                                                <p class="card-text">{{ program.description }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button class="btn btn-danger stop-broadcast-btn" data-program-id="{{ program.id }}">
+                                            <i class="bi bi-stop-circle"></i> Yayını Bitir
+                                        </button>
+                                        <a href="{% url 'program_detail' program.id %}" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Görüntüle
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Başlamaya Hazır Programlar -->
+            {% if ready_programs %}
+                <div class="card mb-4 border-success">
+                    <div class="card-header bg-success text-white">
+                        <h3><i class="bi bi-play-circle"></i> BAŞLAMAYA HAZIR</h3>
+                    </div>
+                    <div class="card-body">
+                        {% for program in ready_programs %}
+                            <div class="card mb-3 border-success">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="card-title">
+                                                <span class="badge bg-success">HAZIR</span>
+                                                {{ program.title }}
+                                            </h5>
+                                            <p class="text-muted mb-2">
+                                                <i class="bi bi-clock"></i> {{ program.start_time|date:"H:i" }} - {{ program.end_time|date:"H:i" }}
+                                            </p>
+                                            {% if program.description %}
+                                                <p class="card-text">{{ program.description }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button class="btn btn-success btn-lg start-broadcast-btn" data-program-id="{{ program.id }}">
+                                            <i class="bi bi-broadcast"></i> YAYINI BAŞLAT
+                                        </button>
+                                        <a href="{% url 'program_detail' program.id %}" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Görüntüle
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Yaklaşan Programlarım -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="bi bi-calendar-event"></i> YAKLAŞAN PROGRAMLARIM</h3>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_programs %}
+                        <div class="list-group">
+                            {% for program in upcoming_programs %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ program.title }}</h6>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar"></i> {{ program.start_time|date:"d F Y, H:i" }}
+                                                - {{ program.end_time|date:"H:i" }}
+                                            </small>
+                                            {% if program.description %}
+                                                <p class="mb-1 mt-2">{{ program.description|truncatewords:30 }}</p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="btn-group">
+                                            {% if program.is_active_time and not program.is_live %}
+                                                <button class="btn btn-success btn-sm start-broadcast-btn" data-program-id="{{ program.id }}">
+                                                    <i class="bi bi-play-circle"></i> Başlat
+                                                </button>
+                                            {% endif %}
+                                            <a href="{% url 'edit_program' program.id %}" class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-pencil"></i> Düzenle
+                                            </a>
+                                            <a href="{% url 'delete_program' program.id %}" class="btn btn-outline-danger btn-sm">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Yaklaşan programınız yok.</p>
+                        <a href="{% url 'create_program' %}" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> İlk Programınızı Oluşturun
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Geçmiş Programlarım -->
+            {% if past_programs %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="bi bi-clock-history"></i> GEÇMİŞ PROGRAMLARIM</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for program in past_programs %}
+                                <div class="list-group-item">
+                                    <h6 class="mb-1">{{ program.title }}</h6>
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar"></i> {{ program.start_time|date:"d F Y, H:i" }}
+                                        <span class="ms-2"><i class="bi bi-people"></i> En çok {{ program.max_listeners }} dinleyici</span>
+                                    </small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0.5; }
+}
+
+.blink-animation {
+    animation: blink 2s infinite;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrftoken = getCookie('csrftoken');
+
+    // Yayın başlatma
+    document.querySelectorAll('.start-broadcast-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const programId = this.getAttribute('data-program-id');
+            if (confirm('Yayını başlatmak istediğinize emin misiniz?')) {
+                fetch(`/radio/dj/start/${programId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast(data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Bir hata oluştu', 'error');
+                });
+            }
+        });
+    });
+
+    // Yayın bitirme
+    document.querySelectorAll('.stop-broadcast-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const programId = this.getAttribute('data-program-id');
+            if (confirm('Yayını bitirmek istediğinize emin misiniz?')) {
+                fetch(`/radio/dj/stop/${programId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast(data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Bir hata oluştu', 'error');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

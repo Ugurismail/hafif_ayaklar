@@ -1,0 +1,465 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ program.title }} - Radyo{% endblock %}
+
+{% block extra_css %}
+<style>
+.audio-controls {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 30px;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.volume-control {
+    width: 100%;
+    margin-top: 15px;
+}
+
+.listener-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 10px 20px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.dj-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid white;
+    object-fit: cover;
+}
+
+.broadcast-status {
+    position: relative;
+    display: inline-block;
+}
+
+.live-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: #ff0000;
+    border-radius: 50%;
+    border: 3px solid white;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0.3; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Program Bilgileri -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="broadcast-status me-3">
+                            {% if program.dj.userprofile.profile_photo %}
+                                <img src="{{ program.dj.userprofile.profile_photo.url }}"
+                                     class="dj-avatar" alt="{{ program.dj.username }}">
+                            {% else %}
+                                <img src="{% static 'imgs/default_profile.png' %}"
+                                     class="dj-avatar" alt="{{ program.dj.username }}">
+                            {% endif %}
+                            {% if program.is_live %}
+                                <span class="live-indicator"></span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h2 class="mb-0">{{ program.title }}</h2>
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-person"></i> DJ:
+                                <a href="{% url 'user_profile' program.dj.username %}">{{ program.dj.username }}</a>
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if program.description %}
+                        <p class="lead">{{ program.description }}</p>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-calendar"></i> {{ program.start_time|date:"d F Y, H:i" }} - {{ program.end_time|date:"H:i" }}
+                            <span class="ms-3">
+                                <i class="bi bi-clock"></i> {{ program.duration_minutes }} dakika
+                            </span>
+                        </div>
+                        <span class="badge bg-{{ program.is_live|yesno:'danger,secondary' }} fs-6">
+                            {{ program.status }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player / Broadcast Controller -->
+            {% if program.is_live %}
+                <div class="audio-controls mb-4">
+                    <div class="text-center mb-4">
+                        <h3 class="pulse">
+                            <i class="bi bi-broadcast"></i>
+                            {% if user == program.dj %}
+                                CANLI YAYINDASINIZ
+                            {% else %}
+                                CANLI YAYIN
+                            {% endif %}
+                        </h3>
+                        <div class="listener-badge">
+                            <i class="bi bi-people"></i>
+                            <span id="listener-count">{{ program.listener_count }}</span> kişi dinliyor
+                        </div>
+                    </div>
+
+                    {% if user == program.dj %}
+                        <!-- DJ Controls -->
+                        <div class="text-center">
+                            <div id="dj-status" class="mb-3">
+                                <p>Mikrofonunuz aktif. Konuşabilir ve müzik çalabilirsiniz.</p>
+                            </div>
+                            <button id="stop-broadcast-btn" class="btn btn-danger btn-lg">
+                                <i class="bi bi-stop-circle"></i> Yayını Bitir
+                            </button>
+                        </div>
+
+                        <!-- DJ Audio Player (hidden audio element for Agora) -->
+                        <div id="dj-controls" style="display: none;">
+                            <div id="local-player"></div>
+                        </div>
+                    {% else %}
+                        <!-- Listener Controls -->
+                        <div class="text-center">
+                            <button id="join-broadcast-btn" class="btn btn-light btn-lg">
+                                <i class="bi bi-play-circle"></i> Dinlemeye Başla
+                            </button>
+                            <button id="leave-broadcast-btn" class="btn btn-danger btn-lg" style="display: none;">
+                                <i class="bi bi-stop-circle"></i> Dinlemeyi Durdur
+                            </button>
+
+                            <div class="mt-3">
+                                <label for="volume-control" class="form-label">
+                                    <i class="bi bi-volume-up"></i> Ses Seviyesi
+                                </label>
+                                <input type="range" class="form-range volume-control"
+                                       id="volume-control" min="0" max="100" value="80">
+                            </div>
+                        </div>
+
+                        <!-- Listener Audio Player (hidden) -->
+                        <div id="remote-players" style="display: none;"></div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <!-- Not Live -->
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i>
+                    {% if program.is_finished %}
+                        Bu program sona erdi.
+                    {% elif program.is_upcoming %}
+                        Bu program henüz başlamadı. Başlangıç: {{ program.start_time|date:"d F Y, H:i" }}
+                    {% else %}
+                        Bu program şu anda canlı değil.
+                    {% endif %}
+
+                    {% if user == program.dj and program.is_active_time and not program.is_finished %}
+                        <div class="mt-3">
+                            <button id="start-broadcast-btn" class="btn btn-success btn-lg">
+                                <i class="bi bi-play-circle"></i> Yayını Başlat
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Back Button -->
+            <div class="text-center mt-4">
+                <a href="{% url 'radio_home' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Radyo Ana Sayfasına Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Agora SDK -->
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+
+<script>
+// Simple toast notification function
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} position-fixed top-0 start-50 translate-middle-x mt-3`;
+    toast.style.zIndex = '9999';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// Get CSRF token from cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const programId = {{ program.id }};
+const isLive = {{ program.is_live|yesno:'true,false' }};
+const isDJ = {{ user.id|default:'null' }} === {{ program.dj.id }};
+const csrftoken = getCookie('csrftoken');
+
+let agoraClient;
+let localAudioTrack;
+let remoteUsers = {};
+let APP_ID = null;  // Will be fetched from server
+
+// Initialize Agora Client
+if (isLive) {
+    initializeAgora();
+}
+
+function initializeAgora() {
+    // Create Agora client
+    agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+    // Register event listeners
+    agoraClient.on("user-published", handleUserPublished);
+    agoraClient.on("user-unpublished", handleUserUnpublished);
+    agoraClient.on("user-left", handleUserLeft);
+}
+
+async function handleUserPublished(user, mediaType) {
+    await agoraClient.subscribe(user, mediaType);
+
+    if (mediaType === 'audio') {
+        remoteUsers[user.uid] = user;
+        // Play the remote audio track
+        const remoteAudioTrack = user.audioTrack;
+        remoteAudioTrack.play();
+        console.log('Playing remote audio from UID:', user.uid);
+    }
+}
+
+function handleUserUnpublished(user, mediaType) {
+    if (mediaType === 'audio') {
+        delete remoteUsers[user.uid];
+    }
+}
+
+function handleUserLeft(user) {
+    delete remoteUsers[user.uid];
+}
+
+// Get Agora Token from server
+async function getAgoraToken() {
+    const response = await fetch(`/radio/token/${programId}/`, {
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': csrftoken
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to get Agora token');
+    }
+
+    return await response.json();
+}
+
+// DJ: Start Broadcast
+if (isDJ && document.getElementById('start-broadcast-btn')) {
+    document.getElementById('start-broadcast-btn').addEventListener('click', async function() {
+        try {
+            // Start broadcast on server
+            const response = await fetch(`/radio/dj/start/${programId}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('Yayın başlatılıyor...', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showToast(data.error, 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Yayın başlatılamadı', 'error');
+        }
+    });
+}
+
+// DJ: Stop Broadcast
+if (isDJ && document.getElementById('stop-broadcast-btn')) {
+    document.getElementById('stop-broadcast-btn').addEventListener('click', async function() {
+        if (confirm('Yayını bitirmek istediğinize emin misiniz?')) {
+            try {
+                // Leave Agora channel
+                if (localAudioTrack) {
+                    localAudioTrack.close();
+                }
+                if (agoraClient) {
+                    await agoraClient.leave();
+                }
+
+                // Stop broadcast on server
+                const response = await fetch(`/radio/dj/stop/${programId}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrftoken }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Yayın sonlandırıldı', 'success');
+                    setTimeout(() => window.location.href = '{% url "dj_dashboard" %}', 1500);
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Yayın sonlandırılamadı', 'error');
+            }
+        }
+    });
+}
+
+// Listener: Join Broadcast
+const joinBtn = document.getElementById('join-broadcast-btn');
+if (joinBtn) {
+    joinBtn.addEventListener('click', async function() {
+        try {
+            showToast('Yayına bağlanılıyor...', 'info');
+
+            // Get token from server
+            const tokenData = await getAgoraToken();
+            APP_ID = tokenData.app_id;  // Set APP_ID from server
+
+            // Join Agora channel
+            await agoraClient.join(
+                APP_ID,
+                tokenData.channel_name,
+                tokenData.token,
+                {{ user.id }}
+            );
+
+            console.log('Joined channel successfully');
+
+            document.getElementById('join-broadcast-btn').style.display = 'none';
+            document.getElementById('leave-broadcast-btn').style.display = 'inline-block';
+
+            showToast('Yayını dinliyorsunuz', 'success');
+        } catch (error) {
+            console.error('Error joining broadcast:', error);
+            showToast('Yayına bağlanılamadı', 'error');
+        }
+    });
+}
+
+// Listener: Leave Broadcast
+const leaveBtn = document.getElementById('leave-broadcast-btn');
+if (leaveBtn) {
+    leaveBtn.addEventListener('click', async function() {
+        try {
+            await agoraClient.leave();
+
+            document.getElementById('join-broadcast-btn').style.display = 'inline-block';
+            document.getElementById('leave-broadcast-btn').style.display = 'none';
+
+            showToast('Dinleme durduruldu', 'info');
+        } catch (error) {
+            console.error('Error leaving broadcast:', error);
+            showToast('Bir hata oluştu', 'error');
+        }
+    });
+}
+
+// Volume Control
+if (document.getElementById('volume-control')) {
+    document.getElementById('volume-control').addEventListener('input', function() {
+        const volume = this.value / 100;
+
+        // Set volume for all remote audio tracks
+        Object.values(remoteUsers).forEach(user => {
+            if (user.audioTrack) {
+                user.audioTrack.setVolume(volume * 100);
+            }
+        });
+    });
+}
+
+// Auto-join for DJ
+if (isDJ && isLive) {
+    (async function() {
+        try {
+            const tokenData = await getAgoraToken();
+            APP_ID = tokenData.app_id;  // Set APP_ID from server
+
+            // Join Agora channel
+            await agoraClient.join(
+                APP_ID,
+                tokenData.channel_name,
+                tokenData.token,
+                {{ user.id }}
+            );
+
+            // Create and publish local audio track
+            localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+            await agoraClient.publish([localAudioTrack]);
+
+            console.log('DJ joined and published audio successfully');
+        } catch (error) {
+            console.error('DJ auto-join error:', error);
+            showToast('Yayına bağlanırken hata oluştu', 'error');
+        }
+    })();
+}
+
+// Update listener count periodically (every 10 seconds)
+if (isLive) {
+    setInterval(function() {
+        fetch(`/radio/listener-count/${programId}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('listener-count').textContent = data.listener_count;
+            }
+        })
+        .catch(error => console.error('Error updating listener count:', error));
+    }, 10000);
+}
+</script>
+{% endblock %}

@@ -154,6 +154,18 @@ urlpatterns = [
     path('answer/<int:answer_id>/follow/', views.follow_answer, name='follow_answer'),
     path('answer/<int:answer_id>/unfollow/', views.unfollow_answer, name='unfollow_answer'),
 
+    # Radio URLs
+    path('radio/', views.radio_home, name='radio_home'),
+    path('radio/program/<int:program_id>/', views.program_detail, name='program_detail'),
+    path('radio/dj/', views.dj_dashboard, name='dj_dashboard'),
+    path('radio/dj/create/', views.create_program, name='create_program'),
+    path('radio/dj/edit/<int:program_id>/', views.edit_program, name='edit_program'),
+    path('radio/dj/delete/<int:program_id>/', views.delete_program, name='delete_program'),
+    path('radio/dj/start/<int:program_id>/', views.start_broadcast, name='start_broadcast'),
+    path('radio/dj/stop/<int:program_id>/', views.stop_broadcast, name='stop_broadcast'),
+    path('radio/token/<int:program_id>/', views.get_agora_token, name='get_agora_token'),
+    path('radio/listener-count/<int:program_id>/', views.update_listener_count, name='update_listener_count'),
+
     # SLUG-BASED QUESTION URLS (EN SONDA OLMALI - catch-all)
     # Örnek: /ozgurluk-nedir/ veya /yapılacaklar/ -> question detail
     # SPESİFİK pattern'lar ÖNCE gelmeli (single_answer, add-answer, etc.)

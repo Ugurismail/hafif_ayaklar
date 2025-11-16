@@ -1,0 +1,139 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Hafif Ayaklar Radyo{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-broadcast-pin"></i> Hafif Ayaklar Radyo</h1>
+                {% if user.is_authenticated and user.userprofile.is_dj %}
+                    <a href="{% url 'dj_dashboard' %}" class="btn btn-primary">
+                        <i class="bi bi-mic"></i> DJ Paneli
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Canlı Yayınlar -->
+            {% if live_programs %}
+                <div class="card mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h3><i class="bi bi-broadcast"></i> CANLI YAYINLAR</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for program in live_programs %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-danger">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h5 class="card-title">
+                                                        <span class="badge bg-danger blink-animation">CANLI</span>
+                                                        {{ program.title }}
+                                                    </h5>
+                                                    <p class="text-muted mb-2">
+                                                        <i class="bi bi-person"></i> {{ program.dj.username }}
+                                                    </p>
+                                                    {% if program.description %}
+                                                        <p class="card-text">{{ program.description|truncatewords:20 }}</p>
+                                                    {% endif %}
+                                                    <p class="text-muted small">
+                                                        <i class="bi bi-clock"></i> {{ program.start_time|date:"H:i" }} - {{ program.end_time|date:"H:i" }}
+                                                        <span class="ms-2"><i class="bi bi-people"></i> {{ program.listener_count }} dinleyici</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <a href="{% url 'program_detail' program.id %}" class="btn btn-danger btn-sm">
+                                                <i class="bi bi-play-circle"></i> Dinle
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Şu anda canlı yayın yok.
+                </div>
+            {% endif %}
+
+            <!-- Yaklaşan Programlar -->
+            {% if upcoming_programs %}
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h3><i class="bi bi-calendar-event"></i> YAKLAŞAN PROGRAMLAR</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for program in upcoming_programs %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ program.title }}</h6>
+                                            <p class="mb-1 text-muted">
+                                                <i class="bi bi-person"></i> {{ program.dj.username }}
+                                            </p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar"></i> {{ program.start_time|date:"d F Y, H:i" }}
+                                                - {{ program.end_time|date:"H:i" }}
+                                            </small>
+                                        </div>
+                                        <a href="{% url 'program_detail' program.id %}" class="btn btn-outline-primary btn-sm">
+                                            Detaylar
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Geçmiş Programlar -->
+            {% if past_programs %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="bi bi-clock-history"></i> GEÇMİŞ PROGRAMLAR</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for program in past_programs %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ program.title }}</h6>
+                                            <p class="mb-1 text-muted">
+                                                <i class="bi bi-person"></i> {{ program.dj.username }}
+                                            </p>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar"></i> {{ program.start_time|date:"d F Y, H:i" }}
+                                                <span class="ms-2"><i class="bi bi-people"></i> En çok {{ program.max_listeners }} dinleyici</span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0.5; }
+}
+
+.blink-animation {
+    animation: blink 2s infinite;
+}
+</style>
+{% endblock %}

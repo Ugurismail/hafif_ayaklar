@@ -37,6 +37,9 @@ class UserProfile(models.Model):
     following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
     photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True, validators=[validate_image_file])
 
+    # Radyo DJ yetkisi
+    is_dj = models.BooleanField(default=False, verbose_name='DJ Yetkisi')
+
     # Renk ayarları alanları
     background_color = models.CharField(max_length=7, default='#F5F5F5') #genel arka plan
     text_color = models.CharField(max_length=7, default='#000000')
@@ -777,3 +780,114 @@ def notify_user_followers_on_new_entry(sender, instance, created, **kwargs):
                 )
         except UserProfile.DoesNotExist:
             pass
+
+
+# ==================== RADYO SİSTEMİ ====================
+
+class RadioProgram(models.Model):
+    """
+    Radyo programı modeli
+    DJ'ler program oluşturabilir ve canlı yayın yapabilir
+    """
+    dj = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='radio_programs',
+        verbose_name='DJ'
+    )
+    title = models.CharField(max_length=200, verbose_name='Program Başlığı')
+    description = models.TextField(blank=True, verbose_name='Açıklama')
+    start_time = models.DateTimeField(verbose_name='Başlangıç Zamanı')
+    end_time = models.DateTimeField(verbose_name='Bitiş Zamanı')
+
+    # Yayın durumu
+    is_live = models.BooleanField(default=False, verbose_name='Canlı Yayında')
+    is_finished = models.BooleanField(default=False, verbose_name='Tamamlandı')
+
+    # Agora.io için benzersiz kanal adı
+    agora_channel_name = models.CharField(
+        max_length=100,
+        unique=True,
+        blank=True,
+        verbose_name='Agora Kanal Adı'
+    )
+
+    # İstatistikler
+    listener_count = models.PositiveIntegerField(default=0, verbose_name='Dinleyici Sayısı')
+    max_listeners = models.PositiveIntegerField(default=0, verbose_name='Max Dinleyici')
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturulma')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Güncellenme')
+
+    class Meta:
+        ordering = ['-start_time']
+        verbose_name = 'Radyo Programı'
+        verbose_name_plural = 'Radyo Programları'
+        indexes = [
+            models.Index(fields=['-start_time']),
+            models.Index(fields=['is_live']),
+        ]
+
+    def __str__(self):
+        return f"{self.title} - DJ: {self.dj.username}"
+
+    def save(self, *args, **kwargs):
+        # Agora kanal adı otomatik oluştur
+        if not self.agora_channel_name:
+            import uuid
+            self.agora_channel_name = f"radio_{uuid.uuid4().hex[:12]}"
+        super().save(*args, **kwargs)
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        # Bitiş zamanı başlangıçtan önce olamaz
+        if self.end_time <= self.start_time:
+            raise ValidationError({
+                'end_time': 'Bitiş zamanı başlangıç zamanından sonra olmalıdır.'
+            })
+
+        # Çakışan program kontrolü
+        conflicts = RadioProgram.objects.filter(
+            start_time__lt=self.end_time,
+            end_time__gt=self.start_time
+        ).exclude(pk=self.pk)
+
+        if conflicts.exists():
+            conflict = conflicts.first()
+            raise ValidationError(
+                f'Bu saatlerde başka bir program var: {conflict.title} '
+                f'({conflict.dj.username})'
+            )
+
+    @property
+    def is_upcoming(self):
+        """Program henüz başlamadı mı?"""
+        return timezone.now() < self.start_time
+
+    @property
+    def is_active_time(self):
+        """Şu an program saati mi?"""
+        now = timezone.now()
+        return self.start_time <= now <= self.end_time
+
+    @property
+    def status(self):
+        """Program durumu"""
+        if self.is_finished:
+            return 'finished'
+        elif self.is_live:
+            return 'live'
+        elif self.is_active_time:
+            return 'ready'  # Saati geldi ama DJ başlatmamış
+        elif self.is_upcoming:
+            return 'upcoming'
+        else:
+            return 'past'
+
+    @property
+    def duration_minutes(self):
+        """Program süresi (dakika)"""
+        delta = self.end_time - self.start_time
+        return int(delta.total_seconds() / 60)

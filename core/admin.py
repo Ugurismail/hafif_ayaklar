@@ -16,7 +16,7 @@ from core.models import (
     Poll, PollOption, PollVote, SavedItem, Vote, PinnedEntry,
     Entry, RandomSentence, Message, Definition, Reference,CikisTesti,
     CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy,
-    QuestionFollow, AnswerFollow, Notification
+    QuestionFollow, AnswerFollow, Notification, RadioProgram
 )
 
 # =============================================================================
@@ -343,3 +343,53 @@ class NotificationAdmin(admin.ModelAdmin):
         updated = queryset.update(is_read=False)
         self.message_user(request, f"{updated} bildirim okunmadı olarak işaretlendi.")
     mark_as_unread.short_description = "Seçili bildirimleri okunmadı olarak işaretle"
+
+
+# =============================================================================
+# 6) Radyo Programları Admin
+# =============================================================================
+@admin.register(RadioProgram)
+class RadioProgramAdmin(admin.ModelAdmin):
+    list_display = ['title', 'dj', 'start_time', 'end_time', 'status_display', 'is_live', 'listener_count', 'max_listeners']
+    list_filter = ['is_live', 'is_finished', 'start_time', 'dj']
+    search_fields = ['title', 'description', 'dj__username']
+    readonly_fields = ['agora_channel_name', 'created_at', 'updated_at', 'listener_count', 'max_listeners']
+    date_hierarchy = 'start_time'
+    ordering = ['-start_time']
+
+    fieldsets = (
+        ('Program Bilgileri', {
+            'fields': ('dj', 'title', 'description')
+        }),
+        ('Zaman', {
+            'fields': ('start_time', 'end_time')
+        }),
+        ('Yayın Durumu', {
+            'fields': ('is_live', 'is_finished')
+        }),
+        ('Teknik', {
+            'fields': ('agora_channel_name',),
+            'classes': ('collapse',)
+        }),
+        ('İstatistikler', {
+            'fields': ('listener_count', 'max_listeners', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def status_display(self, obj):
+        return obj.status
+    status_display.short_description = 'Durum'
+
+    actions = ['mark_as_finished', 'cancel_programs']
+
+    def mark_as_finished(self, request, queryset):
+        updated = queryset.update(is_finished=True, is_live=False)
+        self.message_user(request, f"{updated} program tamamlandı olarak işaretlendi.")
+    mark_as_finished.short_description = "Seçili programları tamamlandı olarak işaretle"
+
+    def cancel_programs(self, request, queryset):
+        count = queryset.count()
+        queryset.delete()
+        self.message_user(request, f"{count} program iptal edildi.")
+    cancel_programs.short_description = "Seçili programları iptal et"
