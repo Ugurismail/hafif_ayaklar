@@ -16,7 +16,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4m3!p5t!fy=$22
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # Parse ALLOWED_HOSTS from environment (comma-separated)
-allowed_hosts_str = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,uia1.pythonanywhere.com')
+allowed_hosts_str = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,uia1.pythonanywhere.com,ha-uia1.pythonanywhere.com')
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(',') if host.strip()]
 
 # CSRF Trusted Origins (for production)
