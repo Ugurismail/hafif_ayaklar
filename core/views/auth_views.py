@@ -70,7 +70,18 @@ def user_login(request):
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
+
+            # "Beni hatırla" checkbox'ını kontrol et
+            remember_me = request.POST.get('remember_me')
+
             login(request, user)
+
+            # Eğer "beni hatırla" seçilmediyse, oturum tarayıcı kapanınca sonlansın
+            if not remember_me:
+                request.session.set_expiry(0)  # Tarayıcı kapanınca oturum sona erer
+            else:
+                request.session.set_expiry(1209600)  # 2 hafta (14 gün)
+
             return redirect('user_homepage')
         else:
             messages.error(request, "Kullanıcı adı veya şifre hatalı.")
