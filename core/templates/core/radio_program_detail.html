@@ -136,6 +136,15 @@
                         <div class="text-center">
                             <div id="dj-status" class="mb-3">
                                 <p>Mikrofonunuz aktif. Konuşabilir ve müzik çalabilirsiniz.</p>
+                                <small id="audio-source-status" class="text-muted">Ses kaynağı: Mikrofon</small>
+                            </div>
+                            <div class="btn-group mb-3" role="group">
+                                <button id="share-music-btn" class="btn btn-success">
+                                    <i class="bi bi-music-note-beamed"></i> Müzik Paylaş
+                                </button>
+                                <button id="stop-music-btn" class="btn btn-warning" style="display: none;">
+                                    <i class="bi bi-mic"></i> Mikrofona Dön
+                                </button>
                             </div>
                             <button id="stop-broadcast-btn" class="btn btn-danger btn-lg">
                                 <i class="bi bi-stop-circle"></i> Yayını Bitir
@@ -238,8 +247,10 @@ const csrftoken = getCookie('csrftoken');
 
 let agoraClient;
 let localAudioTrack;
+let screenAudioTrack;  // For system audio (music)
 let remoteUsers = {};
 let APP_ID = null;  // Will be fetched from server
+let isSharingMusic = false;
 
 // Initialize Agora Client
 if (isLive) {
@@ -465,6 +476,106 @@ if (isLive) {
         })
         .catch(error => console.error('Error updating listener count:', error));
     }, 10000);
+}
+
+// Music Sharing Feature (for DJs)
+const shareMusicBtn = document.getElementById('share-music-btn');
+const stopMusicBtn = document.getElementById('stop-music-btn');
+const audioSourceStatus = document.getElementById('audio-source-status');
+
+if (shareMusicBtn) {
+    shareMusicBtn.addEventListener('click', async function() {
+        try {
+            // Request screen share with audio
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: false,  // We don't need video
+                audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false
+                }
+            });
+
+            // Extract audio track from screen share
+            const audioTracks = stream.getAudioTracks();
+            if (audioTracks.length === 0) {
+                showToast('Ses paylaşımı seçilmedi. Lütfen "Sekme sesini paylaş" seçeneğini işaretleyin', 'error');
+                return;
+            }
+
+            // Stop current microphone track
+            if (localAudioTrack) {
+                await agoraClient.unpublish([localAudioTrack]);
+                localAudioTrack.close();
+            }
+
+            // Create Agora audio track from screen audio
+            screenAudioTrack = AgoraRTC.createCustomAudioTrack({
+                mediaStreamTrack: audioTracks[0]
+            });
+
+            // Publish screen audio
+            await agoraClient.publish([screenAudioTrack]);
+
+            isSharingMusic = true;
+            shareMusicBtn.style.display = 'none';
+            stopMusicBtn.style.display = 'inline-block';
+            audioSourceStatus.textContent = 'Ses kaynağı: Sistem Sesi (Müzik)';
+            audioSourceStatus.classList.add('text-success');
+
+            showToast('Sistem sesi paylaşılıyor! Şimdi müzik çalabilirsiniz.', 'success');
+
+            // Handle stream end (when user stops sharing)
+            audioTracks[0].addEventListener('ended', async () => {
+                await switchBackToMicrophone();
+            });
+
+        } catch (error) {
+            console.error('Music sharing error:', error);
+            if (error.name === 'NotAllowedError') {
+                showToast('Ekran paylaşımı izni reddedildi', 'error');
+            } else {
+                showToast('Müzik paylaşımı başlatılamadı: ' + error.message, 'error');
+            }
+        }
+    });
+}
+
+if (stopMusicBtn) {
+    stopMusicBtn.addEventListener('click', async function() {
+        await switchBackToMicrophone();
+    });
+}
+
+async function switchBackToMicrophone() {
+    try {
+        // Stop screen audio
+        if (screenAudioTrack) {
+            await agoraClient.unpublish([screenAudioTrack]);
+            screenAudioTrack.close();
+            screenAudioTrack = null;
+        }
+
+        // Start microphone again
+        localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack({
+            encoderConfig: "music_standard",
+            AEC: true,
+            AGC: true,
+            ANS: true
+        });
+        await agoraClient.publish([localAudioTrack]);
+
+        isSharingMusic = false;
+        shareMusicBtn.style.display = 'inline-block';
+        stopMusicBtn.style.display = 'none';
+        audioSourceStatus.textContent = 'Ses kaynağı: Mikrofon';
+        audioSourceStatus.classList.remove('text-success');
+
+        showToast('Mikrofona geri dönüldü', 'success');
+    } catch (error) {
+        console.error('Error switching to microphone:', error);
+        showToast('Mikrofona geçiş hatası: ' + error.message, 'error');
+    }
 }
 </script>
 {% endblock %}
