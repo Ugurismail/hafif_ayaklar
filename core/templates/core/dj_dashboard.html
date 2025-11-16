@@ -155,11 +155,23 @@
                         <div class="list-group">
                             {% for program in past_programs %}
                                 <div class="list-group-item">
-                                    <h6 class="mb-1">{{ program.title }}</h6>
-                                    <small class="text-muted">
-                                        <i class="bi bi-calendar"></i> {{ program.start_time|date:"d F Y, H:i" }}
-                                        <span class="ms-2"><i class="bi bi-people"></i> En çok {{ program.max_listeners }} dinleyici</span>
-                                    </small>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ program.title }}</h6>
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar"></i> {{ program.start_time|date:"d F Y, H:i" }}
+                                                <span class="ms-2"><i class="bi bi-people"></i> En çok {{ program.max_listeners }} dinleyici</span>
+                                            </small>
+                                        </div>
+                                        <div class="btn-group">
+                                            <a href="{% url 'program_detail' program.id %}" class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-eye"></i> Görüntüle
+                                            </a>
+                                            <a href="{% url 'delete_program' program.id %}" class="btn btn-outline-danger btn-sm">
+                                                <i class="bi bi-trash"></i> Sil
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             {% endfor %}
                         </div>

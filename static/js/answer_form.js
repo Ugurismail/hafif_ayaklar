@@ -50,7 +50,11 @@ document.addEventListener('DOMContentLoaded', function() {
           var selectedText = textarea.value.substring(start, end);
 
           if (!selectedText) {
-              alert('Gizlemek için bir metin seçin!');
+              if (typeof showToast === 'function') {
+                  showToast('Gizlemek için bir metin seçin!', 'warning');
+              } else {
+                  alert('Gizlemek için bir metin seçin!');
+              }
               return;
           }
 

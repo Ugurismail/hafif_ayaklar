@@ -282,7 +282,11 @@ function submitFormWithDefinition() {
 
     // Eğer ikisi de boşsa, uyarı ver
     if (!definitionText && !answerText) {
-        alert('Lütfen en az bir tanım veya yanıt girin.');
+        if (typeof showToast === 'function') {
+            showToast('Lütfen en az bir tanım veya yanıt girin.', 'warning');
+        } else {
+            alert('Lütfen en az bir tanım veya yanıt girin.');
+        }
         return false;
     }
 

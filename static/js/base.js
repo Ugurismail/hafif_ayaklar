@@ -98,6 +98,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var searchInput = document.getElementById('search-input');
     var searchResults = document.getElementById('search-results');
 
+    // Eğer search elementleri yoksa (signup sayfası gibi), bu kodu çalıştırma
+    if (!searchInput || !searchResults) {
+        return;
+    }
+
     var query = '';
     var currentFocus = -1;  // Ok tuşlarıyla hangi item seçili
 
@@ -120,9 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             isLoadingMore = false;
-
-            // Debug: Kaç sonuç geldi?
-            console.log(`Gelen sonuç sayısı: ${data.suggestions.length}, Toplam: ${data.total}, Daha var mı: ${data.has_more}`);
 
             // Gelen sonuçları ekle
             data.suggestions.forEach(function(item) {
@@ -178,21 +180,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Eğer hiç sonuç yoksa "Yeni başlık oluştur" seçeneği göster
             if (!isLoadMore && lastSearchResults.length === 0) {
-                var div = document.createElement('div');
-                div.classList.add('list-group-item');
-                div.dataset.type = 'no-results';
+                // Önce var olan no-results mesajını kontrol et, varsa ekleme
+                const existingNoResults = searchResults.querySelector('[data-type="no-results"]');
+                if (!existingNoResults) {
+                    var div = document.createElement('div');
+                    div.classList.add('list-group-item');
+                    div.dataset.type = 'no-results';
 
-                var span = document.createElement('span');
-                span.textContent = 'Sonuç bulunamadı. ';
+                    var span = document.createElement('span');
+                    span.textContent = 'Sonuç bulunamadı. ';
 
-                var a = document.createElement('a');
-                a.href = '#';
-                a.id = 'create-new-question';
-                a.textContent = 'Yeni başlık oluştur';
+                    var a = document.createElement('a');
+                    a.href = '#';
+                    a.id = 'create-new-question';
+                    a.textContent = 'Yeni başlık oluştur';
 
-                div.appendChild(span);
-                div.appendChild(a);
-                searchResults.appendChild(div);
+                    div.appendChild(span);
+                    div.appendChild(a);
+                    searchResults.appendChild(div);
+                }
             }
 
             searchResults.style.display = 'block';

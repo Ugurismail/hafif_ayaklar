@@ -55,7 +55,11 @@ function jumpToPage{{ page_param }}(e) {
         window.location.href = currentUrl.toString();
     } else {
         input.value = {{ page_obj.number }};
-        alert('Lütfen 1 ile ' + maxPages + ' arasında bir sayfa numarası girin.');
+        if (typeof showToast === 'function') {
+            showToast('Lütfen 1 ile ' + maxPages + ' arasında bir sayfa numarası girin.', 'warning');
+        } else {
+            alert('Lütfen 1 ile ' + maxPages + ' arasında bir sayfa numarası girin.');
+        }
     }
 }
 
