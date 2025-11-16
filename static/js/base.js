@@ -93,6 +93,7 @@ let currentSearchQuery = '';
 let currentSearchOffset = 0;
 let hasMoreResults = false;
 let isLoadingMore = false;
+let searchTimeout = null; // Debounce için
 
 document.addEventListener('DOMContentLoaded', function() {
     var searchInput = document.getElementById('search-input');
@@ -214,10 +215,21 @@ document.addEventListener('DOMContentLoaded', function() {
         query = this.value.trim();
         currentSearchQuery = query;
 
+        // Önceki timeout'u iptal et (debounce)
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
         if (query.length > 0) {
             // Önceki sonuçları temizle
             searchResults.innerHTML = '';
-            loadSearchResults(false);
+            lastSearchResults = [];
+            currentSearchOffset = 0;
+
+            // 300ms bekle, sonra arama yap (debounce)
+            searchTimeout = setTimeout(function() {
+                loadSearchResults(false);
+            }, 300);
         } else {
             searchResults.style.display = 'none';
             lastSearchResults = [];
