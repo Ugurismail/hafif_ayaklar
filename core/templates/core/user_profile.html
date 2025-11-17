@@ -4,6 +4,49 @@
 {% load custom_tags %}
 {% load markdownify %}
 
+{% block title %}{{ profile_user.username }} - Kullanıcı Profili - Hafif Ayaklar{% endblock %}
+
+{% block meta_description %}{{ profile_user.username }} kullanıcısının Hafif Ayaklar profili. {{ follower_count }} takipçi, {{ following_count }} takip. {% if user_profile.bio %}{{ user_profile.bio|striptags|truncatewords:30 }}{% endif %}{% endblock %}
+
+{% block meta_keywords %}{{ profile_user.username }}, kullanıcı profili, takipçiler, soru cevap{% endblock %}
+
+{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}/profile/{{ profile_user.username }}/{% endblock %}
+
+{% block og_type %}profile{% endblock %}
+{% block og_title %}{{ profile_user.username }} - Hafif Ayaklar{% endblock %}
+{% block og_description %}{{ profile_user.username }} kullanıcısının profili. {{ follower_count }} takipçi, {{ following_count }} takip.{% endblock %}
+{% block og_url %}{{ request.scheme }}://{{ request.get_host }}/profile/{{ profile_user.username }}/{% endblock %}
+{% if user_profile.photo %}
+{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ user_profile.photo.url }}{% endblock %}
+{% endif %}
+
+{% block twitter_title %}{{ profile_user.username }} - Hafif Ayaklar{% endblock %}
+{% block twitter_description %}{{ profile_user.username }} kullanıcısının profili. {{ follower_count }} takipçi.{% endblock %}
+
+{% block ai_structured_data %}
+<!-- JSON-LD Structured Data for User Profile -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "mainEntity": {
+    "@type": "Person",
+    "name": "{{ profile_user.username|escapejs }}",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/profile/{{ profile_user.username }}/",
+    {% if user_profile.photo %}"image": "{{ request.scheme }}://{{ request.get_host }}{{ user_profile.photo.url }}",{% endif %}
+    {% if user_profile.bio %}"description": "{{ user_profile.bio|striptags|escapejs }}",{% endif %}
+    "interactionStatistic": [
+      {
+        "@type": "InteractionCounter",
+        "interactionType": "https://schema.org/FollowAction",
+        "userInteractionCount": {{ follower_count }}
+      }
+    ]
+  }
+}
+</script>
+{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 {% endblock %}

@@ -23,6 +23,51 @@
   {% block article_section %}{{ question.question_text }}{% endblock %}
   {% block article_tags %}{{ question.question_text }}, soru, cevap{% if answers_page %}, {{ answers_page|length }} yanıt{% endif %}{% endblock %}
 
+  {% block ai_structured_data %}
+  <!-- JSON-LD Structured Data for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "QAPage",
+    "mainEntity": {
+      "@type": "Question",
+      "name": "{{ question.question_text|escapejs }}",
+      "text": "{{ question.question_text|escapejs }}",
+      "answerCount": {{ answers_page|length|default:0 }},
+      "dateCreated": "{{ question.created_at|date:'c' }}",
+      "author": {
+        "@type": "Person",
+        "name": "{{ question.author.username|default:'Anonymous'|escapejs }}"
+      }{% if answers_page and answers_page|length > 0 %},
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ answers_page.0.answer_text|striptags|truncatewords:100|escapejs }}",
+        "dateCreated": "{{ answers_page.0.created_at|date:'c' }}",
+        "upvoteCount": {{ answers_page.0.upvote_count|default:0 }},
+        "author": {
+          "@type": "Person",
+          "name": "{{ answers_page.0.author.username|escapejs }}"
+        }
+      },
+      "suggestedAnswer": [
+        {% for answer in answers_page|slice:"1:4" %}
+        {
+          "@type": "Answer",
+          "text": "{{ answer.answer_text|striptags|truncatewords:100|escapejs }}",
+          "dateCreated": "{{ answer.created_at|date:'c' }}",
+          "upvoteCount": {{ answer.upvote_count|default:0 }},
+          "author": {
+            "@type": "Person",
+            "name": "{{ answer.author.username|escapejs }}"
+          }
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]{% endif %}
+    }
+  }
+  </script>
+  {% endblock %}
+
   {% block extra_css %}
   <style>
       .active-filter {
