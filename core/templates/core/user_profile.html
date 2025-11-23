@@ -16,7 +16,7 @@
 {% block og_title %}{{ profile_user.username }} - Hafif Ayaklar{% endblock %}
 {% block og_description %}{{ profile_user.username }} kullanıcısının profili. {{ follower_count }} takipçi, {{ following_count }} takip.{% endblock %}
 {% block og_url %}{{ request.scheme }}://{{ request.get_host }}/profile/{{ profile_user.username }}/{% endblock %}
-{% if user_profile.photo and user_profile.photo.name %}
+{% if has_profile_photo %}
 {% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ user_profile.photo.url }}{% endblock %}
 {% endif %}
 
@@ -33,7 +33,7 @@
     "@type": "Person",
     "name": "{{ profile_user.username|escapejs }}",
     "url": "{{ request.scheme }}://{{ request.get_host }}/profile/{{ profile_user.username }}/",
-    {% if user_profile.photo and user_profile.photo.name %}"image": "{{ request.scheme }}://{{ request.get_host }}{{ user_profile.photo.url }}",{% endif %}
+    {% if has_profile_photo %}"image": "{{ request.scheme }}://{{ request.get_host }}{{ user_profile.photo.url }}",{% endif %}
     {% if user_profile.bio %}"description": "{{ user_profile.bio|striptags|escapejs }}",{% endif %}
     "interactionStatistic": [
       {
@@ -59,7 +59,7 @@
       <div class="card border-0 shadow-medium">
         <div class="card-body text-center">
           <div class="profile-photo-wrapper mb-3">
-            {% if user_profile.photo and user_profile.photo.name %}
+            {% if has_profile_photo %}
               <img src="{{ user_profile.photo.url }}" alt="Profil Fotoğrafı" class="rounded-circle img-fluid" style="max-width:150px;">
             {% else %}
               <img src="{% static 'imgs/default_profile.jpg' %}" alt="Profil Fotoğrafı" class="rounded-circle img-fluid" style="max-width:150px;">
@@ -692,7 +692,7 @@
         </div>
         <div class="modal-body">
           <div class="text-center mb-3">
-            {% if user_profile.photo and user_profile.photo.name %}
+            {% if has_profile_photo %}
               <img id="current-profile-pic" src="{{ user_profile.photo.url }}" alt="Mevcut Fotoğraf" class="img-fluid rounded-circle" style="max-width:150px;">
             {% else %}
               <img id="current-profile-pic" src="{% static 'imgs/default_profile.jpg' %}" alt="Varsayılan Fotoğraf" class="img-fluid rounded-circle" style="max-width:150px;">
@@ -702,7 +702,7 @@
             <label for="id_photo" class="form-label">Yeni Fotoğraf Seç (opsiyonel):</label>
             <input type="file" name="photo" id="id_photo" class="form-control">
           </div>
-          {% if user_profile.photo and user_profile.photo.name %}
+          {% if has_profile_photo %}
           <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" name="remove_photo" value="true" id="removePhotoCheck">
             <label class="form-check-label" for="removePhotoCheck">

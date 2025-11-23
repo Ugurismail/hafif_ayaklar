@@ -118,6 +118,17 @@ def user_profile(request, username):
         'search_word_count': None,
     }
 
+    # Profil fotoğrafı kontrolü - güvenli bir şekilde
+    has_profile_photo = False
+    try:
+        if user_profile.photo and user_profile.photo.name:
+            # Dosyanın gerçekten var olduğundan emin ol
+            _ = user_profile.photo.url  # Bu satır hata fırlatabilir
+            has_profile_photo = True
+    except (ValueError, FileNotFoundError, AttributeError):
+        has_profile_photo = False
+    context['has_profile_photo'] = has_profile_photo
+
     # Takip ve takipçi sayısı
     context['follower_count'] = user_profile.followers.count()
     context['following_count'] = user_profile.following.count()
