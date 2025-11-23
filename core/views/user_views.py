@@ -120,14 +120,17 @@ def user_profile(request, username):
 
     # Profil fotoğrafı kontrolü - güvenli bir şekilde
     has_profile_photo = False
+    profile_photo_url = None
     try:
         if user_profile.photo and user_profile.photo.name:
             # Dosyanın gerçekten var olduğundan emin ol
-            _ = user_profile.photo.url  # Bu satır hata fırlatabilir
+            profile_photo_url = user_profile.photo.url  # Bu satır hata fırlatabilir
             has_profile_photo = True
     except (ValueError, FileNotFoundError, AttributeError):
         has_profile_photo = False
+        profile_photo_url = None
     context['has_profile_photo'] = has_profile_photo
+    context['profile_photo_url'] = profile_photo_url
 
     # Takip ve takipçi sayısı
     context['follower_count'] = user_profile.followers.count()
