@@ -10,7 +10,7 @@
             <h2 class="mb-4">
                 <i class="bi bi-bell"></i> Bildirimler
                 {% if unread_count > 0 %}
-                <span class="badge bg-danger">{{ unread_count }} okunmamış</span>
+                <span class="badge" style="background-color: var(--secondary-button-background-color); color: var(--secondary-button-text-color);">{{ unread_count }} okunmamış</span>
                 {% endif %}
             </h2>
 
@@ -58,9 +58,9 @@
                                     {% if notification.notification_type == 'mention' %}
                                         <i class="bi bi-at text-primary"></i>
                                     {% elif notification.notification_type == 'new_answer' %}
-                                        <i class="bi bi-chat-left-text text-success"></i>
+                                        <i class="bi bi-chat-left-text text-theme-success"></i>
                                     {% elif notification.notification_type == 'answer_update' %}
-                                        <i class="bi bi-pencil text-warning"></i>
+                                        <i class="bi bi-pencil text-theme-warning"></i>
                                     {% elif notification.notification_type == 'question_update' %}
                                         <i class="bi bi-pencil-square text-info"></i>
                                     {% elif notification.notification_type == 'new_subquestion' %}
@@ -102,7 +102,7 @@
                                 {% endif %}
 
                                 {% if not notification.is_read %}
-                                <button class="btn btn-sm btn-success mark-read-btn" data-id="{{ notification.id }}">
+                                <button class="btn btn-sm btn-theme-success mark-read-btn" data-id="{{ notification.id }}">
                                     <i class="bi bi-check"></i>
                                 </button>
                                 {% endif %}

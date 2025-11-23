@@ -25,7 +25,7 @@
                 required
               >{{ form.definition_text.value|default_if_none:'' }}</textarea>
               {% if form.definition_text.errors %}
-                <div class="text-danger small mt-1">
+                <div class="text-theme-danger small mt-1">
                   {{ form.definition_text.errors.0 }}
                 </div>
               {% endif %}

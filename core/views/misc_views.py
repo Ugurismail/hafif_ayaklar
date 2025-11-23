@@ -58,7 +58,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 from ..models import (
     Question, Answer, Vote, SavedItem, StartingQuestion,
-    Reference, UserProfile
+    Reference, UserProfile, QuestionRelationship
 )
 from ..utils import paginate_queryset
 from ..services import VoteSaveService
@@ -106,8 +106,8 @@ def user_homepage(request):
     # 3. Başlangıç Soruları (sadece login olmuş kullanıcılar için) - Using new utility
     if request.user.is_authenticated:
         starting_questions_qs = StartingQuestion.objects.filter(user=request.user).select_related('question').annotate(
-            total_subquestions=Count('question__subquestions'),
-            latest_subquestion_date=Max('question__subquestions__created_at')
+            total_subquestions=Count('question__child_relationships', filter=Q(question__child_relationships__user=request.user)),
+            latest_subquestion_date=Max('question__child_relationships__created_at', filter=Q(question__child_relationships__user=request.user))
         ).order_by(F('latest_subquestion_date').desc(nulls_last=True)).select_related('question__user')
 
         starting_questions = paginate_queryset(starting_questions_qs, request, 'starting_page', 10)
@@ -228,7 +228,7 @@ def site_statistics(request):
 
     all_references = list(Reference.objects.all())
     all_references.sort(key=lambda ref: ref.get_usage_count(), reverse=True)
-    paginator_references = Paginator(all_references, 5)
+    paginator_references = Paginator(all_references, 20)  # Sayfa başına 20 kaynak
     reference_page_number = request.GET.get('reference_page', 1)
     top_references = paginator_references.get_page(reference_page_number)
     # --- Ek İstatistikler ---
@@ -296,19 +296,20 @@ def search_suggestions(request):
                 'url': reverse('user_profile', args=[user.username])
             })
 
-        # Hashtag araması - # ile başlıyorsa veya hashtag içeriyorsa
+        # Hashtag araması - SADECE # ile başlıyorsa hashtag ara
         from core.models import Hashtag
-        hashtag_query = query.lstrip('#')
-        if hashtag_query:  # Boş değilse ara
-            hashtags = Hashtag.objects.filter(name__icontains=hashtag_query).annotate(
-                usage_count=Count('usages')
-            ).order_by('-usage_count')[:5]  # Max 5 hashtag
-            for hashtag in hashtags:
-                suggestions.append({
-                    'type': 'hashtag',
-                    'label': '#' + hashtag.name,
-                    'url': reverse('hashtag_view', args=[hashtag.name])
-                })
+        if query.startswith('#'):
+            hashtag_query = query.lstrip('#')
+            if hashtag_query:  # Boş değilse ara
+                hashtags = Hashtag.objects.filter(name__icontains=hashtag_query).annotate(
+                    usage_count=Count('usages')
+                ).order_by('-usage_count')[:5]  # Max 5 hashtag
+                for hashtag in hashtags:
+                    suggestions.append({
+                        'type': 'hashtag',
+                        'label': '#' + hashtag.name,
+                        'url': reverse('hashtag_view', args=[hashtag.name])
+                    })
 
     # Soruları ara (sayfalama ile)
     questions = Question.objects.filter(
@@ -380,11 +381,14 @@ def search(request):
             questions = Question.objects.filter(question_text__icontains=query)
             users = User.objects.filter(username__icontains=query)
 
-            # Hashtag araması - # ile başlıyorsa veya hashtag içeriyorsa
-            hashtag_query = query.lstrip('#')
-            hashtags = Hashtag.objects.filter(name__icontains=hashtag_query).annotate(
-                usage_count=Count('usages')
-            ).order_by('-usage_count')[:5]
+            # Hashtag araması - SADECE # ile başlıyorsa hashtag ara
+            hashtags = []
+            if query.startswith('#'):
+                hashtag_query = query.lstrip('#')
+                if hashtag_query:
+                    hashtags = Hashtag.objects.filter(name__icontains=hashtag_query).annotate(
+                        usage_count=Count('usages')
+                    ).order_by('-usage_count')[:5]
 
             results += [
                 {'type': 'question', 'id': q.id, 'slug': q.slug, 'text': q.question_text, 'url': reverse('question_detail', args=[q.slug])}
@@ -715,16 +719,16 @@ def shuffle_questions(request):
     # Rastgele 20 id seç
     sample_size = min(20, len(all_ids))
     selected_ids = random.sample(all_ids, sample_size)
-    # Sırayı karıştır, başlıkları çek (answer count ile)
+    # Sırayı karıştır, başlıkları çek
     questions = (Question.objects
                  .filter(id__in=selected_ids)
-                 .annotate(answer_count=Count('answers'))
-                 .values('id', 'slug', 'question_text', 'answer_count'))
+                 .annotate(answers_count=Count('answers'))
+                 .values('id', 'slug', 'question_text', 'answers_count'))
     # Rastgele sıralamayı korumak için shuffle
     questions = list(questions)
     random.shuffle(questions)
     return JsonResponse({'questions': [
-        {'id': q['id'], 'slug': q['slug'], 'text': q['question_text'], 'answer_count': q['answer_count']} for q in questions
+        {'id': q['id'], 'slug': q['slug'], 'text': q['question_text'], 'answers_count': q['answers_count']} for q in questions
     ]})
 
 
@@ -848,9 +852,13 @@ def add_question_tree_to_docx(doc, question, target_user, level=1, visited=None)
         p.add_run(answer.answer_text)
         doc.add_paragraph("")
 
-    subquestions = question.subquestions.all().order_by('created_at')
-    for sub in subquestions:
-        add_question_tree_to_docx(doc, sub, target_user, level=min(level+1, 9), visited=visited)
+    # Kullanıcının bu sorunun alt sorularını al (kullanıcı-bazlı)
+    subquestions_rels = QuestionRelationship.objects.filter(
+        parent=question,
+        user=target_user
+    ).select_related('child').order_by('created_at')
+    for rel in subquestions_rels:
+        add_question_tree_to_docx(doc, rel.child, target_user, level=min(level+1, 9), visited=visited)
 
 
 @login_required
@@ -859,7 +867,9 @@ def download_entries_docx(request, username):
     if request.user != target_user and not request.user.is_superuser:
         return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
 
-    user_questions = Question.objects.filter(user=target_user, parent_questions__isnull=True).order_by('created_at').distinct()
+    # Kullanıcının başlangıç sorularını al
+    starting_question_ids = StartingQuestion.objects.filter(user=target_user).values_list('question_id', flat=True)
+    user_questions = Question.objects.filter(id__in=starting_question_ids).order_by('created_at').distinct()
 
     document = Document()
 
@@ -900,10 +910,9 @@ def download_entries_pdf(request, username):
     if request.user != target_user and not request.user.is_superuser:
         return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
 
-    user_questions = Question.objects.filter(
-        user=target_user,
-        parent_questions__isnull=True
-    ).order_by('created_at').distinct()
+    # Kullanıcının başlangıç sorularını al
+    starting_question_ids = StartingQuestion.objects.filter(user=target_user).values_list('question_id', flat=True)
+    user_questions = Question.objects.filter(id__in=starting_question_ids).order_by('created_at').distinct()
 
     # Create PDF buffer
     buffer = BytesIO()
@@ -1059,10 +1068,13 @@ def download_entries_pdf(request, username):
             elements.append(answer_para)
             elements.append(Spacer(1, 0.15*inch))
 
-        # Process subquestions recursively
-        subquestions = question.subquestions.all().order_by('created_at')
-        for sub in subquestions:
-            add_question_tree(sub, level=min(level+1, 3), visited=visited)
+        # Process subquestions recursively (kullanıcı-bazlı)
+        subquestions_rels = QuestionRelationship.objects.filter(
+            parent=question,
+            user=target_user
+        ).select_related('child').order_by('created_at')
+        for rel in subquestions_rels:
+            add_question_tree(rel.child, level=min(level+1, 3), visited=visited)
 
     # Add all questions
     for question in user_questions:

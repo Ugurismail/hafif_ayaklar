@@ -5,7 +5,7 @@
     <p><b>Doğru Sayısı:</b> {{ dogru }} / {{ toplam }}</p>
     <p><b>Çıkış doğrusu:</b> {{ cikis_dogrusu|default:"Tanımlanmadı" }}</p>
     {% if uydu %}
-        <span class="badge bg-success">Çıkış doğrusuna ulaştınız!</span>
+        <span class="badge" style="background-color: var(--button-background-color); color: var(--button-text-color);">Çıkış doğrusuna ulaştınız!</span>
     {% else %}
         <span>Çıkış doğrusuna ulaşamadınız.</span>
     {% endif %}

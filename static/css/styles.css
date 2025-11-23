@@ -54,7 +54,7 @@ a {
 }
 
 .tbas-color:hover{
-    background-color: var(--nav-link-hover-bg)
+    background-color: color-mix(in srgb, var(--button-background-color) 8%, transparent) !important;
 }
 
 
@@ -157,7 +157,9 @@ a:hover {
 }
 
 mark{
-    background-color: #FF9800 !important;
+    background-color: var(--button-background-color, #FF9800) !important;
+    color: var(--button-text-color, #000) !important;
+    opacity: 0.9;
 }
 
 
@@ -566,7 +568,7 @@ small:has(.dropdown.show) {
 }
 
 .baslik:hover{
-    background-color:var(--dropdown-hover-background-color)
+    background-color: color-mix(in srgb, var(--button-background-color) 8%, transparent) !important;
 }
 
 @media (max-width: 600px) {
@@ -719,13 +721,21 @@ a.ms-2 i.bi-trash {
     color: var(--icon-color, #000) !important;
 }
 
-.list-group-item:hover,
+.list-group-item:hover {
+    background-color: var(--hover-background-color, rgba(0, 0, 0, 0.03)) !important;
+}
+
 .list-group-item.active,
 .list-group-item:focus,
 .list-group-item-action.active,
 .list-group-item-action:active {
-    background-color: var(--link-hover-color, #6E8CA7) !important;
-    color: #fff !important;
+    background-color: var(--button-background-color) !important;
+    color: var(--button-text-color) !important;
+}
+
+.list-group-item.active *,
+.list-group-item.active a {
+    color: var(--button-text-color) !important;
 }
 
 #parentQuestionsModal .list-group-item {
@@ -733,13 +743,8 @@ a.ms-2 i.bi-trash {
 }
 
 #parentQuestionsModal .list-group-item:hover {
-    background-color: var(--link-hover-color, #6E8CA7) !important;
+    background-color: var(--hover-background-color, rgba(0, 0, 0, 0.03)) !important;
     cursor: pointer !important;
-}
-
-#parentQuestionsModal .list-group-item:hover *,
-#parentQuestionsModal .list-group-item:hover a {
-    color: #ffffff !important;
 }
 
 ul.subquestions-list .list-group-item:hover {
@@ -987,32 +992,127 @@ a.hashtag-link:hover {
     opacity: 1;
 }
 
-/* Notification hover fixes - tüm metinler beyaz olmalı */
-.list-group-item:hover .text-primary,
-.list-group-item:hover .text-success,
-.list-group-item:hover .text-warning,
-.list-group-item:hover .text-info,
-.list-group-item:hover .text-secondary,
-.list-group-item:hover .text-muted,
-.list-group-item:hover .bi,
-.list-group-item:hover a:not(.btn),
-.list-group-item:hover strong,
-.list-group-item:hover small {
-    color: #ffffff !important;
-}
-
-/* Git butonu hover'da görünür kalmalı */
-.list-group-item:hover .btn-outline-primary {
-    border-color: #ffffff !important;
-    color: #ffffff !important;
-}
+/* Notification hover fixes - subtle hover keeps text readable */
+/* Text colors remain unchanged on hover for better readability */
 
 .list-group-item:hover .btn-outline-primary:hover {
-    background-color: rgba(255, 255, 255, 0.2) !important;
+    background-color: var(--hover-background-color) !important;
 }
 
 /* Okundu işareti butonu */
 .list-group-item:hover .btn-success {
-    background-color: rgba(25, 135, 84, 0.8) !important;
-    border-color: #ffffff !important;
+    background-color: var(--button-background-color) !important;
+    border-color: var(--button-text-color) !important;
+
+/* ====================================
+   THEME-AWARE CUSTOM CLASSES
+   ==================================== */
+
+/* Theme-aware success buttons (use primary button color) */
+.btn-theme-success,
+.btn-outline-theme-success {
+    background-color: var(--button-background-color);
+    border-color: var(--button-background-color);
+    color: var(--button-text-color);
+}
+
+.btn-theme-success:hover,
+.btn-outline-theme-success:hover {
+    background-color: var(--button-hover-background-color);
+    border-color: var(--button-hover-background-color);
+    color: var(--button-text-color);
+}
+
+.btn-outline-theme-success {
+    background-color: transparent;
+    color: var(--button-background-color);
+}
+
+.btn-outline-theme-success:hover {
+    background-color: var(--button-background-color);
+    color: var(--button-text-color);
+}
+
+/* Theme-aware danger/destructive buttons (use secondary button color) */
+.btn-theme-danger,
+.btn-outline-theme-danger {
+    background-color: var(--secondary-button-background-color);
+    border-color: var(--secondary-button-background-color);
+    color: var(--secondary-button-text-color);
+}
+
+.btn-theme-danger:hover,
+.btn-outline-theme-danger:hover {
+    background-color: var(--secondary-button-hover-background-color);
+    border-color: var(--secondary-button-hover-background-color);
+    color: var(--secondary-button-text-color);
+}
+
+.btn-outline-theme-danger {
+    background-color: transparent;
+    color: var(--secondary-button-background-color);
+}
+
+.btn-outline-theme-danger:hover {
+    background-color: var(--secondary-button-background-color);
+    color: var(--secondary-button-text-color);
+}
+
+/* Theme-aware toasts */
+.toast-theme-success {
+    background-color: var(--button-background-color);
+    color: var(--button-text-color);
+    border: none;
+}
+
+.toast-theme-danger {
+    background-color: var(--secondary-button-background-color);
+    color: var(--secondary-button-text-color);
+    border: none;
+}
+
+/* Theme-aware text colors */
+.text-theme-success {
+    color: var(--button-background-color);
+}
+
+.text-theme-warning {
+    color: var(--button-background-color);
+}
+
+.text-theme-danger {
+    color: var(--secondary-button-background-color);
+}
+
+/* ====================================
+   POPOVER THEME SUPPORT
+   ==================================== */
+
+.popover {
+    background-color: var(--content-background-color);
+    border-color: var(--header-background-color);
+}
+
+.popover-header {
+    background-color: var(--header-background-color);
+    color: var(--text-color);
+    border-bottom: 1px solid var(--header-background-color);
+}
+
+.popover-body {
+    color: var(--text-color);
+}
+
+.popover .popover-arrow::before {
+    border-top-color: var(--header-background-color);
+    border-bottom-color: var(--header-background-color);
+    border-left-color: var(--header-background-color);
+    border-right-color: var(--header-background-color);
+}
+
+.popover .popover-arrow::after {
+    border-top-color: var(--content-background-color);
+    border-bottom-color: var(--content-background-color);
+    border-left-color: var(--content-background-color);
+    border-right-color: var(--content-background-color);
 }

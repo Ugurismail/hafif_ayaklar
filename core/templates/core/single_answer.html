@@ -138,10 +138,15 @@
                 </div>
             </div>
 
+            <!-- Kelime Arama -->
+            <div class="mb-3">
+                <input type="text" id="answerSearchInput" class="form-control form-control-sm" placeholder="Kelime ara...">
+            </div>
+
             <!-- Odaklanılan Yanıt -->
-            <div class="card mb-3">
+            <div class="card mb-3" id="answer-{{ focused_answer.id }}">
                 <div class="card-body">
-                    <p class="auto-expand answer-text">{{ focused_answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}</p>
+                    <p class="auto-expand answer-text" id="answerTextContent">{{ focused_answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}</p>
 
                     {# Kaynakça Bölümü #}
                     {% with bibliography=focused_answer.answer_text|extract_bibliography %}
@@ -229,6 +234,9 @@
                                             <i class="bi bi-envelope"></i> Mesaj Gönder
                                         </a>
                                     </li>
+                                    <li id="word-count-{{ focused_answer.id }}" style="text-align:center;">
+                                        Kelime Sayısı: ...
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -246,7 +254,7 @@
             <div id="all-answers" style="display: none;">
                 {% for answer in all_answers %}
                     {% if answer.id != focused_answer.id %}
-                    <div class="card mb-3">
+                    <div class="card mb-3" id="answer-{{ answer.id }}">
                         <div class="card-body">
                             <p class="answer-text">{{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}</p>
 
@@ -337,6 +345,9 @@
                                                     <i class="bi bi-envelope"></i> Mesaj Gönder
                                                 </a>
                                             </li>
+                                            <li id="word-count-{{ answer.id }}" style="text-align:center;">
+                                                Kelime Sayısı: ...
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>
@@ -388,7 +399,7 @@
                         {{ form.answer_text }}
                         <button type="submit" class="btn btn-primary mt-2">Yanıtla</button>
                         <button type="button" class="btn btn-secondary mt-2 ms-2" id="sabaha-birak-btn">Kenarda Dursun</button>
-                        <span id="sabahabirak-feedback" style="display:none;" class="text-success ms-2">Taslak kaydedildi!</span>
+                        <span id="sabahabirak-feedback" style="display:none;" class="text-theme-success ms-2">Taslak kaydedildi!</span>
                     </form>
                 </div>
             </div>
@@ -493,7 +504,7 @@
             </li>
             <li class="list-group-item">
                 <a href="#" id="shareWhatsApp" target="_blank" class="text-decoration-none">
-                    <i class="bi bi-whatsapp text-success"></i> WhatsApp ile Paylaş
+                    <i class="bi bi-whatsapp text-theme-success"></i> WhatsApp ile Paylaş
                 </a>
             </li>
             <li class="list-group-item">
@@ -508,7 +519,7 @@
             </li>
             <li class="list-group-item">
                 <a href="#" id="shareReddit" target="_blank" class="text-decoration-none">
-                    <i class="bi bi-reddit text-danger"></i> Reddit ile Paylaş
+                    <i class="bi bi-reddit text-theme-danger"></i> Reddit ile Paylaş
                 </a>
             </li>
             <li class="list-group-item">
@@ -614,7 +625,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                    <button type="submit" class="btn btn-theme-danger">Evet, Sil</button>
                 </div>
             </form>
         </div>
@@ -704,7 +715,7 @@
               <!-- Sayfalama Alanı -->
               <div id="userDefPagination" class="mt-2"></div>
               <!-- Seçili Tanımı Ekle -->
-              <button type="button" class="btn btn-success mt-2" id="insertUserDefinitionBtn">Seçili Tanımı Ekle</button>
+              <button type="button" class="btn btn-theme-success mt-2" id="insertUserDefinitionBtn">Seçili Tanımı Ekle</button>
             </div>
             
             <!-- (3) GENEL TANIM (Tüm kullanıcıların tanımları) -->
@@ -716,7 +727,7 @@
               <!-- Sayfalama Alanı -->
               <div id="allDefPagination" class="mt-2"></div>
               <!-- Seçili Tanımı Ekle -->
-              <button type="button" class="btn btn-success mt-2" id="insertGlobalDefinitionBtn">Seçili Tanımı Ekle</button>
+              <button type="button" class="btn btn-theme-success mt-2" id="insertGlobalDefinitionBtn">Seçili Tanımı Ekle</button>
             </div>
             
           </div> <!-- /.tab-content -->
@@ -887,6 +898,14 @@
                     showAllAnswersBtn.textContent = 'Tüm yanıtları gizle';
                     showAllAnswersBtn.classList.remove('btn-primary');
                     showAllAnswersBtn.classList.add('btn-secondary');
+
+                    // Kelime sayımını tüm yanıtlar için tetikle
+                    setTimeout(function() {
+                        document.querySelectorAll('[id^=word-count-]').forEach(function(countElem) {
+                            var answerId = countElem.id.replace('word-count-', '');
+                            updateWordCount(answerId);
+                        });
+                    }, 50);
                 } else {
                     allAnswersDiv.style.display = 'none';
                     showAllAnswersBtn.textContent = 'Tüm yanıtları göster';
@@ -1010,6 +1029,62 @@
 
 <script>
 // Takip butonları
+// Kelime sayma scripti
+function countWords(text) {
+    return (text || '')
+        .replace(/\n/g, ' ')
+        .replace(/<[^>]*>/g, '')
+        .replace(/\[\d+\]/g, '')
+        .replace(/\[\^\w+\]/g, '')
+        .split(' ')
+        .filter(word => word.trim().length > 0)
+        .length;
+}
+
+function updateWordCount(answerId) {
+    var answerCard = document.getElementById('answer-' + answerId);
+    var countElem = document.getElementById('word-count-' + answerId);
+
+    if (!countElem) {
+        return;
+    }
+
+    if (!answerCard) {
+        countElem.textContent = 'Kelime sayısı: N/A';
+        return;
+    }
+
+    // Tüm card-body içeriğini al, bibliography hariç
+    var cardBody = answerCard.querySelector('.card-body');
+    if (!cardBody) {
+        countElem.textContent = 'Kelime sayısı: N/A';
+        return;
+    }
+
+    // Clone the card-body
+    var clonedBody = cardBody.cloneNode(true);
+
+    // Remove elements we don't want to count
+    var elementsToRemove = clonedBody.querySelectorAll('.bibliography-section, .action, .dropdown, small, a[class*="btn"], button');
+    elementsToRemove.forEach(function(elem) {
+        elem.remove();
+    });
+
+    // Get all text content
+    var text = clonedBody.textContent || '';
+
+    var count = countWords(text);
+    countElem.textContent = 'Kelime sayısı: ' + count;
+}
+
+// Tüm yanıtlar için başlat
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[id^=word-count-]').forEach(function(countElem) {
+        var answerId = countElem.id.replace('word-count-', '');
+        updateWordCount(answerId);
+    });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = getCookie('csrftoken');
 
@@ -1121,6 +1196,54 @@ document.addEventListener('DOMContentLoaded', function() {
             showToast('Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
         });
     });
+
+    // Kelime arama ve vurgulama
+    const searchInput = document.getElementById('answerSearchInput');
+    const answerContent = document.getElementById('answerTextContent');
+    let originalHTML = answerContent ? answerContent.innerHTML : '';
+
+    if (searchInput && answerContent) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.trim();
+
+            if (!searchTerm) {
+                // Arama boşsa orijinal HTML'i geri yükle
+                answerContent.innerHTML = originalHTML;
+                return;
+            }
+
+            // Orijinal HTML'den başla
+            answerContent.innerHTML = originalHTML;
+
+            // Regex özel karakterlerini escape et
+            const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+            // Arama terimini vurgula
+            const regex = new RegExp(`(${escapedTerm})`, 'gi');
+            const walker = document.createTreeWalker(
+                answerContent,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+
+            const nodesToReplace = [];
+            while (walker.nextNode()) {
+                const node = walker.currentNode;
+                if (node.nodeValue && node.nodeValue.match(regex)) {
+                    nodesToReplace.push(node);
+                }
+            }
+
+            nodesToReplace.forEach(node => {
+                const span = document.createElement('span');
+                span.innerHTML = node.nodeValue.replace(regex, '<mark>$1</mark>');
+                if (node.parentNode) {
+                    node.parentNode.replaceChild(span, node);
+                }
+            });
+        });
+    }
 });
 </script>
 

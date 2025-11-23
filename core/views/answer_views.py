@@ -110,8 +110,8 @@ def edit_answer(request, answer_id):
     answer = get_object_or_404(Answer, id=answer_id, user=request.user)
         # Başlangıç sorularını al
     starting_questions = StartingQuestion.objects.filter(user=request.user).annotate(
-        total_subquestions=Count('question__subquestions'),
-        latest_subquestion_date=Max('question__subquestions__created_at')
+        total_subquestions=Count('question__child_relationships', filter=Q(question__child_relationships__user=request.user)),
+        latest_subquestion_date=Max('question__child_relationships__created_at', filter=Q(question__child_relationships__user=request.user))
     ).order_by(F('latest_subquestion_date').desc(nulls_last=True))
 
     if request.method == 'POST':
@@ -139,7 +139,12 @@ def delete_answer(request, answer_id):
     next_url = request.GET.get('next', '')  # ?next=...
 
     if request.method == 'POST':
+        question_slug = answer.question.slug
         answer.delete()
+        # Signal question'ı silmiş olabilir, kontrol et
+        if not Question.objects.filter(slug=question_slug).exists():
+            # Question silindiyse ana sayfaya yönlendir
+            return redirect('user_homepage')
         if next_url:
             return redirect(unquote(next_url))
         else:

@@ -30,7 +30,7 @@
         </li>
         {% elif item.type == "answer" %}
         <li class="list-group-item py-3">
-          <span class="badge bg-success me-2">Yanıt/Girdi</span>
+          <span class="badge me-2" style="background-color: var(--button-background-color); color: var(--button-text-color);">Yanıt/Girdi</span>
           <a href="{% url 'question_detail' item.object.question.slug %}">
             <span class="fw-bold">{{ item.object.question.question_text|truncatechars:55 }}</span>
           </a>

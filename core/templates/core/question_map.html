@@ -10,7 +10,7 @@
         top: 60px;
         width: 320px;
         height: calc(100vh - 60px);
-        background: var(--content-background-color, #fff);
+        background: var(--background-color, #fff);
         border-right: 2px solid var(--header-background-color, #ddd);
         padding: 20px;
         overflow-y: auto;
@@ -195,7 +195,7 @@
             <!-- Selected user tags will appear here -->
         </div>
 
-        <button class="btn btn-success btn-filter mt-2" id="btn-filter-users" style="display: none;">
+        <button class="btn btn-theme-success btn-filter mt-2" id="btn-filter-users" style="display: none;">
             <i class="bi bi-check-circle"></i> Filtrele
         </button>
     </div>
@@ -231,7 +231,7 @@
 
 <!-- Map Container -->
 <div class="map-container" id="map-container">
-    <div id="chart" style="width: 100%; height: calc(100vh - 100px); border: 1px solid #ccc; border-radius: 8px;"></div>
+    <div id="chart" style="width: 100%; height: calc(100vh - 100px); border: 1px solid var(--header-background-color, #ccc); border-radius: 8px;"></div>
 </div>
 
 <!-- D3.js library -->

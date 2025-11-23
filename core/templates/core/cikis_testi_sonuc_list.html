@@ -35,9 +35,9 @@
                 </td>
                 <td>
                   {% if sonuc.cikis_dogrusu_uydu %}
-                    <span class="badge bg-danger ">Ulaştı</span>
+                    <span class="badge" style="background-color: var(--secondary-button-background-color); color: var(--secondary-button-text-color);">Ulaştı</span>
                   {% else %}
-                    <span class="badge bg-success ">Ulaşamadı</span>
+                    <span class="badge" style="background-color: var(--button-background-color); color: var(--button-text-color);">Ulaşamadı</span>
                   {% endif %}
                 </td>
             </tr>
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       const resultId = this.getAttribute('data-result-id');
       const form = document.getElementById('delete-result-form-' + resultId);
-      showConfirm('Sonucunuzu silmek istediğinize emin misiniz?', 'Sonucu Sil', 'Evet, Sil', 'btn-danger').then(result => {
+      showConfirm('Sonucunuzu silmek istediğinize emin misiniz?', 'Sonucu Sil', 'Evet, Sil', 'btn-theme-danger').then(result => {
         if (result) {
           form.submit();
         }
