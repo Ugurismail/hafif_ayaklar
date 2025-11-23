@@ -1,0 +1,5787 @@
+[
+{
+  "model": "core.reference",
+  "pk": 3,
+  "fields": {
+    "author_surname": "Dumezil",
+    "author_name": "Georges",
+    "year": 2024,
+    "metin_ismi": "Mitra ve Varuna",
+    "rest": "Çev. A. Berktay, Alfa Yayınları",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 5,
+  "fields": {
+    "author_surname": "Sponville",
+    "author_name": "Andre Comté",
+    "year": 2022,
+    "metin_ismi": "Felsefe Nedir?",
+    "rest": "çev. İsmet Berkan, İletişim Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 12,
+  "fields": {
+    "author_surname": "Abramowitz",
+    "author_name": "A. I",
+    "year": 2016,
+    "metin_ismi": "The rise of negative partisanship and the nationalization of U.S. elections in the 21st century",
+    "rest": "Electoral Studies, 41, 12-22. https://doi.org/10.1016/j.electstud.2015.11.001",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 13,
+  "fields": {
+    "author_surname": "Abramowitz",
+    "author_name": "A. I",
+    "year": 2018,
+    "metin_ismi": "Negative Partisanship: Why Americans Dislike Parties But Behave Like Rabid Partisans",
+    "rest": "Political Psychology, 39(S1), 119-135. https://doi.org/10.1111/pops.12479",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 14,
+  "fields": {
+    "author_surname": "Achenbach",
+    "author_name": "A",
+    "year": 2009,
+    "metin_ismi": "First evidence for slave rebellion: Enslaved ant workers systematically kill the brood of their social parasite protomognathus americanus",
+    "rest": "Evolution; International Journal of Organic Evolution, 63(4), 1068-1075. https://doi.org/10.1111/j.1558-5646.2009.00591.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 15,
+  "fields": {
+    "author_surname": "Adler-Nissen",
+    "author_name": "R",
+    "year": 2020,
+    "metin_ismi": "Images, emotions, and international politics: The death of Alan Kurdi",
+    "rest": "Review of International Studies, 46(1), 75-95. https://doi.org/10.1017/S0260210519000317",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 16,
+  "fields": {
+    "author_surname": "Akdemir",
+    "author_name": "K. H",
+    "year": 2021,
+    "metin_ismi": "How Do The Main Negative Emotions Affect People's Political Decision Process? : \"Fear, Anxiety And Anger",
+    "rest": "Akademik İncelemeler Dergisi, 16(1), 246-261. https://doi.org/10.17550/akademikincelemeler.708916",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 17,
+  "fields": {
+    "author_surname": "Albertson",
+    "author_name": "B",
+    "year": 2015,
+    "metin_ismi": "Anxious politics: Democratic citizenship in a threatening world",
+    "rest": "Cambridge University Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 18,
+  "fields": {
+    "author_surname": "Andersen",
+    "author_name": "S. B",
+    "year": 2009,
+    "metin_ismi": "The Life of a Dead Ant: The Expression of an Adaptive Extended Phenotype",
+    "rest": "The American Naturalist, 174(3), 424-433. https://doi.org/10.1086/603640",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 19,
+  "fields": {
+    "author_surname": "Anderson",
+    "author_name": "N. E",
+    "year": 2012,
+    "metin_ismi": "The psychopath magnetized: Insights from brain imaging",
+    "rest": "Trends in Cognitive Sciences, 16(1), 52-60. https://doi.org/10.1016/j.tics.2011.11.008",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 20,
+  "fields": {
+    "author_surname": "Andino",
+    "author_name": "R",
+    "year": 2015,
+    "metin_ismi": "Viral quasispecies",
+    "rest": "Virology, 479-480, 46-51. https://doi.org/10.1016/j.virol.2015.03.022",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 21,
+  "fields": {
+    "author_surname": "Antón",
+    "author_name": "S. C",
+    "year": 2014,
+    "metin_ismi": "Evolution of early            Homo: An integrated biological perspective",
+    "rest": "Science, 345(6192). https://doi.org/10.1126/science.1236828",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 22,
+  "fields": {
+    "author_surname": "Anway",
+    "author_name": "M. D",
+    "year": 2005,
+    "metin_ismi": "Epigenetic Transgenerational Actions of Endocrine Disruptors and Male Fertility",
+    "rest": "Science, 308(5727), 1466-1469. https://doi.org/10.1126/science.1108190",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 23,
+  "fields": {
+    "author_surname": "Apicella",
+    "author_name": "C. L",
+    "year": 2012,
+    "metin_ismi": "Social networks and cooperation in hunter-gatherers",
+    "rest": "Nature, 481(7382), 497-501. https://doi.org/10.1038/nature10736",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 24,
+  "fields": {
+    "author_surname": "Araújo",
+    "author_name": "J. P. M",
+    "year": 2018,
+    "metin_ismi": "Zombie-ant fungi across continents: 15 new species and new combinations within Ophiocordyceps",
+    "rest": "I. Myrmecophilous hirsutelloidÂ species. Studies in Mycology, 90(1), 119-160. https://doi.org/10.1016/j.simyco.2017.12.002",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 25,
+  "fields": {
+    "author_surname": "Ardelt",
+    "author_name": "M",
+    "year": 2003,
+    "metin_ismi": "Empirical Assessment of a Three-Dimensional Wisdom Scale",
+    "rest": "Research on Aging, 25(3), 275-324. https://doi.org/10.1177/0164027503025003004",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 26,
+  "fields": {
+    "author_surname": "Arendt",
+    "author_name": "H",
+    "year": 2013,
+    "metin_ismi": "Hannah Arendt: And Other Conversations",
+    "rest": "Melville House.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 27,
+  "fields": {
+    "author_surname": "Arzheimer",
+    "author_name": "K",
+    "year": 2000,
+    "metin_ismi": "The SAGE Handbook of Electoral Behaviour",
+    "rest": ".",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 28,
+  "fields": {
+    "author_surname": "Atmanspacher",
+    "author_name": "H",
+    "year": 2002,
+    "metin_ismi": "Determinism Is Ontic, Determinability Is Epistemic",
+    "rest": "Between Chance and Choice: Interdisciplinary Perspectives on Determinism.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 29,
+  "fields": {
+    "author_surname": "Avenanti",
+    "author_name": "A",
+    "year": 2010,
+    "metin_ismi": "Racial Bias Reduces Empathic Sensorimotor Resonance with Other-Race Pain",
+    "rest": "Current Biology, 20(11), 1018-1022. https://doi.org/10.1016/j.cub.2010.03.071",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 30,
+  "fields": {
+    "author_surname": "Aviezer",
+    "author_name": "H",
+    "year": 2012,
+    "metin_ismi": "Body Cues, Not Facial Expressions, Discriminate Between Intense Positive and Negative Emotions",
+    "rest": "Science, 338(6111), 1225-1229. https://doi.org/10.1126/science.1224313",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 31,
+  "fields": {
+    "author_surname": "Baltes",
+    "author_name": "P. B",
+    "year": 2000,
+    "metin_ismi": "Wisdom: A metaheuristic (pragmatic) to orchestrate mind and virtue toward excellence",
+    "rest": "American Psychologist, 55(1), 122-136. https://doi.org/10.1037/0003-066X.55.1.122",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 32,
+  "fields": {
+    "author_surname": "Banks",
+    "author_name": "A. J",
+    "year": 2014,
+    "metin_ismi": "The Public's Anger: White Racial Attitudes and Opinions Toward Health Care Reform",
+    "rest": "Political Behavior, 36(3), 493-514. https://doi.org/10.1007/s11109-013-9251-3",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 33,
+  "fields": {
+    "author_surname": "Barbey",
+    "author_name": "A. K",
+    "year": 2013,
+    "metin_ismi": "Dorsolateral prefrontal contributions to human intelligence",
+    "rest": "Neuropsychologia, 51(7), 1361-1369. https://doi.org/10.1016/j.neuropsychologia.2012.05.017",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 34,
+  "fields": {
+    "author_surname": "Bargh",
+    "author_name": "J. A",
+    "year": 1999,
+    "metin_ismi": "The unbearable automaticity of being",
+    "rest": "American Psychologist, 54(7), 462-479. https://doi.org/10.1037/0003-066X.54.7.462",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 35,
+  "fields": {
+    "author_surname": "Bar-On",
+    "author_name": "Y. M",
+    "year": 2018,
+    "metin_ismi": "The biomass distribution on Earth",
+    "rest": "Proceedings of the National Academy of Sciences, 115(25), 6506-6511. https://doi.org/10.1073/pnas.1711842115",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 36,
+  "fields": {
+    "author_surname": "Barton",
+    "author_name": "R. A",
+    "year": 2013,
+    "metin_ismi": "Human frontal lobes are not relatively large",
+    "rest": "Proceedings of the National Academy of Sciences, 110(22), 9001-9006. https://doi.org/10.1073/pnas.1215723110",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 37,
+  "fields": {
+    "author_surname": "Basinger",
+    "author_name": "S. J",
+    "year": 2005,
+    "metin_ismi": "Ambivalence, Information, and Electoral Choice",
+    "rest": "American Political Science Review, 99(2), 169-184. https://doi.org/10.1017/S0003055405051580",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 38,
+  "fields": {
+    "author_surname": "Baumeister",
+    "author_name": "R. F",
+    "year": 2009,
+    "metin_ismi": "Prosocial benefits of feeling free: Disbelief in free will increases aggression and reduces helpfulness",
+    "rest": "Personality & Social Psychology Bulletin, 35(2), 260-268. https://doi.org/10.1177/0146167208327217",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 39,
+  "fields": {
+    "author_surname": "Bédécarrats",
+    "author_name": "A",
+    "year": 2018,
+    "metin_ismi": "RNA from Trained Aplysia Can Induce an Epigenetic Engram for Long-Term Sensitization in Untrained Aplysia",
+    "rest": "Eneuro, 5(3), ENEURO.0038-18.2018. https://doi.org/10.1523/ENEURO.0038-18.2018",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 40,
+  "fields": {
+    "author_surname": "Béland",
+    "author_name": "D",
+    "year": 2020,
+    "metin_ismi": "Right-Wing Populism and the Politics of Insecurity: How President Trump Frames Migrants as Collective Threats",
+    "rest": "Political Studies Review, 18(2), 162-177. https://doi.org/10.1177/1478929919865131",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 41,
+  "fields": {
+    "author_surname": "Bellah",
+    "author_name": "R. N",
+    "year": 2017,
+    "metin_ismi": "İnsan Evriminde Din: Eski Taş Çağından Eksen Çağına (M",
+    "rest": "Tunçay, Çev.). İstanbul Bilgi Üniversitesi Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 42,
+  "fields": {
+    "author_surname": "Beni",
+    "author_name": "G",
+    "year": 1993,
+    "metin_ismi": "Swarm Intelligence in Cellular Robotic Systems",
+    "rest": "Içinde P. Dario, G. Sandini, & P. Aebischer (Ed.), Robots and Biological Systems: Towards a New Bionics? (ss. 703-712). Springer Berlin Heidelberg. https://doi.org/10.1007/978-3-642-58069-7_38",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 43,
+  "fields": {
+    "author_surname": "Berelson",
+    "author_name": "B. E",
+    "year": 1954,
+    "metin_ismi": "Voting A Study of Opinion Formation in a Presidential Campaign",
+    "rest": "University of Chicago Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 44,
+  "fields": {
+    "author_surname": "Berkowitz",
+    "author_name": "L",
+    "year": 1993,
+    "metin_ismi": "Pain and aggression: Some findings and implications",
+    "rest": "Motivation and Emotion, 17(3), 277-293. https://doi.org/10.1007/BF00992223",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 45,
+  "fields": {
+    "author_surname": "Berna",
+    "author_name": "F",
+    "year": 2012,
+    "metin_ismi": "Microstratigraphic evidence of in situ fire in the Acheulean strata of Wonderwerk Cave, Northern Cape province, South Africa",
+    "rest": "Proceedings of the National Academy of Sciences, 109(20). https://doi.org/10.1073/pnas.1117620109",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 46,
+  "fields": {
+    "author_surname": "Bhattacharya",
+    "author_name": "R",
+    "year": 2019,
+    "metin_ismi": null,
+    "rest": "The Fate of Our Universe: How This Universe Will End.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 47,
+  "fields": {
+    "author_surname": "Bilgic",
+    "author_name": "A",
+    "year": 2021,
+    "metin_ismi": "Who is entitled to feel in the age of populism? Women's resistance to migrant detention in Britain",
+    "rest": "International Affairs, 97(2), 483-502. https://doi.org/10.1093/ia/iiaa054",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 48,
+  "fields": {
+    "author_surname": "Biron",
+    "author_name": "D. G",
+    "year": 2005,
+    "metin_ismi": "Behavioural manipulation in a grasshopper harbouring hairworm: A proteomics approach",
+    "rest": "Proceedings. Biological Sciences, 272(1577), 2117-2126. https://doi.org/10.1098/rspb.2005.3213",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 49,
+  "fields": {
+    "author_surname": "Blackiston",
+    "author_name": "D. J",
+    "year": 2008,
+    "metin_ismi": "Retention of Memory through Metamorphosis: Can a Moth Remember What It Learned As a Caterpillar? PLoS ONE, 3(3), e1736",
+    "rest": "https://doi.org/10.1371/journal.pone.0001736",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 50,
+  "fields": {
+    "author_surname": "Blair",
+    "author_name": "I. V",
+    "year": 2004,
+    "metin_ismi": "The Influence of Afrocentric Facial Features in Criminal Sentencing",
+    "rest": "Psychological Science, 15(10), 674-679. https://doi.org/10.1111/j.0956-7976.2004.00739.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 51,
+  "fields": {
+    "author_surname": "Blair",
+    "author_name": "R. J. R",
+    "year": 2010,
+    "metin_ismi": "Neuroimaging of Psychopathy and Antisocial Behavior: A Targeted Review",
+    "rest": "Current Psychiatry Reports, 12(1), 76-82. https://doi.org/10.1007/s11920-009-0086-x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 52,
+  "fields": {
+    "author_surname": "Bobe",
+    "author_name": "R",
+    "year": 2004,
+    "metin_ismi": "The expansion of grassland ecosystems in Africa in relation to mammalian evolution and the origin of the genus Homo",
+    "rest": "Palaeogeography, Palaeoclimatology, Palaeoecology, 207(3-4), 399-420. https://doi.org/10.1016/s0031-0182(04)00049-5",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 53,
+  "fields": {
+    "author_surname": "Bock",
+    "author_name": "D. C",
+    "year": 1972,
+    "metin_ismi": "Religious Belief as a Factor in Obedience to Destructive Commands",
+    "rest": "Review of Religious Research, 13(3), 185. https://doi.org/10.2307/3510781",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 54,
+  "fields": {
+    "author_surname": "Bode",
+    "author_name": "S",
+    "year": 2009,
+    "metin_ismi": "Decoding sequential stages of task preparation in the human brain",
+    "rest": "NeuroImage, 45(2), 606-613. https://doi.org/10.1016/j.neuroimage.2008.11.031",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 55,
+  "fields": {
+    "author_surname": "Bode",
+    "author_name": "S",
+    "year": 2011,
+    "metin_ismi": "Tracking the Unconscious Generation of Free Decisions Using UItra-High Field fMRI",
+    "rest": "PLoS ONE, 6(6), e21612. https://doi.org/10.1371/journal.pone.0021612",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 56,
+  "fields": {
+    "author_surname": "Boehm",
+    "author_name": "C",
+    "year": 2001,
+    "metin_ismi": "Hierarchy in the forest: The evolution of egalitarian behavior (1",
+    "rest": "Harvard Univ. Press paperback ed). Harvard Univ. Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 57,
+  "fields": {
+    "author_surname": "Boehm",
+    "author_name": "C",
+    "year": 2012,
+    "metin_ismi": "Moral origins: The evolution of virtue, altruism, and shame",
+    "rest": "Basic books.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 58,
+  "fields": {
+    "author_surname": "Bogdan",
+    "author_name": "A",
+    "year": 2013,
+    "metin_ismi": "The anxious partisan: A test of affective intelligence theory in Romania",
+    "rest": "CEU Political Science Journa, 1(8), 1-31.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 59,
+  "fields": {
+    "author_surname": "Bohannon",
+    "author_name": "J",
+    "year": 2013,
+    "metin_ismi": "Study Links Climate Change and Violence, Battle Ensues",
+    "rest": "Science, 341(6145), 444-445. https://doi.org/10.1126/science.341.6145.444",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 60,
+  "fields": {
+    "author_surname": "Bojowald",
+    "author_name": "M",
+    "year": 2008,
+    "metin_ismi": "Harmonic cosmology: How much can we know about a universe before the big bang? Proceedings of the Royal Society A: Mathematical, Physical and Engineering Sciences, 464(2096), 2135-2150",
+    "rest": "https://doi.org/10.1098/rspa.2008.0050",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 61,
+  "fields": {
+    "author_surname": "Bos",
+    "author_name": "P. A",
+    "year": 2012,
+    "metin_ismi": "The neural mechanisms by which testosterone acts on interpersonal trust",
+    "rest": "NeuroImage, 61(3), 730-737. https://doi.org/10.1016/j.neuroimage.2012.04.002",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 62,
+  "fields": {
+    "author_surname": "Bos",
+    "author_name": "P. A",
+    "year": 2010,
+    "metin_ismi": "Testosterone decreases trust in socially naïve humans",
+    "rest": "Proceedings of the National Academy of Sciences, 107(22), 9991-9995. https://doi.org/10.1073/pnas.0911700107",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 63,
+  "fields": {
+    "author_surname": "Bosch",
+    "author_name": "O. J",
+    "year": 2012,
+    "metin_ismi": "Both oxytocin and vasopressin are mediators of maternal care and aggression in rodents: From central release to sites of action",
+    "rest": "Hormones and Behavior, 61(3), 293-303. https://doi.org/10.1016/j.yhbeh.2011.11.002",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 64,
+  "fields": {
+    "author_surname": "Bottom",
+    "author_name": "W. P",
+    "year": 2004,
+    "metin_ismi": "Heuristics and Biases: The Psychology of Intuitive Judgment",
+    "rest": "The Academy of Management Review, 29(4), 695. https://doi.org/10.2307/20159081",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 65,
+  "fields": {
+    "author_surname": "Bowles",
+    "author_name": "S",
+    "year": 2008,
+    "metin_ismi": "Being human: Conflict: Altruism's midwife",
+    "rest": "Nature, 456(7220), 326-327. https://doi.org/10.1038/456326a",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 66,
+  "fields": {
+    "author_surname": "Brader",
+    "author_name": "T",
+    "year": 2005,
+    "metin_ismi": "Striking a Responsive Chord: How Political Ads Motivate and Persuade Voters by Appealing to Emotions",
+    "rest": "American Journal of Political Science, 49(2), 388-405. https://doi.org/10.1111/j.0092-5853.2005.00130.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 67,
+  "fields": {
+    "author_surname": "Brader",
+    "author_name": "T",
+    "year": 2008,
+    "metin_ismi": "What Triggers Public Opposition to Immigration? Anxiety, Group Cues, and Immigration Threat",
+    "rest": "American Journal of Political Science, 52(4), 959-978. https://doi.org/10.1111/j.1540-5907.2008.00353.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 68,
+  "fields": {
+    "author_surname": "Bramble",
+    "author_name": "D. M",
+    "year": 2004,
+    "metin_ismi": "Endurance running and the evolution of Homo",
+    "rest": "Nature, 432(7015), 345-352. https://doi.org/10.1038/nature03052",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 69,
+  "fields": {
+    "author_surname": "Brashares",
+    "author_name": "J. S",
+    "year": 2014,
+    "metin_ismi": "Wildlife decline and social conflict",
+    "rest": "Science, 345(6195), 376-378. https://doi.org/10.1126/science.1256734",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 70,
+  "fields": {
+    "author_surname": "Bravo",
+    "author_name": "H",
+    "year": 2014,
+    "metin_ismi": "İnsanlığa Övgü",
+    "rest": "İmge Yayınevi.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 71,
+  "fields": {
+    "author_surname": "Brooks",
+    "author_name": "D. J",
+    "year": 2011,
+    "metin_ismi": "Testing the Double Standard for Candidate Emotionality: Voter Reactions to the Tears and Anger of Male and Female Politicians",
+    "rest": "The Journal of Politics, 73(2), 597-615. https://doi.org/10.1017/S0022381611000053",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 72,
+  "fields": {
+    "author_surname": "Brower",
+    "author_name": "M. C",
+    "year": 2001,
+    "metin_ismi": "ADVANCES IN NEUROPSYCHIATRY: Neuropsychiatry of frontal lobe dysfunction in violent and criminal behaviour: a critical review",
+    "rest": "Journal of Neurology, Neurosurgery & Psychiatry, 71(6), 720-726. https://doi.org/10.1136/jnnp.71.6.720",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 73,
+  "fields": {
+    "author_surname": "Brown",
+    "author_name": "D. E",
+    "year": 1991,
+    "metin_ismi": "Human universals (2",
+    "rest": "[print.]). McGraw-Hill.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 74,
+  "fields": {
+    "author_surname": "Budding",
+    "author_name": "A. E",
+    "year": 2009,
+    "metin_ismi": "The Dienes phenomenon: Competition and territoriality in Swarming Proteus mirabilis",
+    "rest": "Journal of Bacteriology, 191(12), 3892-3900. https://doi.org/10.1128/JB.00975-08",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 75,
+  "fields": {
+    "author_surname": "Bush",
+    "author_name": "N. R",
+    "year": 2011,
+    "metin_ismi": "Kindergarten stressors and cumulative adrenocortical activation: The \"first straws\" of allostatic load? Development and Psychopathology, 23(4), 1089-1106",
+    "rest": "https://doi.org/10.1017/S0954579411000514",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 76,
+  "fields": {
+    "author_surname": "Butz",
+    "author_name": "D. A",
+    "year": 2007,
+    "metin_ismi": "Liberty and Justice for All? Implications of Exposure to the U.S",
+    "rest": "Flag for Intergroup Relations. Personality and Social Psychology Bulletin, 33(3), 396-408. https://doi.org/10.1177/0146167206296299",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 77,
+  "fields": {
+    "author_surname": "Caccone",
+    "author_name": "A",
+    "year": 1989,
+    "metin_ismi": "DNA DIVERGENCE AMONG HOMINOIDS",
+    "rest": "Evolution, 43(5), 925-942. https://doi.org/10.1111/j.1558-5646.1989.tb02540.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 78,
+  "fields": {
+    "author_surname": "Campbell",
+    "author_name": "A",
+    "year": 1960,
+    "metin_ismi": "The American Voter",
+    "rest": "University of Chicago Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 79,
+  "fields": {
+    "author_surname": "Carrier",
+    "author_name": "D. R",
+    "year": 2011,
+    "metin_ismi": "The Advantage of Standing Up to Fight and the Evolution of Habitual Bipedalism in Hominins",
+    "rest": "PLoS ONE, 6(5), e19630. https://doi.org/10.1371/journal.pone.0019630",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 80,
+  "fields": {
+    "author_surname": "Carvalho",
+    "author_name": "S",
+    "year": 2012,
+    "metin_ismi": "Chimpanzee carrying behaviour and the origins of human bipedality",
+    "rest": "Current Biology, 22(6), R180-R181. https://doi.org/10.1016/j.cub.2012.01.052",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 81,
+  "fields": {
+    "author_surname": "Carver",
+    "author_name": "C. S",
+    "year": 2009,
+    "metin_ismi": "Anger is an approach-related affect: Evidence and implications",
+    "rest": "Psychological Bulletin, 135(2), 183-204. https://doi.org/10.1037/a0013965",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 82,
+  "fields": {
+    "author_surname": "Caspar",
+    "author_name": "E. A",
+    "year": 2017,
+    "metin_ismi": "The Influence of (Dis)belief in Free Will on Immoral Behavior",
+    "rest": "Frontiers in Psychology, 8, 20. https://doi.org/10.3389/fpsyg.2017.00020",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 83,
+  "fields": {
+    "author_surname": "Cassese",
+    "author_name": "E. C",
+    "year": 2021,
+    "metin_ismi": "Partisan Dehumanization in American Politics",
+    "rest": "Political Behavior, 43(1), 29-50. https://doi.org/10.1007/s11109-019-09545-w",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 84,
+  "fields": {
+    "author_surname": "Chapais",
+    "author_name": "B",
+    "year": 2010,
+    "metin_ismi": "Primeval kinship: How pair-bonding gave birth to human society (1",
+    "rest": "paperback ed). Harvard University Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 85,
+  "fields": {
+    "author_surname": "Chapais",
+    "author_name": "B. (2011a). The Deep Social Structure of Humankind. Science",
+    "year": 6022,
+    "metin_ismi": ", 1276-1277",
+    "rest": "https://doi.org/10.1126/science.1203281",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 86,
+  "fields": {
+    "author_surname": "Chazan",
+    "author_name": "M",
+    "year": 2017,
+    "metin_ismi": "Toward a Long Prehistory of Fire",
+    "rest": "Current Anthropology, 58(S16), S351-S359. https://doi.org/10.1086/691988",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 87,
+  "fields": {
+    "author_surname": "Christian",
+    "author_name": "D",
+    "year": 2022,
+    "metin_ismi": "Zaman Haritaları: Büyük Tarihe Giriş (Ç",
+    "rest": "Sunay, Çev.). Türkiye İş Bankası Kültür Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 88,
+  "fields": {
+    "author_surname": "Clark",
+    "author_name": "G",
+    "year": 2015,
+    "metin_ismi": "The life history of \"Ardipithecus ramidus\": A heterochronic model of sexual and social maturation",
+    "rest": "Anthropological Review, 78(2), 109-132. https://doi.org/10.1515/anre-2015-0009",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 89,
+  "fields": {
+    "author_surname": "Clark",
+    "author_name": "N",
+    "year": 2014,
+    "metin_ismi": "Combustion and Society: A Fire-Centred History of Energy Use",
+    "rest": "Theory, Culture & Society, 31(5), 203-226. https://doi.org/10.1177/0263276414536929",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 90,
+  "fields": {
+    "author_surname": "Cogitate Consortium",
+    "author_name": "Ferrante",
+    "year": 2025,
+    "metin_ismi": "Adversarial testing of global neuronal workspace and integrated information theories of consciousness",
+    "rest": "Nature. https://doi.org/10.1038/s41586-025-08888-1",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 91,
+  "fields": {
+    "author_surname": "Conejero",
+    "author_name": "Á",
+    "year": 2018,
+    "metin_ismi": "Frontal theta activation associated with error detection in toddlers: Influence of familial socioeconomic status",
+    "rest": "Developmental Science, 21(1). https://doi.org/10.1111/desc.12494",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 92,
+  "fields": {
+    "author_surname": "Copeland",
+    "author_name": "S. R",
+    "year": 2011,
+    "metin_ismi": "Strontium isotope evidence for landscape use by early hominins",
+    "rest": "Nature, 474(7349), 76-78. https://doi.org/10.1038/nature10149",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 93,
+  "fields": {
+    "author_surname": "Cornélio",
+    "author_name": "A. M",
+    "year": 2016,
+    "metin_ismi": "Human Brain Expansion during Evolution Is Independent of Fire Control and Cooking",
+    "rest": "Frontiers in Neuroscience, 10. https://doi.org/10.3389/fnins.2016.00167",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 94,
+  "fields": {
+    "author_surname": "Courtenay",
+    "author_name": "L. A",
+    "year": 2019,
+    "metin_ismi": "Cut marks and raw material exploitation in the lower pleistocene site of Bell's Korongo (BK, Olduvai Gorge, Tanzania): A geometric morphometric analysis",
+    "rest": "Quaternary International, 526, 155-168. https://doi.org/10.1016/j.quaint.2019.06.018",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 95,
+  "fields": {
+    "author_surname": "Coyte",
+    "author_name": "P. C",
+    "year": 1995,
+    "metin_ismi": "Why Are Some People Healthy and Others Not? The Determinants of Health of Populations",
+    "rest": "The Canadian Journal of Economics, 28(4a), 982. https://doi.org/10.2307/135945",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 96,
+  "fields": {
+    "author_surname": "Cuddy",
+    "author_name": "A. J. C",
+    "year": 2009,
+    "metin_ismi": "Stereotype content model across cultures: Towards universal similarities and some differences",
+    "rest": "British Journal of Social Psychology, 48(1), 1-33. https://doi.org/10.1348/014466608X314935",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 97,
+  "fields": {
+    "author_surname": "Dalley",
+    "author_name": "J. W",
+    "year": 2011,
+    "metin_ismi": "Impulsivity, Compulsivity, and Top-Down Cognitive Control",
+    "rest": "Neuron, 69(4), 680-694. https://doi.org/10.1016/j.neuron.2011.01.020",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 98,
+  "fields": {
+    "author_surname": "Dart",
+    "author_name": "R. A",
+    "year": 1959,
+    "metin_ismi": "Adventures With the Missing Link",
+    "rest": "Harper and Brothers.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 99,
+  "fields": {
+    "author_surname": "Dawes",
+    "author_name": "R. M",
+    "year": 1998,
+    "metin_ismi": null,
+    "rest": "Behavioral Decision Making and Judgment.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 100,
+  "fields": {
+    "author_surname": "De Dreu",
+    "author_name": "C. K. W",
+    "year": 2012,
+    "metin_ismi": "Oxytocin modulates cooperation within and competition between groups: An integrative review and research agenda",
+    "rest": "Hormones and Behavior, 61(3), 419-428. https://doi.org/10.1016/j.yhbeh.2011.12.009",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 101,
+  "fields": {
+    "author_surname": "De Dreu",
+    "author_name": "C. K. W",
+    "year": 2011,
+    "metin_ismi": "Oxytocin promotes human ethnocentrism",
+    "rest": "Proceedings of the National Academy of Sciences, 108(4), 1262-1266. https://doi.org/10.1073/pnas.1015316108",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 102,
+  "fields": {
+    "author_surname": "De Quervain",
+    "author_name": "D. J.-F",
+    "year": 2004,
+    "metin_ismi": "The Neural Basis of Altruistic Punishment",
+    "rest": "Science, 305(5688), 1254-1258. https://doi.org/10.1126/science.1100735",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 103,
+  "fields": {
+    "author_surname": "De Sousa António",
+    "author_name": "M. R",
+    "year": 2011,
+    "metin_ismi": "The power of social structure: How we became an intelligent lineage",
+    "rest": "International Journal of Astrobiology, 10(1), 15-23. https://doi.org/10.1017/s1473550410000169",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 104,
+  "fields": {
+    "author_surname": "de Waal",
+    "author_name": "F",
+    "year": 2008,
+    "metin_ismi": "İçimizdeki Maymun: Biz Neden Biziz? (A",
+    "rest": "Biçen, Çev.). Metis Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 105,
+  "fields": {
+    "author_surname": "de Waal",
+    "author_name": "F",
+    "year": 2014,
+    "metin_ismi": "Bonobo ve Ateist: Primatlar Arasında İnsanı Aramak (A",
+    "rest": "Biçen, Çev.; 2. bs). Metis Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 106,
+  "fields": {
+    "author_surname": "DeCelles",
+    "author_name": "K. A",
+    "year": 2016,
+    "metin_ismi": "Physical and situational inequality on airplanes predicts air rage",
+    "rest": "Proceedings of the National Academy of Sciences, 113(20), 5588-5591. https://doi.org/10.1073/pnas.1521727113",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 107,
+  "fields": {
+    "author_surname": "Deleuze",
+    "author_name": "G",
+    "year": 2000,
+    "metin_ismi": "Spinoza üzerine on bir ders",
+    "rest": "Öteki Yayınevi.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 108,
+  "fields": {
+    "author_surname": "DeMarse",
+    "author_name": "T. B",
+    "year": 2005,
+    "metin_ismi": "Adaptive flight control with living neuronal networks on microelectrode arrays",
+    "rest": "Proceedings. 2005 IEEE International Joint Conference on Neural Networks, 2005., 3, 1548-1551. https://doi.org/10.1109/IJCNN.2005.1556108",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 109,
+  "fields": {
+    "author_surname": "Desmurget",
+    "author_name": "M",
+    "year": 2009,
+    "metin_ismi": "Movement Intention After Parietal Cortex Stimulation in Humans",
+    "rest": "Science, 324(5928), 811-813. https://doi.org/10.1126/science.1169896",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 110,
+  "fields": {
+    "author_surname": "DeWall",
+    "author_name": "C. N",
+    "year": 2008,
+    "metin_ismi": "Depletion Makes the Heart Grow Less Helpful: Helping as a Function of Self-Regulatory Energy and Genetic Relatedness",
+    "rest": "Personality and Social Psychology Bulletin, 34(12), 1653-1662. https://doi.org/10.1177/0146167208323981",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 111,
+  "fields": {
+    "author_surname": "Dhakar",
+    "author_name": "M. B",
+    "year": 2012,
+    "metin_ismi": "Heightened aggressive behavior in mice with lifelong versus postweaning knockout of the oxytocin receptor",
+    "rest": "Hormones and Behavior, 62(1), 86-92. https://doi.org/10.1016/j.yhbeh.2012.05.007",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 112,
+  "fields": {
+    "author_surname": "Akdemir",
+    "author_name": "K. H. (2021). How Do The Main Negative Emotions Affect People’s Political Decision Process? : “Fear",
+    "year": 2021,
+    "metin_ismi": "How Do The Main Negative Emotions Affect People’s Political Decision Process? : “Fear, Anxiety And Anger",
+    "rest": "Akademik İncelemeler Dergisi, 16(1), 246-261. https://doi.org/10.17550/akademikincelemeler.708916",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 113,
+  "fields": {
+    "author_surname": "Banks",
+    "author_name": "A. J. (2014). The Public’s Anger: White Racial Attitudes and Opinions Toward Health Care Reform. Political Behavior",
+    "year": 2014,
+    "metin_ismi": "The Public’s Anger: White Racial Attitudes and Opinions Toward Health Care Reform",
+    "rest": "Political Behavior, 36(3), 493-514. https://doi.org/10.1007/s11109-013-9251-3",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 114,
+  "fields": {
+    "author_surname": "Bilgic",
+    "author_name": "A",
+    "year": 2021,
+    "metin_ismi": "Who is entitled to feel in the age of populism? Women’s resistance to migrant detention in Britain",
+    "rest": "International Affairs, 97(2), 483-502. https://doi.org/10.1093/ia/iiaa054",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 115,
+  "fields": {
+    "author_surname": "Bowles",
+    "author_name": "S. (2008). Being human: Conflict: Altruism’s midwife. Nature",
+    "year": 2008,
+    "metin_ismi": "Being human: Conflict: Altruism’s midwife",
+    "rest": "Nature, 456(7220), 326-327. https://doi.org/10.1038/456326a",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 116,
+  "fields": {
+    "author_surname": "Bush",
+    "author_name": "N. R",
+    "year": 2011,
+    "metin_ismi": "Kindergarten stressors and cumulative adrenocortical activation: The “first straws” of allostatic load? Development and Psychopathology, 23(4), 1089-1106",
+    "rest": "https://doi.org/10.1017/S0954579411000514",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 117,
+  "fields": {
+    "author_surname": "Clark",
+    "author_name": "G",
+    "year": 2015,
+    "metin_ismi": "The life history of “Ardipithecus ramidus”: A heterochronic model of sexual and social maturation",
+    "rest": "Anthropological Review, 78(2), 109-132. https://doi.org/10.1515/anre-2015-0009",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 118,
+  "fields": {
+    "author_surname": "Courtenay",
+    "author_name": "L. A",
+    "year": 2019,
+    "metin_ismi": "Cut marks and raw material exploitation in the lower pleistocene site of Bell’s Korongo (BK, Olduvai Gorge, Tanzania): A geometric morphometric analysis",
+    "rest": "Quaternary International, 526, 155-168. https://doi.org/10.1016/j.quaint.2019.06.018",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 119,
+  "fields": {
+    "author_surname": "Dhingra",
+    "author_name": "I",
+    "year": 2021,
+    "metin_ismi": "Sex differences in neural responses to reward and the influences of individual reward and punishment sensitivity",
+    "rest": "BMC Neuroscience, 22(1), 12. https://doi.org/10.1186/s12868-021-00618-3",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 120,
+  "fields": {
+    "author_surname": "Dias-Ferreira",
+    "author_name": "E",
+    "year": 2009,
+    "metin_ismi": "Chronic Stress Causes Frontostriatal Reorganization and Affects Decision-Making",
+    "rest": "Science, 325(5940), 621-625. https://doi.org/10.1126/science.1171203",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 121,
+  "fields": {
+    "author_surname": "Díaz-Muñoz",
+    "author_name": "S. L",
+    "year": 2017,
+    "metin_ismi": "Sociovirology: Conflict, Cooperation, and Communication among Viruses",
+    "rest": "Cell Host & Microbe, 22(4), 437-441. https://doi.org/10.1016/j.chom.2017.09.012",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 122,
+  "fields": {
+    "author_surname": "Dijn",
+    "author_name": "A. de. (2020). Freedom: An unruly history. Harvard University Press",
+    "year": 2020,
+    "metin_ismi": "Freedom: An unruly history",
+    "rest": "Harvard University Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 123,
+  "fields": {
+    "author_surname": "Dingwall",
+    "author_name": "H. L",
+    "year": 2013,
+    "metin_ismi": "Hominin stature, body mass, and walking speed estimates based on 1.5 million-year-old fossil footprints at Ileret, Kenya",
+    "rest": "Journal of Human Evolution, 64(6), 556-568. https://doi.org/10.1016/j.jhevol.2013.02.004",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 124,
+  "fields": {
+    "author_surname": "Ditzen",
+    "author_name": "B",
+    "year": 2009,
+    "metin_ismi": "Intranasal Oxytocin Increases Positive Communication and Reduces Cortisol Levels During Couple Conflict",
+    "rest": "Biological Psychiatry, 65(9), 728-731. https://doi.org/10.1016/j.biopsych.2008.10.011",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 125,
+  "fields": {
+    "author_surname": "Domínguez-Rodrigo",
+    "author_name": "M",
+    "year": 2019,
+    "metin_ismi": "Constraining time and ecology on the Zinj paleolandscape: Microwear and mesowear analyses of the archaeofaunal remains of FLK Zinj and DS (Bed I), compared to FLK North (Bed I) and BK (Bed II) at Olduvai Gorge (Tanzania)",
+    "rest": "Quaternary International, 526, 4-14. https://doi.org/10.1016/j.quaint.2019.05.041",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 126,
+  "fields": {
+    "author_surname": "Donohue",
+    "author_name": "J. J",
+    "year": 2019,
+    "metin_ismi": "The Impact of Legalized Abortion on Crime Over the Last Two Decades",
+    "rest": "SSRN Electronic Journal. https://doi.org/10.2139/ssrn.3391510",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 127,
+  "fields": {
+    "author_surname": "Dos Santos",
+    "author_name": "M",
+    "year": 2018,
+    "metin_ismi": "The coevolution of cooperation and cognition in humans",
+    "rest": "Proceedings of the Royal Society B: Biological Sciences, 285(1879), 20180723. https://doi.org/10.1098/rspb.2018.0723",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 128,
+  "fields": {
+    "author_surname": "Downs",
+    "author_name": "A. (1957). An economic theory of democracy (Nachdr.). Addison Wesley",
+    "year": 1957,
+    "metin_ismi": "An economic theory of democracy (Nachdr.)",
+    "rest": "Addison Wesley.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 129,
+  "fields": {
+    "author_surname": "Druckman",
+    "author_name": "J. N",
+    "year": 2006,
+    "metin_ismi": "The Growth and Development of Experimental Research in Political Science",
+    "rest": "American Political Science Review, 100(4).",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 130,
+  "fields": {
+    "author_surname": "Druckman",
+    "author_name": "J. N",
+    "year": 2021,
+    "metin_ismi": "Affective polarization, local contexts and public opinion in America",
+    "rest": "Nature Human Behaviour, 5(1), 28-38. https://doi.org/10.1038/s41562-020-01012-5",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 131,
+  "fields": {
+    "author_surname": "Dumezil",
+    "author_name": "G. (2024). Mitra Varuna: Hükümranlığın İki Hint-Avrupa Temsili Üzerine (A. Berktay",
+    "year": 2024,
+    "metin_ismi": "Mitra Varuna: Hükümranlığın İki Hint-Avrupa Temsili Üzerine (A",
+    "rest": "Berktay, Çev.). Alfa Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 132,
+  "fields": {
+    "author_surname": "Dunbar",
+    "author_name": "R. I. M. (2017). Group size",
+    "year": 2017,
+    "metin_ismi": "Group size, vocal grooming and the origins of language",
+    "rest": "Psychonomic Bulletin & Review, 24(1), 209-212. https://doi.org/10.3758/s13423-016-1122-6",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 133,
+  "fields": {
+    "author_surname": "Dunbar",
+    "author_name": "R. I. M",
+    "year": 2013,
+    "metin_ismi": "Grooming and social cohesion in primates: A comment on Grueter et al",
+    "rest": "Evolution and Human Behavior, 34(6), 453-455. https://doi.org/10.1016/j.evolhumbehav.2013.08.003",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 134,
+  "fields": {
+    "author_surname": "Durkheim",
+    "author_name": "E. (2005). Dini Hayatın İlkel Biçimleri (F. Aydın",
+    "year": 2005,
+    "metin_ismi": "Dini Hayatın İlkel Biçimleri (F",
+    "rest": "Aydın, Çev.). Ataç Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 135,
+  "fields": {
+    "author_surname": "Dworkin",
+    "author_name": "R. (2018). Tanrısız Din (İ. Birkan",
+    "year": 2018,
+    "metin_ismi": "Tanrısız Din (İ",
+    "rest": "Birkan, Çev.). Olvido Kitap.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 136,
+  "fields": {
+    "author_surname": "Eisenegger",
+    "author_name": "C",
+    "year": 2011,
+    "metin_ismi": "The role of testosterone in social interaction",
+    "rest": "Trends in Cognitive Sciences, 15(6), 263-271. https://doi.org/10.1016/j.tics.2011.04.008",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 137,
+  "fields": {
+    "author_surname": "Elani",
+    "author_name": "Y",
+    "year": 2014,
+    "metin_ismi": "Vesicle-based artificial cells as chemical microreactors with spatially segregated reaction pathways",
+    "rest": "Nature Communications, 5(1), 5305. https://doi.org/10.1038/ncomms6305",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 138,
+  "fields": {
+    "author_surname": "Elinder",
+    "author_name": "M",
+    "year": 2025,
+    "metin_ismi": "An inquiry into the relationship between intelligence and prosocial behavior: Evidence from Swedish population registers",
+    "rest": "The Economic Journal, 135(668), 1141-1166. https://doi.org/10.1093/ej/ueae105",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 139,
+  "fields": {
+    "author_surname": "Ellis",
+    "author_name": "G. F. R",
+    "year": 1994,
+    "metin_ismi": "Life at the end of the universe? General Relativity and Gravitation, 26(7), 731-739",
+    "rest": "https://doi.org/10.1007/BF02116959",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 140,
+  "fields": {
+    "author_surname": "Elster",
+    "author_name": "J. (1998). Alchemies of the Mind: Rationality and the Emotions (1. bs). Cambridge University Press. https://doi.org/10.1017/CBO9781139173308",
+    "year": 1998,
+    "metin_ismi": "Alchemies of the Mind: Rationality and the Emotions (1",
+    "rest": "bs). Cambridge University Press. https://doi.org/10.1017/CBO9781139173308",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 141,
+  "fields": {
+    "author_surname": "Ember",
+    "author_name": "C. R",
+    "year": 1992,
+    "metin_ismi": "Warfare, Aggression, and Resource Problems: Cross-Cultural Codes",
+    "rest": "Behavior Science Research, 26(1-4), 169-226. https://doi.org/10.1177/106939719202600108",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 142,
+  "fields": {
+    "author_surname": "Emmons-Bell",
+    "author_name": "M",
+    "year": 2019,
+    "metin_ismi": "Regenerative Adaptation to Electrochemical Perturbation in Planaria: A Molecular Analysis of Physiological Plasticity",
+    "rest": "iScience, 22, 147-165. https://doi.org/10.1016/j.isci.2019.11.014",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 143,
+  "fields": {
+    "author_surname": "Enos",
+    "author_name": "R. D. (2014). Causal effect of intergroup contact on exclusionary attitudes. Proceedings of the National Academy of Sciences",
+    "year": 2014,
+    "metin_ismi": "Causal effect of intergroup contact on exclusionary attitudes",
+    "rest": "Proceedings of the National Academy of Sciences, 111(10), 3699-3704. https://doi.org/10.1073/pnas.1317670111",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 144,
+  "fields": {
+    "author_surname": "Erişen",
+    "author_name": "C. (2018). Political Behavior and the Emotional Citizen. Macmillan Publishers",
+    "year": 2018,
+    "metin_ismi": "Political Behavior and the Emotional Citizen",
+    "rest": "Macmillan Publishers.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 145,
+  "fields": {
+    "author_surname": "Esgün",
+    "author_name": "T. G. (2014). Carl Schmitt. İçinde K. Gülenç",
+    "year": 2014,
+    "metin_ismi": "Carl Schmitt",
+    "rest": "İçinde K. Gülenç & A. Tunçel (Eds.), Siyaset Felsefesi Tarihi: Platon’dan Zizek’e (2. bs, ss. 495-512). Doğu Batı Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 146,
+  "fields": {
+    "author_surname": "Evans",
+    "author_name": "J. St. B. T. (2003). In two minds: Dual-process accounts of reasoning. Trends in Cognitive Sciences",
+    "year": 2003,
+    "metin_ismi": "In two minds: Dual-process accounts of reasoning",
+    "rest": "Trends in Cognitive Sciences, 7(10), 454-459. https://doi.org/10.1016/j.tics.2003.08.012",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 147,
+  "fields": {
+    "author_surname": "Faizal",
+    "author_name": "M",
+    "year": 2025,
+    "metin_ismi": "Quantum gravity cannot be both consistent and complete (Versiyon 1)",
+    "rest": "arXiv. https://doi.org/10.48550/ARXIV.2505.11773",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 148,
+  "fields": {
+    "author_surname": "Faurby",
+    "author_name": "S",
+    "year": 2020,
+    "metin_ismi": "Brain expansion in early hominins predicts carnivore extinctions in East Africa",
+    "rest": "Ecology Letters, 23(3), 537-544. https://doi.org/10.1111/ele.13451",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 149,
+  "fields": {
+    "author_surname": "Fields",
+    "author_name": "C",
+    "year": 2020,
+    "metin_ismi": "Editorial: Epistemic Feelings: Phenomenology, Implementation, and Role in Cognition",
+    "rest": "Frontiers in Psychology, 11, 606046. https://doi.org/10.3389/fpsyg.2020.606046",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 150,
+  "fields": {
+    "author_surname": "Finkel",
+    "author_name": "E. J",
+    "year": 2020,
+    "metin_ismi": "Political sectarianism in America",
+    "rest": "Science, 370(6516), 533-536. https://doi.org/10.1126/science.abe1715",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 151,
+  "fields": {
+    "author_surname": "Fiorillo",
+    "author_name": "C. D",
+    "year": 2003,
+    "metin_ismi": "Discrete Coding of Reward Probability and Uncertainty by Dopamine Neurons",
+    "rest": "Science, 299(5614), 1898-1902. https://doi.org/10.1126/science.1077349",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 152,
+  "fields": {
+    "author_surname": "Foley",
+    "author_name": "R",
+    "year": 2009,
+    "metin_ismi": "The ecology of social transitions in human evolution",
+    "rest": "Philosophical Transactions of the Royal Society of London. Series B, Biological Sciences, 364(1533), 3267-3279. https://doi.org/10.1098/rstb.2009.0136",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 153,
+  "fields": {
+    "author_surname": "Forbes",
+    "author_name": "C. E",
+    "year": 2012,
+    "metin_ismi": "Negative stereotype activation alters interaction between neural correlates of arousal, inhibition and cognitive control",
+    "rest": "Social Cognitive and Affective Neuroscience, 7(7), 771-781. https://doi.org/10.1093/scan/nsr052",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 154,
+  "fields": {
+    "author_surname": "Francis",
+    "author_name": "D",
+    "year": 1999,
+    "metin_ismi": "Nongenomic Transmission Across Generations of Maternal Behavior and Stress Responses in the Rat",
+    "rest": "Science, 286(5442), 1155-1158. https://doi.org/10.1126/science.286.5442.1155",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 155,
+  "fields": {
+    "author_surname": "Frede",
+    "author_name": "M. (2000). The Philosopher. İçinde J. Brunschwig (Ed.)",
+    "year": 2000,
+    "metin_ismi": "The Philosopher",
+    "rest": "İçinde J. Brunschwig (Ed.), Greek Thought: A Guide to Classical Knowledge,. Belknap Press of Harvard University Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 156,
+  "fields": {
+    "author_surname": "Fredrickson",
+    "author_name": "B. L. (2004). The broaden–and–build theory of positive emotions. Philosophical Transactions of the Royal Society of London. Series B: Biological Sciences",
+    "year": 2004,
+    "metin_ismi": "The broaden–and–build theory of positive emotions",
+    "rest": "Philosophical Transactions of the Royal Society of London. Series B: Biological Sciences, 359(1449), 1367-1377. https://doi.org/10.1098/rstb.2004.1512",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 157,
+  "fields": {
+    "author_surname": "Freitas",
+    "author_name": "K",
+    "year": 2005,
+    "metin_ismi": "Threat, Authoritarianism, and Selective Exposure to Information",
+    "rest": "Political Psychology, 26(2), 219-244. https://doi.org/10.1111/j.1467-9221.2005.00416.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 158,
+  "fields": {
+    "author_surname": "Freud",
+    "author_name": "S. (2011). Uygarlığın Huzursuzluğu (H. Barışcan",
+    "year": 2011,
+    "metin_ismi": "Uygarlığın Huzursuzluğu (H",
+    "rest": "Barışcan, Çev.; 4. bs). Metis Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 159,
+  "fields": {
+    "author_surname": "Frijda",
+    "author_name": "N. H. (1986). The emotions. Cambridge University Press ; Editions de la Maison des sciences de l’homme",
+    "year": 1986,
+    "metin_ismi": "The emotions",
+    "rest": "Cambridge University Press ; Editions de la Maison des sciences de l’homme.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 160,
+  "fields": {
+    "author_surname": "Friston",
+    "author_name": "K. (2010). The free-energy principle: A unified brain theory? Nature Reviews Neuroscience",
+    "year": 2010,
+    "metin_ismi": "The free-energy principle: A unified brain theory? Nature Reviews Neuroscience, 11(2), 127-138",
+    "rest": "https://doi.org/10.1038/nrn2787",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 161,
+  "fields": {
+    "author_surname": "Friston",
+    "author_name": "K. J",
+    "year": 2022,
+    "metin_ismi": "Active inference: The free energy principle in mind, brain, and behavior",
+    "rest": "The MIT Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 162,
+  "fields": {
+    "author_surname": "Fukuyama",
+    "author_name": "F. (2016). Siyasi Düzenin Kökenleri (E. Başer",
+    "year": 2016,
+    "metin_ismi": "Siyasi Düzenin Kökenleri (E",
+    "rest": "Başer, Çev.). Profil Yayıncılık.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 163,
+  "fields": {
+    "author_surname": "Fuster",
+    "author_name": "J. M. (2004). Upper processing stages of the perception–action cycle. Trends in Cognitive Sciences",
+    "year": 2004,
+    "metin_ismi": "Upper processing stages of the perception–action cycle",
+    "rest": "Trends in Cognitive Sciences, 8(4), 143-145. https://doi.org/10.1016/j.tics.2004.02.004",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 164,
+  "fields": {
+    "author_surname": "Galton",
+    "author_name": "F. (1907). Vox Populi. Nature",
+    "year": 1907,
+    "metin_ismi": "Vox Populi",
+    "rest": "Nature, 75(1949), 450-451. https://doi.org/10.1038/075450a0",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 165,
+  "fields": {
+    "author_surname": "Geertz",
+    "author_name": "C. (1973). The interpretation of cultures: Selected essays. Basic Books",
+    "year": 1973,
+    "metin_ismi": "The interpretation of cultures: Selected essays",
+    "rest": "Basic Books.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 166,
+  "fields": {
+    "author_surname": "Gelbard-Sagiv",
+    "author_name": "H",
+    "year": 2008,
+    "metin_ismi": "Internally generated reactivation of single neurons in human hippocampus during free recall",
+    "rest": "Science (New York, N.Y.), 322(5898), 96-101. https://doi.org/10.1126/science.1164685",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 167,
+  "fields": {
+    "author_surname": "Genschow",
+    "author_name": "O",
+    "year": 2023,
+    "metin_ismi": "Manipulating Belief in Free Will and Its Downstream Consequences: A Meta-Analysis",
+    "rest": "Personality and Social Psychology Review: An Official Journal of the Society for Personality and Social Psychology, Inc, 27(1), 52-82. https://doi.org/10.1177/10888683221087527",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 168,
+  "fields": {
+    "author_surname": "Gibbons",
+    "author_name": "A. (2009). A New Kind of Ancestor: Ardipithecus Unveiled. Science",
+    "year": 2009,
+    "metin_ismi": "A New Kind of Ancestor: Ardipithecus Unveiled",
+    "rest": "Science, 326(5949), 36-40. https://doi.org/10.1126/science.326.5949.36",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 169,
+  "fields": {
+    "author_surname": "Gilboa",
+    "author_name": "A",
+    "year": 2004,
+    "metin_ismi": "Functional connectivity of the prefrontal cortex and the amygdala in posttraumatic stress disorder",
+    "rest": "Biological Psychiatry, 55(3), 263-272. https://doi.org/10.1016/j.biopsych.2003.08.004",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 170,
+  "fields": {
+    "author_surname": "Glenn",
+    "author_name": "A. L",
+    "year": 2013,
+    "metin_ismi": "Antisocial Personality Disorder: A Current Review",
+    "rest": "Current Psychiatry Reports, 15(12), 427. https://doi.org/10.1007/s11920-013-0427-7",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 171,
+  "fields": {
+    "author_surname": "Glück",
+    "author_name": "J",
+    "year": 2022,
+    "metin_ismi": "The Wisdom Researchers and the Elephant: An Integrative Model of Wise Behavior",
+    "rest": "Personality and Social Psychology Review, 26(4), 342-374. https://doi.org/10.1177/10888683221094650",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 172,
+  "fields": {
+    "author_surname": "Goren-Inbar",
+    "author_name": "N",
+    "year": 2004,
+    "metin_ismi": "Evidence of Hominin Control of Fire at Gesher Benot Ya`aqov, Israel",
+    "rest": "Science, 304(5671), 725-727. https://doi.org/10.1126/science.1095443",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 173,
+  "fields": {
+    "author_surname": "Gowlett",
+    "author_name": "J. (2012). Firing Up the Social Brain. Içinde Social Brain",
+    "year": 2012,
+    "metin_ismi": "Firing Up the Social Brain",
+    "rest": "Içinde Social Brain, Distributed Mind (Vols. 1-158). Oxford University Press. https://doi.org/10.5871/bacad/9780197264522.003.0017",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 174,
+  "fields": {
+    "author_surname": "Gowlett",
+    "author_name": "J. A. J. (2016). The discovery of fire by humans: A long and convoluted process. Philosophical Transactions of the Royal Society B: Biological Sciences",
+    "year": 2016,
+    "metin_ismi": "The discovery of fire by humans: A long and convoluted process",
+    "rest": "Philosophical Transactions of the Royal Society B: Biological Sciences, 371(1696), 20150164. https://doi.org/10.1098/rstb.2015.0164",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 175,
+  "fields": {
+    "author_surname": "Gowlett",
+    "author_name": "J. A. J",
+    "year": 2013,
+    "metin_ismi": "Earliest fire in Africa: Towards the convergence of archaeological evidence and the cooking hypothesis",
+    "rest": "Azania: Archaeological Research in Africa, 48(1), 5-30. https://doi.org/10.1080/0067270X.2012.756754",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 176,
+  "fields": {
+    "author_surname": "Graβl",
+    "author_name": "P",
+    "year": 2021,
+    "metin_ismi": "The effects of scandalization in political news messages on political trust and message evaluation",
+    "rest": "Journalism, 22(10), 2566-2582. https://doi.org/10.1177/1464884919879582",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 177,
+  "fields": {
+    "author_surname": "Grossmann",
+    "author_name": "I. (2017). Wisdom in Context. Perspectives on Psychological Science",
+    "year": 2017,
+    "metin_ismi": "Wisdom in Context",
+    "rest": "Perspectives on Psychological Science, 12(2), 233-257. https://doi.org/10.1177/1745691616672066",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 178,
+  "fields": {
+    "author_surname": "Grueter",
+    "author_name": "C. C",
+    "year": 2012,
+    "metin_ismi": "Evolution of Multilevel Social Systems in Nonhuman Primates and Humans",
+    "rest": "International Journal of Primatology, 33(5), 1002-1037. https://doi.org/10.1007/s10764-012-9618-z",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 179,
+  "fields": {
+    "author_surname": "Gustafsson",
+    "author_name": "K",
+    "year": 2021,
+    "metin_ismi": "The Politics of Emotions in International Relations: Who Gets to Feel What, Whose Emotions Matter, and the “History Problem” in Sino-Japanese Relations",
+    "rest": "International Studies Quarterly, 65(4), 973-984. https://doi.org/10.1093/isq/sqab071",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 180,
+  "fields": {
+    "author_surname": "Habib",
+    "author_name": "R",
+    "year": 2010,
+    "metin_ismi": "NEUROBEHAVIORAL EVIDENCE FOR THE “NEAR‐MISS” EFFECT IN PATHOLOGICAL GAMBLERS",
+    "rest": "Journal of the Experimental Analysis of Behavior, 93(3), 313-328. https://doi.org/10.1901/jeab.2010.93-313",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 181,
+  "fields": {
+    "author_surname": "Haggard",
+    "author_name": "P. (2011). Decision Time for Free Will. Neuron",
+    "year": 2011,
+    "metin_ismi": "Decision Time for Free Will",
+    "rest": "Neuron, 69(3), 404-406. https://doi.org/10.1016/j.neuron.2011.01.028",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 182,
+  "fields": {
+    "author_surname": "Hall",
+    "author_name": "E. V",
+    "year": 2015,
+    "metin_ismi": "A rose by any other name? Journal of Experimental Social Psychology, 56, 183-190",
+    "rest": "https://doi.org/10.1016/j.jesp.2014.10.004",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 183,
+  "fields": {
+    "author_surname": "Hameroff",
+    "author_name": "S",
+    "year": 1996,
+    "metin_ismi": "Orchestrated reduction of quantum coherence in brain microtubules: A model for consciousness",
+    "rest": "Mathematics and Computers in Simulation, 40(3-4), 453-480. https://doi.org/10.1016/0378-4754(96)80476-9",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 184,
+  "fields": {
+    "author_surname": "Hammen",
+    "author_name": "C",
+    "year": 2000,
+    "metin_ismi": "Depression and sensitization to stressors among young women as a function of childhood adversity",
+    "rest": "Journal of Consulting and Clinical Psychology, 68(5), 782-787.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 185,
+  "fields": {
+    "author_surname": "Harcourt-Smith",
+    "author_name": "W. (2007). The origins of bipedal locomotion. İçinde W. Henke",
+    "year": 2007,
+    "metin_ismi": "The origins of bipedal locomotion",
+    "rest": "İçinde W. Henke & I. Tattersall (Ed.), Handbook of Paleoanthropology (ss. 1483-1518). Springer.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 186,
+  "fields": {
+    "author_surname": "Harcourt-Smith",
+    "author_name": "W. H. E. (2010). The First Hominins and the Origins of Bipedalism. Evolution: Education and Outreach",
+    "year": 2010,
+    "metin_ismi": "The First Hominins and the Origins of Bipedalism",
+    "rest": "Evolution: Education and Outreach, 3(3), 333-340. https://doi.org/10.1007/s12052-010-0257-6",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 187,
+  "fields": {
+    "author_surname": "Harrison",
+    "author_name": "T. (2010). Apes Among the Tangled Branches of Human Origins. Science",
+    "year": 2010,
+    "metin_ismi": "Apes Among the Tangled Branches of Human Origins",
+    "rest": "Science, 327(5965), 532-534. https://doi.org/10.1126/science.1184703",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 188,
+  "fields": {
+    "author_surname": "Hatala",
+    "author_name": "K. G",
+    "year": 2016,
+    "metin_ismi": "Footprints reveal direct evidence of group behavior and locomotion in Homo erectus",
+    "rest": "Scientific Reports, 6, 28766. https://doi.org/10.1038/srep28766",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 189,
+  "fields": {
+    "author_surname": "Hawkes",
+    "author_name": "K. (2017). The Grandmother Hypothesis and Human Evolution. Içinde J. F. O’Connell",
+    "year": 2017,
+    "metin_ismi": "The Grandmother Hypothesis and Human Evolution",
+    "rest": "Içinde J. F. O’Connell, N. G. B. Jones, H. Alvarez, & E. L. Charnov, Adaptation and Human Behavior (1. bs, ss. 237-258). Routledge. https://doi.org/10.4324/9781351329200-15",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 190,
+  "fields": {
+    "author_surname": "Haynes",
+    "author_name": "J.-D. (2013). The Neural Code for Intentions in the Human Brain. İçinde I. Singh",
+    "year": 2013,
+    "metin_ismi": "The Neural Code for Intentions in the Human Brain",
+    "rest": "İçinde I. Singh, W. P. Sinnott-Armstrong, & J. Savulescu (Ed.), Bioprediction, Biomarkers, and Bad Behavior (ss. 173-187). Oxford University Press. https://doi.org/10.1093/acprof:oso/9780199844180.003.0010",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 191,
+  "fields": {
+    "author_surname": "Hendrix",
+    "author_name": "C. L",
+    "year": 2021,
+    "metin_ismi": "Maternal Childhood Adversity Associates With Frontoamygdala Connectivity in Neonates",
+    "rest": "Biological Psychiatry. Cognitive Neuroscience and Neuroimaging, 6(4), 470-478. https://doi.org/10.1016/j.bpsc.2020.11.003",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 192,
+  "fields": {
+    "author_surname": "Henrich",
+    "author_name": "J. (2018). Human Cooperation: The Hunter-Gatherer Puzzle. Current Biology: CB",
+    "year": 2018,
+    "metin_ismi": "Human Cooperation: The Hunter-Gatherer Puzzle",
+    "rest": "Current Biology: CB, 28(19), R1143-R1145. https://doi.org/10.1016/j.cub.2018.08.005",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 193,
+  "fields": {
+    "author_surname": "Henrich",
+    "author_name": "J",
+    "year": 2010,
+    "metin_ismi": "Markets, Religion, Community Size, and the Evolution of Fairness and Punishment",
+    "rest": "Science, 327, 1480-1484.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 194,
+  "fields": {
+    "author_surname": "Henrich",
+    "author_name": "J",
+    "year": 2021,
+    "metin_ismi": "The Origins and Psychology of Human Cooperation",
+    "rest": "Annual Review of Psychology, 72(1), 207-240. https://doi.org/10.1146/annurev-psych-081920-042106",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 195,
+  "fields": {
+    "author_surname": "Hermans",
+    "author_name": "E. J",
+    "year": 2006,
+    "metin_ismi": "Testosterone administration reduces empathetic behavior: A facial mimicry study",
+    "rest": "Psychoneuroendocrinology, 31(7), 859-866. https://doi.org/10.1016/j.psyneuen.2006.04.002",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 196,
+  "fields": {
+    "author_surname": "Herries",
+    "author_name": "A. I. R",
+    "year": 2020,
+    "metin_ismi": "Contemporaneity of            Australopithecus            ,            Paranthropus            , and early            Homo erectus            in South Africa",
+    "rest": "Science, 368(6486). https://doi.org/10.1126/science.aaw7293",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 197,
+  "fields": {
+    "author_surname": "Herzog",
+    "author_name": "N. M",
+    "year": 2014,
+    "metin_ismi": "Fire and home range expansion: A behavioral response to burning among savanna dwelling vervet monkeys (Chlorocebus aethiops)",
+    "rest": "American Journal of Physical Anthropology, 154(4), 554-560. https://doi.org/10.1002/ajpa.22550",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 198,
+  "fields": {
+    "author_surname": "Heywood",
+    "author_name": "A. (2018). Siyaset (F. Bakırcı",
+    "year": 2018,
+    "metin_ismi": "Siyaset (F",
+    "rest": "Bakırcı, Çev.; 19. bs). BB101 Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 199,
+  "fields": {
+    "author_surname": "Hirsch-Hoefler",
+    "author_name": "S",
+    "year": 2016,
+    "metin_ismi": "Conflict will Harden your Heart: Exposure to Violence, Psychological Distress, and Peace Barriers in Israel and Palestine",
+    "rest": "British Journal of Political Science, 46(4), 845-859. https://doi.org/10.1017/S0007123414000374",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 200,
+  "fields": {
+    "author_surname": "Hofmann",
+    "author_name": "W",
+    "year": 2007,
+    "metin_ismi": "And deplete us not into temptation: Automatic attitudes, dietary restraint, and self-regulatory resources as determinants of eating behavior",
+    "rest": "Journal of Experimental Social Psychology, 43(3), 497-504. https://doi.org/10.1016/j.jesp.2006.05.004",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 201,
+  "fields": {
+    "author_surname": "Holt",
+    "author_name": "L. E. (1894). The Care and Feeding of Children. Appleton-Century",
+    "year": 1894,
+    "metin_ismi": "The Care and Feeding of Children",
+    "rest": "Appleton-Century.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 202,
+  "fields": {
+    "author_surname": "Horwitz",
+    "author_name": "L",
+    "year": 2016,
+    "metin_ismi": "Taking a Lèvy walk: Early hominin mobility in the Lower Paleolithic of the Southern Levan",
+    "rest": "Fresh fields and pastures new, 165-186.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 203,
+  "fields": {
+    "author_surname": "Hsiang",
+    "author_name": "S. M",
+    "year": 2011,
+    "metin_ismi": "Civil conflicts are associated with the global climate",
+    "rest": "Nature, 476(7361), 438-441. https://doi.org/10.1038/nature10311",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 204,
+  "fields": {
+    "author_surname": "Hsu",
+    "author_name": "M",
+    "year": 2005,
+    "metin_ismi": "Neural Systems Responding to Degrees of Uncertainty in Human Decision-Making",
+    "rest": "Science, 310(5754), 1680-1683. https://doi.org/10.1126/science.1115327",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 205,
+  "fields": {
+    "author_surname": "Huber",
+    "author_name": "D",
+    "year": 2005,
+    "metin_ismi": "Vasopressin and Oxytocin Excite Distinct Neuronal Populations in the Central Amygdala",
+    "rest": "Science, 308(5719), 245-248. https://doi.org/10.1126/science.1105636",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 206,
+  "fields": {
+    "author_surname": "Hublin",
+    "author_name": "J.-J",
+    "year": 2017,
+    "metin_ismi": "New fossils from Jebel Irhoud, Morocco and the pan-African origin of Homo sapiens",
+    "rest": "Nature, 546(7657), 289-292. https://doi.org/10.1038/nature22336",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 207,
+  "fields": {
+    "author_surname": "Huddy",
+    "author_name": "L",
+    "year": 2007,
+    "metin_ismi": "The Political Consequences of Perceived Threat and Felt Insecurity",
+    "rest": "The ANNALS of the American Academy of Political and Social Science, 614(1), 131-153. https://doi.org/10.1177/0002716207305951",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 208,
+  "fields": {
+    "author_surname": "Hunt",
+    "author_name": "K. D. (1994). The evolution of human bipedality: Ecology and functional morphology. Journal of Human Evolution",
+    "year": 1994,
+    "metin_ismi": "The evolution of human bipedality: Ecology and functional morphology",
+    "rest": "Journal of Human Evolution, 26(3), 183-202. https://doi.org/10.1006/jhev.1994.1011",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 209,
+  "fields": {
+    "author_surname": "Iredale",
+    "author_name": "W",
+    "year": 2008,
+    "metin_ismi": "Showing Off in Humans: Male Generosity as a Mating Signal",
+    "rest": "Evolutionary Psychology, 6(3), 147470490800600302. https://doi.org/10.1177/147470490800600302",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 210,
+  "fields": {
+    "author_surname": "Ito",
+    "author_name": "T. A",
+    "year": 2003,
+    "metin_ismi": "Race and gender on the brain: Electrocortical measures of attention to the race and gender of multiply categorizable individuals",
+    "rest": "Journal of Personality and Social Psychology, 85(4), 616-626. https://doi.org/10.1037/0022-3514.85.4.616",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 211,
+  "fields": {
+    "author_surname": "Iyengar",
+    "author_name": "S",
+    "year": 2012,
+    "metin_ismi": "Affect, Not Ideology",
+    "rest": "Public Opinion Quarterly, 76(3), 405-431. https://doi.org/10.1093/poq/nfs038",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 212,
+  "fields": {
+    "author_surname": "Jeste",
+    "author_name": "D. V",
+    "year": 2019,
+    "metin_ismi": "The Emerging Empirical Science of Wisdom: Definition, Measurement, Neurobiology, Longevity, and Interventions",
+    "rest": "Harvard Review of Psychiatry, 27(3), 127-140. https://doi.org/10.1097/HRP.0000000000000205",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 213,
+  "fields": {
+    "author_surname": "Johnson",
+    "author_name": "S. D",
+    "year": 2006,
+    "metin_ismi": "Seasons within the Wildfire Season: Marking Weather-Related Fire Occurrence Regimes",
+    "rest": "Fire Ecology, 2(2), 60-78. https://doi.org/10.4996/fireecology.0202060",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 214,
+  "fields": {
+    "author_surname": "Jung",
+    "author_name": "K",
+    "year": 2014,
+    "metin_ismi": "Female hurricanes are deadlier than male hurricanes",
+    "rest": "Proceedings of the National Academy of Sciences, 111(24), 8782-8787. https://doi.org/10.1073/pnas.1402786111",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 215,
+  "fields": {
+    "author_surname": "Kahneman",
+    "author_name": "D",
+    "year": 1986,
+    "metin_ismi": "Rational Choice and the Framing of Decisions",
+    "rest": "The Journal of Business, 59(4), 251-278.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 216,
+  "fields": {
+    "author_surname": "Kamat",
+    "author_name": "N. P",
+    "year": 2011,
+    "metin_ismi": "Engineering Polymersome Protocells",
+    "rest": "The Journal of Physical Chemistry Letters, 2(13), 1612-1623. https://doi.org/10.1021/jz200640x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 217,
+  "fields": {
+    "author_surname": "Karatani",
+    "author_name": "K. (2017). Dünya Tarihinin Yapısı (A. Karatay",
+    "year": 2017,
+    "metin_ismi": "Dünya Tarihinin Yapısı (A",
+    "rest": "Karatay, Çev.). Metis Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 218,
+  "fields": {
+    "author_surname": "Kelley",
+    "author_name": "S",
+    "year": 1974,
+    "metin_ismi": "The Simple Act of Voting",
+    "rest": "American Political Science Review, 68(2), 572-591. https://doi.org/10.2307/1959506",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 219,
+  "fields": {
+    "author_surname": "Key",
+    "author_name": "C. A. (2000). The evolution of human life history. World Archaeology",
+    "year": 2000,
+    "metin_ismi": "The evolution of human life history",
+    "rest": "World Archaeology, 31(3), 329-350. https://doi.org/10.1080/00438240009696925",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 220,
+  "fields": {
+    "author_surname": "Khosrozadeh",
+    "author_name": "M",
+    "year": 2022,
+    "metin_ismi": "The Correlation between Children’s Intelligence Quotient and Their Behavior in Dental Setting: A Cross‐Sectional Study",
+    "rest": "BioMed Research International, 2022(1). https://doi.org/10.1155/2022/2299215",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 221,
+  "fields": {
+    "author_surname": "Kim",
+    "author_name": "S.-Y",
+    "year": 2013,
+    "metin_ismi": "Diverging neural pathways assemble a behavioural state from separable features in anxiety",
+    "rest": "Nature, 496(7444), 219-223. https://doi.org/10.1038/nature12018",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 222,
+  "fields": {
+    "author_surname": "King",
+    "author_name": "J. A",
+    "year": 2006,
+    "metin_ismi": "Doing the right thing: A common neural circuit for appropriate violent or compassionate behavior",
+    "rest": "NeuroImage, 30(3), 1069-1076. https://doi.org/10.1016/j.neuroimage.2005.10.011",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 223,
+  "fields": {
+    "author_surname": "King",
+    "author_name": "J. R",
+    "year": 2007,
+    "metin_ismi": "Natural History of the Slave Making Ant, Polyergus lucidus , Sensu lato in Northern Florida and Its Three Formica pallidefulva Group Hosts",
+    "rest": "Journal of Insect Science, 7(42), 1-14. https://doi.org/10.1673/031.007.4201",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 224,
+  "fields": {
+    "author_surname": "Knauft",
+    "author_name": "B. M",
+    "year": 1987,
+    "metin_ismi": "Reconsidering Violence in Simple Human Societies: Homicide among the Gebusi of New Guinea",
+    "rest": "Current Anthropology, 28(4), 457-500.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 225,
+  "fields": {
+    "author_surname": "Knoch",
+    "author_name": "D",
+    "year": 2006,
+    "metin_ismi": "Diminishing Reciprocal Fairness by Disrupting the Right Prefrontal Cortex",
+    "rest": "Science, 314(5800), 829-832. https://doi.org/10.1126/science.1129156",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 226,
+  "fields": {
+    "author_surname": "Knutson",
+    "author_name": "B",
+    "year": 2001,
+    "metin_ismi": "Anticipation of Increasing Monetary Reward Selectively Recruits Nucleus Accumbens",
+    "rest": "The Journal of Neuroscience, 21(16), RC159-RC159. https://doi.org/10.1523/JNEUROSCI.21-16-j0002.2001",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 227,
+  "fields": {
+    "author_surname": "Koopmans",
+    "author_name": "J. R",
+    "year": 1999,
+    "metin_ismi": "The influence of religion on alcohol use initiation: Evidence for genotype X environment interaction",
+    "rest": "Behavior Genetics, 29(6), 445-453. https://doi.org/10.1023/A:1021679005623",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 228,
+  "fields": {
+    "author_surname": "Koschut",
+    "author_name": "S. (2019). Can the bereaved speak? Emotional governance and the contested meanings of grief after the Berlin terror attack. Journal of International Political Theory",
+    "year": 2019,
+    "metin_ismi": "Can the bereaved speak? Emotional governance and the contested meanings of grief after the Berlin terror attack",
+    "rest": "Journal of International Political Theory, 15(2), 148-166. https://doi.org/10.1177/1755088218824349",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 229,
+  "fields": {
+    "author_surname": "Kosfeld",
+    "author_name": "M",
+    "year": 2005,
+    "metin_ismi": "Oxytocin increases trust in humans",
+    "rest": "Nature, 435(7042), 673-676. https://doi.org/10.1038/nature03701",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 230,
+  "fields": {
+    "author_surname": "Kozakiewicz",
+    "author_name": "A",
+    "year": 1994,
+    "metin_ismi": "Intra- and interspecific behaviours in bank vole and striped-field mouse under enclosure conditions",
+    "rest": "Acta Theriologica, 39(1), 29-36.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 231,
+  "fields": {
+    "author_surname": "Kozorovitskiy",
+    "author_name": "Y",
+    "year": 2006,
+    "metin_ismi": "Fatherhood affects dendritic spines and vasopressin V1a receptors in the primate prefrontal cortex",
+    "rest": "Nature Neuroscience, 9(9), 1094-1095. https://doi.org/10.1038/nn1753",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 232,
+  "fields": {
+    "author_surname": "Krause",
+    "author_name": "J",
+    "year": 2010,
+    "metin_ismi": "Swarm intelligence in animals and humans",
+    "rest": "Trends in Ecology & Evolution, 25(1), 28-34. https://doi.org/10.1016/j.tree.2009.06.016",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 233,
+  "fields": {
+    "author_surname": "Kubota",
+    "author_name": "J. T",
+    "year": 2012,
+    "metin_ismi": "The neuroscience of race",
+    "rest": "Nature Neuroscience, 15(7), 940-948. https://doi.org/10.1038/nn.3136",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 234,
+  "fields": {
+    "author_surname": "Kunda",
+    "author_name": "Z. (1990). The case for motivated reasoning. Psychological Bulletin",
+    "year": 1990,
+    "metin_ismi": "The case for motivated reasoning",
+    "rest": "Psychological Bulletin, 108(3), 480-498. https://doi.org/10.1037/0033-2909.108.3.480",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 235,
+  "fields": {
+    "author_surname": "Langford",
+    "author_name": "D. J",
+    "year": 2006,
+    "metin_ismi": "Social Modulation of Pain as Evidence for Empathy in Mice",
+    "rest": "Science, 312(5782), 1967-1970. https://doi.org/10.1126/science.1128322",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 236,
+  "fields": {
+    "author_surname": "Lango Allen",
+    "author_name": "H",
+    "year": 2010,
+    "metin_ismi": "Hundreds of variants clustered in genomic loci and biological pathways affect human height",
+    "rest": "Nature, 467(7317), 832-838. https://doi.org/10.1038/nature09410",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 237,
+  "fields": {
+    "author_surname": "Lavine",
+    "author_name": "H",
+    "year": 2012,
+    "metin_ismi": "The ambivalent partisan: How critical loyalty promotes democracy",
+    "rest": "Oxford Univ. Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 238,
+  "fields": {
+    "author_surname": "Lederbogen",
+    "author_name": "F",
+    "year": 2011,
+    "metin_ismi": "City living and urban upbringing affect neural social stress processing in humans",
+    "rest": "Nature, 474(7352), 498-501. https://doi.org/10.1038/nature10190",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 239,
+  "fields": {
+    "author_surname": "Lee",
+    "author_name": "R. B. (2009). The !Kung San: Men",
+    "year": 2009,
+    "metin_ismi": "The !Kung San: Men, women, and work in a foraging society (Nachdr)",
+    "rest": "Cambridge Univ. Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 240,
+  "fields": {
+    "author_surname": "Levenson",
+    "author_name": "M. R",
+    "year": 2005,
+    "metin_ismi": "Self-Transcendence: Conceptualization and Measurement",
+    "rest": "The International Journal of Aging and Human Development, 60(2), 127-143. https://doi.org/10.2190/XRXM-FYRA-7U0X-GRC0",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 241,
+  "fields": {
+    "author_surname": "Levin",
+    "author_name": "M. (2021). Bioelectrical approaches to cancer as a problem of the scaling of the cellular self. Progress in Biophysics and Molecular Biology",
+    "year": 2021,
+    "metin_ismi": "Bioelectrical approaches to cancer as a problem of the scaling of the cellular self",
+    "rest": "Progress in Biophysics and Molecular Biology, 165, 102-113. https://doi.org/10.1016/j.pbiomolbio.2021.04.007",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 242,
+  "fields": {
+    "author_surname": "Levin",
+    "author_name": "M. (2022). Technological Approach to Mind Everywhere: An Experimentally-Grounded Framework for Understanding Diverse Bodies and Minds. Frontiers in Systems Neuroscience",
+    "year": 2022,
+    "metin_ismi": "Technological Approach to Mind Everywhere: An Experimentally-Grounded Framework for Understanding Diverse Bodies and Minds",
+    "rest": "Frontiers in Systems Neuroscience, 16, 768201. https://doi.org/10.3389/fnsys.2022.768201",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 243,
+  "fields": {
+    "author_surname": "Levin",
+    "author_name": "M. (2023). Darwin’s agential materials: Evolutionary implications of multiscale competency in developmental biology. Cellular and Molecular Life Sciences",
+    "year": 2023,
+    "metin_ismi": "Darwin’s agential materials: Evolutionary implications of multiscale competency in developmental biology",
+    "rest": "Cellular and Molecular Life Sciences, 80(6), 142. https://doi.org/10.1007/s00018-023-04790-z",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 244,
+  "fields": {
+    "author_surname": "Levin",
+    "author_name": "M. (2024). Self-Improvising Memory: A Perspective on Memories as Agential",
+    "year": 2024,
+    "metin_ismi": "Self-Improvising Memory: A Perspective on Memories as Agential, Dynamically Reinterpreting Cognitive Glue",
+    "rest": "Entropy, 26(6), 481. https://doi.org/10.3390/e26060481",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 245,
+  "fields": {
+    "author_surname": "Levin",
+    "author_name": "M",
+    "year": 2025,
+    "metin_ismi": "Technological Approach to Mind Everywhere: A Framework for Conceptualizing Goal-Directedness in Biology and Other Domains",
+    "rest": "Open Science Framework. https://doi.org/10.31219/osf.io/gdvn8_v4",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 246,
+  "fields": {
+    "author_surname": "Lewis",
+    "author_name": "P. A",
+    "year": 2011,
+    "metin_ismi": "Ventromedial prefrontal volume predicts understanding of others and social network size",
+    "rest": "NeuroImage, 57(4), 1624-1629. https://doi.org/10.1016/j.neuroimage.2011.05.030",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 247,
+  "fields": {
+    "author_surname": "Liberman",
+    "author_name": "V",
+    "year": 2004,
+    "metin_ismi": "The Name of the Game: Predictive Power of Reputations versus Situational Labels in Determining Prisoner’s Dilemma Game Moves",
+    "rest": "Personality and Social Psychology Bulletin, 30(9), 1175-1185. https://doi.org/10.1177/0146167204264004",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 248,
+  "fields": {
+    "author_surname": "Libet",
+    "author_name": "B",
+    "year": 1983,
+    "metin_ismi": "Time of conscious intention to act in relation to onset of cerebral activity (readiness-potential)",
+    "rest": "The unconscious initiation of a freely voluntary act. Brain: A Journal of Neurology, 106 (Pt 3), 623-642. https://doi.org/10.1093/brain/106.3.623",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 249,
+  "fields": {
+    "author_surname": "Linares Matás",
+    "author_name": "G. J",
+    "year": 2021,
+    "metin_ismi": "‘We hunt to share’: Social dynamics and very large mammal butchery during the Oldowan–Acheulean transition",
+    "rest": "World Archaeology, 53(2), 224-254. https://doi.org/10.1080/00438243.2022.2030793",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 250,
+  "fields": {
+    "author_surname": "Lindley",
+    "author_name": "D. (1997). Where Does the Weirdness Go?: Why Quantum Mechanics Is Strange",
+    "year": 1997,
+    "metin_ismi": "Where Does the Weirdness Go?: Why Quantum Mechanics Is Strange,But Not as Strange as You Think",
+    "rest": "Basic Books.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 251,
+  "fields": {
+    "author_surname": "List",
+    "author_name": "C. (2019). Why free will is real. Harvard university press",
+    "year": 2019,
+    "metin_ismi": "Why free will is real",
+    "rest": "Harvard university press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 252,
+  "fields": {
+    "author_surname": "Liston",
+    "author_name": "C",
+    "year": 2009,
+    "metin_ismi": "Psychosocial stress reversibly disrupts prefrontal processing and attentional control",
+    "rest": "Proceedings of the National Academy of Sciences, 106(3), 912-917. https://doi.org/10.1073/pnas.0807041106",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 253,
+  "fields": {
+    "author_surname": "Liu",
+    "author_name": "J",
+    "year": 2017,
+    "metin_ismi": "Coupling between distant biofilms and emergence of nutrient time-sharing",
+    "rest": "Science, 356(6338), 638-642. https://doi.org/10.1126/science.aah4204",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 254,
+  "fields": {
+    "author_surname": "Locke",
+    "author_name": "J. (2012). Yönetim Üzerine İkinci İnceleme:Sivil Yönetimin Gerçek Kökeni Boyutu ve Amacı Üzerine Bir Deneme (F. Bakırcı",
+    "year": 2012,
+    "metin_ismi": "Yönetim Üzerine İkinci İnceleme:Sivil Yönetimin Gerçek Kökeni Boyutu ve Amacı Üzerine Bir Deneme (F",
+    "rest": "Bakırcı, Çev.; 2. bs). Ebabil Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 255,
+  "fields": {
+    "author_surname": "Lodge",
+    "author_name": "M",
+    "year": 2013,
+    "metin_ismi": "The Rationalizing Voter (1",
+    "rest": "bs). Cambridge University Press. https://doi.org/10.1017/CBO9781139032490",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 256,
+  "fields": {
+    "author_surname": "Loughnan",
+    "author_name": "S",
+    "year": 2009,
+    "metin_ismi": "Understanding the Relationship between Attribute-Based and Metaphor-Based Dehumanization",
+    "rest": "Group Processes & Intergroup Relations, 12(6), 747-762. https://doi.org/10.1177/1368430209347726",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 257,
+  "fields": {
+    "author_surname": "Lovejoy",
+    "author_name": "C. O. (2009). Reexamining Human Origins in Light of            Ardipithecus ramidus. Science",
+    "year": 2009,
+    "metin_ismi": "Reexamining Human Origins in Light of            Ardipithecus ramidus",
+    "rest": "Science, 326(5949), 74. https://doi.org/10.1126/science.1175834",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 258,
+  "fields": {
+    "author_surname": "Luu",
+    "author_name": "H. N",
+    "year": 2025,
+    "metin_ismi": "The Lifespan of our Universe (No",
+    "rest": "arXiv:2506.24011). arXiv. https://doi.org/10.48550/arXiv.2506.24011",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 259,
+  "fields": {
+    "author_surname": "MacDonald",
+    "author_name": "K",
+    "year": 2021,
+    "metin_ismi": "Middle Pleistocene fire use: The first signal of widespread cultural diffusion in human evolution",
+    "rest": "Proceedings of the National Academy of Sciences, 118(31), e2101108118. https://doi.org/10.1073/pnas.2101108118",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 260,
+  "fields": {
+    "author_surname": "MacKenzie",
+    "author_name": "M. J",
+    "year": 2014,
+    "metin_ismi": "You Didn’t Have to Do That: Belief in Free Will Promotes Gratitude",
+    "rest": "Personality and Social Psychology Bulletin, 40(11), 1423-1434. https://doi.org/10.1177/0146167214549322",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 261,
+  "fields": {
+    "author_surname": "MacKuen",
+    "author_name": "M",
+    "year": 2010,
+    "metin_ismi": "Civic Engagements: Resolute Partisanship or Reflective Deliberation",
+    "rest": "American Journal of Political Science, 54(2), 440-458. https://doi.org/10.1111/j.1540-5907.2010.00440.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 262,
+  "fields": {
+    "author_surname": "MacLarnon",
+    "author_name": "A. M",
+    "year": 1999,
+    "metin_ismi": "The evolution of human speech: The role of enhanced breathing control",
+    "rest": "American Journal of Physical Anthropology, 109(3), 341-363. https://doi.org/10.1002/(SICI)1096-8644(199907)109:3%253C341::AID-AJPA5%253E3.0.CO;2-2",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 263,
+  "fields": {
+    "author_surname": "Maestripieri",
+    "author_name": "D. (2005). Early experience affects the intergenerational transmission of infant abuse in rhesus monkeys. Proceedings of the National Academy of Sciences",
+    "year": 2005,
+    "metin_ismi": "Early experience affects the intergenerational transmission of infant abuse in rhesus monkeys",
+    "rest": "Proceedings of the National Academy of Sciences, 102(27), 9726-9729. https://doi.org/10.1073/pnas.0504122102",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 264,
+  "fields": {
+    "author_surname": "Magni",
+    "author_name": "G. (2017). It’s the emotions",
+    "year": 2017,
+    "metin_ismi": "It’s the emotions, Stupid! Anger about the economic crisis, low political efficacy, and support for populist parties",
+    "rest": "Electoral Studies, 50, 91-102. https://doi.org/10.1016/j.electstud.2017.09.014",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 265,
+  "fields": {
+    "author_surname": "Ma-Kellams",
+    "author_name": "C",
+    "year": 2013,
+    "metin_ismi": "Does “Science” Make You Moral? The Effects of Priming Science on Moral Judgments and Behavior",
+    "rest": "PLoS ONE, 8(3), e57989. https://doi.org/10.1371/journal.pone.0057989",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 266,
+  "fields": {
+    "author_surname": "Mancuso",
+    "author_name": "S. (2021). Bitki Zekası (A. Çiftçi",
+    "year": 2021,
+    "metin_ismi": "Bitki Zekası (A",
+    "rest": "Çiftçi, Çev.; 6. bs). Yeni İnsan Yayınevi.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 267,
+  "fields": {
+    "author_surname": "Mante",
+    "author_name": "V",
+    "year": 2013,
+    "metin_ismi": "Context-dependent computation by recurrent dynamics in prefrontal cortex",
+    "rest": "Nature, 503(7474), 78-84. https://doi.org/10.1038/nature12742",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 268,
+  "fields": {
+    "author_surname": "Maoz",
+    "author_name": "U",
+    "year": 2019,
+    "metin_ismi": "Neural precursors of decisions that matter—An ERP study of deliberate and arbitrary choice",
+    "rest": "eLife, 8, e39787. https://doi.org/10.7554/eLife.39787",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 269,
+  "fields": {
+    "author_surname": "Marcus",
+    "author_name": "G. E",
+    "year": 2000,
+    "metin_ismi": "Affective intelligence and political judgment",
+    "rest": "University of Chicago Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 270,
+  "fields": {
+    "author_surname": "Martherus",
+    "author_name": "J. L",
+    "year": 2021,
+    "metin_ismi": "Party Animals? Extreme Partisan Polarization and Dehumanization",
+    "rest": "Political Behavior, 43(2), 517-540. https://doi.org/10.1007/s11109-019-09559-4",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 271,
+  "fields": {
+    "author_surname": "Martin",
+    "author_name": "R. P. (1998). The Seven Sages as Performers of Wisdom. Içinde C. Dougherty",
+    "year": 1998,
+    "metin_ismi": "The Seven Sages as Performers of Wisdom",
+    "rest": "Içinde C. Dougherty & L. Kurke (Ed.), Cultural Poetics In Archaic Greece (ss. 108-130). Oxford University PressNew York, NY. https://doi.org/10.1093/oso/9780195124156.003.0006",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 272,
+  "fields": {
+    "author_surname": "Martinez-Corral",
+    "author_name": "R",
+    "year": 2019,
+    "metin_ismi": "Metabolic basis of brain-like electrical signalling in bacterial communities",
+    "rest": "Philosophical Transactions of the Royal Society B: Biological Sciences, 374(1774), 20180382. https://doi.org/10.1098/rstb.2018.0382",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 273,
+  "fields": {
+    "author_surname": "Marwick",
+    "author_name": "B. (2003). Pleistocene Exchange Networks as Evidence for the Evolution of Language. Cambridge Archaeological Journal",
+    "year": 2003,
+    "metin_ismi": "Pleistocene Exchange Networks as Evidence for the Evolution of Language",
+    "rest": "Cambridge Archaeological Journal, 13(1), 67-81. https://doi.org/10.1017/s0959774303000040",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 274,
+  "fields": {
+    "author_surname": "Masuda",
+    "author_name": "T",
+    "year": 2001,
+    "metin_ismi": "Attending holistically versus analytically: Comparing the context sensitivity of Japanese and Americans",
+    "rest": "Journal of Personality and Social Psychology, 81(5), 922-934. https://doi.org/10.1037/0022-3514.81.5.922",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 275,
+  "fields": {
+    "author_surname": "Matthews",
+    "author_name": "W. (2016). Humans and fire: Changing relations in early agricultural and built environments in the Zagros",
+    "year": 2016,
+    "metin_ismi": "Humans and fire: Changing relations in early agricultural and built environments in the Zagros, Iran, Iraq",
+    "rest": "The Anthropocene Review, 3(2), 107-139. https://doi.org/10.1177/2053019616636134",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 276,
+  "fields": {
+    "author_surname": "McCrory",
+    "author_name": "E",
+    "year": 2012,
+    "metin_ismi": "The link between child abuse and psychopathology: A review of neurobiological and genetic research",
+    "rest": "Journal of the Royal Society of Medicine, 105(4), 151-156. https://doi.org/10.1258/jrsm.2011.110222",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 277,
+  "fields": {
+    "author_surname": "McShea",
+    "author_name": "D. W. (2012). Upper-directed systems: A new approach to teleology in biology. Biology",
+    "year": 2012,
+    "metin_ismi": "Upper-directed systems: A new approach to teleology in biology",
+    "rest": "Biology & Philosophy, 27(5), 663-684. https://doi.org/10.1007/s10539-012-9326-2",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 278,
+  "fields": {
+    "author_surname": "McShea",
+    "author_name": "D. W. (2016). Freedom and purpose in biology. Studies in History and Philosophy of Science Part C: Studies in History and Philosophy of Biological and Biomedical Sciences",
+    "year": 2016,
+    "metin_ismi": "Freedom and purpose in biology",
+    "rest": "Studies in History and Philosophy of Science Part C: Studies in History and Philosophy of Biological and Biomedical Sciences, 58, 64-72. https://doi.org/10.1016/j.shpsc.2015.12.002",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 279,
+  "fields": {
+    "author_surname": "Mead",
+    "author_name": "N. L",
+    "year": 2009,
+    "metin_ismi": "Too tired to tell the truth: Self-control resource depletion and dishonesty",
+    "rest": "Journal of Experimental Social Psychology, 45(3), 594-597. https://doi.org/10.1016/j.jesp.2009.02.004",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 280,
+  "fields": {
+    "author_surname": "Meaney",
+    "author_name": "M. J",
+    "year": 2005,
+    "metin_ismi": "Environmental programming of stress responses through DNA methylation: Life at the interface between a dynamic environment and a fixed genome",
+    "rest": "Dialogues in Clinical Neuroscience, 7(2), 103-123. https://doi.org/10.31887/DCNS.2005.7.2/mmeaney",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 281,
+  "fields": {
+    "author_surname": "Mechkova",
+    "author_name": "V",
+    "year": 2021,
+    "metin_ismi": "Norms and rage: Gender and social media in the 2018 U.S",
+    "rest": "mid-term elections. Electoral Studies, 69, 102268. https://doi.org/10.1016/j.electstud.2020.102268",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 282,
+  "fields": {
+    "author_surname": "Meeks",
+    "author_name": "T. W",
+    "year": 2009,
+    "metin_ismi": "Neurobiology of Wisdom: A Literature Overview",
+    "rest": "Archives of General Psychiatry, 66(4), 355. https://doi.org/10.1001/archgenpsychiatry.2009.8",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 283,
+  "fields": {
+    "author_surname": "Mehta",
+    "author_name": "P. H",
+    "year": 2010,
+    "metin_ismi": "Neural Mechanisms of the Testosterone–Aggression Relation: The Role of Orbitofrontal Cortex",
+    "rest": "Journal of Cognitive Neuroscience, 22(10), 2357-2368. https://doi.org/10.1162/jocn.2009.21389",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 284,
+  "fields": {
+    "author_surname": "Mezzacappa",
+    "author_name": "E",
+    "year": 2001,
+    "metin_ismi": "Child Abuse and Performance Task Assessments of Executive Functions in Boys",
+    "rest": "Journal of Child Psychology and Psychiatry, 42(8), 1041-1048. https://doi.org/10.1111/1469-7610.00803",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 285,
+  "fields": {
+    "author_surname": "Michael Joseph",
+    "author_name": "B",
+    "year": 2008,
+    "metin_ismi": "The effects of eyeglasses and race on juror decisions involving a violent crime",
+    "rest": "The American journal of forensic psychology, 2(26), 25-43.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 286,
+  "fields": {
+    "author_surname": "Mickler",
+    "author_name": "C",
+    "year": 2008,
+    "metin_ismi": "Personal wisdom: Validation and age-related differences of a performance measure",
+    "rest": "Psychology and Aging, 23(4), 787-799. https://doi.org/10.1037/a0013928",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 287,
+  "fields": {
+    "author_surname": "Milad",
+    "author_name": "M. R",
+    "year": 2002,
+    "metin_ismi": "Neurons in medial prefrontal cortex signal memory for fear extinction",
+    "rest": "Nature, 420(6911), 70-74. https://doi.org/10.1038/nature01138",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 288,
+  "fields": {
+    "author_surname": "Miller",
+    "author_name": "A. S",
+    "year": 1995,
+    "metin_ismi": "Risk and Religion: An Explanation of Gender Differences in Religiosity",
+    "rest": "Journal for the Scientific Study of Religion, 34(1), 63. https://doi.org/10.2307/1386523",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 289,
+  "fields": {
+    "author_surname": "Mobbs",
+    "author_name": "D",
+    "year": 2007,
+    "metin_ismi": "When Fear Is Near: Threat Imminence Elicits Prefrontal-Periaqueductal Gray Shifts in Humans",
+    "rest": "Science, 317(5841), 1079-1083. https://doi.org/10.1126/science.1144298",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 290,
+  "fields": {
+    "author_surname": "Mojzsis",
+    "author_name": "S. J",
+    "year": 1996,
+    "metin_ismi": "Evidence for life on Earth before 3,800 million years ago",
+    "rest": "Nature, 384(6604), 55-59. https://doi.org/10.1038/384055a0",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 291,
+  "fields": {
+    "author_surname": "Moll",
+    "author_name": "J",
+    "year": 2006,
+    "metin_ismi": "Human fronto–mesolimbic networks guide decisions about charitable donation",
+    "rest": "Proceedings of the National Academy of Sciences, 103(42), 15623-15628. https://doi.org/10.1073/pnas.0604475103",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 292,
+  "fields": {
+    "author_surname": "Monninger",
+    "author_name": "M",
+    "year": 2020,
+    "metin_ismi": "The Long-Term Impact of Early Life Stress on Orbitofrontal Cortical Thickness",
+    "rest": "Cerebral Cortex (New York, N.Y.: 1991), 30(3), 1307-1317. https://doi.org/10.1093/cercor/bhz167",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 293,
+  "fields": {
+    "author_surname": "Moynihan",
+    "author_name": "A. B",
+    "year": 2017,
+    "metin_ismi": "Free, connected, and meaningful: Free will beliefs promote meaningfulness through belongingness",
+    "rest": "Personality and Individual Differences, 107, 54-65. https://doi.org/10.1016/j.paid.2016.11.006",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 294,
+  "fields": {
+    "author_surname": "Müller",
+    "author_name": "A. E",
+    "year": 2000,
+    "metin_ismi": "Origin and evolution of primate social organisation: A reconstruction",
+    "rest": "Biological Reviews of the Cambridge Philosophical Society, 75(3), 405-435. https://doi.org/10.1017/s0006323100005533",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 295,
+  "fields": {
+    "author_surname": "Nagasawa",
+    "author_name": "M",
+    "year": 2015,
+    "metin_ismi": "Oxytocin-gaze positive loop and the coevolution of human-dog bonds",
+    "rest": "Science, 348(6232), 333-336. https://doi.org/10.1126/science.1261022",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 296,
+  "fields": {
+    "author_surname": "Nagell",
+    "author_name": "K",
+    "year": 1993,
+    "metin_ismi": "Processes of social learning in the tool use of chimpanzees (Pan troglodytes) and human children (Homo sapiens)",
+    "rest": "Journal of Comparative Psychology, 107(2), 174-186. https://doi.org/10.1037/0735-7036.107.2.174",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 297,
+  "fields": {
+    "author_surname": "Nelson",
+    "author_name": "R. J",
+    "year": 2007,
+    "metin_ismi": "Neural mechanisms of aggression",
+    "rest": "Nature Reviews Neuroscience, 8(7), 536-546. https://doi.org/10.1038/nrn2174",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 298,
+  "fields": {
+    "author_surname": "Neuman",
+    "author_name": "W. R. (Ed.). (2007). The affect effect: Dynamics of emotion in political thinking and behavior. University of Chicago Press",
+    "year": 2007,
+    "metin_ismi": "The affect effect: Dynamics of emotion in political thinking and behavior",
+    "rest": "University of Chicago Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 299,
+  "fields": {
+    "author_surname": "Nichols",
+    "author_name": "S. (2011). Experimental Philosophy and the Problem of Free Will. Science",
+    "year": 2011,
+    "metin_ismi": "Experimental Philosophy and the Problem of Free Will",
+    "rest": "Science, 331(6023), 1401-1403. https://doi.org/10.1126/science.1192931",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 300,
+  "fields": {
+    "author_surname": "Nielsen",
+    "author_name": "M",
+    "year": 2020,
+    "metin_ismi": "Homo neanderthalensis and the evolutionary origins of ritual in Homo sapiens",
+    "rest": "Philosophical Transactions of the Royal Society B: Biological Sciences, 375(1805), 20190424. https://doi.org/10.1098/rstb.2019.0424",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 301,
+  "fields": {
+    "author_surname": "Nietzsche",
+    "author_name": "F. (2011). Ahlakın Soykütüğü: Bir Polemik (Z. Alangoya",
+    "year": 2011,
+    "metin_ismi": "Ahlakın Soykütüğü: Bir Polemik (Z",
+    "rest": "Alangoya, Çev.). Kabalcı Yayınevi.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 302,
+  "fields": {
+    "author_surname": "Nietzsche",
+    "author_name": "F. (2015). Karışık Kanılar ve Özdeyişler (M. Tüzel",
+    "year": 2015,
+    "metin_ismi": "Karışık Kanılar ve Özdeyişler (M",
+    "rest": "Tüzel, Çev.; 2. bs). Türkiye İş  Bankası Kültür Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 303,
+  "fields": {
+    "author_surname": "Nietzsche",
+    "author_name": "F. W. (2019). Platon Öncesi Filozoflar (N. Nirven",
+    "year": 2019,
+    "metin_ismi": "Platon Öncesi Filozoflar (N",
+    "rest": "Nirven, Çev.; 2. bs). Pinhan Yayıncılık.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 304,
+  "fields": {
+    "author_surname": "Nisbett",
+    "author_name": "R. E. (2004). The geography of thought: How Asians and Westerners think differently ... and why. Free Press",
+    "year": 2004,
+    "metin_ismi": "The geography of thought: How Asians and Westerners think differently ..",
+    "rest": "and why. Free Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 305,
+  "fields": {
+    "author_surname": "Norenzayan",
+    "author_name": "A. (2013). Big gods: How religion transformed cooperation and conflict. Princeton University Press",
+    "year": 2013,
+    "metin_ismi": "Big gods: How religion transformed cooperation and conflict",
+    "rest": "Princeton University Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 306,
+  "fields": {
+    "author_surname": "Norris",
+    "author_name": "P",
+    "year": 2004,
+    "metin_ismi": "Sacred and Secular: Religion and Politics Worldwide (1",
+    "rest": "bs). Cambridge University Press. https://doi.org/10.1017/CBO9780511791017",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 307,
+  "fields": {
+    "author_surname": "Nunn",
+    "author_name": "C. L",
+    "year": 2018,
+    "metin_ismi": "Sleep in a comparative context: Investigating how human sleep differs from sleep in other primates",
+    "rest": "American Journal of Physical Anthropology, 166(3), 601-612. https://doi.org/10.1002/ajpa.23427",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 308,
+  "fields": {
+    "author_surname": "O’Connor",
+    "author_name": "T",
+    "year": 2022,
+    "metin_ismi": "The Stanford Encyclopedia of Philosophy",
+    "rest": "İçinde E. N. Zalta & U. Nodelman (Ed.), Free Will. Metaphysics Research Lab, Stanford University. https://plato.stanford.edu/archives/win2022/entries/freewill/",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 309,
+  "fields": {
+    "author_surname": "Olivelle",
+    "author_name": "P. (Ed.). (2008). Upaniṣads. Oxford University Press",
+    "year": 2008,
+    "metin_ismi": "Upaniṣads",
+    "rest": "Oxford University Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 310,
+  "fields": {
+    "author_surname": "Olivier",
+    "author_name": "C.-A",
+    "year": 2024,
+    "metin_ismi": "Primate social organization evolved from a flexible pair-living ancestor",
+    "rest": "Proceedings of the National Academy of Sciences, 121(1). https://doi.org/10.1073/pnas.2215401120",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 311,
+  "fields": {
+    "author_surname": "Olson",
+    "author_name": "M. (1971). The logic of collective action: Public goods and the theory of groups. Harvard university press",
+    "year": 1971,
+    "metin_ismi": "The logic of collective action: Public goods and the theory of groups",
+    "rest": "Harvard university press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 312,
+  "fields": {
+    "author_surname": "Organista",
+    "author_name": "E",
+    "year": 2016,
+    "metin_ismi": "Did Homo erectus kill a Pelorovis herd at BK (Olduvai Gorge)? A taphonomic study of BK5",
+    "rest": "Archaeological and Anthropological Sciences, 8(3), 601-624. https://doi.org/10.1007/s12520-015-0241-8",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 313,
+  "fields": {
+    "author_surname": "Páez",
+    "author_name": "D",
+    "year": 2015,
+    "metin_ismi": "Psychosocial effects of perceived emotional synchrony in collective gatherings",
+    "rest": "Journal of Personality and Social Psychology, 108(5), 711-729. https://doi.org/10.1037/pspi0000014",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 314,
+  "fields": {
+    "author_surname": "Parker",
+    "author_name": "M. T",
+    "year": 2010,
+    "metin_ismi": "How I Vote Depends on How I Feel: The Differential Impact of Anger and Fear on Political Information Processing",
+    "rest": "Psychological Science, 21(4), 548-550. https://doi.org/10.1177/0956797610364006",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 315,
+  "fields": {
+    "author_surname": "Parr",
+    "author_name": "T",
+    "year": 2022,
+    "metin_ismi": "Active Inference: The Free Energy Principle in Mind, Brain, and Behavior",
+    "rest": "The MIT Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 316,
+  "fields": {
+    "author_surname": "Patocka",
+    "author_name": "J. (2021). Sorunsallıkta Yaşamak (A. K. Ketboğa",
+    "year": 2021,
+    "metin_ismi": "Sorunsallıkta Yaşamak (A",
+    "rest": "K. Ketboğa, Çev.). Fol Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 317,
+  "fields": {
+    "author_surname": "Pelizzon",
+    "author_name": "A. (2025). Anthropocentrism Redefined. Içinde A. Pelizzon",
+    "year": 2025,
+    "metin_ismi": "Anthropocentrism Redefined",
+    "rest": "Içinde A. Pelizzon, Ecological Jurisprudence (ss. 61-107). Springer Nature Singapore. https://doi.org/10.1007/978-981-96-0173-8_3",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 318,
+  "fields": {
+    "author_surname": "Platon. (2010). Devlet (S. Eyüboğlu & A. Cimcoz",
+    "author_name": "Çev.; 20. bs). Türkiye İş  Bankası Kültür Yayınları",
+    "year": 2010,
+    "metin_ismi": "Devlet (S",
+    "rest": "Eyüboğlu & A. Cimcoz, Çev.; 20. bs). Türkiye İş  Bankası Kültür Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 319,
+  "fields": {
+    "author_surname": "Pontzer",
+    "author_name": "H",
+    "year": 2009,
+    "metin_ismi": "Great ranging associated with greater reproductive investment in mammals",
+    "rest": "Proceedings of the National Academy of Sciences, 106(1), 192-196. https://doi.org/10.1073/pnas.0806105106",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 320,
+  "fields": {
+    "author_surname": "Popa",
+    "author_name": "R. (2004). Between necessity and probability: Searching for the definition and origin of life. Springer",
+    "year": 2004,
+    "metin_ismi": "Between necessity and probability: Searching for the definition and origin of life",
+    "rest": "Springer.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 321,
+  "fields": {
+    "author_surname": "Potter",
+    "author_name": "C. (2017). İnsanın Oluşumu: Değişimin Kanıtı (1. bs). Ayrıntı Yayınları",
+    "year": 2017,
+    "metin_ismi": "İnsanın Oluşumu: Değişimin Kanıtı (1",
+    "rest": "bs). Ayrıntı Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 322,
+  "fields": {
+    "author_surname": "Potts",
+    "author_name": "J. R",
+    "year": 2019,
+    "metin_ismi": "Spatial Memory and Taxis-Driven Pattern Formation in Model Ecosystems",
+    "rest": "Bulletin of Mathematical Biology, 81(7), 2725-2747. https://doi.org/10.1007/s11538-019-00626-9",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 323,
+  "fields": {
+    "author_surname": "Prat",
+    "author_name": "S",
+    "year": 2005,
+    "metin_ismi": "First occurrence of early Homo in the Nachukui Formation (West Turkana, Kenya) at 2.3-2.4Myr",
+    "rest": "Journal of Human Evolution, 49(2), 230-240. https://doi.org/10.1016/j.jhevol.2005.03.009",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 324,
+  "fields": {
+    "author_surname": "Prehn",
+    "author_name": "A",
+    "year": 2006,
+    "metin_ismi": "Chemosensory anxiety signals augment the startle reflex in humans",
+    "rest": "Neuroscience Letters, 394(2), 127-130. https://doi.org/10.1016/j.neulet.2005.10.012",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 325,
+  "fields": {
+    "author_surname": "Prentner",
+    "author_name": "R. (2019). Consciousness and topologically structured phenomenal spaces. Consciousness and Cognition",
+    "year": 2019,
+    "metin_ismi": "Consciousness and topologically structured phenomenal spaces",
+    "rest": "Consciousness and Cognition, 70, 25-38. https://doi.org/10.1016/j.concog.2019.02.002",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 326,
+  "fields": {
+    "author_surname": "Prindle",
+    "author_name": "A",
+    "year": 2015,
+    "metin_ismi": "Ion channels enable electrical communication in bacterial communities",
+    "rest": "Nature, 527(7576), 59-63. https://doi.org/10.1038/nature15709",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 327,
+  "fields": {
+    "author_surname": "Proto",
+    "author_name": "E",
+    "year": 2019,
+    "metin_ismi": "Intelligence, Personality, and Gains from Cooperation in Repeated Interactions",
+    "rest": "Journal of Political Economy, 127(3), 1351-1390. https://doi.org/10.1086/701355",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 328,
+  "fields": {
+    "author_surname": "Pruetz",
+    "author_name": "J. D",
+    "year": 2010,
+    "metin_ismi": "Brief communication: Reaction to fire by savanna chimpanzees ( Pan troglodytes verus ) at Fongoli, Senegal: Conceptualization of “fire behavior” and the case for a chimpanzee model",
+    "rest": "American Journal of Physical Anthropology, 141(4), 646-650. https://doi.org/10.1002/ajpa.21245",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 329,
+  "fields": {
+    "author_surname": "Rappaport",
+    "author_name": "M. B",
+    "year": 2018,
+    "metin_ismi": "EVOLUTION OF RELIGIOUS CAPACITY IN THE GENUS HOMO: COGNITIVE TIME SEQUENCE",
+    "rest": "Zygon: Journal of Religion and Science, 53(1). https://doi.org/10.1111/zygo.12387",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 330,
+  "fields": {
+    "author_surname": "Ray",
+    "author_name": "S. (1999). Survival of olfactory memory through metamorphosis in the fly Musca domestica. Neuroscience Letters",
+    "year": 1999,
+    "metin_ismi": "Survival of olfactory memory through metamorphosis in the fly Musca domestica",
+    "rest": "Neuroscience Letters, 259(1), 37-40. https://doi.org/10.1016/S0304-3940(98)00892-1",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 331,
+  "fields": {
+    "author_surname": "Redlawsk",
+    "author_name": "D. P. (2002). Hot Cognition or Cool Consideration? Testing the Effects of Motivated Reasoning on Political Decision Making. The Journal of Politics",
+    "year": 2002,
+    "metin_ismi": "Hot Cognition or Cool Consideration? Testing the Effects of Motivated Reasoning on Political Decision Making",
+    "rest": "The Journal of Politics, 64(4), 1021-1044. https://doi.org/10.1111/1468-2508.00161",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 332,
+  "fields": {
+    "author_surname": "Rhodes-Purdy",
+    "author_name": "M",
+    "year": 2021,
+    "metin_ismi": "Populist Psychology: Economics, Culture, and Emotions",
+    "rest": "The Journal of Politics, 83(4), 1559-1572. https://doi.org/10.1086/715168",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 333,
+  "fields": {
+    "author_surname": "Rico",
+    "author_name": "G",
+    "year": 2017,
+    "metin_ismi": "The Emotional Underpinnings of Populism: How Anger and Fear Affect Populist Attitudes",
+    "rest": "Swiss Political Science Review, 23(4), 444-461. https://doi.org/10.1111/spsr.12261",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 334,
+  "fields": {
+    "author_surname": "Rietveld",
+    "author_name": "C. A",
+    "year": 2013,
+    "metin_ismi": "GWAS of 126,559 individuals identifies genetic variants associated with educational attainment",
+    "rest": "Science (New York, N.Y.), 340(6139), 1467-1471. https://doi.org/10.1126/science.1235488",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 335,
+  "fields": {
+    "author_surname": "Rigoni",
+    "author_name": "D",
+    "year": 2015,
+    "metin_ismi": "Happiness in action: The impact of positive affect on the time of the conscious intention to act",
+    "rest": "Frontiers in Psychology, 6. https://doi.org/10.3389/fpsyg.2015.01307",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 336,
+  "fields": {
+    "author_surname": "Rigoni",
+    "author_name": "D",
+    "year": 2011,
+    "metin_ismi": "Inducing disbelief in free will alters brain correlates of preconscious motor preparation: The brain minds whether we believe in free will or not",
+    "rest": "Psychological Science, 22(5), 613-618. https://doi.org/10.1177/0956797611405680",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 337,
+  "fields": {
+    "author_surname": "Rigoni",
+    "author_name": "D",
+    "year": 2015,
+    "metin_ismi": "“Why should I care?” Challenging free will attenuates neural reaction to errors",
+    "rest": "Social Cognitive and Affective Neuroscience, 10(2), 262-268. https://doi.org/10.1093/scan/nsu068",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 338,
+  "fields": {
+    "author_surname": "Rigoni",
+    "author_name": "D",
+    "year": 2013,
+    "metin_ismi": "When errors do not matter: Weakening belief in intentional control impairs cognitive reaction to errors",
+    "rest": "Cognition, 127(2), 264-269. https://doi.org/10.1016/j.cognition.2013.01.009",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 339,
+  "fields": {
+    "author_surname": "Rilling",
+    "author_name": "J. K",
+    "year": 2004,
+    "metin_ismi": "The neural correlates of mate competition in dominant male rhesus macaques",
+    "rest": "Biological Psychiatry, 56(5), 364-375. https://doi.org/10.1016/j.biopsych.2004.06.027",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 340,
+  "fields": {
+    "author_surname": "Rizal",
+    "author_name": "Y",
+    "year": 2020,
+    "metin_ismi": "Last appearance of Homo erectus at Ngandong, Java, 117,000–108,000 years ago",
+    "rest": "Nature, 577(7790), 381-385. https://doi.org/10.1038/s41586-019-1863-2",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 341,
+  "fields": {
+    "author_surname": "Rodman",
+    "author_name": "P. S",
+    "year": 1980,
+    "metin_ismi": "Bioenergetics and the origin of hominid bipedalism",
+    "rest": "American Journal of Physical Anthropology, 52(1), 103-106. https://doi.org/10.1002/ajpa.1330520113",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 342,
+  "fields": {
+    "author_surname": "Rodrigues",
+    "author_name": "S. M",
+    "year": 2009,
+    "metin_ismi": "Oxytocin receptor genetic variation relates to empathy and stress reactivity in humans",
+    "rest": "Proceedings of the National Academy of Sciences, 106(50), 21437-21441. https://doi.org/10.1073/pnas.0909579106",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 343,
+  "fields": {
+    "author_surname": "Rolland",
+    "author_name": "N. (2004). Was the Emergence of Home Bases and Domestic Fire a Punctuated Event? A Review of the Middle Pleistocene Record in Eurasia. Asian Perspectives",
+    "year": 2004,
+    "metin_ismi": "Was the Emergence of Home Bases and Domestic Fire a Punctuated Event? A Review of the Middle Pleistocene Record in Eurasia",
+    "rest": "Asian Perspectives, 43(2), 248-280. https://doi.org/10.1353/asi.2004.0027",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 344,
+  "fields": {
+    "author_surname": "Rutherford",
+    "author_name": "A",
+    "year": 2014,
+    "metin_ismi": "Good Fences: The Importance of Setting Boundaries for Peaceful Coexistence",
+    "rest": "PLoS ONE, 9(5), e95660. https://doi.org/10.1371/journal.pone.0095660",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 345,
+  "fields": {
+    "author_surname": "Ryali",
+    "author_name": "S",
+    "year": 2024,
+    "metin_ismi": "Deep learning models reveal replicable, generalizable, and behaviorally relevant sex differences in human functional brain organization",
+    "rest": "Proceedings of the National Academy of Sciences, 121(9), e2310012121. https://doi.org/10.1073/pnas.2310012121",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 346,
+  "fields": {
+    "author_surname": "Sabucedo",
+    "author_name": "J. M",
+    "year": 2014,
+    "metin_ismi": "Anger And Positive Emotions In Political Protest",
+    "rest": "Universitas Psychologica, 13(3).",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 347,
+  "fields": {
+    "author_surname": "Salimpoor",
+    "author_name": "V. N",
+    "year": 2013,
+    "metin_ismi": "Interactions Between the Nucleus Accumbens and Auditory Cortices Predict Music Reward Value",
+    "rest": "Science, 340(6129), 216-219. https://doi.org/10.1126/science.1231059",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 348,
+  "fields": {
+    "author_surname": "Sallet",
+    "author_name": "J",
+    "year": 2011,
+    "metin_ismi": "Social Network Size Affects Neural Circuits in Macaques",
+    "rest": "Science, 334(6056), 697-700. https://doi.org/10.1126/science.1210027",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 349,
+  "fields": {
+    "author_surname": "Samson",
+    "author_name": "D. R",
+    "year": 2017,
+    "metin_ismi": "The evolution of human sleep: Technological and cultural innovation associated with sleep-wake regulation among Hadza hunter-gatherers",
+    "rest": "Journal of Human Evolution, 113, 91-102. https://doi.org/10.1016/j.jhevol.2017.08.005",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 350,
+  "fields": {
+    "author_surname": "Sánchez-Yustos",
+    "author_name": "P",
+    "year": 2016,
+    "metin_ismi": "Techno-economic human behavior in a context of recurrent megafaunal exploitation at 1.3 Ma",
+    "rest": "Evidence from BK4b (Upper Bed II, Olduvai Gorge, Tanzania). Journal of Archaeological Science: Reports, 9, 386-404. https://doi.org/10.1016/j.jasrep.2016.08.019",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 351,
+  "fields": {
+    "author_surname": "Sandgathe",
+    "author_name": "D. M",
+    "year": 2017,
+    "metin_ismi": "Fire and the GenusHomo: An Introduction to Supplement 16",
+    "rest": "Current Anthropology, 58(S16), S165-S174. https://doi.org/10.1086/691424",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 352,
+  "fields": {
+    "author_surname": "Sandgathe",
+    "author_name": "D. M",
+    "year": 2011,
+    "metin_ismi": "Timing of the appearance of habitual fire use",
+    "rest": "Proceedings of the National Academy of Sciences, 108(29). https://doi.org/10.1073/pnas.1106759108",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 353,
+  "fields": {
+    "author_surname": "Sapolsky",
+    "author_name": "R. (2021). Davranış: En İyi ve Kötü Haliyle İnsan Biyolojisi (B. Baysal",
+    "year": 2021,
+    "metin_ismi": "Davranış: En İyi ve Kötü Haliyle İnsan Biyolojisi (B",
+    "rest": "Baysal, Çev.). Pegasus Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 354,
+  "fields": {
+    "author_surname": "Sapolsky",
+    "author_name": "R. M. (2017). Behave: The biology of humans at our best and worst. Penguin Press",
+    "year": 2017,
+    "metin_ismi": "Behave: The biology of humans at our best and worst",
+    "rest": "Penguin Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 355,
+  "fields": {
+    "author_surname": "Sapolsky",
+    "author_name": "R. M. (2023). Determined: A science of life without free will. Penguin press",
+    "year": 2023,
+    "metin_ismi": "Determined: A science of life without free will",
+    "rest": "Penguin press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 356,
+  "fields": {
+    "author_surname": "Sarkissian",
+    "author_name": "H",
+    "year": 2010,
+    "metin_ismi": "Is Belief in Free Will a Cultural Universal? Mind & Language, 25(3), 346-358",
+    "rest": "https://doi.org/10.1111/j.1468-0017.2010.01393.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 357,
+  "fields": {
+    "author_surname": "Sarmiento",
+    "author_name": "E. E. (2010). Comment on the Paleobiology and Classification of            Ardipithecus ramidus. Science",
+    "year": 2010,
+    "metin_ismi": "Comment on the Paleobiology and Classification of            Ardipithecus ramidus",
+    "rest": "Science, 328(5982), 1105-1105. https://doi.org/10.1126/science.1184148",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 358,
+  "fields": {
+    "author_surname": "Sarringhaus",
+    "author_name": "L",
+    "year": 2024,
+    "metin_ismi": "The influence of multiple variables on bipedal context in wild chimpanzees: Implications for the evolution of bipedality in hominins",
+    "rest": "Frontiers in Ecology and Evolution, 12, 1321115. https://doi.org/10.3389/fevo.2024.1321115",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 359,
+  "fields": {
+    "author_surname": "Sasaki",
+    "author_name": "T",
+    "year": 2017,
+    "metin_ismi": "Cumulative culture can emerge from collective intelligence in animal groups",
+    "rest": "Nature Communications, 8(1), 15049. https://doi.org/10.1038/ncomms15049",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 360,
+  "fields": {
+    "author_surname": "Sauer",
+    "author_name": "H. (2024). Ahlak: İyinin ve Kötünün İcadı (O. Kılıç",
+    "year": 2024,
+    "metin_ismi": "Ahlak: İyinin ve Kötünün İcadı (O",
+    "rest": "Kılıç, Çev.; 2. bs). Metis Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 361,
+  "fields": {
+    "author_surname": "Scheele",
+    "author_name": "D",
+    "year": 2012,
+    "metin_ismi": "Oxytocin Modulates Social Distance between Males and Females",
+    "rest": "The Journal of Neuroscience, 32(46), 16074-16079. https://doi.org/10.1523/JNEUROSCI.2755-12.2012",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 362,
+  "fields": {
+    "author_surname": "Schick",
+    "author_name": "K. (2019). Emotions and the everyday: Ambivalence",
+    "year": 2019,
+    "metin_ismi": "Emotions and the everyday: Ambivalence, power and resistance",
+    "rest": "Journal of International Political Theory, 15(2), 261-268. https://doi.org/10.1177/1755088219829858",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 363,
+  "fields": {
+    "author_surname": "Schlegel",
+    "author_name": "A",
+    "year": 2015,
+    "metin_ismi": "Hypnotizing Libet: Readiness potentials with non-conscious volition",
+    "rest": "Consciousness and Cognition, 33, 196-203. https://doi.org/10.1016/j.concog.2015.01.002",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 364,
+  "fields": {
+    "author_surname": "Schmitt",
+    "author_name": "C. (2018). Siyasal Kavramı (E.- Göztepe",
+    "year": 2018,
+    "metin_ismi": "Siyasal Kavramı (E.- Göztepe, Çev.; 4",
+    "rest": "bs). Metis Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 365,
+  "fields": {
+    "author_surname": "Schneiderman",
+    "author_name": "I",
+    "year": 2012,
+    "metin_ismi": "Oxytocin during the initial stages of romantic attachment: Relations to couples’ interactive reciprocity",
+    "rest": "Psychoneuroendocrinology, 37(8), 1277-1285. https://doi.org/10.1016/j.psyneuen.2011.12.021",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 366,
+  "fields": {
+    "author_surname": "Schultz",
+    "author_name": "W. (2010). Dopamine signals for reward value and risk: Basic and recent data. Behavioral and Brain Functions",
+    "year": 2010,
+    "metin_ismi": "Dopamine signals for reward value and risk: Basic and recent data",
+    "rest": "Behavioral and Brain Functions, 6(1), 24. https://doi.org/10.1186/1744-9081-6-24",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 367,
+  "fields": {
+    "author_surname": "Sedikides",
+    "author_name": "C",
+    "year": 2010,
+    "metin_ismi": "Religiosity as self-enhancement: A meta-analysis of the relation between socially desirable responding and religiosity",
+    "rest": "Personality and Social Psychology Review: An Official Journal of the Society for Personality and Social Psychology, Inc, 14(1), 17-36. https://doi.org/10.1177/1088868309351002",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 368,
+  "fields": {
+    "author_surname": "Seifert",
+    "author_name": "A",
+    "year": 2024,
+    "metin_ismi": "Supernovae evidence for foundational change to cosmological models",
+    "rest": "Monthly Notices of the Royal Astronomical Society: Letters, 537(1), L55-L60. https://doi.org/10.1093/mnrasl/slae112",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 369,
+  "fields": {
+    "author_surname": "Selner-O’Hagan",
+    "author_name": "M. B",
+    "year": 1998,
+    "metin_ismi": "Assessing exposure to violence in urban youth",
+    "rest": "Journal of Child Psychology and Psychiatry, and Allied Disciplines, 39(2), 215-224.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 370,
+  "fields": {
+    "author_surname": "Shah",
+    "author_name": "T. M. (2024). Emotions in Politics: A Review of Contemporary Perspectives and Trends. International Political Science Abstracts",
+    "year": 2024,
+    "metin_ismi": "Emotions in Politics: A Review of Contemporary Perspectives and Trends",
+    "rest": "International Political Science Abstracts, 74(1), 1-14. https://doi.org/10.1177/00208345241232769",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 371,
+  "fields": {
+    "author_surname": "Shahack-Gross",
+    "author_name": "R",
+    "year": 2014,
+    "metin_ismi": "Evidence for the repeated use of a central hearth at Middle Pleistocene (300 ky ago) Qesem Cave, Israel",
+    "rest": "Journal of Archaeological Science, 44, 12-21. https://doi.org/10.1016/j.jas.2013.11.015",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 372,
+  "fields": {
+    "author_surname": "Shamay-Tsoory",
+    "author_name": "S. G",
+    "year": 2009,
+    "metin_ismi": "Intranasal Administration of Oxytocin Increases Envy and Schadenfreude (Gloating)",
+    "rest": "Biological Psychiatry, 66(9), 864-870. https://doi.org/10.1016/j.biopsych.2009.06.009",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 373,
+  "fields": {
+    "author_surname": "Shenhav",
+    "author_name": "A",
+    "year": 2012,
+    "metin_ismi": "Divine intuition: Cognitive style influences belief in God",
+    "rest": "Journal of Experimental Psychology: General, 141(3), 423-428. https://doi.org/10.1037/a0025391",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 374,
+  "fields": {
+    "author_surname": "Shih",
+    "author_name": "M",
+    "year": 1999,
+    "metin_ismi": "Stereotype Susceptibility: Identity Salience and Shifts in Quantitative Performance",
+    "rest": "Psychological Science, 10(1), 80-83. https://doi.org/10.1111/1467-9280.00111",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 375,
+  "fields": {
+    "author_surname": "Shomrat",
+    "author_name": "T",
+    "year": 2013,
+    "metin_ismi": "An automated training paradigm reveals long-term memory in planaria and its persistence through head regeneration",
+    "rest": "Journal of Experimental Biology, jeb.087809. https://doi.org/10.1242/jeb.087809",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 376,
+  "fields": {
+    "author_surname": "Shultz",
+    "author_name": "S",
+    "year": 2011,
+    "metin_ismi": "Stepwise evolution of stable sociality in primates",
+    "rest": "Nature, 479(7372), 219-222. https://doi.org/10.1038/nature10601",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 377,
+  "fields": {
+    "author_surname": "Skums",
+    "author_name": "P",
+    "year": 2015,
+    "metin_ismi": "Antigenic cooperation among intrahost HCV variants organized into a complex network of cross-immunoreactivity",
+    "rest": "Proceedings of the National Academy of Sciences, 112(21), 6653-6658. https://doi.org/10.1073/pnas.1422942112",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 378,
+  "fields": {
+    "author_surname": "Sloterdijk",
+    "author_name": "P. (2025). Birlikteliğin Güçlü Nedeni. Ketebe Yayınları",
+    "year": 2025,
+    "metin_ismi": "Birlikteliğin Güçlü Nedeni",
+    "rest": "Ketebe Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 379,
+  "fields": {
+    "author_surname": "Small",
+    "author_name": "M. (2011). Our Babies",
+    "year": 2011,
+    "metin_ismi": "Our Babies, Ourselves: How Biology and Culture Shape the Way We Parent",
+    "rest": "Knopf Doubleday Publishing Group.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 380,
+  "fields": {
+    "author_surname": "Smith",
+    "author_name": "A. S",
+    "year": 2010,
+    "metin_ismi": "Manipulation of the oxytocin system alters social behavior and attraction in pair-bonding primates, Callithrix penicillata",
+    "rest": "Hormones and Behavior, 57(2), 255-262. https://doi.org/10.1016/j.yhbeh.2009.12.004",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 381,
+  "fields": {
+    "author_surname": "Sober",
+    "author_name": "E",
+    "year": 2003,
+    "metin_ismi": "Unto others: The evolution and psychology of unselfish behavior (4",
+    "rest": "print). Harvard Univ. Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 382,
+  "fields": {
+    "author_surname": "Soon",
+    "author_name": "C. S",
+    "year": 2008,
+    "metin_ismi": "Unconscious determinants of free decisions in the human brain",
+    "rest": "Nature Neuroscience, 11(5), 543-545. https://doi.org/10.1038/nn.2112",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 383,
+  "fields": {
+    "author_surname": "Speliotes",
+    "author_name": "E. K",
+    "year": 2010,
+    "metin_ismi": "Association analyses of 249,796 individuals reveal 18 new loci associated with body mass index",
+    "rest": "Nature Genetics, 42(11), 937-948. https://doi.org/10.1038/ng.686",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 384,
+  "fields": {
+    "author_surname": "Sponville",
+    "author_name": "A. C. (2022). Felsefe Nedir? (İ. Birkan",
+    "year": 2022,
+    "metin_ismi": "Felsefe Nedir? (İ",
+    "rest": "Birkan, Çev.). İletişim Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 385,
+  "fields": {
+    "author_surname": "Starcke",
+    "author_name": "K",
+    "year": 2011,
+    "metin_ismi": "Does stress alter everyday moral decision-making? Psychoneuroendocrinology, 36(2), 210-219",
+    "rest": "https://doi.org/10.1016/j.psyneuen.2010.07.010",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 386,
+  "fields": {
+    "author_surname": "Stiner",
+    "author_name": "M. C",
+    "year": 2011,
+    "metin_ismi": "Hearth-side socioeconomics, hunting and paleoecology during the late Lower Paleolithic at Qesem Cave, Israel",
+    "rest": "Journal of Human Evolution, 60(2), 213-233. https://doi.org/10.1016/j.jhevol.2010.10.006",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 387,
+  "fields": {
+    "author_surname": "Strier",
+    "author_name": "K. (2001). Beyond the apes: Reasons to consider the entire primate order. İçinde F. de Waal (Ed.)",
+    "year": 2001,
+    "metin_ismi": "Beyond the apes: Reasons to consider the entire primate order",
+    "rest": "İçinde F. de Waal (Ed.), Tree of origin: What primate behavior can tell us about human social evolution (ss. 69-93). Harvard University Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 388,
+  "fields": {
+    "author_surname": "Stringer",
+    "author_name": "C. (2016). The origin and evolution of Homo sapiens. Philosophical Transactions of the Royal Society B: Biological Sciences",
+    "year": 2016,
+    "metin_ismi": "The origin and evolution of Homo sapiens",
+    "rest": "Philosophical Transactions of the Royal Society B: Biological Sciences, 371(1698), 20150237. https://doi.org/10.1098/rstb.2015.0237",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 389,
+  "fields": {
+    "author_surname": "Suwa",
+    "author_name": "G",
+    "year": 2009,
+    "metin_ismi": "The Ardipithecus ramidus skull and its implications for hominid origins",
+    "rest": "Science (New York, N.Y.), 326(5949), 68e1-7.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 390,
+  "fields": {
+    "author_surname": "Swedell",
+    "author_name": "L",
+    "year": 2012,
+    "metin_ismi": "A Papionin Multilevel Society as a Model for Hominin Social Evolution",
+    "rest": "International Journal of Primatology, 33(5), 1165-1193. https://doi.org/10.1007/s10764-012-9600-9",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 391,
+  "fields": {
+    "author_surname": "Sweitzer",
+    "author_name": "M. M",
+    "year": 2013,
+    "metin_ismi": "Polymorphic variation in the dopamine D4 receptor predicts delay discounting as a function of childhood socioeconomic status: Evidence for differential susceptibility",
+    "rest": "Social Cognitive and Affective Neuroscience, 8(5), 499-508. https://doi.org/10.1093/scan/nss020",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 392,
+  "fields": {
+    "author_surname": "Taber",
+    "author_name": "C. S",
+    "year": 2006,
+    "metin_ismi": "Motivated Skepticism in the Evaluation of Political Beliefs",
+    "rest": "American Journal of Political Science, 50(3), 755-769. https://doi.org/10.1111/j.1540-5907.2006.00214.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 393,
+  "fields": {
+    "author_surname": "Takahashi",
+    "author_name": "H",
+    "year": 2009,
+    "metin_ismi": "When Your Gain Is My Pain and Your Pain Is My Gain: Neural Correlates of Envy and Schadenfreude",
+    "rest": "Science, 323(5916), 937-939. https://doi.org/10.1126/science.1165604",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 394,
+  "fields": {
+    "author_surname": "Tarde",
+    "author_name": "G. (2019). Monadoloji ve Sosyoloji (Ö. Doğan",
+    "year": 2019,
+    "metin_ismi": "Monadoloji ve Sosyoloji (Ö",
+    "rest": "Doğan, Çev.). Doğu Batı Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 395,
+  "fields": {
+    "author_surname": "Tegmark",
+    "author_name": "M. (2000). Why the brain is probably not a quantum computer. Information Sciences",
+    "year": 2000,
+    "metin_ismi": "Why the brain is probably not a quantum computer",
+    "rest": "Information Sciences, 128(3-4), 155-179. https://doi.org/10.1016/S0020-0255(00)00051-7",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 396,
+  "fields": {
+    "author_surname": "Thaler",
+    "author_name": "R. (1994). Quasi-rational economic. Russell Sage Foundation",
+    "year": 1994,
+    "metin_ismi": "Quasi-rational economic",
+    "rest": "Russell Sage Foundation.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 397,
+  "fields": {
+    "author_surname": "Thomas",
+    "author_name": "F",
+    "year": 2002,
+    "metin_ismi": "Do hairworms (Nematomorpha) manipulate the water seeking behaviour of their terrestrial hosts? Journal of Evolutionary Biology, 15(3), 356-361",
+    "rest": "https://doi.org/10.1046/j.1420-9101.2002.00410.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 398,
+  "fields": {
+    "author_surname": "Tiger",
+    "author_name": "L. (1969). Men in groups. Random House",
+    "year": 1969,
+    "metin_ismi": "Men in groups",
+    "rest": "Random House.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 399,
+  "fields": {
+    "author_surname": "Tokdoğan",
+    "author_name": "N. (2020). Reading politics through emotions: Ontological ressentiment as the emotional basis of current politics in Turkey. Nations and Nationalism",
+    "year": 2020,
+    "metin_ismi": "Reading politics through emotions: Ontological ressentiment as the emotional basis of current politics in Turkey",
+    "rest": "Nations and Nationalism, 26(2), 388-406. https://doi.org/10.1111/nana.12546",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 400,
+  "fields": {
+    "author_surname": "Tol",
+    "author_name": "R. S. J",
+    "year": 2010,
+    "metin_ismi": "Climate change and violent conflict in Europe over the last millennium",
+    "rest": "Climatic Change, 99(1-2), 65-79. https://doi.org/10.1007/s10584-009-9659-2",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 401,
+  "fields": {
+    "author_surname": "Tsuda",
+    "author_name": "S",
+    "year": 2009,
+    "metin_ismi": "The Phi-Bot: A Robot Controlled by a Slime Mould",
+    "rest": "Içinde A. Adamatzky & M. Komosinski (Ed.), Artificial Life Models in Hardware (ss. 213-232). Springer London. https://doi.org/10.1007/978-1-84882-530-7_10",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 402,
+  "fields": {
+    "author_surname": "Tsukiura",
+    "author_name": "T",
+    "year": 2011,
+    "metin_ismi": "Shared brain activity for aesthetic and moral judgments: Implications for the Beauty-is-Good stereotype",
+    "rest": "Social Cognitive and Affective Neuroscience, 6(1), 138-148. https://doi.org/10.1093/scan/nsq025",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 403,
+  "fields": {
+    "author_surname": "Turkheimer",
+    "author_name": "E",
+    "year": 2003,
+    "metin_ismi": "Socioeconomic Status Modifies Heritability of IQ in Young Children",
+    "rest": "Psychological Science, 14(6), 623-628. https://doi.org/10.1046/j.0956-7976.2003.psci_1475.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 404,
+  "fields": {
+    "author_surname": "Twomey",
+    "author_name": "T. (2013). The Cognitive Implications of Controlled Fire Use by Early Humans. Cambridge Archaeological Journal",
+    "year": 2013,
+    "metin_ismi": "The Cognitive Implications of Controlled Fire Use by Early Humans",
+    "rest": "Cambridge Archaeological Journal, 23(1), 113-128. https://doi.org/10.1017/s0959774313000085",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 405,
+  "fields": {
+    "author_surname": "Uskul",
+    "author_name": "A. K",
+    "year": 2008,
+    "metin_ismi": "Ecocultural basis of cognition: Farmers and fishermen are more holistic than herders",
+    "rest": "Proceedings of the National Academy of Sciences, 105(25), 8552-8556. https://doi.org/10.1073/pnas.0803874105",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 406,
+  "fields": {
+    "author_surname": "Valentino",
+    "author_name": "N. A",
+    "year": 2009,
+    "metin_ismi": "Selective Exposure in the Internet Age: The Interaction between Anxiety and Information Utility",
+    "rest": "Political Psychology, 30(4), 591-613. https://doi.org/10.1111/j.1467-9221.2009.00716.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 407,
+  "fields": {
+    "author_surname": "Valentino",
+    "author_name": "N. A",
+    "year": 2011,
+    "metin_ismi": "Election Night’s Alright for Fighting: The Role of Emotions in Political Participation",
+    "rest": "The Journal of Politics, 73(1), 156-170. https://doi.org/10.1017/S0022381610000939",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 408,
+  "fields": {
+    "author_surname": "Van Honk",
+    "author_name": "J",
+    "year": 2005,
+    "metin_ismi": "Testosterone Reduces Unconscious Fear but Not Consciously Experienced Anxiety: Implications for the Disorders of Fear and Anxiety",
+    "rest": "Biological Psychiatry, 58(3), 218-225. https://doi.org/10.1016/j.biopsych.2005.04.003",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 409,
+  "fields": {
+    "author_surname": "Van Honk",
+    "author_name": "J",
+    "year": 2011,
+    "metin_ismi": "Testosterone administration impairs cognitive empathy in women depending on second-to-fourth digit ratio",
+    "rest": "Proceedings of the National Academy of Sciences, 108(8), 3448-3452. https://doi.org/10.1073/pnas.1011891108",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 410,
+  "fields": {
+    "author_surname": "Van Kleef",
+    "author_name": "G. A",
+    "year": 2016,
+    "metin_ismi": "Emotional collectives: How groups shape emotions and emotions shape groups",
+    "rest": "Cognition and Emotion, 30(1), 3-19. https://doi.org/10.1080/02699931.2015.1081349",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 411,
+  "fields": {
+    "author_surname": "Van Vugt",
+    "author_name": "M",
+    "year": 2013,
+    "metin_ismi": "Men behaving nicely: Public goods as peacock tails",
+    "rest": "British Journal of Psychology, 104(1), 3-13. https://doi.org/10.1111/j.2044-8295.2011.02093.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 412,
+  "fields": {
+    "author_surname": "Van Wingen",
+    "author_name": "G",
+    "year": 2010,
+    "metin_ismi": "Testosterone reduces amygdala–orbitofrontal cortex coupling",
+    "rest": "Psychoneuroendocrinology, 35(1), 105-113. https://doi.org/10.1016/j.psyneuen.2009.09.007",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 413,
+  "fields": {
+    "author_surname": "Van Zomeren",
+    "author_name": "M. (2021). Toward an Integrative Perspective on Distinct Positive Emotions for Political Action: Analyzing",
+    "year": 2021,
+    "metin_ismi": "Toward an Integrative Perspective on Distinct Positive Emotions for Political Action: Analyzing, Comparing, Evaluating, and Synthesizing Three Theoretical Perspectives",
+    "rest": "Political Psychology, 42(S1), 173-194. https://doi.org/10.1111/pops.12795",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 414,
+  "fields": {
+    "author_surname": "Vasilopoulos",
+    "author_name": "P",
+    "year": 2019,
+    "metin_ismi": "Fear, Anger, and Voting for the Far Right: Evidence From the November 13, 2015 Paris Terror Attacks",
+    "rest": "Political Psychology, 40(4), 679-704. https://doi.org/10.1111/pops.12513",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 415,
+  "fields": {
+    "author_surname": "Vazquez Gonzalez",
+    "author_name": "J. A",
+    "year": 2020,
+    "metin_ismi": "Inflationary cosmology: From theory to observations",
+    "rest": "Revista Mexicana de Física E, 17(1 Jan-Jun), 73-91. https://doi.org/10.31349/RevMexFisE.17.73",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 416,
+  "fields": {
+    "author_surname": "Versteeg",
+    "author_name": "E. J",
+    "year": 2021,
+    "metin_ismi": "Seasonal variation of behavior and brain size in a freshwater fish",
+    "rest": "Ecology and Evolution, 11(21), 14950-14959. https://doi.org/10.1002/ece3.8179",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 417,
+  "fields": {
+    "author_surname": "Villarreal",
+    "author_name": "L. P. (2004). Are Viruses Alive? Scientific American",
+    "year": 2004,
+    "metin_ismi": "Are Viruses Alive? Scientific American, 291(6), 100-105",
+    "rest": "https://doi.org/10.1038/scientificamerican1204-100",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 418,
+  "fields": {
+    "author_surname": "Virgin",
+    "author_name": "C. E",
+    "year": 1997,
+    "metin_ismi": "Styles of male social behavior and their endocrine correlates among low-ranking baboons",
+    "rest": "American Journal of Primatology, 42(1), 25-39. https://doi.org/10.1002/(SICI)1098-2345(1997)42:1%253C25::AID-AJP2%253E3.0.CO;2-0",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 419,
+  "fields": {
+    "author_surname": "Voegelin",
+    "author_name": "E",
+    "year": 1998,
+    "metin_ismi": "Israel and revelation (Nachdr.)",
+    "rest": "Louisiana State Univ. Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 420,
+  "fields": {
+    "author_surname": "Vogel",
+    "author_name": "G. (1997). Scientists Probe Feelings Behind Decision-Making. Science",
+    "year": 1997,
+    "metin_ismi": "Scientists Probe Feelings Behind Decision-Making",
+    "rest": "Science, 275(5304), 1269-1269. https://doi.org/10.1126/science.275.5304.1269",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 421,
+  "fields": {
+    "author_surname": "Vohs",
+    "author_name": "K. D",
+    "year": 2008,
+    "metin_ismi": "Making choices impairs subsequent self-control: A limited-resource account of decision making, self-regulation, and active initiative",
+    "rest": "Journal of Personality and Social Psychology, 94(5), 883-898. https://doi.org/10.1037/0022-3514.94.5.883",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 422,
+  "fields": {
+    "author_surname": "Vohs",
+    "author_name": "K. D",
+    "year": 2008,
+    "metin_ismi": "The Value of Believing in Free Will: Encouraging a Belief in Determinism Increases Cheating",
+    "rest": "Psychological Science, 19(1), 49-54. https://doi.org/10.1111/j.1467-9280.2008.02045.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 423,
+  "fields": {
+    "author_surname": "Von Der Ohe",
+    "author_name": "C. G",
+    "year": 2006,
+    "metin_ismi": "Ubiquitous and Temperature-Dependent Neural Plasticity in Hibernators",
+    "rest": "The Journal of Neuroscience, 26(41), 10590-10598. https://doi.org/10.1523/JNEUROSCI.2874-06.2006",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 424,
+  "fields": {
+    "author_surname": "Vorländer",
+    "author_name": "H",
+    "year": 2018,
+    "metin_ismi": "PEGIDA and New Right-Wing Populism in Germany",
+    "rest": "Springer International Publishing. https://doi.org/10.1007/978-3-319-67495-7",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 425,
+  "fields": {
+    "author_surname": "Wacey",
+    "author_name": "D",
+    "year": 2011,
+    "metin_ismi": "Microfossils of sulphur-metabolizing cells in 3.4-billion-year-old rocks of Western Australia",
+    "rest": "Nature Geoscience, 4(10), 698-702. https://doi.org/10.1038/ngeo1238",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 426,
+  "fields": {
+    "author_surname": "Wächtershäuser",
+    "author_name": "G. (1992). Groundworks for an evolutionary biochemistry: The iron-sulphur world. Progress in Biophysics and Molecular Biology",
+    "year": 1992,
+    "metin_ismi": "Groundworks for an evolutionary biochemistry: The iron-sulphur world",
+    "rest": "Progress in Biophysics and Molecular Biology, 58(2), 85-201. https://doi.org/10.1016/0079-6107(92)90022-X",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 427,
+  "fields": {
+    "author_surname": "Watanabe",
+    "author_name": "K",
+    "year": 2014,
+    "metin_ismi": "Neural mechanisms of dual-task interference and cognitive capacity limitation in the prefrontal cortex",
+    "rest": "Nature Neuroscience, 17(4), 601-611. https://doi.org/10.1038/nn.3667",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 428,
+  "fields": {
+    "author_surname": "Weaver",
+    "author_name": "I. C. G",
+    "year": 2004,
+    "metin_ismi": "Epigenetic programming by maternal behavior",
+    "rest": "Nature Neuroscience, 7(8), 847-854. https://doi.org/10.1038/nn1276",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 429,
+  "fields": {
+    "author_surname": "Weber",
+    "author_name": "C. (2013). Emotions",
+    "year": 2013,
+    "metin_ismi": "Emotions, Campaigns, and Political Participation",
+    "rest": "Political Research Quarterly, 66(2), 414-428. https://doi.org/10.1177/1065912912449697",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 430,
+  "fields": {
+    "author_surname": "Webster",
+    "author_name": "J. D. (2003). An exploratory analysis of a self-assessed wisdom scale. Journal of Adult Development",
+    "year": 2003,
+    "metin_ismi": "An exploratory analysis of a self-assessed wisdom scale",
+    "rest": "Journal of Adult Development, 10(1), 13-22. https://doi.org/10.1023/A:1020782619051",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 431,
+  "fields": {
+    "author_surname": "Webster",
+    "author_name": "S. W",
+    "year": 2022,
+    "metin_ismi": "Emotion and Politics: Noncognitive Psychological Biases in Public Opinion",
+    "rest": "Annual Review of Political Science, 25(1), 401-418. https://doi.org/10.1146/annurev-polisci-051120-105353",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 432,
+  "fields": {
+    "author_surname": "Wei",
+    "author_name": "Y",
+    "year": 2014,
+    "metin_ismi": "Paternally induced transgenerational inheritance of susceptibility to diabetes in mammals",
+    "rest": "Proceedings of the National Academy of Sciences, 111(5), 1873-1878. https://doi.org/10.1073/pnas.1321195111",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 433,
+  "fields": {
+    "author_surname": "Wheeler",
+    "author_name": "P. E. (1991). The influence of bipedalism on the energy and water budgets of early hominids. Journal of Human Evolution",
+    "year": 1991,
+    "metin_ismi": "The influence of bipedalism on the energy and water budgets of early hominids",
+    "rest": "Journal of Human Evolution, 21(2), 117-136. https://doi.org/10.1016/0047-2484(91)90003-e",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 434,
+  "fields": {
+    "author_surname": "White",
+    "author_name": "T. D",
+    "year": 1995,
+    "metin_ismi": "Australopithecus ramidus, a new species of early hominid from Aramis, Ethiopia",
+    "rest": "Nature, 375(6526), 88-88. https://doi.org/10.1038/375088a0",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 435,
+  "fields": {
+    "author_surname": "Whitehead",
+    "author_name": "A. N. (2020). Aklın İşlevi (1. bs). Norgunk Yayıncılık",
+    "year": 2020,
+    "metin_ismi": "Aklın İşlevi (1",
+    "rest": "bs). Norgunk Yayıncılık.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 436,
+  "fields": {
+    "author_surname": "Wiessner",
+    "author_name": "P. W. (2014). Embers of society: Firelight talk among the Ju/’hoansi Bushmen. Proceedings of the National Academy of Sciences",
+    "year": 2014,
+    "metin_ismi": "Embers of society: Firelight talk among the Ju/’hoansi Bushmen",
+    "rest": "Proceedings of the National Academy of Sciences, 111(39), 14027-14035. https://doi.org/10.1073/pnas.1404212111",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 437,
+  "fields": {
+    "author_surname": "Wilkinson",
+    "author_name": "R. G. (2001). Mind the gap: Hierarchies",
+    "year": 2001,
+    "metin_ismi": "Mind the gap: Hierarchies, health and human evolution",
+    "rest": "Yale University Press.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 438,
+  "fields": {
+    "author_surname": "Wolak",
+    "author_name": "J",
+    "year": 2022,
+    "metin_ismi": "Enraged and engaged? Emotions as motives for discussing politics",
+    "rest": "American Politics Research, 50(2), 186-198.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 439,
+  "fields": {
+    "author_surname": "WoldeGabriel",
+    "author_name": "G",
+    "year": 2009,
+    "metin_ismi": "The Geological, Isotopic, Botanical, Invertebrate, and Lower Vertebrate Surroundings of            Ardipithecus ramidus",
+    "rest": "Science, 326(5949), 65. https://doi.org/10.1126/science.1175817",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 440,
+  "fields": {
+    "author_surname": "Wrangham",
+    "author_name": "R. (2017). Control of Fire in the Paleolithic: Evaluating the Cooking Hypothesis. Current Anthropology",
+    "year": 2017,
+    "metin_ismi": "Control of Fire in the Paleolithic: Evaluating the Cooking Hypothesis",
+    "rest": "Current Anthropology, 58(S16), S303-S313. https://doi.org/10.1086/692113",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 441,
+  "fields": {
+    "author_surname": "Wrangham",
+    "author_name": "R",
+    "year": 2010,
+    "metin_ismi": "Human adaptation to the control of fire",
+    "rest": "Evolutionary Anthropology: Issues, News, and Reviews, 19(5), 187-199. https://doi.org/10.1002/evan.20275",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 442,
+  "fields": {
+    "author_surname": "Wrangham",
+    "author_name": "R. W. (1980). Bipedal locomotion as a feeding adaptation in gelada baboons",
+    "year": 1980,
+    "metin_ismi": "Bipedal locomotion as a feeding adaptation in gelada baboons, and its implications for hominid evolution",
+    "rest": "Journal of Human Evolution, 9(4), 329-331. https://doi.org/10.1016/0047-2484(80)90059-7",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 443,
+  "fields": {
+    "author_surname": "Wrangham",
+    "author_name": "R. W. (2009). Catching fire: How cooking made us human. Basic Books",
+    "year": 2009,
+    "metin_ismi": "Catching fire: How cooking made us human",
+    "rest": "Basic Books.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 444,
+  "fields": {
+    "author_surname": "Wright",
+    "author_name": "N. D",
+    "year": 2012,
+    "metin_ismi": "Testosterone disrupts human collaboration by increasing egocentric choices",
+    "rest": "Proceedings of the Royal Society B: Biological Sciences, 279(1736), 2275-2280. https://doi.org/10.1098/rspb.2011.2523",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 445,
+  "fields": {
+    "author_surname": "Xue",
+    "author_name": "K. S",
+    "year": 2016,
+    "metin_ismi": "Cooperation between distinct viral variants promotes growth of H3N2 influenza in cell culture",
+    "rest": "eLife, 5, e13974. https://doi.org/10.7554/eLife.13974",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 446,
+  "fields": {
+    "author_surname": "Yang",
+    "author_name": "C.-Y",
+    "year": 2020,
+    "metin_ismi": "Encoding Membrane-Potential-Based Memory within a Microbial Community",
+    "rest": "Cell Systems, 10(5), 417-423.e3. https://doi.org/10.1016/j.cels.2020.04.002",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 447,
+  "fields": {
+    "author_surname": "Young",
+    "author_name": "A. H",
+    "year": 1999,
+    "metin_ismi": "The effects of chronic administration of hydrocortisone on cognitive function in normal male volunteers",
+    "rest": "Psychopharmacology, 145(3), 260-266. https://doi.org/10.1007/s002130051057",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 448,
+  "fields": {
+    "author_surname": "Young",
+    "author_name": "L",
+    "year": 2010,
+    "metin_ismi": "Damage to Ventromedial Prefrontal Cortex Impairs Judgment of Harmful Intent",
+    "rest": "Neuron, 65(6), 845-851. https://doi.org/10.1016/j.neuron.2010.03.003",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 449,
+  "fields": {
+    "author_surname": "Yravedra",
+    "author_name": "J",
+    "year": 2016,
+    "metin_ismi": "The larger mammal palimpsest from TK (Thiongo Korongo), Bed II, Olduvai Gorge, Tanzania",
+    "rest": "Quaternary International, 417, 3-15. https://doi.org/10.1016/j.quaint.2015.04.013",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 450,
+  "fields": {
+    "author_surname": "Zampini",
+    "author_name": "M",
+    "year": 2010,
+    "metin_ismi": "Assessing the Role of Sound in the Perception of Food and Drink",
+    "rest": "Chemosensory Perception, 3(1), 57-67. https://doi.org/10.1007/s12078-010-9064-2",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 451,
+  "fields": {
+    "author_surname": "Zhang",
+    "author_name": "C. (2022). Contested disaster nationalism in the digital age: Emotional registers and geopolitical imaginaries in COVID-19 narratives on Chinese social media. Review of International Studies",
+    "year": 2022,
+    "metin_ismi": "Contested disaster nationalism in the digital age: Emotional registers and geopolitical imaginaries in COVID-19 narratives on Chinese social media",
+    "rest": "Review of International Studies, 48(2), 219-242. https://doi.org/10.1017/S0260210522000018",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 452,
+  "fields": {
+    "author_surname": "Zhou",
+    "author_name": "W",
+    "year": 2009,
+    "metin_ismi": "Fear-Related Chemosignals Modulate Recognition of Fear in Ambiguous Facial Expressions",
+    "rest": "Psychological Science, 20(2), 177-183. https://doi.org/10.1111/j.1467-9280.2009.02263.x",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 453,
+  "fields": {
+    "author_surname": "Zizek",
+    "author_name": "S. (2025). Uyanmak İçin Çok Geç: Gelecek yoksa bizi ne bekliyor? (B. Gönülçelen",
+    "year": 2025,
+    "metin_ismi": "Uyanmak İçin Çok Geç: Gelecek yoksa bizi ne bekliyor? (B",
+    "rest": "Gönülçelen, Çev.; 2. bs). İş Bankası Kültür Yayınları.",
+    "abbreviation": null,
+    "created_by": 1
+  }
+},
+{
+  "model": "core.reference",
+  "pk": 454,
+  "fields": {
+    "author_surname": "Zogmaister",
+    "author_name": "C",
+    "year": 2008,
+    "metin_ismi": "The Impact of Loyalty and Equality on Implicit Ingroup Favoritism",
+    "rest": "Group Processes & Intergroup Relations, 11(4), 493-512. https://doi.org/10.1177/1368430208095402",
+    "abbreviation": null,
+    "created_by": 1
+  }
+}
+]
