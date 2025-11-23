@@ -407,10 +407,33 @@ document.addEventListener('DOMContentLoaded', function () {
         // Update width dynamically based on current chart container size
         width = document.getElementById('chart').clientWidth;
 
+        // Get current theme colors from CSS variables
+        const rootStyles = getComputedStyle(document.documentElement);
+        let backgroundColor = rootStyles.getPropertyValue('--content-background-color').trim() || '#fafafa';
+        const bgColor = rootStyles.getPropertyValue('--background-color').trim();
+
+        // Smart fallback: Eğer content-background beyazsa ama background-color koyuysa, background-color'ı kullan
+        // Bu, eski profil ayarlarıyla uyumluluk için
+        if (isLightColor(backgroundColor) && !isLightColor(bgColor)) {
+            backgroundColor = bgColor;
+        }
+
+        function isLightColor(color) {
+            // Hex rengi RGB'ye çevir ve parlaklığı hesapla
+            if (!color || color === '') return true;
+            const hex = color.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            // Relative luminance formula
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            return brightness > 155; // 155+ açık renk sayılır
+        }
+
         d3.select("#chart").selectAll("*").remove();
         svg = d3.select("#chart").append("svg")
             .attr("width", width).attr("height", height)
-            .style("background", "#fafafa");
+            .style("background", backgroundColor);
 
         g = svg.append("g");
         userLabelGroup = g.append("g").attr("class", "user-labels");
@@ -450,14 +473,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 .on("start", dragstarted).on("drag", dragged).on("end", dragended)
             );
 
-        // Başlık etiketleri
+        // Başlık etiketleri - fallback ile
+        let textColor = rootStyles.getPropertyValue('--text-color').trim() || '#222';
+        // Eğer background koyu ama text açıksa, text color'ı kullan
+        if (!isLightColor(backgroundColor) && isLightColor(textColor)) {
+            // Koyu arka plan, açık metin - doğru kombinasyon, değiştirme
+        } else if (!isLightColor(backgroundColor) && !isLightColor(textColor)) {
+            // Koyu arka plan, koyu metin - yanlış! Açık renge çevir
+            textColor = '#e5e5e5';
+        }
+
         label = g.append("g").attr("class", "labels")
             .selectAll("text").data(nodesData).enter().append("text")
             .attr("dy", -10)
             .attr("text-anchor", "middle")
             .text(d => d.label)
             .style("font-size", d => (12 + d.users.length * 2) + "px")
-            .style("fill", "#222");
+            .style("fill", textColor);
 
         // Force simulation
         simulation = d3.forceSimulation(nodesData)
@@ -495,6 +527,34 @@ document.addEventListener('DOMContentLoaded', function () {
     // Kart şeklinde kutu üstünde göster!
     function showNodeUserLabels(event, d) {
         userLabelGroup.selectAll("*").remove();
+
+        // Get theme colors with smart fallback
+        const rootStyles = getComputedStyle(document.documentElement);
+        let cardBgColor = rootStyles.getPropertyValue('--content-background-color').trim() || '#fff';
+        let cardTextColor = rootStyles.getPropertyValue('--text-color').trim() || '#24264b';
+        const borderColor = rootStyles.getPropertyValue('--header-background-color').trim() || '#4682ea';
+        const bgColor = rootStyles.getPropertyValue('--background-color').trim();
+
+        // Helper function
+        function isLightColor(color) {
+            if (!color || color === '') return true;
+            const hex = color.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            return brightness > 155;
+        }
+
+        // Fallback: Eğer content-background beyazsa ama background-color koyuysa
+        if (isLightColor(cardBgColor) && !isLightColor(bgColor)) {
+            cardBgColor = bgColor;
+        }
+
+        // Text color fallback: Koyu arka plan + koyu metin = yanlış!
+        if (!isLightColor(cardBgColor) && !isLightColor(cardTextColor)) {
+            cardTextColor = '#e5e5e5';
+        }
 
         // Kutu ayarları
         const users = d.users;
@@ -549,8 +609,8 @@ document.addEventListener('DOMContentLoaded', function () {
             .attr("x", 0).attr("y", 0)
             .attr("rx", 17).attr("ry", 17)
             .attr("width", cardWidth).attr("height", cardHeight)
-            .attr("fill", "#fff")
-            .attr("stroke", "#4682ea")
+            .attr("fill", cardBgColor)
+            .attr("stroke", borderColor)
             .attr("stroke-width", 1.5);
 
         // Başlık
@@ -560,7 +620,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .attr("text-anchor", "middle")
             .attr("font-size", "24px")
             .attr("font-weight", "bold")
-            .attr("fill", "#24264b");
+            .attr("fill", cardTextColor);
 
         // Kullanıcı etiketleri
         userRows.forEach((row, rowIdx) => {
@@ -819,8 +879,28 @@ document.addEventListener('DOMContentLoaded', function () {
         const url = URL.createObjectURL(svgBlob);
 
         img.onload = function() {
-            // Draw white background
-            ctx.fillStyle = '#fafafa';
+            // Draw background with theme color (with fallback)
+            const rootStyles = getComputedStyle(document.documentElement);
+            let backgroundColor = rootStyles.getPropertyValue('--content-background-color').trim() || '#fafafa';
+            const bgColor = rootStyles.getPropertyValue('--background-color').trim();
+
+            // Helper function
+            function isLightColor(color) {
+                if (!color || color === '') return true;
+                const hex = color.replace('#', '');
+                const r = parseInt(hex.substr(0, 2), 16);
+                const g = parseInt(hex.substr(2, 2), 16);
+                const b = parseInt(hex.substr(4, 2), 16);
+                const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                return brightness > 155;
+            }
+
+            // Fallback: Eğer content-background beyazsa ama background-color koyuysa
+            if (isLightColor(backgroundColor) && !isLightColor(bgColor)) {
+                backgroundColor = bgColor;
+            }
+
+            ctx.fillStyle = backgroundColor;
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
             // Scale context for high resolution rendering

@@ -30,14 +30,14 @@
                           data-question-slug="{{ t.question.slug }}">
                     Yeniden Düzenle
                   </button>
-                  <button class="btn btn-sm btn-outline-success me-1 gonder-btn"
+                  <button class="btn btn-sm btn-outline-theme-success me-1 gonder-btn"
                           data-taslak-id="{{ t.id }}"
                           data-question-slug="{{ t.question.slug }}"
                           data-taslak-content="{{ t.content|escapejs }}">
                     Doğrudan Gönder
                   </button>
                 {% endif %}
-                <button class="btn btn-sm btn-outline-danger sil-btn"
+                <button class="btn btn-sm btn-outline-theme-danger sil-btn"
                         data-taslak-id="{{ t.id }}">
                   <i class="bi bi-trash"></i> Sil
                 </button>
@@ -58,7 +58,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="deleteConfirmModalLabel">
-          <i class="bi bi-exclamation-triangle text-warning"></i> Taslak Sil
+          <i class="bi bi-exclamation-triangle text-theme-warning"></i> Taslak Sil
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -67,7 +67,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+        <button type="button" class="btn btn-theme-danger" id="confirmDeleteBtn">
           <i class="bi bi-trash"></i> Sil
         </button>
       </div>
@@ -81,7 +81,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="sendConfirmModalLabel">
-          <i class="bi bi-send text-success"></i> Yanıtı Gönder
+          <i class="bi bi-send text-theme-success"></i> Yanıtı Gönder
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -90,7 +90,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-        <button type="button" class="btn btn-success" id="confirmSendBtn">
+        <button type="button" class="btn btn-theme-success" id="confirmSendBtn">
           <i class="bi bi-send"></i> Gönder
         </button>
       </div>
@@ -100,7 +100,7 @@
 
 <!-- Toast Container -->
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-  <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+  <div id="successToast" class="toast align-items-center toast-theme-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
     <div class="d-flex">
       <div class="toast-body">
         <i class="bi bi-check-circle me-2"></i>
@@ -110,7 +110,7 @@
     </div>
   </div>
 
-  <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+  <div id="errorToast" class="toast align-items-center toast-theme-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
     <div class="d-flex">
       <div class="toast-body">
         <i class="bi bi-x-circle me-2"></i>

@@ -27,7 +27,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
-from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, Kenarda, UserProfile, QuestionFollow, AnswerFollow
+from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, Kenarda, UserProfile, QuestionFollow, AnswerFollow, QuestionRelationship
 from ..forms import AnswerForm, QuestionForm, StartingQuestionForm
 from ..querysets import get_today_questions_queryset
 from ..utils import paginate_queryset
@@ -154,7 +154,50 @@ def question_detail(request, slug):
     answer_save_dict = {item['object_id']: item['count'] for item in answer_save_counts}
 
     starting_question_ids = set(StartingQuestion.objects.values_list('question_id', flat=True))
-    is_on_map = (question.id in starting_question_ids) or question.parent_questions.exists()
+
+    # Kullanıcı-bazlı parent kontrolü
+    if request.user.is_authenticated:
+        has_parent = QuestionRelationship.objects.filter(
+            child=question,
+            user=request.user
+        ).exists()
+    else:
+        has_parent = False
+    is_on_map = (question.id in starting_question_ids) or has_parent
+
+    # Bu sorunun TÜM alt sorularını al (kim eklerse eklesin)
+    # Her bir unique child için, onu ekleyen kullanıcıları da bilmemiz gerekiyor
+    subquestion_rels = QuestionRelationship.objects.filter(
+        parent=question
+    ).select_related('child', 'child__user', 'user').order_by('created_at')
+
+    # Alt soruları grupla: {child_question: [users who added it]}
+    from collections import defaultdict
+    subquestions_map = defaultdict(list)
+    for rel in subquestion_rels:
+        subquestions_map[rel.child].append(rel.user)
+
+    # Liste formatına çevir
+    subquestions_list = [
+        {'question': child, 'added_by_users': users}
+        for child, users in subquestions_map.items()
+    ]
+
+    # Bu soruyu alt soru olarak ekleyen TÜM üst soruları al
+    parent_rels = QuestionRelationship.objects.filter(
+        child=question
+    ).select_related('parent', 'parent__user', 'user').order_by('created_at')
+
+    # Üst soruları grupla: {parent_question: [users who added this link]}
+    parents_map = defaultdict(list)
+    for rel in parent_rels:
+        parents_map[rel.parent].append(rel.user)
+
+    # Liste formatına çevir
+    parents_list = [
+        {'question': parent, 'added_by_users': users}
+        for parent, users in parents_map.items()
+    ]
 
     # Takip bilgileri
     user_is_following_question = False
@@ -188,6 +231,8 @@ def question_detail(request, slug):
         'show_followed_only': show_followed_only,
         'user_is_following_question': user_is_following_question,
         'followed_answer_ids': followed_answer_ids,
+        'subquestions_list': subquestions_list,
+        'parents_list': parents_list,
     }
     return render(request, 'core/question_detail.html', context)
 
@@ -262,7 +307,12 @@ def add_subquestion(request, slug):
                 defaults={'user': request.user}
             )
             subquestion.users.add(request.user)
-            parent_question.subquestions.add(subquestion)
+            # Kullanıcı-bazlı ilişki oluştur
+            QuestionRelationship.objects.get_or_create(
+                parent=parent_question,
+                child=subquestion,
+                user=request.user
+            )
 
             # Yanıtı kaydet
             answer = Answer.objects.create(
@@ -479,12 +529,17 @@ def map_data_view(request):
 
     # Haritada görünmesi gereken sorular:
     # 1. Başlangıç soruları
-    # 2. En az bir parent'ı olan sorular (alt sorular)
-    # 3. En az bir subquestion'ı olan sorular (üst sorular)
+    # 2. En az bir parent'ı olan sorular (QuestionRelationship'te child olarak)
+    # 3. En az bir child'ı olan sorular (QuestionRelationship'te parent olarak)
     starting_question_ids = StartingQuestion.objects.values_list('question_id', flat=True)
-    subquestion_ids = Question.objects.filter(parent_questions__isnull=False).values_list('id', flat=True)
-    parent_question_ids = Question.objects.filter(subquestions__isnull=False).values_list('id', flat=True)
-    question_ids = set(starting_question_ids) | set(subquestion_ids) | set(parent_question_ids)
+
+    # QuestionRelationship'ten child olan soruları al
+    child_question_ids = QuestionRelationship.objects.values_list('child_id', flat=True).distinct()
+
+    # QuestionRelationship'ten parent olan soruları al
+    parent_question_ids = QuestionRelationship.objects.values_list('parent_id', flat=True).distinct()
+
+    question_ids = set(starting_question_ids) | set(child_question_ids) | set(parent_question_ids)
 
     # Sadece bu question'ları çek
     queryset = Question.objects.filter(id__in=question_ids)
@@ -508,19 +563,32 @@ def map_data_view(request):
             queryset = queryset.none()
 
     # Düğümleri oluştur ve JSON olarak döndür
-    data = generate_question_nodes(queryset)
+    # user_filter: Eğer user_ids belirtilmişse sadece o kullanıcıların ilişkilerini göster
+    filter_user_ids = None
+    if filter_param == 'me' and request.user.is_authenticated:
+        filter_user_ids = [request.user.id]
+    elif user_ids:
+        filter_user_ids = [int(uid) for uid in user_ids]
+
+    data = generate_question_nodes(queryset, user_filter=filter_user_ids)
     return JsonResponse(data, safe=False)
 
 
-def generate_question_nodes(questions):
+def generate_question_nodes(questions, user_filter=None):
+    """
+    Generate nodes and links for the question map.
+
+    Args:
+        questions: QuerySet of questions to include in the map
+        user_filter: List of user IDs to filter relationships by (None = show all users' relationships)
+    """
     nodes = []
     links = []
 
     # Prefetch answers and users to avoid N+1 queries
     questions = questions.prefetch_related(
         'users',
-        'answers__user',
-        'subquestions'
+        'answers__user'
     )
 
     question_ids = set(q.id for q in questions)
@@ -573,23 +641,33 @@ def generate_question_nodes(questions):
         }
         nodes.append(node)
 
-    # Build links and count connections per node
+    # Build links from QuestionRelationship model
     link_count = {}  # Track how many links each node has
 
-    for question in questions:
-        for subquestion in question.subquestions.all():
-            if subquestion.id in question_ids:
-                parent_id = f"q{question.id}"
-                child_id = f"q{subquestion.id}"
+    # Query QuestionRelationship with user filter
+    relationship_query = QuestionRelationship.objects.filter(
+        parent_id__in=question_ids,
+        child_id__in=question_ids
+    ).select_related('parent', 'child', 'user')
 
-                links.append({
-                    "source": parent_id,
-                    "target": child_id,
-                })
+    # Apply user filter if specified
+    if user_filter:
+        relationship_query = relationship_query.filter(user_id__in=user_filter)
 
-                # Increment link count for both nodes
-                link_count[parent_id] = link_count.get(parent_id, 0) + 1
-                link_count[child_id] = link_count.get(child_id, 0) + 1
+    # Build links from relationships
+    for rel in relationship_query:
+        parent_id = f"q{rel.parent_id}"
+        child_id = f"q{rel.child_id}"
+
+        links.append({
+            "source": parent_id,
+            "target": child_id,
+            "user_id": rel.user_id,  # Track which user created this link
+        })
+
+        # Increment link count for both nodes
+        link_count[parent_id] = link_count.get(parent_id, 0) + 1
+        link_count[child_id] = link_count.get(child_id, 0) + 1
 
     # Update node sizes based on link count (each link adds 0.1 to size)
     for node in nodes:
@@ -686,16 +764,24 @@ def add_existing_subquestion(request, slug):
         if current_question.id == parent_question.id:
             return JsonResponse({'success': False, 'error': 'Bir soru kendisine alt soru olarak eklenemez'}, status=400)
 
-        # Zaten bağlı mı kontrolü
-        if parent_question.subquestions.filter(id=current_question.id).exists():
+        # Zaten bağlı mı kontrolü (kullanıcı bazlı)
+        if QuestionRelationship.objects.filter(
+            parent=parent_question,
+            child=current_question,
+            user=request.user
+        ).exists():
             return JsonResponse({'success': False, 'error': 'Bu başlık zaten seçilen başlığın alt sorusu'}, status=400)
 
         # Döngüsel bağlantı kontrolü
-        if would_create_cycle(parent_question, current_question):
+        if would_create_cycle_user_based(parent_question, current_question, request.user):
             return JsonResponse({'success': False, 'error': 'Bu bağlantı döngüsel bir ilişki oluşturacak'}, status=400)
 
-        # Bağlantıyı ekle: parent_question -> current_question
-        parent_question.subquestions.add(current_question)
+        # Kullanıcı-bazlı bağlantıyı ekle: parent_question -> current_question
+        QuestionRelationship.objects.create(
+            parent=parent_question,
+            child=current_question,
+            user=request.user
+        )
 
         # Başlangıç sorusu yönetimi:
         # Eğer current_question birilerinin başlangıç sorusuysa,
@@ -742,6 +828,35 @@ def would_create_cycle(parent, potential_child):
     return has_path_to(parent, potential_child)
 
 
+def would_create_cycle_user_based(parent, potential_child, user):
+    """
+    Kullanıcı-bazlı döngü kontrolü.
+    Kullanıcının mevcut bağlantılarında parent'tan potential_child'a bir yol varsa döngü oluşur.
+    """
+    visited = set()
+
+    def has_path_to(current, target):
+        """Kullanıcının bağlantılarında current'tan target'a yol var mı?"""
+        if current.id == target.id:
+            return True
+        if current.id in visited:
+            return False
+        visited.add(current.id)
+
+        # Kullanıcının bu sorunun parent'ları arasında kontrol et
+        parent_relationships = QuestionRelationship.objects.filter(
+            child=current,
+            user=user
+        ).select_related('parent')
+
+        for rel in parent_relationships:
+            if has_path_to(rel.parent, target):
+                return True
+        return False
+
+    return has_path_to(parent, potential_child)
+
+
 @login_required
 def search_questions_for_linking(request):
     """AJAX endpoint to search questions that current question can be added as subquestion to"""
@@ -756,13 +871,19 @@ def search_questions_for_linking(request):
     except Question.DoesNotExist:
         return JsonResponse({'results': []})
 
+    # Kullanıcının mevcut parent'larını al (kullanıcı-bazlı)
+    user_parent_ids = QuestionRelationship.objects.filter(
+        child=current_question,
+        user=request.user
+    ).values_list('parent_id', flat=True)
+
     # Tüm soruları ara (herkesin haritasındaki sorular dahil)
     questions = Question.objects.filter(
         question_text__icontains=query
     ).exclude(
         id=current_question_id  # Kendisini hariç tut
     ).exclude(
-        id__in=current_question.parent_questions.values_list('id', flat=True)  # Zaten parent olanları hariç tut
+        id__in=user_parent_ids  # Kullanıcının bu sorusu için zaten parent olanları hariç tut
     ).distinct()[:10]
 
     results = [{
@@ -789,15 +910,30 @@ def unlink_from_parent(request, slug, parent_id):
     # Parent question
     parent_question = get_object_or_404(Question, id=parent_id)
 
-    # İlişkinin gerçekten var olup olmadığını kontrol et
-    if not current_question.parent_questions.filter(id=parent_id).exists():
-        return JsonResponse({'success': False, 'error': 'Bu soru zaten üst soru değil'}, status=400)
+    # İlişkinin gerçekten var olup olmadığını kontrol et (kullanıcı-bazlı)
+    relationship_exists = QuestionRelationship.objects.filter(
+        parent=parent_question,
+        child=current_question,
+        user=request.user
+    ).exists()
 
-    # İlişkiyi kaldır
-    parent_question.subquestions.remove(current_question)
+    if not relationship_exists:
+        return JsonResponse({'success': False, 'error': 'Bu soru zaten üst soru değil veya sizin bağlantınız yok'}, status=400)
 
-    # Orphan kontrolü: Eğer hiç parent kalmadıysa, StartingQuestion olarak ekle
-    if current_question.parent_questions.count() == 0:
+    # İlişkiyi kaldır (sadece bu kullanıcı için)
+    QuestionRelationship.objects.filter(
+        parent=parent_question,
+        child=current_question,
+        user=request.user
+    ).delete()
+
+    # Orphan kontrolü: Eğer kullanıcının bu sorunun hiç parent'ı kalmadıysa, StartingQuestion olarak ekle
+    user_parent_count = QuestionRelationship.objects.filter(
+        child=current_question,
+        user=request.user
+    ).count()
+
+    if user_parent_count == 0:
         # Eğer zaten StartingQuestion değilse ekle
         if not StartingQuestion.objects.filter(question=current_question).exists():
             # Question'ın sahibi tarafından starting question olarak ekle

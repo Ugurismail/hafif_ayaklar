@@ -220,7 +220,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                    <button type="submit" class="btn btn-theme-danger">Evet, Sil</button>
                 </div>
             </form>
         </div>
@@ -268,7 +268,7 @@
                   <!-- JavaScript ile doldurulacak -->
                 </select>
               </div>
-              <button type="button" class="btn btn-success" id="insertDefinitionBtn">Tamam</button>
+              <button type="button" class="btn btn-theme-success" id="insertDefinitionBtn">Tamam</button>
             </div>
           </div>
         </div>
@@ -438,6 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <li class="tbas-color baslik d-flex justify-content-between align-items-center mt-2">
                         <a href="${link}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
                             <span>${q.text}</span>
+                            <small class="">${q.answers_count}</small>
                         </a>
                     </li>
                 `;

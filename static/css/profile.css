@@ -170,8 +170,9 @@ html {
 }
 
 .answer-card:hover {
-    border-left-color: #6E8CA7;
-    background-color: rgba(110, 140, 167, 0.02);
+    border-left-color: var(--button-background-color);
+    background-color: var(--hover-background-color, rgba(0, 0, 0, 0.02));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 /* ========== Statistics Section ========== */
@@ -193,7 +194,7 @@ html {
 .stat-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    border-color: #6E8CA7;
+    border-color: var(--button-background-color);
 }
 
 .stat-value {
@@ -228,9 +229,14 @@ html {
 }
 
 .word-list li:hover {
-    background: #e9ecef;
+    background: var(--hover-background-color, rgba(0, 0, 0, 0.03));
     transform: translateX(8px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.word-list li:hover,
+.word-list li:hover * {
+    color: var(--hover-text-color, inherit) !important;
 }
 
 .word-count-badge {
@@ -249,8 +255,8 @@ html {
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: #6E8CA7;
-    box-shadow: 0 0 0 0.2rem rgba(110, 140, 167, 0.15);
+    border-color: var(--button-background-color);
+    box-shadow: 0 0 0 0.2rem var(--hover-background-color);
     transform: translateY(-2px);
 }
 
@@ -279,8 +285,13 @@ html {
 }
 
 .custom-table tbody tr:hover {
-    background-color: rgba(110, 140, 167, 0.05);
+    background-color: var(--hover-background-color, rgba(0, 0, 0, 0.02));
     transform: scale(1.01);
+}
+
+.custom-table tbody tr:hover,
+.custom-table tbody tr:hover * {
+    color: var(--hover-text-color, inherit) !important;
 }
 
 /* ========== Badge Animations ========== */
@@ -289,8 +300,36 @@ html {
 }
 
 .badge:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ========== Excluded Words Badge ========== */
+.excluded-word-badge {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.excluded-word-badge:hover {
+    background-color: #5a6268 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.excluded-word-badge a {
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.excluded-word-badge a:hover {
+    opacity: 1 !important;
+    transform: scale(1.2);
 }
 
 /* ========== Link Enhancements ========== */

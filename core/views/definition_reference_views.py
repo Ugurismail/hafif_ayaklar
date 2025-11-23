@@ -296,7 +296,9 @@ def edit_reference(request, reference_id):
         if form.is_valid():
             form.save()
             messages.success(request, "Kaynak başarıyla güncellendi.")
-            return redirect('user_profile', username=request.user.username)
+            # Get tab parameter from GET or default to 'kaynaklarim'
+            tab = request.GET.get('tab', 'kaynaklarim')
+            return redirect(f"{reverse('user_profile', kwargs={'username': request.user.username})}?tab={tab}")
     else:
         form = ReferenceForm(instance=reference)
     return render(request, 'core/edit_reference.html', {'form': form})
@@ -309,5 +311,7 @@ def delete_reference(request, reference_id):
     if request.method == 'POST':
         reference.delete()
         messages.success(request, "Kaynak başarıyla silindi.")
-        return redirect('user_profile', username=request.user.username)
+        # Get tab parameter from GET or default to 'kaynaklarim'
+        tab = request.GET.get('tab', 'kaynaklarim')
+        return redirect(f"{reverse('user_profile', kwargs={'username': request.user.username})}?tab={tab}")
     return render(request, 'core/confirm_delete_reference.html', {'reference': reference})

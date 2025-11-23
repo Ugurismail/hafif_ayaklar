@@ -214,9 +214,9 @@
                 </a>
 
                 <!-- Üst Sorulardan Bağlantıyı Kaldır (makas ikonu) -->
-                {% if question.parent_questions.exists %}
+                {% if parents_list %}
                 <a href="#"
-                   class="save-btn ms-1"
+                   class="unlink-btn ms-1"
                    data-bs-toggle="modal"
                    data-bs-target="#unlinkParentsModal"
                    title="Üst Sorulardan Bağlantıyı Kaldır"
@@ -459,7 +459,7 @@
                   {{ form.answer_text }}
                   <button type="submit" class="btn btn-primary mt-2">Yanıtla</button>
                   <button type="button" class="btn btn-secondary mt-2 ms-2" id="sabaha-birak-btn">Kenarda Dursun</button>
-                  <span id="sabahabirak-feedback" style="display:none;" class="text-success ms-2">Taslak kaydedildi!</span>
+                  <span id="sabahabirak-feedback" style="display:none;" class="text-theme-success ms-2">Taslak kaydedildi!</span>
                 </form>
               </div>
             </div>
@@ -479,14 +479,14 @@
           <div class="col-md-2 d-flex flex-column" style="border-left: 1px solid #ccc; height: 100%; min-height: 0;">
             <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
                   <div class="row g-2">  <!-- Satır ekledik, boşluk için g-2 kullanıldı -->
-                      {% if question.parent_questions.count == 0 %}
+                      {% if parents_list|length == 0 %}
                       <div class="col-12 d-grid">
                           <a href="{% url 'add_subquestion' question.slug %}" class="btn btn-outline-secondary btn-sm">
                               <i class="bi bi-chevron-double-down" title="Alt Soru Ekle"> Alt Soru Ekle</i>
                           </a>
                       </div>
 
-                      {% elif question.parent_questions.count > 0 %}
+                      {% elif parents_list|length > 0 %}
                       <div class="col-6 d-grid">
                           <a href="{% url 'add_subquestion' question.slug %}" class="btn btn-outline-secondary btn-sm">
                               <i class="bi bi-chevron-double-down" title="Alt Soru Ekle"> Alt Soru Ekle</i>
@@ -495,22 +495,22 @@
                       {% endif %}
 
 
-                      {% if question.parent_questions.count == 1 %}
-                          {% with parent=question.parent_questions.first %}
+                      {% if parents_list|length == 1 %}
+                          {% with parent_item=parents_list.0 %}
                               <div class="col-6 d-grid">
-                                  <a href="{% url 'question_detail' parent.slug %}" class="btn btn-outline-secondary btn-sm">
+                                  <a href="{% url 'question_detail' parent_item.question.slug %}" class="btn btn-outline-secondary btn-sm">
                                       <i class="bi bi-chevron-double-up" title="Üst Soruya Git"> Üst Soruya Git</i>
                                   </a>
                               </div>
                           {% endwith %}
-                      {% elif question.parent_questions.count > 1 %}
+                      {% elif parents_list|length > 1 %}
                           <div class="col-6 d-grid">
                               <button type="button" class="btn btn-outline-secondary btn-sm"
                                       data-bs-toggle="modal" data-bs-target="#parentQuestionsModal">
                                   <i class="bi bi-chevron-double-up" title="Üst Soruya Git"> Üst Soruya Git</i>
                               </button>
                           </div>
-                          
+
                           <div class="modal fade" id="parentQuestionsModal" tabindex="-1"
                               aria-labelledby="parentQuestionsModalLabel" aria-hidden="true">
                               <div class="modal-dialog">
@@ -522,29 +522,45 @@
                                       </div>
                                       <div class="modal-body">
                                           <ul class="list-group parent-questions-list">
-                                              {% for parent in question.parent_questions.all %}
+                                              {% for parent_item in parents_list %}
                                                   <li class="list-group-item d-flex justify-content-between align-items-center">
                                                       <div>
-                                                          <a href="{% url 'question_detail' parent.slug %}">
-                                                              {{ parent.question_text }}
+                                                          <a href="{% url 'question_detail' parent_item.question.slug %}">
+                                                              {{ parent_item.question.question_text }}
                                                           </a>
                                                           <br>
                                                           <small class="">
-                                                              <a href="{% url 'user_profile' parent.user.username %}">
-                                                                  {{ parent.user.username }}
+                                                              <a href="{% url 'user_profile' parent_item.question.user.username %}">
+                                                                  {{ parent_item.question.user.username }}
                                                               </a>
                                                           </small>
+                                                          {% if parent_item.added_by_users|length > 1 %}
+                                                          <br>
+                                                          <small class="text-muted">
+                                                              Ekleyenler:
+                                                              {% for user in parent_item.added_by_users|slice:":3" %}
+                                                                  <a href="{% url 'user_profile' user.username %}">{{ user.username }}</a>{% if not forloop.last %}, {% endif %}
+                                                              {% endfor %}
+                                                              {% if parent_item.added_by_users|length > 3 %}
+                                                                  <span title="{% for user in parent_item.added_by_users|slice:'3:' %}{{ user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                                                                      +{{ parent_item.added_by_users|length|add:"-3" }} kişi daha
+                                                                  </span>
+                                                              {% endif %}
+                                                          </small>
+                                                          {% endif %}
                                                       </div>
                                                       <div class="d-flex gap-2">
-                                                          <a href="{% url 'question_map' %}?question_id={{ parent.id }}" title="Haritada Gör">
+                                                          <a href="{% url 'question_map' %}?question_id={{ parent_item.question.id }}" title="Haritada Gör">
                                                               <i class="bi bi-geo-alt"></i>
                                                           </a>
-                                                          <a href="#" class="text-danger unlink-parent"
-                                                             data-parent-id="{{ parent.id }}"
-                                                             data-parent-title="{{ parent.question_text }}"
+                                                          {% if request.user in parent_item.added_by_users %}
+                                                          <a href="#" class="text-theme-danger unlink-parent"
+                                                             data-parent-id="{{ parent_item.question.id }}"
+                                                             data-parent-title="{{ parent_item.question.question_text }}"
                                                              title="Bağlantıyı Kaldır">
                                                               <i class="bi bi-link-45deg"></i>
                                                           </a>
+                                                          {% endif %}
                                                       </div>
                                                   </li>
                                               {% endfor %}
@@ -568,28 +584,46 @@
                                   <div class="modal-body">
                                       <p class="text-muted mb-3">Bu soruyu bağlı olduğu üst sorulardan ayırabilirsiniz:</p>
                                       <ul class="list-group unlink-parents-list">
-                                          {% for parent in question.parent_questions.all %}
+                                          {% for parent_item in parents_list %}
+                                              {% if request.user in parent_item.added_by_users %}
                                               <li class="list-group-item d-flex justify-content-between align-items-center">
                                                   <div>
-                                                      <a href="{% url 'question_detail' parent.slug %}">
-                                                          {{ parent.question_text }}
+                                                      <a href="{% url 'question_detail' parent_item.question.slug %}">
+                                                          {{ parent_item.question.question_text }}
                                                       </a>
                                                       <br>
                                                       <small class="text-muted">
-                                                          <a href="{% url 'user_profile' parent.user.username %}">
-                                                              {{ parent.user.username }}
+                                                          <a href="{% url 'user_profile' parent_item.question.user.username %}">
+                                                              {{ parent_item.question.user.username }}
                                                           </a>
                                                       </small>
+                                                      {% if parent_item.added_by_users|length > 1 %}
+                                                      <br>
+                                                      <small class="text-muted">
+                                                          Diğer ekleyenler:
+                                                          {% for user in parent_item.added_by_users|slice:":3" %}
+                                                              {% if user != request.user %}
+                                                                  <a href="{% url 'user_profile' user.username %}">{{ user.username }}</a>{% if not forloop.last %}, {% endif %}
+                                                              {% endif %}
+                                                          {% endfor %}
+                                                          {% if parent_item.added_by_users|length > 3 %}
+                                                              <span title="{% for user in parent_item.added_by_users|slice:'3:' %}{% if user != request.user %}{{ user.username }}{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %}">
+                                                                  +{{ parent_item.added_by_users|length|add:"-3" }} kişi daha
+                                                              </span>
+                                                          {% endif %}
+                                                      </small>
+                                                      {% endif %}
                                                   </div>
                                                   <div>
                                                       <button type="button" class="btn btn-sm btn-outline-secondary unlink-parent"
-                                                              data-parent-id="{{ parent.id }}"
-                                                              data-parent-title="{{ parent.question_text }}"
+                                                              data-parent-id="{{ parent_item.question.id }}"
+                                                              data-parent-title="{{ parent_item.question.question_text }}"
                                                               title="Bağlantıyı Kaldır">
                                                           Kaldır
                                                       </button>
                                                   </div>
                                               </li>
+                                              {% endif %}
                                           {% endfor %}
                                       </ul>
                                   </div>
@@ -622,22 +656,36 @@
 
                   <!-- Subquestions List -->
                   <ul class="list-group mt-2 subquestions-list">
-                      {% if question.subquestions.all %}
-                          {% for subquestion in question.subquestions.all %}
+                      {% if subquestions_list %}
+                          {% for subq_item in subquestions_list %}
                               <li class="list-group-item d-flex justify-content-between align-items-center">
                                   <div>
-                                      <a href="{% url 'question_detail' subquestion.slug %}">
-                                          {{ subquestion.question_text }}
+                                      <a href="{% url 'question_detail' subq_item.question.slug %}">
+                                          {{ subq_item.question.question_text }}
                                       </a>
                                       <br>
                                       <small class="">
-                                          <a href="{% url 'user_profile' subquestion.user.username %}">
-                                              {{ subquestion.user.username }}
+                                          <a href="{% url 'user_profile' subq_item.question.user.username %}">
+                                              {{ subq_item.question.user.username }}
                                           </a>
                                       </small>
+                                      {% if subq_item.added_by_users|length > 1 %}
+                                      <br>
+                                      <small class="text-muted">
+                                          Ekleyenler:
+                                          {% for user in subq_item.added_by_users|slice:":3" %}
+                                              <a href="{% url 'user_profile' user.username %}">{{ user.username }}</a>{% if not forloop.last %}, {% endif %}
+                                          {% endfor %}
+                                          {% if subq_item.added_by_users|length > 3 %}
+                                              <span title="{% for user in subq_item.added_by_users|slice:'3:' %}{{ user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                                                  +{{ subq_item.added_by_users|length|add:"-3" }} kişi daha
+                                              </span>
+                                          {% endif %}
+                                      </small>
+                                      {% endif %}
                                   </div>
                                   <div class="d-flex gap-2">
-                                      <a href="{% url 'question_map' %}?question_id={{ subquestion.id }}" title="Haritada Gör">
+                                      <a href="{% url 'question_map' %}?question_id={{ subq_item.question.id }}" title="Haritada Gör">
                                           <i class="bi bi-geo-alt"></i>
                                       </a>
                                   </div>
@@ -674,7 +722,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-            <button type="submit" class="btn btn-danger">Evet, Sil</button>
+            <button type="submit" class="btn btn-theme-danger">Evet, Sil</button>
           </div>
         </form>
       </div>
@@ -811,7 +859,7 @@
                 </li>
                 <li class="list-group-item">
                     <a href="#" id="shareWhatsApp" target="_blank" class="text-decoration-none">
-                        <i class="bi bi-whatsapp text-success"></i> WhatsApp ile Paylaş
+                        <i class="bi bi-whatsapp text-theme-success"></i> WhatsApp ile Paylaş
                     </a>
                 </li>
                 <li class="list-group-item">
@@ -826,7 +874,7 @@
                 </li>
                 <li class="list-group-item">
                     <a href="#" id="shareReddit" target="_blank" class="text-decoration-none">
-                        <i class="bi bi-reddit text-danger"></i> Reddit ile Paylaş
+                        <i class="bi bi-reddit text-theme-danger"></i> Reddit ile Paylaş
                     </a>
                 </li>
                 <li class="list-group-item">
@@ -1063,22 +1111,54 @@
         
           function reinitReadMore() {
               const readMoreLinks = answersDiv.querySelectorAll('.read-more');
+
+              // localStorage'dan açık yanıtları al
+              const expandedAnswers = JSON.parse(localStorage.getItem('expandedAnswers') || '[]');
+
               readMoreLinks.forEach(function(link) {
+                  const answerId = link.getAttribute('data-answer-id');
+                  const summary = document.getElementById('answer-summary-' + answerId);
+                  const fullText = document.getElementById('answer-full-' + answerId);
+
+                  if (!summary || !fullText) return;
+
+                  // Eğer bu yanıt localStorage'da açık olarak işaretlenmişse, aç
+                  if (expandedAnswers.includes(answerId)) {
+                      summary.style.display = 'none';
+                      fullText.style.display = 'block';
+                      link.textContent = 'Daha az göster';
+                  }
+
                   link.addEventListener('click', function(event) {
                       event.preventDefault();
                       const answerId = this.getAttribute('data-answer-id');
                       const summary = document.getElementById('answer-summary-' + answerId);
                       const fullText = document.getElementById('answer-full-' + answerId);
                       if (!summary || !fullText) return;
+
+                      let expandedAnswers = JSON.parse(localStorage.getItem('expandedAnswers') || '[]');
+
                       if (summary.style.display === 'none') {
+                          // Kapatıyoruz
                           summary.style.display = 'block';
                           fullText.style.display = 'none';
                           this.textContent = 'Tümünü Göster';
+
+                          // localStorage'dan çıkar
+                          expandedAnswers = expandedAnswers.filter(id => id !== answerId);
                       } else {
+                          // Açıyoruz
                           summary.style.display = 'none';
                           fullText.style.display = 'block';
                           this.textContent = 'Daha az göster';
+
+                          // localStorage'a ekle
+                          if (!expandedAnswers.includes(answerId)) {
+                              expandedAnswers.push(answerId);
+                          }
                       }
+
+                      localStorage.setItem('expandedAnswers', JSON.stringify(expandedAnswers));
                   });
               });
           }
@@ -1086,24 +1166,55 @@
 
 
       document.addEventListener('DOMContentLoaded', function() {
+    // localStorage'dan açık yanıtları al
+    const expandedAnswers = JSON.parse(localStorage.getItem('expandedAnswers') || '[]');
+
     // Her seferinde event'ları kaldır ve ekle (önce var olanları silmek için)
     document.querySelectorAll('.read-more').forEach(function(link) {
         link.onclick = null;
+        const answerId = link.getAttribute('data-answer-id');
+        const summary = document.getElementById('answer-summary-' + answerId);
+        const fullText = document.getElementById('answer-full-' + answerId);
+
+        if (!summary || !fullText) return;
+
+        // Eğer bu yanıt localStorage'da açık olarak işaretlenmişse, aç
+        if (expandedAnswers.includes(answerId)) {
+            summary.style.display = 'none';
+            fullText.style.display = 'block';
+            link.textContent = 'Daha az göster';
+        }
+
         link.addEventListener('click', function(event) {
             event.preventDefault();
             var answerId = this.getAttribute('data-answer-id');
             var summary = document.getElementById('answer-summary-' + answerId);
             var fullText = document.getElementById('answer-full-' + answerId);
             if (!summary || !fullText) return;
+
+            let expandedAnswers = JSON.parse(localStorage.getItem('expandedAnswers') || '[]');
+
             if (summary.style.display === 'none') {
+                // Kapatıyoruz
                 summary.style.display = 'block';
                 fullText.style.display = 'none';
                 this.textContent = 'Tümünü Göster';
+
+                // localStorage'dan çıkar
+                expandedAnswers = expandedAnswers.filter(id => id !== answerId);
             } else {
+                // Açıyoruz
                 summary.style.display = 'none';
                 fullText.style.display = 'block';
                 this.textContent = 'Daha az göster';
+
+                // localStorage'a ekle
+                if (!expandedAnswers.includes(answerId)) {
+                    expandedAnswers.push(answerId);
+                }
             }
+
+            localStorage.setItem('expandedAnswers', JSON.stringify(expandedAnswers));
         });
     });
 });

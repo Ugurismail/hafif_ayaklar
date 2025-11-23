@@ -3,6 +3,7 @@ Random sentence views
 - ignore_random_sentence
 - get_random_sentence
 - add_random_sentence
+- vote_random_sentence
 """
 
 import random
@@ -10,6 +11,7 @@ import random
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.db import transaction
 
 from ..models import RandomSentence
 from ..forms import RandomSentenceForm
@@ -53,7 +55,9 @@ def get_random_sentence(request):
 
     return JsonResponse({
         'id': sentence_obj.id,
-        'sentence': sentence_obj.sentence
+        'sentence': sentence_obj.sentence,
+        'upvotes': sentence_obj.upvotes,
+        'downvotes': sentence_obj.downvotes
     })
 
 
@@ -68,3 +72,43 @@ def add_random_sentence(request):
         # Form geçersiz ise hata mesajını döndür
         errors = form.errors.get_json_data()
         return JsonResponse({'status': 'error', 'errors': errors})
+
+
+@login_required
+@require_POST
+def vote_random_sentence(request):
+    """
+    Random sentence'e upvote veya downvote atar
+    POST parametreleri:
+    - sentence_id: Cümle ID'si
+    - vote_type: 'up' veya 'down'
+    """
+    sentence_id = request.POST.get('sentence_id')
+    vote_type = request.POST.get('vote_type')
+
+    if not sentence_id or not vote_type:
+        return JsonResponse({'status': 'error', 'message': 'Eksik parametreler'}, status=400)
+
+    if vote_type not in ['up', 'down']:
+        return JsonResponse({'status': 'error', 'message': 'Geçersiz vote_type'}, status=400)
+
+    try:
+        sentence_obj = RandomSentence.objects.get(id=sentence_id)
+    except RandomSentence.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Cümle bulunamadı'}, status=404)
+
+    with transaction.atomic():
+        sentence_obj = RandomSentence.objects.select_for_update().get(id=sentence_id)
+
+        if vote_type == 'up':
+            sentence_obj.upvotes += 1
+        else:
+            sentence_obj.downvotes += 1
+
+        sentence_obj.save()
+
+    return JsonResponse({
+        'status': 'success',
+        'upvotes': sentence_obj.upvotes,
+        'downvotes': sentence_obj.downvotes
+    })

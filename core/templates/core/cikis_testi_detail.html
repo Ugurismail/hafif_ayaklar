@@ -59,9 +59,9 @@
                 
                 <td>
                     {% if soru.correct_option %}
-                        <span class="badge bg-success">{{ soru.correct_option.text }}</span>
+                        <span class="badge" style="background-color: var(--button-background-color); color: var(--button-text-color);">{{ soru.correct_option.text }}</span>
                     {% else %}
-                        <span class="text-danger">Belirtilmedi</span>
+                        <span class="text-theme-danger">Belirtilmedi</span>
                     {% endif %}
                 </td>
                 {% if user == test.owner %}
@@ -110,7 +110,7 @@
                            class="form-control d-inline-block"
                            style="width:90px;display:inline;"
                            min="0" max="{{ sorular|length }}" required>
-                    <button type="submit" class="btn btn-sm btn-success ms-1">
+                    <button type="submit" class="btn btn-sm btn-theme-success ms-1">
                         <i class="bi bi-save"></i> Kaydet
                     </button>
                 </form>

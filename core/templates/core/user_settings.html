@@ -19,6 +19,11 @@
                 <option value="forest">Forest Zen (Orman Yeşili)</option>
                 <option value="sunset">Sunset Vibes (Gün Batımı)</option>
                 <option value="monochrome">Monochrome (Minimal Siyah-Beyaz)</option>
+                <option value="lavender">Lavanta Bahçesi (Mor & Lila)</option>
+                <option value="coffee">Kahve Molası (Sıcak Kahverengi)</option>
+                <option value="cyberpunk">Cyberpunk (Neon Futuristik)</option>
+                <option value="sakura">Sakura (Japon Kiraz Çiçeği)</option>
+                <option value="nordic">Nordic (İskandinav Minimalist)</option>
             </select>
         </div>
         
@@ -155,6 +160,10 @@
                     <label for="answer_background_color" class="form-label">Yanıt Kart Arka Plan Rengi:</label>
                     <input type="color" id="answer_background_color" name="answer_background_color" class="form-control form-control-color" value="{{ user_profile.answer_background_color }}">
                 </div>
+                <div class="col-md-3 mb-3">
+                    <label for="hover_text_color" class="form-label">Hover Metin Rengi:</label>
+                    <input type="color" id="hover_text_color" name="hover_text_color" class="form-control form-control-color" value="{{ user_profile.hover_text_color }}">
+                </div>
                 <!-- <div class="col-md-3 mb-3">
                     <label for="pagination_active_background_color" class="form-label">Aktif Sayfalama Arka Plan Rengi:</label>
                     <input type="color" id="pagination_active_background_color" name="pagination_active_background_color" class="form-control form-control-color" value="{{ user_profile.pagination_active_background_color }}">
@@ -190,7 +199,6 @@
                         <option value="Roboto"          {% if user_profile.font_family == "Roboto" %}selected{% endif %}>Roboto</option>
                         <option value="Open+Sans"       {% if user_profile.font_family == "Open Sans" %}selected{% endif %}>Open Sans</option>
                         <option value="Noto+Sans"       {% if user_profile.font_family == "Noto Sans" %}selected{% endif %}>Noto Sans</option>
-                        <option value="Lato"            {% if user_profile.font_family == "Lato" %}selected{% endif %}>Lato</option>
                         <option value="Montserrat"      {% if user_profile.font_family == "Montserrat" %}selected{% endif %}>Montserrat</option>
                         <option value="Source+Sans+3"   {% if user_profile.font_family == "Source Sans 3" %}selected{% endif %}>Source Sans 3</option>
                         <option value="Work+Sans"       {% if user_profile.font_family == "Work Sans" %}selected{% endif %}>Work Sans</option>
@@ -198,6 +206,7 @@
                         <option value="Poppins"         {% if user_profile.font_family == "Poppins" %}selected{% endif %}>Poppins</option>
                         <option value="Rubik"           {% if user_profile.font_family == "Rubik" %}selected{% endif %}>Rubik</option>
                         <option value="DM+Sans"         {% if user_profile.font_family == "DM Sans" %}selected{% endif %}>DM Sans</option>
+                        <option value="Quicksand"       {% if user_profile.font_family == "Quicksand" %}selected{% endif %}>Quicksand</option>
                     </optgroup>
 
                     <!-- Display/Dekoratif Fontlar -->
@@ -207,6 +216,14 @@
                         <option value="Raleway"         {% if user_profile.font_family == "Raleway" %}selected{% endif %}>Raleway</option>
                         <option value="Bebas+Neue"      {% if user_profile.font_family == "Bebas Neue" %}selected{% endif %}>Bebas Neue</option>
                         <option value="Archivo+Black"   {% if user_profile.font_family == "Archivo Black" %}selected{% endif %}>Archivo Black</option>
+                    </optgroup>
+
+                    <!-- Eğlenceli Fontlar -->
+                    <optgroup label="🎭 Eğlenceli">
+                        <option value="Comic+Sans+MS"   {% if user_profile.font_family == "Comic Sans MS" %}selected{% endif %}>Comic Sans MS</option>
+                        <option value="Caveat"          {% if user_profile.font_family == "Caveat" %}selected{% endif %}>Caveat (El yazısı)</option>
+                        <option value="Patrick+Hand"    {% if user_profile.font_family == "Patrick Hand" %}selected{% endif %}>Patrick Hand</option>
+                        <option value="Indie+Flower"    {% if user_profile.font_family == "Indie Flower" %}selected{% endif %}>Indie Flower</option>
                     </optgroup>
 
                     <!-- Monospace Fontlar (Kod için) -->
@@ -266,6 +283,7 @@
             "tbas_color": "#000000",
             "font_size": "16",
             "hover_background_color": "#f0f0f0",
+            "hover_text_color": "#000000",
             "icon_color": "#333333",
             "icon_hover_color": "#007bff",
             "answer_background_color": "#F5F5F5",
@@ -300,6 +318,7 @@
             "tbas_color": "#e5e5e5",
             "font_size": "17",
             "hover_background_color": "#21243a",
+            "hover_text_color": "#e5e5e5",
             "icon_color": "#8ab4f8",
             "icon_hover_color": "#ffffff",
             "answer_background_color": "#181824",
@@ -334,6 +353,7 @@
     "tbas_color": "#023E8A",
     "font_size": "17",
     "hover_background_color": "#D4E9F2",
+    "hover_text_color": "#023E8A",
     "icon_color": "#0096C7",
     "icon_hover_color": "#023E8A",
     "answer_background_color": "#F0F8FF",
@@ -368,6 +388,7 @@
     "tbas_color": "#A64253",
     "font_size": "17",
     "hover_background_color": "#FFEAEA",
+    "hover_text_color": "#2D1B4E",
     "icon_color": "#FF8C42",
     "icon_hover_color": "#9B4F96",
     "answer_background_color": "#FFFBF5",
@@ -383,7 +404,7 @@
     "nav_link_hover_bg": "#D45D79",
     "pagination_background_color": "#FFE5D9",
     "pagination_text_color": "#2D1B4E",
-    "font_family": "Lato"
+    "font_family": "Quicksand"
 },
         "forest": {
     "background_color": "#F4F9F4",
@@ -402,6 +423,7 @@
     "tbas_color": "#1B4332",
     "font_size": "17",
     "hover_background_color": "#E8F5E9",
+    "hover_text_color": "#1B3A2F",
     "icon_color": "#52B788",
     "icon_hover_color": "#2D6A4F",
     "answer_background_color": "#F8FDF8",
@@ -436,6 +458,7 @@
     "tbas_color": "#1A1A1A",
     "font_size": "16",
     "hover_background_color": "#F5F5F5",
+    "hover_text_color": "#1A1A1A",
     "icon_color": "#4D4D4D",
     "icon_hover_color": "#000000",
     "answer_background_color": "#FAFAFA",
@@ -452,6 +475,181 @@
     "pagination_background_color": "#E8E8E8",
     "pagination_text_color": "#1A1A1A",
     "font_family": "Georgia"
+},
+        "lavender": {
+    "background_color": "#F8F6FB",
+    "text_color": "#2C1A4D",
+    "header_background_color": "#9D84B7",
+    "header_text_color": "#FFFFFF",
+    "link_color": "#8B6FB4",
+    "link_hover_color": "#6B4C8A",
+    "button_background_color": "#A78BCA",
+    "button_hover_background_color": "#8B6FB4",
+    "button_text_color": "#FFFFFF",
+    "secondary_button_background_color": "#C5B4E3",
+    "secondary_button_hover_background_color": "#A78BCA",
+    "secondary_button_text_color": "#FFFFFF",
+    "message_bubble_color": "#E8DFF5",
+    "tbas_color": "#6B4C8A",
+    "font_size": "17",
+    "hover_background_color": "#F0EBFF",
+    "hover_text_color": "#2C1A4D",
+    "icon_color": "#A78BCA",
+    "icon_hover_color": "#6B4C8A",
+    "answer_background_color": "#FDFCFE",
+    "content_background_color": "#FFFFFF",
+    "tab_background_color": "#E0D5F0",
+    "tab_text_color": "#2C1A4D",
+    "tab_active_background_color": "#C5B4E3",
+    "tab_active_text_color": "#2C1A4D",
+    "dropdown_text_color": "#2C1A4D",
+    "dropdown_hover_background_color": "#E0D5F0",
+    "dropdown_hover_text_color": "#2C1A4D",
+    "nav_link_hover_color": "#FFFFFF",
+    "nav_link_hover_bg": "#6B4C8A",
+    "pagination_background_color": "#E8DFF5",
+    "pagination_text_color": "#2C1A4D",
+    "font_family": "Raleway"
+},
+        "coffee": {
+    "background_color": "#F9F5F0",
+    "text_color": "#3E2723",
+    "header_background_color": "#6F4E37",
+    "header_text_color": "#FFFFFF",
+    "link_color": "#8D6E63",
+    "link_hover_color": "#5D4037",
+    "button_background_color": "#795548",
+    "button_hover_background_color": "#5D4037",
+    "button_text_color": "#FFFFFF",
+    "secondary_button_background_color": "#A1887F",
+    "secondary_button_hover_background_color": "#8D6E63",
+    "secondary_button_text_color": "#FFFFFF",
+    "message_bubble_color": "#EFEBE9",
+    "tbas_color": "#4E342E",
+    "font_size": "17",
+    "hover_background_color": "#FFF8F0",
+    "hover_text_color": "#3E2723",
+    "icon_color": "#8D6E63",
+    "icon_hover_color": "#5D4037",
+    "answer_background_color": "#FFFBF5",
+    "content_background_color": "#FFFFFF",
+    "tab_background_color": "#D7CCC8",
+    "tab_text_color": "#3E2723",
+    "tab_active_background_color": "#BCAAA4",
+    "tab_active_text_color": "#3E2723",
+    "dropdown_text_color": "#3E2723",
+    "dropdown_hover_background_color": "#D7CCC8",
+    "dropdown_hover_text_color": "#3E2723",
+    "nav_link_hover_color": "#FFF8F0",
+    "nav_link_hover_bg": "#5D4037",
+    "pagination_background_color": "#EFEBE9",
+    "pagination_text_color": "#3E2723",
+    "font_family": "Merriweather"
+},
+        "cyberpunk": {
+    "background_color": "#0A0E27",
+    "text_color": "#E0E0E0",
+    "header_background_color": "#1A1F3A",
+    "header_text_color": "#00FFF0",
+    "link_color": "#00FFF0",
+    "link_hover_color": "#FF2A6D",
+    "button_background_color": "#FF2A6D",
+    "button_hover_background_color": "#D91656",
+    "button_text_color": "#FFFFFF",
+    "secondary_button_background_color": "#05D9E8",
+    "secondary_button_hover_background_color": "#01B4C1",
+    "secondary_button_text_color": "#0A0E27",
+    "message_bubble_color": "#1E2749",
+    "tbas_color": "#00FFF0",
+    "font_size": "17",
+    "hover_background_color": "#1E2749",
+    "hover_text_color": "#00FFF0",
+    "icon_color": "#05D9E8",
+    "icon_hover_color": "#FF2A6D",
+    "answer_background_color": "#0F1233",
+    "content_background_color": "#0A0E27",
+    "tab_background_color": "#1A1F3A",
+    "tab_text_color": "#00FFF0",
+    "tab_active_background_color": "#2A2F4A",
+    "tab_active_text_color": "#FF2A6D",
+    "dropdown_text_color": "#E0E0E0",
+    "dropdown_hover_background_color": "#2A2F4A",
+    "dropdown_hover_text_color": "#00FFF0",
+    "nav_link_hover_color": "#00FFF0",
+    "nav_link_hover_bg": "#2A2F4A",
+    "pagination_background_color": "#1E2749",
+    "pagination_text_color": "#00FFF0",
+    "font_family": "Roboto+Mono"
+},
+        "sakura": {
+    "background_color": "#FFF5F7",
+    "text_color": "#4A1C40",
+    "header_background_color": "#D1628C",
+    "header_text_color": "#FFFFFF",
+    "link_color": "#E88FB0",
+    "link_hover_color": "#C96283",
+    "button_background_color": "#F4A6C8",
+    "button_hover_background_color": "#E88FB0",
+    "button_text_color": "#FFFFFF",
+    "secondary_button_background_color": "#FFB7CE",
+    "secondary_button_hover_background_color": "#F4A6C8",
+    "secondary_button_text_color": "#4A1C40",
+    "message_bubble_color": "#FFE5EC",
+    "tbas_color": "#8B3A62",
+    "font_size": "17",
+    "hover_background_color": "#FFF0F5",
+    "hover_text_color": "#4A1C40",
+    "icon_color": "#E88FB0",
+    "icon_hover_color": "#C96283",
+    "answer_background_color": "#FFFAFC",
+    "content_background_color": "#FFFFFF",
+    "tab_background_color": "#FADADD",
+    "tab_text_color": "#4A1C40",
+    "tab_active_background_color": "#FFC0CB",
+    "tab_active_text_color": "#4A1C40",
+    "dropdown_text_color": "#4A1C40",
+    "dropdown_hover_background_color": "#FADADD",
+    "dropdown_hover_text_color": "#4A1C40",
+    "nav_link_hover_color": "#FFFFFF",
+    "nav_link_hover_bg": "#C96283",
+    "pagination_background_color": "#FFE5EC",
+    "pagination_text_color": "#4A1C40",
+    "font_family": "Noto+Sans"
+},
+        "nordic": {
+    "background_color": "#F8F9FA",
+    "text_color": "#2B3E50",
+    "header_background_color": "#4A5C6A",
+    "header_text_color": "#FFFFFF",
+    "link_color": "#5F8AA5",
+    "link_hover_color": "#4A5C6A",
+    "button_background_color": "#6B8E9F",
+    "button_hover_background_color": "#5F8AA5",
+    "button_text_color": "#FFFFFF",
+    "secondary_button_background_color": "#95A5A6",
+    "secondary_button_hover_background_color": "#7F8C8D",
+    "secondary_button_text_color": "#FFFFFF",
+    "message_bubble_color": "#ECF0F1",
+    "tbas_color": "#34495E",
+    "font_size": "16",
+    "hover_background_color": "#F4F6F7",
+    "hover_text_color": "#2B3E50",
+    "icon_color": "#5F8AA5",
+    "icon_hover_color": "#4A5C6A",
+    "answer_background_color": "#FCFDFD",
+    "content_background_color": "#FFFFFF",
+    "tab_background_color": "#E0E5E8",
+    "tab_text_color": "#2B3E50",
+    "tab_active_background_color": "#CBD5D8",
+    "tab_active_text_color": "#2B3E50",
+    "dropdown_text_color": "#2B3E50",
+    "dropdown_hover_background_color": "#E0E5E8",
+    "dropdown_hover_text_color": "#2B3E50",
+    "nav_link_hover_color": "#FFFFFF",
+    "nav_link_hover_bg": "#4A5C6A",
+    "pagination_background_color": "#ECF0F1",
+    "pagination_text_color": "#2B3E50",
+    "font_family": "Inter"
 }
     };
     

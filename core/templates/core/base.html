@@ -143,7 +143,7 @@
                     <li class="nav-item d-none d-md-block">
                         <a class="nav-link position-relative" href="{% url 'notification_list' %}" title="Bildirimler">
                             <i class="bi bi-bell"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-badge" style="{% if unread_notification_count == 0 %}display: none;{% endif %}">
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="notification-badge" style="background-color: var(--secondary-button-background-color); color: var(--secondary-button-text-color); {% if unread_notification_count == 0 %}display: none;{% endif %}">
                                 {{ unread_notification_count }}
                             </span>
                         </a>
@@ -226,7 +226,7 @@
                             </li>
                             <!-- Bizlik -->
                             <li>
-                                <a class="dropdown-item" href="https://bizlik.com" target="_blank" rel="noopener noreferrer">
+                                <a class="dropdown-item" href="https://uia1.pythonanywhere.com" target="_blank" rel="noopener noreferrer">
                                     <img src="{% static 'imgs/bizlik.svg' %}" alt="Bizlik" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;"> Bizlik
                                 </a>
                             </li>
@@ -245,7 +245,7 @@
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="{% url 'message_list' %}" title="Mesajlar">
                             <i class="bi bi-envelope" id="message-icon"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="message-badge" style="{% if unread_message_count == 0 %}display: none;{% endif %}">
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="message-badge" style="background-color: var(--secondary-button-background-color); color: var(--secondary-button-text-color); {% if unread_message_count == 0 %}display: none;{% endif %}">
                                 {{ unread_message_count }}
                             </span>
                             <span class="d-inline d-md-none ms-1">Mesajlar</span>
@@ -396,22 +396,48 @@
       </div>
   
       <!-- Toast gövdesi -->
-      <div class="toast-body d-flex justify-content-between align-items-center">
+      <div class="toast-body">
         <!-- Rastgele cümle metni -->
-        <span id="randomSentenceText" class="me-2">
-          Cümle buraya gelecek...
-        </span>
-  
-        <!-- "Bir Daha Gösterme" (ignore) butonu (ilk başta gizli) -->
-        <button type="button" 
-                class="btn btn-link text-danger p-0" 
-                id="ignoreRandomBtn" 
-                style="display: none;" 
-                data-bs-toggle="tooltip" 
-                data-bs-placement="right" 
-                title="Bu cümleyi bir daha gösterme">
-          <i class="bi bi-eye-slash"></i>
-        </button>
+        <div class="mb-2">
+          <span id="randomSentenceText">
+            Cümle buraya gelecek...
+          </span>
+        </div>
+
+        <!-- Vote butonları ve Ignore butonu -->
+        <div class="d-flex justify-content-between align-items-center">
+          <!-- Sol: Vote butonları -->
+          <div class="d-flex align-items-center gap-1" id="randomVoteSection" style="display: none !important; font-size: 0.85em;">
+            <button type="button"
+                    class="btn btn-link p-0 text-muted"
+                    id="upvoteRandomBtn"
+                    title="Beğen"
+                    style="font-size: 0.9em; line-height: 1; opacity: 0.7;">
+              <i class="bi bi-chevron-up"></i>
+            </button>
+            <span id="randomUpvotes" class="text-muted" style="font-size: 0.8em; min-width: 12px; text-align: center;">0</span>
+
+            <button type="button"
+                    class="btn btn-link p-0 text-muted"
+                    id="downvoteRandomBtn"
+                    title="Beğenme"
+                    style="font-size: 0.9em; line-height: 1; opacity: 0.7;">
+              <i class="bi bi-chevron-down"></i>
+            </button>
+            <span id="randomDownvotes" class="text-muted" style="font-size: 0.8em; min-width: 12px; text-align: center;">0</span>
+          </div>
+
+          <!-- Sağ: "Bir Daha Gösterme" butonu -->
+          <button type="button"
+                  class="btn btn-link text-theme-danger p-0"
+                  id="ignoreRandomBtn"
+                  style="display: none; font-size: 0.9em; opacity: 0.8;"
+                  data-bs-toggle="tooltip"
+                  data-bs-placement="right"
+                  title="Bu cümleyi bir daha gösterme">
+            <i class="bi bi-eye-slash"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -479,13 +505,21 @@
             url: "{% url 'get_random_sentence' %}",
             method: "GET",
             success: function(data) {
-                // data = { id: xx, sentence: '...' }
+                // data = { id: xx, sentence: '...', upvotes: N, downvotes: M }
                 $('#randomSentenceText').text(data.sentence);
-                
-                // Cümle id bilgisini butona set edelim ki ignore fonksiyonu bilebilsin
+
+                // Cümle id bilgisini butonlara set edelim
                 $('#ignoreRandomBtn').data('sentence-id', data.id);
-                // Butonu görünür yap
+                $('#upvoteRandomBtn').data('sentence-id', data.id);
+                $('#downvoteRandomBtn').data('sentence-id', data.id);
+
+                // Vote sayılarını göster
+                $('#randomUpvotes').text(data.upvotes || 0);
+                $('#randomDownvotes').text(data.downvotes || 0);
+
+                // Butonları görünür yap
                 $('#ignoreRandomBtn').show();
+                $('#randomVoteSection').css('display', 'flex');
 
                 toast.show();
             }
@@ -529,7 +563,7 @@
         });
     });
 
-    // “Bir Daha Gösterme” butonuna tıklayınca
+    // "Bir Daha Gösterme" butonuna tıklayınca
     $('#ignoreRandomBtn').click(function() {
         const sentenceId = $(this).data('sentence-id');
         if (!sentenceId) return;
@@ -545,6 +579,54 @@
                     // veya "Bu cümle bir daha gösterilmeyecek" mesajı verebilirsiniz.
                     toast.hide();
                     showToast(data.message, 'success');
+                } else {
+                    showToast(data.message || "Bir hata oluştu.", 'error');
+                }
+            }
+        });
+    });
+
+    // Upvote butonu
+    $('#upvoteRandomBtn').click(function() {
+        const sentenceId = $(this).data('sentence-id');
+        if (!sentenceId) return;
+
+        $.ajax({
+            url: "{% url 'vote_random_sentence' %}",
+            method: "POST",
+            data: {
+                sentence_id: sentenceId,
+                vote_type: 'up'
+            },
+            headers: { 'X-CSRFToken': csrftoken },
+            success: function(data) {
+                if(data.status === 'success') {
+                    $('#randomUpvotes').text(data.upvotes);
+                    $('#randomDownvotes').text(data.downvotes);
+                } else {
+                    showToast(data.message || "Bir hata oluştu.", 'error');
+                }
+            }
+        });
+    });
+
+    // Downvote butonu
+    $('#downvoteRandomBtn').click(function() {
+        const sentenceId = $(this).data('sentence-id');
+        if (!sentenceId) return;
+
+        $.ajax({
+            url: "{% url 'vote_random_sentence' %}",
+            method: "POST",
+            data: {
+                sentence_id: sentenceId,
+                vote_type: 'down'
+            },
+            headers: { 'X-CSRFToken': csrftoken },
+            success: function(data) {
+                if(data.status === 'success') {
+                    $('#randomUpvotes').text(data.upvotes);
+                    $('#randomDownvotes').text(data.downvotes);
                 } else {
                     showToast(data.message || "Bir hata oluştu.", 'error');
                 }
@@ -590,7 +672,7 @@
      <div class="modal-content">
        <div class="modal-header">
          <h5 class="modal-title" id="globalConfirmTitle">
-           <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+           <i class="bi bi-exclamation-triangle text-theme-warning me-2"></i>
            <span id="globalConfirmTitleText">Onay</span>
          </h5>
          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -609,7 +691,7 @@
  <!-- Toast Container for Notifications -->
  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
     <!-- Success Toast -->
-    <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+    <div id="successToast" class="toast align-items-center toast-theme-success border-0" role="alert">
       <div class="d-flex">
         <div class="toast-body">
           <i class="bi bi-check-circle me-2"></i>
@@ -620,7 +702,7 @@
     </div>
 
     <!-- Error Toast -->
-    <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
+    <div id="errorToast" class="toast align-items-center toast-theme-danger border-0" role="alert">
       <div class="d-flex">
         <div class="toast-body">
           <i class="bi bi-x-circle me-2"></i>
@@ -631,7 +713,7 @@
     </div>
 
     <!-- Warning Toast -->
-    <div id="warningToast" class="toast align-items-center text-dark bg-warning border-0" role="alert">
+    <div id="warningToast" class="toast align-items-center border-0" role="alert" style="background-color: var(--button-background-color); color: var(--button-text-color);">
       <div class="d-flex">
         <div class="toast-body">
           <i class="bi bi-exclamation-triangle me-2"></i>

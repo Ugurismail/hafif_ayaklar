@@ -22,7 +22,7 @@
             {% if hashtag_dict %}
                 {% for letter, tags in hashtag_dict %}
                     <div class="card mb-3">
-                        <div class="card-header bg-primary text-white">
+                        <div class="card-header" style="background-color: var(--button-background-color); color: var(--button-text-color);">
                             <h4 class="mb-0">{{ letter }}</h4>
                         </div>
                         <div class="card-body">
@@ -40,8 +40,10 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <div class="alert alert-info">
-                    Henüz hashtag bulunmuyor.
+                <div class="card">
+                    <div class="card-body text-center text-muted">
+                        Henüz hashtag bulunmuyor.
+                    </div>
                 </div>
             {% endif %}
 

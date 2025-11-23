@@ -52,28 +52,41 @@
             role="tabpanel"
             aria-labelledby="kaynak-ekle-tab">
             
-            <!-- Bu formu AJAX ile create_reference endpoint’ine POST yapacağız -->
+            <!-- Bu formu AJAX ile create_reference endpoint'ine POST yapacağız -->
             <form id="kaynakForm">
               {% csrf_token %}
-              <div class="mb-3">
-                <label for="id_author_surname" class="form-label">Yazar Soyadı</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  name="author_surname" 
-                  id="id_author_surname" 
-                  required>
+
+              <!-- Yazar Konteynerı -->
+              <div id="authorsContainer">
+                <div class="author-group mb-3">
+                  <label class="form-label">Yazar 1</label>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <input
+                        type="text"
+                        class="form-control author-surname"
+                        placeholder="Soyadı"
+                        required>
+                    </div>
+                    <div class="col-md-6">
+                      <input
+                        type="text"
+                        class="form-control author-name"
+                        placeholder="Adı"
+                        required>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div class="mb-3">
-                <label for="id_author_name" class="form-label">Yazar Adı</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  name="author_name" 
-                  id="id_author_name" 
-                  required>
-              </div>
+              <!-- Yazar Ekle Butonu -->
+              <button type="button" class="btn btn-sm btn-outline-secondary mb-3" id="addAuthorBtn">
+                <i class="bi bi-plus-circle"></i> Yazar Ekle
+              </button>
+
+              <!-- Hidden fields that will be populated before submit -->
+              <input type="hidden" name="author_surname" id="id_author_surname">
+              <input type="hidden" name="author_name" id="id_author_name">
 
               <div class="mb-3">
                 <label for="id_year" class="form-label">Yıl</label>
@@ -130,7 +143,10 @@
             </div>
 
             <!-- Arama Sonuçları (List Group) -->
-            <div class="list-group" id="kaynakListesi"></div>
+            <div class="list-group" id="kaynakListesi" style="max-height: 400px; overflow-y: auto;"></div>
+
+            <!-- Sayfalama için container -->
+            <div id="kaynak-pagination-container"></div>
 
             <div class="mb-3">
               <label for="kaynakSayfaInput" class="form-label">Sayfa Numarası (Opsiyonel)</label>
@@ -179,54 +195,158 @@
                 label.classList.add('list-group-item');
                 label.innerHTML = `
                     <input type="radio" name="kaynakSecimi" value="${ref.id}" class="form-check-input me-2" />
-                    <span>${ref.display}</span>
+                    <span style="white-space: normal; word-break: break-word;">${ref.display}</span>
                 `;
                 kaynakListesi.appendChild(label);
             });
 
+            // Pagination container'ı bul
+            const pagContainer = document.getElementById('kaynak-pagination-container');
+
             // Pagination (varsa önce temizle, sonra ekle)
-            let eskiPag = document.getElementById("kaynak-pagination");
-            if (eskiPag) eskiPag.remove();
+            if (pagContainer) {
+                pagContainer.innerHTML = '';
 
-            if (data.num_pages > 1) {
-                let pagHtml = `<nav id="kaynak-pagination"><ul class="pagination pagination-sm justify-content-center mt-3">`;
-                pagHtml += data.has_previous ?
-                    `<li class="page-item"><a class="page-link" href="#" data-page="${data.current_page-1}">«</a></li>` :
-                    `<li class="page-item disabled"><span class="page-link">«</span></li>`;
-                for (let i = 1; i <= data.num_pages; i++) {
-                    pagHtml += `<li class="page-item${i === data.current_page ? ' active' : ''}">
-                        <a class="page-link" href="#" data-page="${i}">${i}</a>
-                    </li>`;
-                }
-                pagHtml += data.has_next ?
-                    `<li class="page-item"><a class="page-link" href="#" data-page="${data.current_page+1}">»</a></li>` :
-                    `<li class="page-item disabled"><span class="page-link">»</span></li>`;
-                pagHtml += `</ul></nav>`;
-                kaynakListesi.insertAdjacentHTML("afterend", pagHtml);
+                if (data.num_pages > 1) {
+                    let pagHtml = `<nav id="kaynak-pagination"><ul class="pagination pagination-sm justify-content-center mt-3">`;
 
-                // Pagination click
-                document.querySelectorAll('#kaynak-pagination .page-link').forEach(el => {
-                    el.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const gotoPage = parseInt(this.getAttribute('data-page'));
-                        if (!isNaN(gotoPage)) {
-                            kaynaklariListele(searchTerm, gotoPage, pageSize);
+                    // Previous button
+                    pagHtml += data.has_previous ?
+                        `<li class="page-item"><a class="page-link" href="#" data-page="${data.current_page-1}">«</a></li>` :
+                        `<li class="page-item disabled"><span class="page-link">«</span></li>`;
+
+                    // Smart pagination logic
+                    const current = data.current_page;
+                    const total = data.num_pages;
+                    const delta = 2; // Aktif sayfanın her yanında kaç sayfa gösterelim
+
+                    // İlk sayfa her zaman
+                    if (current > delta + 2) {
+                        pagHtml += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
+                        if (current > delta + 3) {
+                            pagHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
                         }
+                    }
+
+                    // Aktif sayfanın etrafındaki sayfalar
+                    const start = Math.max(1, current - delta);
+                    const end = Math.min(total, current + delta);
+
+                    for (let i = start; i <= end; i++) {
+                        pagHtml += `<li class="page-item${i === current ? ' active' : ''}">
+                            <a class="page-link" href="#" data-page="${i}">${i}</a>
+                        </li>`;
+                    }
+
+                    // Son sayfa her zaman
+                    if (current < total - delta - 1) {
+                        if (current < total - delta - 2) {
+                            pagHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                        }
+                        pagHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${total}">${total}</a></li>`;
+                    }
+
+                    // Next button
+                    pagHtml += data.has_next ?
+                        `<li class="page-item"><a class="page-link" href="#" data-page="${data.current_page+1}">»</a></li>` :
+                        `<li class="page-item disabled"><span class="page-link">»</span></li>`;
+
+                    pagHtml += `</ul></nav>`;
+                    pagContainer.innerHTML = pagHtml;
+
+                    // Pagination click
+                    document.querySelectorAll('#kaynak-pagination .page-link').forEach(el => {
+                        el.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const gotoPage = parseInt(this.getAttribute('data-page'));
+                            if (!isNaN(gotoPage)) {
+                                kaynaklariListele(searchTerm, gotoPage, pageSize);
+                            }
+                        });
                     });
-                });
+                }
             }
         })
         .catch(err => {
-            kaynakListesi.innerHTML = '<div class="text-danger">Kaynaklar yüklenemedi.</div>';
+            kaynakListesi.innerHTML = '<div class="text-theme-danger">Kaynaklar yüklenemedi.</div>';
         });
     }
 
     // -----------------------
     // (1) Kaynak Ekleme
     // -----------------------
+
+    // Yazar ekleme/silme işlemleri
+    const authorsContainer = document.getElementById('authorsContainer');
+    const addAuthorBtn = document.getElementById('addAuthorBtn');
+    let authorCount = 1;
+
+    if (addAuthorBtn) {
+        addAuthorBtn.addEventListener('click', function() {
+            authorCount++;
+            const newAuthorGroup = document.createElement('div');
+            newAuthorGroup.className = 'author-group mb-3';
+            newAuthorGroup.innerHTML = `
+                <label class="form-label">Yazar ${authorCount}</label>
+                <div class="row">
+                    <div class="col-md-5">
+                        <input type="text" class="form-control author-surname" placeholder="Soyadı" required>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" class="form-control author-name" placeholder="Adı" required>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-author-btn" title="Yazarı Sil">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            authorsContainer.appendChild(newAuthorGroup);
+
+            // Silme butonuna event listener ekle
+            const removeBtn = newAuthorGroup.querySelector('.remove-author-btn');
+            removeBtn.addEventListener('click', function() {
+                newAuthorGroup.remove();
+                // Yazar numaralarını güncelle
+                updateAuthorLabels();
+            });
+        });
+    }
+
+    function updateAuthorLabels() {
+        const authorGroups = authorsContainer.querySelectorAll('.author-group');
+        authorGroups.forEach((group, index) => {
+            const label = group.querySelector('label');
+            if (label) {
+                label.textContent = `Yazar ${index + 1}`;
+            }
+        });
+        authorCount = authorGroups.length;
+    }
+
     if (kaynakForm) {
         kaynakForm.addEventListener('submit', function(e) {
             e.preventDefault();
+
+            // Tüm yazarları topla ve birleştir
+            const surnames = [];
+            const names = [];
+            const authorGroups = authorsContainer.querySelectorAll('.author-group');
+
+            authorGroups.forEach(group => {
+                const surname = group.querySelector('.author-surname').value.trim();
+                const name = group.querySelector('.author-name').value.trim();
+                if (surname && name) {
+                    surnames.push(surname);
+                    names.push(name);
+                }
+            });
+
+            // Hidden fieldları doldur (semicolon ile ayır)
+            document.getElementById('id_author_surname').value = surnames.join('; ');
+            document.getElementById('id_author_name').value = names.join('; ');
+
             let formData = new FormData(kaynakForm);
             fetch("{% url 'create_reference' %}", {
                 method: 'POST',
@@ -240,6 +360,21 @@
                 if (data.status === 'success') {
                     showToast("Kaynak başarıyla eklendi!", 'success');
                     kaynakForm.reset();
+
+                    // Yazar alanlarını resetle (sadece ilk yazar grubu kalacak)
+                    const allAuthorGroups = authorsContainer.querySelectorAll('.author-group');
+                    allAuthorGroups.forEach((group, index) => {
+                        if (index > 0) {
+                            group.remove();
+                        } else {
+                            // İlk grup inputlarını temizle
+                            group.querySelector('.author-surname').value = '';
+                            group.querySelector('.author-name').value = '';
+                        }
+                    });
+                    authorCount = 1;
+                    updateAuthorLabels();
+
                     // Kaynak Seç sekmesine geç ve kaynakları ilk sayfadan göster
                     if (kaynakSecTab) kaynakSecTab.click();
                     if (kaynakAraInput) kaynakAraInput.value = '';

@@ -14,9 +14,9 @@
 .expired-poll-card {
   min-width: 230px;
   max-width: 320px;
-  background: #f9fafb;
+  background: var(--content-background-color);
   border-radius: 12px;
-  border: 1.5px solid #e6e8ef;
+  border: 1.5px solid var(--header-background-color);
   box-shadow: 0 1.5px 10px rgba(60,75,100,0.07);
   margin-bottom: 0;
   padding: 17px 20px 13px 20px;
@@ -49,13 +49,14 @@
   font-size: 1.12rem;
   font-weight: bold;
   margin-bottom: 6px;
-  color: #224060;
+  color: var(--text-color);
   line-height: 1.32;
   word-break: break-word;
 }
 .poll-meta-date {
   font-size: 0.97rem;
-  color: #8c99ad;
+  color: var(--text-color);
+  opacity: 0.7;
   margin-bottom: 7px;
 }
 .expired-poll-options {
@@ -71,19 +72,19 @@
   align-items: center;
   padding: 4px 0;
   font-size: 0.99rem;
-  border-bottom: 1px dashed #e6e8ef;
+  border-bottom: 1px dashed var(--header-background-color);
 }
 .expired-poll-option:last-child {
   border-bottom: none;
 }
 .expired-poll-option-text {
   font-weight: 500;
-  color: #2d4769;
+  color: var(--text-color);
 }
 .expired-poll-option-percent {
   font-size: 0.98rem;
   margin-left: 10px;
-  color: #5e88d2;
+  color: var(--button-background-color);
   font-weight: 500;
   min-width: 38px;
   text-align: right;
@@ -150,7 +151,7 @@
                     <span>
                       %{{ opt.percentage|floatformat:1 }} ({{ opt.votes }} oy)
                       {% if apoll.poll.is_active and not apoll.poll.options.all|user_has_voted:request.user %}
-                        <a href="{% url 'vote_poll' apoll.poll.id opt.option.id %}" class="btn btn-sm btn-success ms-2">Oy Ver</a>
+                        <a href="{% url 'vote_poll' apoll.poll.id opt.option.id %}" class="btn btn-sm btn-theme-success ms-2">Oy Ver</a>
                       {% endif %}
                     </span>
                   </li>

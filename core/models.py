@@ -152,6 +152,28 @@ class Question(models.Model):
             models.Index(fields=['question_text']),            # Search queries
         ]
 
+class QuestionRelationship(models.Model):
+    """
+    Kullanıcı-bazlı parent-child soru ilişkisi.
+    Her kullanıcının kendi harita bağlantıları var.
+    """
+    parent = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='child_relationships')
+    child = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='parent_relationships')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='question_relationships')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('parent', 'child', 'user')
+        indexes = [
+            models.Index(fields=['parent', 'user']),
+            models.Index(fields=['child', 'user']),
+            models.Index(fields=['user', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username}: {self.parent.question_text} → {self.child.question_text}"
+
+
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
     answer_text = models.TextField()
@@ -269,6 +291,8 @@ class RandomSentence(models.Model):
         blank=True,
         related_name='ignored_random_sentences'
     )
+    upvotes = models.IntegerField(default=0)
+    downvotes = models.IntegerField(default=0)
 
     def __str__(self):
         return self.sentence[:50]

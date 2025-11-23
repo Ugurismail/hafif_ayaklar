@@ -297,64 +297,79 @@
         <div class="tab-pane fade {% if active_tab == 'kelimeler' %}show active{% endif %}" id="kelimeler" role="tabpanel" aria-labelledby="kelimeler-tab">
           <div class="mt-3 row">
             <div class="col-md-6">
-              <h5 class="mb-3">En Çok Kullandığınız Kelimeler</h5>
+              <h5 class="mb-3">
+                <i class="bi bi-bar-chart-fill"></i> En Çok Kullandığınız Kelimeler
+              </h5>
               {% if top_words %}
                 <ul class="word-list">
                   {% for word, count in top_words %}
                     <li>
-                      <span>{{ forloop.counter }}. {{ word }}</span>
+                      <span>{{ forloop.counter }}. <strong>{{ word }}</strong></span>
                       <span class="word-count-badge">{{ count }}</span>
                     </li>
                   {% endfor %}
                 </ul>
               {% else %}
-                <p>Gösterilecek kelime yok.</p>
+                <div class="alert alert-secondary">
+                  <i class="bi bi-info-circle"></i> Henüz girdi yazmadınız veya tüm kelimeler listeden çıkarıldı.
+                </div>
               {% endif %}
             </div>
             <div class="col-md-6">
               {% if is_own_profile %}
-                <h5>Kelime Arama</h5>
+                <h5 class="mb-3">Kelime Arama</h5>
                 <form method="get" action="">
                   <input type="hidden" name="tab" value="kelimeler">
                   <input type="hidden" name="exclude_words" value="{{ exclude_words }}">
-                  <div class="input-group mb-2">
-                    <input type="text" name="search_word" class="form-control" placeholder="Kelimeyi girin" value="{{ search_word }}">
-                    <button class="btn btn-primary btn-sm" type="submit">Ara</button>
+                  <div class="input-group mb-3">
+                    <input type="text" name="search_word" class="form-control" placeholder="Aramak istediğiniz kelimeyi girin..." value="{{ search_word }}">
+                    <button class="btn btn-primary" type="submit">
+                      <i class="bi bi-search"></i> Ara
+                    </button>
                   </div>
                 </form>
                 {% if search_word %}
-                  <p>"{{ search_word }}" kelimesini {{ search_word_count }} kez kullandınız.</p>
+                  <div class="alert alert-info py-2 mb-3">
+                    <i class="bi bi-info-circle"></i> "<strong>{{ search_word }}</strong>" kelimesini <strong>{{ search_word_count }}</strong> kez kullandınız.
+                  </div>
                 {% endif %}
-                <h5>Kelime Çıkar</h5>
+
+                <h5 class="mb-3 mt-4">Kelime Çıkar</h5>
                 <form method="get" action="">
                   <input type="hidden" name="tab" value="kelimeler">
                   <input type="hidden" name="exclude_words" value="{{ exclude_words }}">
-                  <div class="input-group mb-2">
-                    <input type="text" name="exclude_word" class="form-control" placeholder="Çıkarmak istediğiniz kelimeyi girin">
-                    <button class="btn btn-secondary btn-sm" type="submit">Çıkar</button>
+                  <div class="input-group mb-3">
+                    <input type="text" name="exclude_word" class="form-control" placeholder="Listeden çıkarmak istediğiniz kelimeyi girin...">
+                    <button class="btn btn-secondary" type="submit">
+                      <i class="bi bi-dash-circle"></i> Çıkar
+                    </button>
                   </div>
                 </form>
+                <p class="text-muted small">
+                  <i class="bi bi-lightbulb"></i> Çıkardığınız kelimeler "En Çok Kullandığınız Kelimeler" listesinde görünmeyecektir.
+                </p>
               {% endif %}
-              <h5>Çıkarılmış Kelimeler</h5>
-              {% if exclude_words_list %}
-                <div class="d-flex flex-wrap gap-2">
-                  {% for word in exclude_words_list %}
-                    <div class="badge bg-secondary d-flex align-items-center">
-                      <span class="text-white">{{ word }}</span>
-                      {% if is_own_profile %}
-                        <form method="get" action="" class="d-inline ms-1">
-                          <input type="hidden" name="tab" value="kelimeler">
-                          <input type="hidden" name="exclude_words" value="{{ exclude_words }}">
-                          <button type="submit" name="include_word" value="{{ word }}" class="btn btn-sm btn-link p-0 text-white" title="Geri Al">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                          </button>
-                        </form>
-                      {% endif %}
-                    </div>
-                  {% endfor %}
-                </div>
+              <h5 class="mt-4">Çıkarılmış Kelimeler</h5>
+              {% if is_own_profile %}
+                {% if exclude_words_list %}
+                  <div class="d-flex flex-wrap gap-2 mt-3">
+                    {% for word in exclude_words_list %}
+                      <span class="badge rounded-pill bg-secondary excluded-word-badge">
+                        {{ word }}
+                        <a href="?tab=kelimeler&include_word={{ word }}&exclude_words={{ exclude_words }}"
+                           class="text-white text-decoration-none ms-1"
+                           title="Geri Al"
+                           style="opacity: 0.8;">
+                          <i class="bi bi-x-circle"></i>
+                        </a>
+                      </span>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <p class="text-muted">Henüz çıkarılmış kelime yok.</p>
+                {% endif %}
               {% else %}
-                <p>Bu bölümü sadece kullanıcının kendisi görebilir.</p>
+                <p class="text-muted">Bu bölümü sadece kullanıcının kendisi görebilir.</p>
               {% endif %}
             </div>
           </div>
@@ -514,6 +529,7 @@
                         <th>Yazar Soyadı</th>
                         <th>Yazar Adı</th>
                         <th>Yıl</th>
+                        <th>Eser İsmi</th>
                         <th>Ek Bilgiler</th>
                         <th>Kısaltma</th>
                         <th>Kullanım Sayısı</th>
@@ -526,6 +542,7 @@
                           <td>{{ ref.author_surname }}</td>
                           <td>{{ ref.author_name }}</td>
                           <td>{{ ref.year }}</td>
+                          <td>{{ ref.metin_ismi|default:"-" }}</td>
                           <td>{{ ref.rest }}</td>
                           <td>{{ ref.abbreviation }}</td>
                           <td>{{ ref.get_usage_count }}</td>
@@ -574,7 +591,7 @@
                           {{ saved.object.question_text|truncatewords:20 }}
                         </a>
                       </p>
-                      <a href="#" class="save-btn btn btn-sm btn-warning"
+                      <a href="#" class="save-btn btn btn-sm btn-theme-success"
                          data-content-type="question"
                          data-object-id="{{ saved.object.id }}">
                         Kaydetmeyi Kaldır
@@ -742,18 +759,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     '<td>'+ ref.author_surname +'</td>'+
                     '<td>'+ ref.author_name +'</td>'+
                     '<td>'+ ref.year +'</td>'+
+                    '<td>'+ (ref.metin_ismi || '-') +'</td>'+
                     '<td>'+ ref.rest +'</td>'+
                     '<td>'+ ref.abbreviation +'</td>'+
                     '<td>'+(ref.usage_count || 0)+'</td>'+
                     '<td>'+
-                      '<a href="/edit_reference/'+ ref.id + '/?tab=kaynaklarim" class="btn btn-sm btn-primary" title="Düzenle"><i class="bi bi-pencil-square"></i></a> '+
-                      '<a href="/delete_reference/'+ ref.id + '/?tab=kaynaklarim" class="btn btn-sm btn-secondary" title="Sil"><i class="bi bi-trash"></i></a>'+
+                      '<a href="/reference/'+ ref.id + '/edit/?tab=kaynaklarim" class="btn btn-sm btn-primary" title="Düzenle"><i class="bi bi-pencil-square"></i></a> '+
+                      '<a href="/reference/'+ ref.id + '/delete/?tab=kaynaklarim" class="btn btn-sm btn-secondary" title="Sil"><i class="bi bi-trash"></i></a>'+
                     '</td>'+
                   '</tr>';
         container.append(row);
       });
     } else {
-      container.append('<tr><td colspan="3">Sonuç bulunamadı.</td></tr>');
+      container.append('<tr><td colspan="8">Sonuç bulunamadı.</td></tr>');
     }
   }
   
@@ -822,7 +840,7 @@ function renderSavedItems(data, container) {
                 ${item.text}
               </a>
             </p>
-            <a href="#" class="save-btn btn btn-sm btn-warning"
+            <a href="#" class="save-btn btn btn-sm btn-theme-success"
                data-content-type="question"
                data-object-id="${item.id}">
               Kaydetmeyi Kaldır
@@ -1006,7 +1024,7 @@ function debounce(func, delay) {
         'Bu yanıtı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
         'Yanıtı Sil',
         'Sil',
-        'btn-danger'
+        'btn-theme-danger'
       ).then(function(confirmed) {
         if (confirmed) {
           // CSRF token'ı al
@@ -1040,7 +1058,7 @@ function debounce(func, delay) {
         'Bu tanımı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
         'Tanımı Sil',
         'Sil',
-        'btn-danger'
+        'btn-theme-danger'
       ).then(function(confirmed) {
         if (confirmed) {
           // CSRF token'ı al
