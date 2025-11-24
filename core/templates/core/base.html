@@ -110,13 +110,14 @@
         }
 
         #mainNavbar .dropdown-menu .dropdown-item:hover {
-            background-color: var(--hover-background-color) !important;
+            background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)), var(--header-background-color) !important;
             color: var(--header-text-color) !important;
+            transition: all 0.2s ease;
         }
 
         #mainNavbar .dropdown-menu .dropdown-item:active,
         #mainNavbar .dropdown-menu .dropdown-item:focus {
-            background-color: var(--hover-background-color) !important;
+            background: linear-gradient(rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15)), var(--header-background-color) !important;
             color: var(--header-text-color) !important;
         }
 
