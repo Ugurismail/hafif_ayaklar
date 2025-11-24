@@ -13,11 +13,11 @@
     </button>
   </form>
 
-  <ul class="list-group mb-5">
+  <ul class="list-unstyled mb-5">
     {% if results %}
       {% for item in results %}
         {% if item.type == "question" %}
-        <li class="list-group-item py-3">
+        <li class="baslik py-3 px-3 mb-2" style="border-radius: 8px;">
           <span class="badge bg-primary me-2">Soru/Başlık</span>
           <a href="{% url 'question_detail' item.object.id %}" class="fw-bold">
             {{ item.object.question_text|truncatechars:80 }}
@@ -29,7 +29,7 @@
           </div>
         </li>
         {% elif item.type == "answer" %}
-        <li class="list-group-item py-3">
+        <li class="baslik py-3 px-3 mb-2" style="border-radius: 8px;">
           <span class="badge me-2" style="background-color: var(--button-background-color); color: var(--button-text-color);">Yanıt/Girdi</span>
           <a href="{% url 'question_detail' item.object.question.slug %}">
             <span class="fw-bold">{{ item.object.question.question_text|truncatechars:55 }}</span>
@@ -50,7 +50,7 @@
         {% endif %}
       {% endfor %}
     {% else %}
-      <li class="list-group-item py-3 text-center text-muted">
+      <li class="baslik py-3 px-3 mb-2 text-center text-muted" style="border-radius: 8px;">
         Aradığınız kritere uygun sonuç bulunamadı.
       </li>
     {% endif %}
@@ -59,9 +59,9 @@
   <!-- Kullanıcılar Bölümü (opsiyonel) -->
   {% if users %}
     <div class="mt-5 mb-3"><h5>Kullanıcılar</h5></div>
-    <ul class="list-group">
+    <ul class="list-unstyled">
       {% for user in users %}
-        <li class="list-group-item d-flex align-items-center">
+        <li class="baslik d-flex align-items-center py-3 px-3 mb-2" style="border-radius: 8px;">
           {% if user.userprofile.photo %}
             <img src="{{ user.userprofile.photo.url }}" class="rounded-circle me-2" width="40" height="40">
           {% else %}

@@ -10,13 +10,11 @@
     <div class="row">
         <div class="col-lg-8 mx-auto">
             <!-- Hashtag Header -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h2 class="mb-3">#{{ hashtag.name }}</h2>
-                    <p class="text-muted">
-                        <i class="bi bi-hash"></i> {{ usage_count }} kullanım
-                    </p>
-                </div>
+            <div class="baslik mb-4 p-4" style="border-radius: 8px;">
+                <h2 class="mb-3">#{{ hashtag.name }}</h2>
+                <p class="text-muted">
+                    <i class="bi bi-hash"></i> {{ usage_count }} kullanım
+                </p>
             </div>
 
             <!-- Items with this hashtag -->
@@ -24,18 +22,18 @@
                 {% for item in page_obj %}
                     {% if item.type == 'answer' %}
                         <!-- Answer Card -->
-                        <div class="card mb-3 clickable-card" style="cursor: pointer;" onclick="window.location.href='{% url 'single_answer' item.question.id item.object.id %}'">
-                            <div class="card-header">
+                        <div class="baslik mb-3 p-3" style="cursor: pointer; border-radius: 8px;" onclick="window.location.href='{% url 'single_answer' item.question.slug item.object.id %}'">
+                            <div class="mb-3 pb-2" style="border-bottom: 1px solid var(--hover-background-color, #dee2e6);">
                                 <a href="{% url 'question_detail' item.question.slug %}" class="text-decoration-none" onclick="event.stopPropagation();">
                                     <strong>{{ item.question.question_text }}</strong>
                                 </a>
                             </div>
-                            <div class="card-body">
+                            <div>
                                 {% if item.object.answer_text|length > 500 %}
                                     <div class="answer-text">
                                         {{ item.object.answer_text|slice:":500"|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
                                     </div>
-                                    <a href="{% url 'single_answer' item.question.id item.object.id %}" class="btn btn-sm btn-link" onclick="event.stopPropagation();">Devamını oku</a>
+                                    <a href="{% url 'single_answer' item.question.slug item.object.id %}" class="btn btn-sm btn-link" onclick="event.stopPropagation();">Devamını oku</a>
                                 {% else %}
                                     <div class="answer-text">
                                         {{ item.object.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
@@ -51,10 +49,10 @@
                         </div>
                     {% elif item.type == 'question' %}
                         <!-- Question Card -->
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <a href="{% url 'question_detail' item.object.id %}" class="text-decoration-none">
+                        <div class="baslik mb-3 p-3" style="border-radius: 8px;">
+                            <div>
+                                <h5>
+                                    <a href="{% url 'question_detail' item.object.slug %}" class="text-decoration-none">
                                         {{ item.object.question_text }}
                                     </a>
                                 </h5>
@@ -101,10 +99,8 @@
                     </nav>
                 {% endif %}
             {% else %}
-                <div class="card">
-                    <div class="card-body text-center text-muted">
-                        Bu hashtag'i içeren içerik bulunamadı.
-                    </div>
+                <div class="baslik p-4 text-center text-muted" style="border-radius: 8px;">
+                    Bu hashtag'i içeren içerik bulunamadı.
                 </div>
             {% endif %}
         </div>

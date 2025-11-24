@@ -96,6 +96,42 @@
             --body-font-family: "{{ user.userprofile.font_family }}";
             --yanit-card-background-color: {{ user.userprofile.yanit_card }};
         }
+
+        /* Dropdown menüyü navbar ile aynı renkte yap */
+        #mainNavbar .dropdown-menu {
+            background-color: var(--header-background-color) !important;
+            border: 1px solid var(--hover-background-color) !important;
+            max-width: 250px !important; /* Daha kompakt */
+        }
+
+        #mainNavbar .dropdown-menu .dropdown-item {
+            color: var(--header-text-color) !important;
+            background-color: var(--header-background-color) !important;
+        }
+
+        #mainNavbar .dropdown-menu .dropdown-item:hover {
+            background-color: var(--hover-background-color) !important;
+            color: var(--header-text-color) !important;
+        }
+
+        #mainNavbar .dropdown-menu .dropdown-item:active,
+        #mainNavbar .dropdown-menu .dropdown-item:focus {
+            background-color: var(--hover-background-color) !important;
+            color: var(--header-text-color) !important;
+        }
+
+        #mainNavbar .dropdown-menu .dropdown-header {
+            color: var(--header-text-color) !important;
+        }
+
+        #mainNavbar .dropdown-divider {
+            border-color: var(--hover-background-color) !important;
+        }
+
+        /* Navbar görünürlüğü için border ekle (monochrome tema için) */
+        .navbar {
+            border-bottom: 1px solid var(--hover-background-color, rgba(255,255,255,0.1)) !important;
+        }
     </style>
     {% endif %}
     
@@ -133,16 +169,20 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'user_homepage' %}" title="Ana Sayfa">
                             <i class="bi bi-house"></i>
-                            <span class="d-inline d-md-none ms-1">Ana Sayfa</span>
+                            <span class="ms-1 d-lg-none">Ana Sayfa</span>
                         </a>
                     </li>
-                    <li class="nav-item d-none d-md-block">
-                        <a class="nav-link" href="{% url 'question_map' %}" title="Harita"><i class="bi bi-diagram-3"></i></a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'question_map' %}" title="Harita">
+                            <i class="bi bi-diagram-3"></i>
+                            <span class="ms-1 d-lg-none">Harita</span>
+                        </a>
                     </li>
                     <!-- Bildirimler -->
-                    <li class="nav-item d-none d-md-block">
+                    <li class="nav-item">
                         <a class="nav-link position-relative" href="{% url 'notification_list' %}" title="Bildirimler">
                             <i class="bi bi-bell"></i>
+                            <span class="ms-1 d-lg-none">Bildirimler</span>
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="notification-badge" style="background-color: var(--secondary-button-background-color); color: var(--secondary-button-text-color); {% if unread_notification_count == 0 %}display: none;{% endif %}">
                                 {{ unread_notification_count }}
                             </span>
@@ -152,7 +192,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="extraMenu" title="Müteferrik" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-umbrella-fill"></i>
-                            <span class="d-inline d-md-none ms-1">Müteferrik</span>
+                            <span class="ms-1 d-lg-none">Müteferrik</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="extraMenu">
                             {% comment %}
@@ -253,7 +293,7 @@
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="message-badge" style="background-color: var(--secondary-button-background-color); color: var(--secondary-button-text-color); {% if unread_message_count == 0 %}display: none;{% endif %}">
                                 {{ unread_message_count }}
                             </span>
-                            <span class="d-inline d-md-none ms-1">Mesajlar</span>
+                            <span class="ms-1 d-lg-none">Mesajlar</span>
                         </a>
                     </li>
                     
@@ -483,6 +523,7 @@
     {% endif %}
     <script src="{% static 'js/animations.js' %}"></script>
     <script src="{% static 'js/dropdown_zindex.js' %}"></script>
+    <script src="{% static 'js/homepage.js' %}?v={% now "U" %}"></script>
 
     {% block extra_js %}{% endblock %}
     <!-- Navbar küçülme ve transparanlık efekti -->

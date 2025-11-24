@@ -42,8 +42,8 @@
                     <li class="tbas-color d-flex justify-content-between align-items-center mt-2 baslik">
                         <a href="{% url 'question_detail' question.slug %}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
                             <span>{{ question.question_text }}</span>
+                            <small class="text-muted ms-2" style="min-width: 20px; text-align: right;">{{ question.answers_count }}</small>
                         </a>
-                        <small class="">{{ question.answers_count }}</small>
                     </li>
                     {% endfor %}
                 </ul>
@@ -136,11 +136,6 @@
                         | {{ question.created_at|date:"Y-m-d H:i" }}
                     </small>
                 </div>
-            </div>
-
-            <!-- Kelime Arama -->
-            <div class="mb-3">
-                <input type="text" id="answerSearchInput" class="form-control form-control-sm" placeholder="Kelime ara...">
             </div>
 
             <!-- Odaklanılan Yanıt -->
@@ -982,50 +977,7 @@
 });
 </script>
 
-<!-- sol frame -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-    // Shuffle butonu (sol frame'i random doldurur)
-    document.getElementById('random-question-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        fetch("{% url 'shuffle_questions' %}")
-        .then(response => response.json())
-        .then(data => {
-            const questionsList = document.getElementById('questions-list');
-            if (!questionsList) {
-                showToast('Soruları listeleyecek alan bulunamadı!', 'error');
-                return;
-            }
-            questionsList.innerHTML = '';
-            data.questions.forEach(function(q) {
-                const link = `/${q.slug}/`;
-                questionsList.innerHTML += `
-                    <li class="tbas-color baslik d-flex justify-content-between align-items-center mt-2">
-                        <a href="${link}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
-                            <span>${q.text}</span>
-                        </a>
-                    </li>
-                `;
-            });
-        });
-    });
-  
-    // Rastgele başlığa git butonu (senin mevcut kodun zaten çalışıyor)
-    document.getElementById('shuffle-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        fetch("{% url 'shuffle_questions' %}")
-        .then(response => response.json())
-        .then(data => {
-            if (data.questions && data.questions.length > 0) {
-                const q = data.questions[Math.floor(Math.random() * data.questions.length)];
-                const link = `/${q.slug}/`;
-                window.location.href = link;
-            }
-        });
-    });
-  });
-
-  </script>
+<!-- sol frame shuffle buttons are handled by homepage.js -->
 
 <script>
 // Takip butonları
@@ -1196,54 +1148,6 @@ document.addEventListener('DOMContentLoaded', function() {
             showToast('Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
         });
     });
-
-    // Kelime arama ve vurgulama
-    const searchInput = document.getElementById('answerSearchInput');
-    const answerContent = document.getElementById('answerTextContent');
-    let originalHTML = answerContent ? answerContent.innerHTML : '';
-
-    if (searchInput && answerContent) {
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.trim();
-
-            if (!searchTerm) {
-                // Arama boşsa orijinal HTML'i geri yükle
-                answerContent.innerHTML = originalHTML;
-                return;
-            }
-
-            // Orijinal HTML'den başla
-            answerContent.innerHTML = originalHTML;
-
-            // Regex özel karakterlerini escape et
-            const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-            // Arama terimini vurgula
-            const regex = new RegExp(`(${escapedTerm})`, 'gi');
-            const walker = document.createTreeWalker(
-                answerContent,
-                NodeFilter.SHOW_TEXT,
-                null,
-                false
-            );
-
-            const nodesToReplace = [];
-            while (walker.nextNode()) {
-                const node = walker.currentNode;
-                if (node.nodeValue && node.nodeValue.match(regex)) {
-                    nodesToReplace.push(node);
-                }
-            }
-
-            nodesToReplace.forEach(node => {
-                const span = document.createElement('span');
-                span.innerHTML = node.nodeValue.replace(regex, '<mark>$1</mark>');
-                if (node.parentNode) {
-                    node.parentNode.replaceChild(span, node);
-                }
-            });
-        });
-    }
 });
 </script>
 

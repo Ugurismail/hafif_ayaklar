@@ -28,7 +28,7 @@
                     <a href="{% url 'question_detail' question.slug %}"
                       class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
                         <span>{{ question.question_text }}</span>
-                        <small class="ms-2">{{ question.answers_count }}</small>
+                        <small class="text-muted ms-2" style="min-width: 20px; text-align: right;">{{ question.answers_count }}</small>
                     </a>
                 </li>
                 {% endfor %}
@@ -80,47 +80,6 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-    // Shuffle butonu (sol frame'i random doldurur)
-    document.getElementById('random-question-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        fetch("{% url 'shuffle_questions' %}")
-        .then(response => response.json())
-        .then(data => {
-            const questionsList = document.getElementById('questions-list');
-            if (!questionsList) {
-                showToast('Soruları listeleyecek alan bulunamadı!', 'error');
-                return;
-            }
-            questionsList.innerHTML = '';
-            data.questions.forEach(function(q) {
-                const link = `/${q.slug}/`;
-                questionsList.innerHTML += `
-                    <li class="tbas-color baslik d-flex justify-content-between align-items-center mt-2">
-                        <a href="${link}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
-                            <span>${q.text}</span>
-                        </a>
-                    </li>
-                `;
-            });
-        });
-    });
-
-    // Rastgele başlığa git butonu
-    document.getElementById('shuffle-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        fetch("{% url 'shuffle_questions' %}")
-        .then(response => response.json())
-        .then(data => {
-            if (data.questions && data.questions.length > 0) {
-                const q = data.questions[Math.floor(Math.random() * data.questions.length)];
-                const link = `/${q.slug}/`;
-                window.location.href = link;
-            }
-        });
-    });
-});
-</script>
+<!-- Shuffle buttons are handled by homepage.js -->
 
 {% endblock %}
