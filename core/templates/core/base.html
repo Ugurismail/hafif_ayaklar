@@ -58,7 +58,7 @@
     {% block extra_css %}{% endblock extra_css %}
     {% if user.is_authenticated %}
     <style>
-        @import url("https://fonts.googleapis.com/css2?family={{ user.userprofile.font_family|replace:' ','+'|safe }}&display=swap");
+        @import url("https://fonts.googleapis.com/css2?family={{ user.userprofile.font_family }}&display=swap");
         :root {
             --secondary-button-background-color : {{ user.userprofile.secondary_button_background_color }};
             --secondary-button-hover-background-color : {{ user.userprofile.secondary_button_hover_background_color }};
