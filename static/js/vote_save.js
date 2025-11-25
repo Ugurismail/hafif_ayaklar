@@ -1,8 +1,8 @@
 // static/js/vote_save.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    // CSRF token'ını al (getCookie fonksiyonu base.js'de tanımlı)
-    const csrftoken = getCookie('csrftoken');
+    // CSRF token'ını meta tag'den al
+    const csrftoken = document.querySelector('meta[name="csrf-token"]')?.content || getCookie('csrftoken');
 
     // **Oylama İşlevselliği** (Upvote / Downvote)
     document.addEventListener('click', function(event) {
