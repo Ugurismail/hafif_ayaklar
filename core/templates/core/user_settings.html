@@ -173,8 +173,38 @@
                     <input type="color" id="pagination_active_text_color" name="pagination_active_text_color" class="form-control form-control-color" value="{{ user_profile.pagination_active_text_color }}">
                 </div> -->
             </div>
+
+            <!-- Ek Renkler -->
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="icon_hover_color" class="form-label">İkon Hover Rengi:</label>
+                    <input type="color" id="icon_hover_color" name="icon_hover_color" class="form-control form-control-color" value="{{ user_profile.icon_hover_color|default:'#007bff' }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="content_background_color" class="form-label">İçerik Arka Plan Rengi:</label>
+                    <input type="color" id="content_background_color" name="content_background_color" class="form-control form-control-color" value="{{ user_profile.content_background_color|default:'#ffffff' }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="hover_background_color" class="form-label">Hover Arka Plan Rengi:</label>
+                    <input type="color" id="hover_background_color" name="hover_background_color" class="form-control form-control-color" value="{{ user_profile.hover_background_color|default:'#f0f0f0' }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="dropdown_text_color" class="form-label">Dropdown Metin Rengi:</label>
+                    <input type="color" id="dropdown_text_color" name="dropdown_text_color" class="form-control form-control-color" value="{{ user_profile.dropdown_text_color|default:'#333333' }}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="dropdown_hover_background_color" class="form-label">Dropdown Hover Arka Plan:</label>
+                    <input type="color" id="dropdown_hover_background_color" name="dropdown_hover_background_color" class="form-control form-control-color" value="{{ user_profile.dropdown_hover_background_color|default:'#f2f2f2' }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="dropdown_hover_text_color" class="form-label">Dropdown Hover Metin:</label>
+                    <input type="color" id="dropdown_hover_text_color" name="dropdown_hover_text_color" class="form-control form-control-color" value="{{ user_profile.dropdown_hover_text_color|default:'#0056b3' }}">
+                </div>
+            </div>
         </div>
-        
+
         <div class="row">
             <div class="col-4 mb-3">
                 <label for="font_family" class="form-label">Yazı Tipi:</label>
@@ -266,6 +296,7 @@
         </div>
     </form>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 <script>
@@ -712,7 +743,4 @@
         });
     });
     </script>
-    
-{% endblock %}
-
 {% endblock %}
