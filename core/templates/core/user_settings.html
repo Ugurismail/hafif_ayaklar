@@ -211,19 +211,19 @@
                 <select name="font_family" id="font_family" class="form-select">
                     <!-- Serif Fontlar (Klasik, okunabilir) - Türkçe karakter desteği olan -->
                     <optgroup label="📖 Serif (Klasik Okuma Fontları)">
-                        <option value="EB+Garamond"     {% if user_profile.font_family == "EB Garamond" %}selected{% endif %}>EB Garamond (Varsayılan)</option>
+                        <option value="EB+Garamond"     {% if user_profile.font_family == "EB+Garamond" %}selected{% endif %}>EB Garamond (Varsayılan)</option>
                         <option value="Merriweather"    {% if user_profile.font_family == "Merriweather" %}selected{% endif %}>Merriweather</option>
                         <option value="Georgia"         {% if user_profile.font_family == "Georgia" %}selected{% endif %}>Georgia</option>
-                        <option value="Times+New+Roman" {% if user_profile.font_family == "Times New Roman" %}selected{% endif %}>Times New Roman</option>
-                        <option value="Book+Antiqua"    {% if user_profile.font_family == "Book Antiqua" %}selected{% endif %}>Book Antiqua</option>
-                        <option value="Cormorant+Garamond" {% if user_profile.font_family == "Cormorant Garamond" %}selected{% endif %}>Cormorant Garamond</option>
-                        <option value="Crimson+Text"    {% if user_profile.font_family == "Crimson Text" %}selected{% endif %}>Crimson Text</option>
-                        <option value="Crimson+Pro"     {% if user_profile.font_family == "Crimson Pro" %}selected{% endif %}>Crimson Pro</option>
+                        <option value="Times+New+Roman" {% if user_profile.font_family == "Times+New+Roman" %}selected{% endif %}>Times New Roman</option>
+                        <option value="Book+Antiqua"    {% if user_profile.font_family == "Book+Antiqua" %}selected{% endif %}>Book Antiqua</option>
+                        <option value="Cormorant+Garamond" {% if user_profile.font_family == "Cormorant+Garamond" %}selected{% endif %}>Cormorant Garamond</option>
+                        <option value="Crimson+Text"    {% if user_profile.font_family == "Crimson+Text" %}selected{% endif %}>Crimson Text</option>
+                        <option value="Crimson+Pro"     {% if user_profile.font_family == "Crimson+Pro" %}selected{% endif %}>Crimson Pro</option>
                         <option value="Lora"            {% if user_profile.font_family == "Lora" %}selected{% endif %}>Lora</option>
-                        <option value="Libre+Baskerville" {% if user_profile.font_family == "Libre Baskerville" %}selected{% endif %}>Libre Baskerville</option>
-                        <option value="Noto+Serif"      {% if user_profile.font_family == "Noto Serif" %}selected{% endif %}>Noto Serif (Türkçe Mükemmel)</option>
-                        <option value="PT+Serif"        {% if user_profile.font_family == "PT Serif" %}selected{% endif %}>PT Serif</option>
-                        <option value="Source+Serif+4"  {% if user_profile.font_family == "Source Serif 4" %}selected{% endif %}>Source Serif 4</option>
+                        <option value="Libre+Baskerville" {% if user_profile.font_family == "Libre+Baskerville" %}selected{% endif %}>Libre Baskerville</option>
+                        <option value="Noto+Serif"      {% if user_profile.font_family == "Noto+Serif" %}selected{% endif %}>Noto Serif (Türkçe Mükemmel)</option>
+                        <option value="PT+Serif"        {% if user_profile.font_family == "PT+Serif" %}selected{% endif %}>PT Serif</option>
+                        <option value="Source+Serif+4"  {% if user_profile.font_family == "Source+Serif+4" %}selected{% endif %}>Source Serif 4</option>
                         <option value="Spectral"        {% if user_profile.font_family == "Spectral" %}selected{% endif %}>Spectral</option>
                         <option value="Cardo"           {% if user_profile.font_family == "Cardo" %}selected{% endif %}>Cardo</option>
                         <option value="Vollkorn"        {% if user_profile.font_family == "Vollkorn" %}selected{% endif %}>Vollkorn</option>
@@ -232,17 +232,17 @@
                     <!-- El Yazısı / Script Fontlar -->
                     <optgroup label="✍️ El Yazısı (Handwriting)">
                         <option value="Caveat"          {% if user_profile.font_family == "Caveat" %}selected{% endif %}>Caveat</option>
-                        <option value="Patrick+Hand"    {% if user_profile.font_family == "Patrick Hand" %}selected{% endif %}>Patrick Hand</option>
-                        <option value="Indie+Flower"    {% if user_profile.font_family == "Indie Flower" %}selected{% endif %}>Indie Flower</option>
-                        <option value="Dancing+Script"  {% if user_profile.font_family == "Dancing Script" %}selected{% endif %}>Dancing Script</option>
+                        <option value="Patrick+Hand"    {% if user_profile.font_family == "Patrick+Hand" %}selected{% endif %}>Patrick Hand</option>
+                        <option value="Indie+Flower"    {% if user_profile.font_family == "Indie+Flower" %}selected{% endif %}>Indie Flower</option>
+                        <option value="Dancing+Script"  {% if user_profile.font_family == "Dancing+Script" %}selected{% endif %}>Dancing Script</option>
                         <option value="Pacifico"        {% if user_profile.font_family == "Pacifico" %}selected{% endif %}>Pacifico</option>
                         <option value="Kalam"           {% if user_profile.font_family == "Kalam" %}selected{% endif %}>Kalam</option>
-                        <option value="Shadows+Into+Light" {% if user_profile.font_family == "Shadows Into Light" %}selected{% endif %}>Shadows Into Light</option>
-                        <option value="Amatic+SC"       {% if user_profile.font_family == "Amatic SC" %}selected{% endif %}>Amatic SC</option>
-                        <option value="Gloria+Hallelujah" {% if user_profile.font_family == "Gloria Hallelujah" %}selected{% endif %}>Gloria Hallelujah</option>
-                        <option value="Permanent+Marker" {% if user_profile.font_family == "Permanent Marker" %}selected{% endif %}>Permanent Marker</option>
+                        <option value="Shadows+Into+Light" {% if user_profile.font_family == "Shadows+Into+Light" %}selected{% endif %}>Shadows Into Light</option>
+                        <option value="Amatic+SC"       {% if user_profile.font_family == "Amatic+SC" %}selected{% endif %}>Amatic SC</option>
+                        <option value="Gloria+Hallelujah" {% if user_profile.font_family == "Gloria+Hallelujah" %}selected{% endif %}>Gloria Hallelujah</option>
+                        <option value="Permanent+Marker" {% if user_profile.font_family == "Permanent+Marker" %}selected{% endif %}>Permanent Marker</option>
                         <option value="Sacramento"      {% if user_profile.font_family == "Sacramento" %}selected{% endif %}>Sacramento</option>
-                        <option value="Great+Vibes"     {% if user_profile.font_family == "Great Vibes" %}selected{% endif %}>Great Vibes</option>
+                        <option value="Great+Vibes"     {% if user_profile.font_family == "Great+Vibes" %}selected{% endif %}>Great Vibes</option>
                         <option value="Satisfy"         {% if user_profile.font_family == "Satisfy" %}selected{% endif %}>Satisfy</option>
                         <option value="Handlee"         {% if user_profile.font_family == "Handlee" %}selected{% endif %}>Handlee</option>
                     </optgroup>
@@ -251,15 +251,15 @@
                     <optgroup label="✨ Sans-serif (Modern & Temiz)">
                         <option value="Inter"           {% if user_profile.font_family == "Inter" %}selected{% endif %}>Inter</option>
                         <option value="Roboto"          {% if user_profile.font_family == "Roboto" %}selected{% endif %}>Roboto</option>
-                        <option value="Open+Sans"       {% if user_profile.font_family == "Open Sans" %}selected{% endif %}>Open Sans</option>
-                        <option value="Noto+Sans"       {% if user_profile.font_family == "Noto Sans" %}selected{% endif %}>Noto Sans (Türkçe Mükemmel)</option>
+                        <option value="Open+Sans"       {% if user_profile.font_family == "Open+Sans" %}selected{% endif %}>Open Sans</option>
+                        <option value="Noto+Sans"       {% if user_profile.font_family == "Noto+Sans" %}selected{% endif %}>Noto Sans (Türkçe Mükemmel)</option>
                         <option value="Montserrat"      {% if user_profile.font_family == "Montserrat" %}selected{% endif %}>Montserrat</option>
-                        <option value="Source+Sans+3"   {% if user_profile.font_family == "Source Sans 3" %}selected{% endif %}>Source Sans 3</option>
-                        <option value="Work+Sans"       {% if user_profile.font_family == "Work Sans" %}selected{% endif %}>Work Sans</option>
+                        <option value="Source+Sans+3"   {% if user_profile.font_family == "Source+Sans+3" %}selected{% endif %}>Source Sans 3</option>
+                        <option value="Work+Sans"       {% if user_profile.font_family == "Work+Sans" %}selected{% endif %}>Work Sans</option>
                         <option value="Nunito"          {% if user_profile.font_family == "Nunito" %}selected{% endif %}>Nunito</option>
                         <option value="Poppins"         {% if user_profile.font_family == "Poppins" %}selected{% endif %}>Poppins</option>
                         <option value="Rubik"           {% if user_profile.font_family == "Rubik" %}selected{% endif %}>Rubik</option>
-                        <option value="DM+Sans"         {% if user_profile.font_family == "DM Sans" %}selected{% endif %}>DM Sans</option>
+                        <option value="DM+Sans"         {% if user_profile.font_family == "DM+Sans" %}selected{% endif %}>DM Sans</option>
                         <option value="Quicksand"       {% if user_profile.font_family == "Quicksand" %}selected{% endif %}>Quicksand</option>
                         <option value="Karla"           {% if user_profile.font_family == "Karla" %}selected{% endif %}>Karla</option>
                         <option value="Lato"            {% if user_profile.font_family == "Lato" %}selected{% endif %}>Lato</option>
@@ -267,20 +267,20 @@
 
                     <!-- Display/Dekoratif Fontlar -->
                     <optgroup label="🎨 Display (Başlık İçin)">
-                        <option value="Playfair+Display" {% if user_profile.font_family == "Playfair Display" %}selected{% endif %}>Playfair Display</option>
+                        <option value="Playfair+Display" {% if user_profile.font_family == "Playfair+Display" %}selected{% endif %}>Playfair Display</option>
                         <option value="Oswald"          {% if user_profile.font_family == "Oswald" %}selected{% endif %}>Oswald</option>
                         <option value="Raleway"         {% if user_profile.font_family == "Raleway" %}selected{% endif %}>Raleway</option>
-                        <option value="Bebas+Neue"      {% if user_profile.font_family == "Bebas Neue" %}selected{% endif %}>Bebas Neue</option>
-                        <option value="Archivo+Black"   {% if user_profile.font_family == "Archivo Black" %}selected{% endif %}>Archivo Black</option>
+                        <option value="Bebas+Neue"      {% if user_profile.font_family == "Bebas+Neue" %}selected{% endif %}>Bebas Neue</option>
+                        <option value="Archivo+Black"   {% if user_profile.font_family == "Archivo+Black" %}selected{% endif %}>Archivo Black</option>
                         <option value="Righteous"       {% if user_profile.font_family == "Righteous" %}selected{% endif %}>Righteous</option>
                     </optgroup>
 
                     <!-- Monospace Fontlar (Kod için) -->
                     <optgroup label="💻 Monospace (Kod Tipi)">
-                        <option value="Fira+Code"       {% if user_profile.font_family == "Fira Code" %}selected{% endif %}>Fira Code</option>
-                        <option value="JetBrains+Mono"  {% if user_profile.font_family == "JetBrains Mono" %}selected{% endif %}>JetBrains Mono</option>
-                        <option value="Source+Code+Pro" {% if user_profile.font_family == "Source Code Pro" %}selected{% endif %}>Source Code Pro</option>
-                        <option value="Courier+New"     {% if user_profile.font_family == "Courier New" %}selected{% endif %}>Courier New</option>
+                        <option value="Fira+Code"       {% if user_profile.font_family == "Fira+Code" %}selected{% endif %}>Fira Code</option>
+                        <option value="JetBrains+Mono"  {% if user_profile.font_family == "JetBrains+Mono" %}selected{% endif %}>JetBrains Mono</option>
+                        <option value="Source+Code+Pro" {% if user_profile.font_family == "Source+Code+Pro" %}selected{% endif %}>Source Code Pro</option>
+                        <option value="Courier+New"     {% if user_profile.font_family == "Courier+New" %}selected{% endif %}>Courier New</option>
                     </optgroup>
                 </select>
             </div>
