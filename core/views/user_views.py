@@ -435,7 +435,9 @@ def user_settings(request):
             # profile.pagination_active_background_color = request.POST.get('pagination_active_background_color', '#007bff')
             # profile.pagination_active_text_color = request.POST.get('pagination_active_text_color', '#ffffff')
             profile.yanit_card= request.POST.get('yanit_card','#ffffff')
-            profile.font_family = request.POST.get('font_family', 'EB Garamond')
+            # Font family: Convert + to space for storage
+            font_family_raw = request.POST.get('font_family', 'EB+Garamond')
+            profile.font_family = font_family_raw.replace('+', ' ')
             # Diğer renk alanlarını da kaydedin
             profile.save()
             messages.success(request, 'Renk ayarlarınız güncellendi.')

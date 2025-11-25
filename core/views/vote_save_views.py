@@ -13,10 +13,14 @@ from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from ..models import Vote, SavedItem, PinnedEntry, Answer
 
 
+@require_POST
+@ensure_csrf_cookie
 def vote(request):
     if request.method == 'POST':
         # Login kontrolü
@@ -89,10 +93,10 @@ def vote(request):
             'downvotes': downvotes,
             'user_vote_value': value
         })
-    else:
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
+@require_POST
+@ensure_csrf_cookie
 def save_item(request):
     if request.method == 'POST':
         # Login kontrolü
@@ -139,8 +143,6 @@ def save_item(request):
                 object_id=object_id
             ).count()
             return JsonResponse({'status': 'saved', 'save_count': save_count})
-    else:
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
 @login_required

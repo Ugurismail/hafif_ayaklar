@@ -940,7 +940,7 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.status === "ok") {
-                        showToast("Taslak başarıyla kaydedildi!", 'success');
+                        showToast("Taslak başarıyla kaydedildi!", 'success', 1500);
                         textarea.value = "";
                     } else {
                         showToast("Kaydetme başarısız: " + (data.error || ""), 'error');

@@ -67,11 +67,13 @@ def extract_hashtags(text):
     """
     Extract all #hashtags from text
     Returns list of hashtag names (without #)
+    Supports Turkish characters: ç, ğ, ı, ö, ş, ü and their uppercase versions
     """
-    # Pattern: #hashtag (alphanumeric, underscore)
+    # Pattern: #hashtag (alphanumeric, underscore, Turkish characters)
     # Must not be preceded by alphanumeric to avoid matching mid-word
-    pattern = r'(?:^|[^a-zA-Z0-9_])#([a-zA-Z0-9_]+)'
-    hashtags = re.findall(pattern, text)
+    # \w matches Unicode word characters including Turkish letters
+    pattern = r'(?:^|[^\w])#([\w]+)'
+    hashtags = re.findall(pattern, text, re.UNICODE)
     return list(set([h.lower() for h in hashtags]))  # Lowercase and remove duplicates
 
 
