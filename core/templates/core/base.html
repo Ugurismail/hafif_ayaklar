@@ -60,7 +60,7 @@
     {% if user.is_authenticated %}
     <style>
         {% comment %}Sistem fontları için Google Fonts'tan yükleme yapma{% endcomment %}
-        {% if user.userprofile.font_family not in "Georgia Times+New+Roman Book+Antiqua Courier+New Comic+Sans+MS" %}
+        {% if not user.userprofile.font_family|is_system_font %}
         @import url("https://fonts.googleapis.com/css2?family={{ user.userprofile.font_family }}&display=swap");
         {% endif %}
         :root {
