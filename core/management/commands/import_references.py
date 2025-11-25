@@ -22,7 +22,23 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         file_path = kwargs['file_path']
+        username = kwargs.get('user')
 
+        # Get or create user
+        if username:
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                self.stdout.write(self.style.ERROR(f'❌ User {username} not found'))
+                return
+        else:
+            # Get first superuser
+            user = User.objects.filter(is_superuser=True).first()
+            if not user:
+                self.stdout.write(self.style.ERROR('❌ No superuser found. Create one or specify --user'))
+                return
+
+        self.stdout.write(self.style.SUCCESS(f'✅ Using user: {user.username}'))
         self.stdout.write(self.style.WARNING(f'📖 Reading references from {file_path}...'))
 
         try:
@@ -57,9 +73,9 @@ class Command(BaseCommand):
                 author_surname = author_match.group(1).strip()
                 author_name = author_match.group(2).strip().rstrip('.,')
 
-                # Extract year
-                year_match = re.search(r'\((\d{4}[a-z]?)\)', line)
-                year = year_match.group(1) if year_match else None
+                # Extract year (remove letters like 2011a -> 2011)
+                year_match = re.search(r'\((\d{4})[a-z]?\)', line)
+                year = int(year_match.group(1)) if year_match else None
 
                 # Rest of the citation (everything after first parenthesis with year)
                 if year_match:
@@ -84,11 +100,12 @@ class Command(BaseCommand):
 
                 # Create reference
                 Reference.objects.create(
-                    author_surname=author_surname[:200],  # Limit to model max_length
-                    author_name=author_name[:200] if author_name else None,
-                    year=year[:50] if year else None,
-                    rest=rest if rest else None,
-                    abbreviation=abbreviation[:50]  # Limit to model max_length
+                    author_surname=author_surname[:100],
+                    author_name=author_name[:100] if author_name else "",
+                    year=year if year else 0,
+                    rest=rest[:2000] if rest else "",
+                    abbreviation=abbreviation[:255],
+                    created_by=user
                 )
 
                 created_count += 1
