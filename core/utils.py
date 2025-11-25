@@ -71,9 +71,9 @@ def extract_hashtags(text):
     """
     # Pattern: #hashtag (alphanumeric, underscore, Turkish characters)
     # Must not be preceded by alphanumeric to avoid matching mid-word
-    # \w matches Unicode word characters including Turkish letters
-    pattern = r'(?:^|[^\w])#([\w]+)'
-    hashtags = re.findall(pattern, text, re.UNICODE)
+    # Explicitly include Turkish characters for better compatibility
+    pattern = r'(?:^|[^A-Za-z0-9_ğüşöçıİĞÜŞÖÇ])#([A-Za-z0-9_ğüşöçıİĞÜŞÖÇ]+)'
+    hashtags = re.findall(pattern, text)
     return list(set([h.lower() for h in hashtags]))  # Lowercase and remove duplicates
 
 
@@ -151,11 +151,12 @@ def link_hashtags_in_text(text):
     Convert #hashtags to clickable links in HTML
     Supports Turkish characters: ç, ğ, ı, ö, ş, ü and their uppercase versions
     """
-    pattern = r'(?:^|[^\w])(#([\w]+))'
+    # Explicitly include Turkish characters for better compatibility
+    pattern = r'(?:^|[^A-Za-z0-9_ğüşöçıİĞÜŞÖÇ])(#([A-Za-z0-9_ğüşöçıİĞÜŞÖÇ]+))'
 
     def replace_full(match):
         prefix = match.group(0)[0] if len(match.group(0)) > 1 and match.group(0)[0] != '#' else ''
         hashtag = match.group(2)
         return f'{prefix}<a href="/hashtag/{hashtag.lower()}/" class="hashtag-link">#{hashtag}</a>'
 
-    return re.sub(pattern, replace_full, text, flags=re.UNICODE)
+    return re.sub(pattern, replace_full, text)
