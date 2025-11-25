@@ -86,9 +86,7 @@ class Command(BaseCommand):
 
                 # Generate abbreviation
                 if year:
-                    # Remove any letters from year for abbreviation
-                    year_num = re.sub(r'[a-z]', '', year)
-                    abbreviation = f"{author_surname.replace(' ', '')}{year_num}"
+                    abbreviation = f"{author_surname.replace(' ', '')}{year}"
                 else:
                     abbreviation = f"{author_surname.replace(' ', '')}"
 
