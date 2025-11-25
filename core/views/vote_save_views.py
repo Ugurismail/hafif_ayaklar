@@ -13,14 +13,10 @@ from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import ensure_csrf_cookie
 
 from ..models import Vote, SavedItem, PinnedEntry, Answer
 
 
-@require_POST
-@ensure_csrf_cookie
 def vote(request):
     if request.method == 'POST':
         # Login kontrolü
@@ -95,8 +91,6 @@ def vote(request):
         })
 
 
-@require_POST
-@ensure_csrf_cookie
 def save_item(request):
     if request.method == 'POST':
         # Login kontrolü
