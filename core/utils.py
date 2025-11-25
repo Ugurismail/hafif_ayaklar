@@ -149,16 +149,13 @@ def link_mentions_in_text(text):
 def link_hashtags_in_text(text):
     """
     Convert #hashtags to clickable links in HTML
+    Supports Turkish characters: ç, ğ, ı, ö, ş, ü and their uppercase versions
     """
-    def replace_hashtag(match):
-        hashtag = match.group(1)
-        return f'<a href="/hashtag/{hashtag.lower()}/" class="hashtag-link">#{hashtag}</a>'
-
-    pattern = r'(?:^|[^a-zA-Z0-9_])(#([a-zA-Z0-9_]+))'
+    pattern = r'(?:^|[^\w])(#([\w]+))'
 
     def replace_full(match):
         prefix = match.group(0)[0] if len(match.group(0)) > 1 and match.group(0)[0] != '#' else ''
         hashtag = match.group(2)
         return f'{prefix}<a href="/hashtag/{hashtag.lower()}/" class="hashtag-link">#{hashtag}</a>'
 
-    return re.sub(pattern, replace_full, text)
+    return re.sub(pattern, replace_full, text, flags=re.UNICODE)
