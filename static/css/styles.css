@@ -1086,8 +1086,12 @@ a.hashtag-link:hover {
     border-left-color: var(--content-background-color);
     border-right-color: var(--content-background-color);
 }
-
 /* Kaynaklar tablosu sütun genişlikleri */
+#kaynaklarim .table {
+  table-layout: fixed;
+  width: 100%;
+}
+
 #kaynaklarim .table th:nth-child(1),
 #kaynaklarim .table td:nth-child(1) { width: 12%; } /* Yazar Soyadı */
 #kaynaklarim .table th:nth-child(2),
