@@ -143,8 +143,8 @@
                             <th>Yazar Soyadı</th>
                             <th>Yazar Adı</th>
                             <th>Yıl</th>
+                            <th>Eser İsmi</th>
                             <th>Ek Bilgiler</th>
-                            <th>Kısaltma</th>
                             <th>Kullanım Sayısı</th>
                         </tr>
                     </thead>
@@ -154,8 +154,8 @@
                                 <td>{{ ref.author_surname }}</td>
                                 <td>{{ ref.author_name }}</td>
                                 <td>{{ ref.year }}</td>
+                                <td>{{ ref.metin_ismi|default:"-" }}</td>
                                 <td>{{ ref.rest }}</td>
-                                <td>{{ ref.abbreviation }}</td>
                                 <td>{{ ref.get_usage_count }}</td>
                             </tr>
                         {% endfor %}

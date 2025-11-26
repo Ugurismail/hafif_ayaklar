@@ -375,8 +375,20 @@ class Reference(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='references')
 
     def __str__(self):
+        # Çoklu yazarları düzgün formatla: "Dumézil, Georges; Ceminay, Cem"
+        surnames = [s.strip() for s in self.author_surname.split(';') if s.strip()]
+        names = [n.strip() for n in self.author_name.split(';') if n.strip()]
+
+        authors = []
+        for i in range(max(len(surnames), len(names))):
+            surname = surnames[i] if i < len(surnames) else ''
+            name = names[i] if i < len(names) else ''
+            if surname or name:
+                authors.append(f"{surname}, {name}".strip(', '))
+
+        author_str = '; '.join(authors)
         metin = f", {self.metin_ismi}" if self.metin_ismi else ""
-        return f"{self.author_surname}, {self.author_name} ({self.year}){metin}"
+        return f"{author_str} ({self.year}){metin}"
 
     def get_usage_count(self):
         """

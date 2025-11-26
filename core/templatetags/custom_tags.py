@@ -135,7 +135,21 @@ def reference_link(text):
 
         try:
             ref_obj = Reference.objects.get(id=ref_id)
-            full_citation = f"{ref_obj.author_surname}, {ref_obj.author_name}.{ref_obj.metin_ismi} ({ref_obj.year}). {ref_obj.rest}"
+
+            # Çoklu yazarları düzgün formatla
+            surnames = [s.strip() for s in ref_obj.author_surname.split(';') if s.strip()]
+            names = [n.strip() for n in ref_obj.author_name.split(';') if n.strip()]
+
+            authors = []
+            for i in range(max(len(surnames), len(names))):
+                surname = surnames[i] if i < len(surnames) else ''
+                name = names[i] if i < len(names) else ''
+                if surname or name:
+                    authors.append(f"{surname}, {name}".strip(', '))
+
+            author_str = '; '.join(authors)
+            metin = f". {ref_obj.metin_ismi}" if ref_obj.metin_ismi else ""
+            full_citation = f"{author_str}{metin} ({ref_obj.year}). {ref_obj.rest}"
             if ref_obj.abbreviation:
                 full_citation += f" [{ref_obj.abbreviation}]"
             if sayfa:
@@ -292,9 +306,24 @@ def extract_bibliography(text):
         try:
             ref_obj = Reference.objects.get(id=ref_id)
             pages = reference_pages.get(ref_id, [])
+
+            # Çoklu yazarları düzgün formatla
+            surnames = [s.strip() for s in ref_obj.author_surname.split(';') if s.strip()]
+            names = [n.strip() for n in ref_obj.author_name.split(';') if n.strip()]
+
+            authors = []
+            for i in range(max(len(surnames), len(names))):
+                surname = surnames[i] if i < len(surnames) else ''
+                name = names[i] if i < len(names) else ''
+                if surname or name:
+                    authors.append(f"{surname}, {name}".strip(', '))
+
+            formatted_authors = '; '.join(authors)
+
             bibliography.append({
                 'number': ref_num,
                 'reference': ref_obj,
+                'formatted_authors': formatted_authors,
                 'pages': pages
             })
         except Reference.DoesNotExist:
@@ -318,6 +347,6 @@ def spoiler_link(text):
         # HTML encode to prevent XSS
         from html import escape
         escaped_text = escape(hidden_text)
-        return f'<span class="spoiler-text" data-spoiler="{escaped_text}"></span>'
+        return f'<span class="spoiler-text" data-bs-toggle="tooltip" data-bs-html="true" title="{escaped_text}">*</span>'
 
     return mark_safe(re.sub(pattern, replace, text, flags=re.DOTALL))

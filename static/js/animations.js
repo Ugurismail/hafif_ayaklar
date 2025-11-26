@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
         card.addEventListener('click', function(e) {
             // Don't navigate if clicking on interactive elements
             const clickedElement = e.target;
-            const isInteractive = clickedElement.closest('a, button, input, textarea, select, .vote-btn, .save-btn, .dropdown');
+            const isInteractive = clickedElement.closest('a, button, input, textarea, select, .vote-btn, .save-btn, .dropdown, .read-more, .bi-pencil-square, .bi-trash, i');
 
             if (isInteractive) {
                 return; // Let the interactive element handle the click

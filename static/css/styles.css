@@ -956,46 +956,10 @@ a.hashtag-link:hover {
 
 /* Spoiler (Yıldız) - gizli metin */
 .spoiler-text {
-    position: relative;
     cursor: help;
     color: var(--link-color, #6E8CA7);
     font-weight: bold;
-    display: inline;
     user-select: none;
-}
-
-.spoiler-text::before {
-    content: '*';
-}
-
-.spoiler-text::after {
-    content: attr(data-spoiler);
-    position: absolute;
-    left: 50%;
-    bottom: 100%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.9);
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 6px;
-    white-space: normal;
-    max-width: 400px;
-    width: max-content;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-    margin-bottom: 5px;
-    z-index: 1000;
-    font-weight: normal;
-    font-size: 0.9em;
-    text-align: left;
-    line-height: 1.4;
-}
-
-.spoiler-text:hover::after {
-    opacity: 1;
 }
 
 /* Notification hover fixes - subtle hover keeps text readable */
@@ -1122,3 +1086,19 @@ a.hashtag-link:hover {
     border-left-color: var(--content-background-color);
     border-right-color: var(--content-background-color);
 }
+
+/* Kaynaklar tablosu sütun genişlikleri */
+#kaynaklarim .table th:nth-child(1),
+#kaynaklarim .table td:nth-child(1) { width: 12%; } /* Yazar Soyadı */
+#kaynaklarim .table th:nth-child(2),
+#kaynaklarim .table td:nth-child(2) { width: 12%; } /* Yazar Adı */
+#kaynaklarim .table th:nth-child(3),
+#kaynaklarim .table td:nth-child(3) { width: 8%; } /* Yıl */
+#kaynaklarim .table th:nth-child(4),
+#kaynaklarim .table td:nth-child(4) { width: 20%; } /* Eser İsmi */
+#kaynaklarim .table th:nth-child(5),
+#kaynaklarim .table td:nth-child(5) { width: 25%; } /* Ek Bilgiler */
+#kaynaklarim .table th:nth-child(6),
+#kaynaklarim .table td:nth-child(6) { width: 10%; } /* Kullanım Sayısı */
+#kaynaklarim .table th:nth-child(7),
+#kaynaklarim .table td:nth-child(7) { width: 13%; } /* İşlemler */

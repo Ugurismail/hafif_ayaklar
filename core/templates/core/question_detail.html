@@ -303,7 +303,7 @@
                                   <li class="bibliography-item">
                                     {% if item.reference %}
                                       <span class="reference-citation">
-                                        {{ item.reference.author_surname }}, {{ item.reference.author_name }}{% if item.reference.metin_ismi %}, <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
+                                        {{ item.formatted_authors }}{% if item.reference.metin_ismi %}. <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
                                       </span>
                                     {% else %}
                                       <span class="reference-not-found">Kaynak bulunamadı (ID: {{ item.ref_id }})</span>
@@ -330,7 +330,7 @@
                                   <li class="bibliography-item">
                                     {% if item.reference %}
                                       <span class="reference-citation">
-                                        {{ item.reference.author_surname }}, {{ item.reference.author_name }}{% if item.reference.metin_ismi %}, <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
+                                        {{ item.formatted_authors }}{% if item.reference.metin_ismi %}. <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
                                       </span>
                                     {% else %}
                                       <span class="reference-not-found">Kaynak bulunamadı (ID: {{ item.ref_id }})</span>

@@ -29,10 +29,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       textarea.value = before + formattedText + after;
-      textarea.focus();
       // Seçili alanı yeniden belirle
       textarea.selectionStart = start;
       textarea.selectionEnd   = start + formattedText.length;
+      textarea.focus({ preventScroll: true });
   }
 
   //==================================================================
@@ -63,9 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
           var spoilerText = '--gizli--' + selectedText + '--gizli--';
 
           textarea.value = before + spoilerText + after;
-          textarea.focus();
           textarea.selectionStart = start;
           textarea.selectionEnd = start + spoilerText.length;
+          textarea.focus({ preventScroll: true });
       });
   });
 
@@ -98,9 +98,9 @@ document.addEventListener('DOMContentLoaded', function() {
             var after = textarea.value.substring(end);
             var linkMarkdown = '[' + text + '](' + url + ')';
             textarea.value = before + linkMarkdown + after;
-            textarea.focus();
             textarea.selectionStart = start;
             textarea.selectionEnd   = start + linkMarkdown.length;
+            textarea.focus({ preventScroll: true });
             linkModal.hide();
         }
       });
@@ -242,9 +242,9 @@ var referenceModalElem = document.getElementById('referenceModal');
     var after = textarea.value.substring(end);
     var referenceText = '(bkz: ' + text + ')';
     textarea.value = before + referenceText + after;
-    textarea.focus();
     textarea.selectionStart = start;
     textarea.selectionEnd = start + referenceText.length;
+    textarea.focus({ preventScroll: true });
   }
 
 
@@ -282,7 +282,7 @@ var referenceModalElem = document.getElementById('referenceModal');
     var after = textarea.value.substring(end);
     textarea.value = before + text + after;
     textarea.selectionStart = textarea.selectionEnd = start + text.length;
-    textarea.focus();
+    textarea.focus({ preventScroll: true });
   }
 
 
@@ -500,8 +500,16 @@ var referenceModalElem = document.getElementById('referenceModal');
         return;
       }
 
-      let insertStr = `(tanim:${questionWord}:${definitionId})`;
-      answerTextarea.value += ` ${insertStr}`;
+      let insertStr = ` (tanim:${questionWord}:${definitionId})`;
+
+      // İmlecin bulunduğu konuma ekle
+      let start = answerTextarea.selectionStart;
+      let end = answerTextarea.selectionEnd;
+      let before = answerTextarea.value.substring(0, start);
+      let after = answerTextarea.value.substring(end);
+      answerTextarea.value = before + insertStr + after;
+      answerTextarea.selectionStart = answerTextarea.selectionEnd = start + insertStr.length;
+      answerTextarea.focus({ preventScroll: true });
 
       // Modal kapat
       let defModalInstance = bootstrap.Modal.getInstance(definitionModalElem);
@@ -627,8 +635,16 @@ var referenceModalElem = document.getElementById('referenceModal');
         showToast("Yanıt textarea bulunamadı!", 'error');
         return;
       }
-      var insertStr = `(tanim:${item.question_text}:${item.id})`;
-      answerTextarea.value += " " + insertStr;
+      var insertStr = ` (tanim:${item.question_text}:${item.id})`;
+
+      // İmlecin bulunduğu konuma ekle
+      var start = answerTextarea.selectionStart;
+      var end = answerTextarea.selectionEnd;
+      var before = answerTextarea.value.substring(0, start);
+      var after = answerTextarea.value.substring(end);
+      answerTextarea.value = before + insertStr + after;
+      answerTextarea.selectionStart = answerTextarea.selectionEnd = start + insertStr.length;
+      answerTextarea.focus({ preventScroll: true });
 
       let defModalInstance = bootstrap.Modal.getInstance(definitionModalElem);
       if (defModalInstance) {

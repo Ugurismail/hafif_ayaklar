@@ -9,11 +9,58 @@
           <h2 class="mb-0">Kaynak Düzenle</h2>
         </div>
         <div class="card-body">
-          <form method="post">
+          <form method="post" id="editReferenceForm">
             {% csrf_token %}
-            {{ form.as_p }}
+
+            <!-- Yazar Konteynerı -->
+            <div id="authorsContainer" class="mb-3">
+              <label class="form-label">Yazarlar</label>
+            </div>
+
+            <!-- Yazar Ekle Butonu -->
+            <button type="button" class="btn btn-sm btn-outline-secondary mb-3" id="addAuthorBtn">
+              <i class="bi bi-plus-circle"></i> Yazar Ekle
+            </button>
+
+            <!-- Hidden fields (formun gerçek alanları) -->
+            {{ form.author_surname.as_hidden }}
+            {{ form.author_name.as_hidden }}
+
+            <!-- Diğer alanlar -->
+            <div class="mb-3">
+              <label for="{{ form.year.id_for_label }}" class="form-label">{{ form.year.label }}</label>
+              {{ form.year }}
+              {% if form.year.errors %}
+                <div class="text-danger">{{ form.year.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.metin_ismi.id_for_label }}" class="form-label">{{ form.metin_ismi.label }}</label>
+              {{ form.metin_ismi }}
+              {% if form.metin_ismi.errors %}
+                <div class="text-danger">{{ form.metin_ismi.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.rest.id_for_label }}" class="form-label">{{ form.rest.label }}</label>
+              {{ form.rest }}
+              {% if form.rest.errors %}
+                <div class="text-danger">{{ form.rest.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.abbreviation.id_for_label }}" class="form-label">{{ form.abbreviation.label }}</label>
+              {{ form.abbreviation }}
+              {% if form.abbreviation.errors %}
+                <div class="text-danger">{{ form.abbreviation.errors }}</div>
+              {% endif %}
+            </div>
+
             <div class="d-flex justify-content-between">
-              <a href="{% url 'user_profile' request.user.username %}" class="btn btn-secondary">İptal</a>
+              <a href="{% url 'user_profile' request.user.username %}?tab=kaynaklarim" class="btn btn-secondary">İptal</a>
               <button type="submit" class="btn btn-primary">Güncelle</button>
             </div>
           </form>
@@ -22,4 +69,87 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const authorsContainer = document.getElementById('authorsContainer');
+    const addAuthorBtn = document.getElementById('addAuthorBtn');
+    const form = document.getElementById('editReferenceForm');
+    const hiddenSurnameField = document.getElementById('{{ form.author_surname.id_for_label }}');
+    const hiddenNameField = document.getElementById('{{ form.author_name.id_for_label }}');
+
+    let authorCount = 0;
+
+    // Mevcut yazarları parse et
+    const existingSurnames = (hiddenSurnameField.value || '').split(';').map(s => s.trim()).filter(s => s);
+    const existingNames = (hiddenNameField.value || '').split(';').map(s => s.trim()).filter(s => s);
+
+    // Mevcut yazarları ekle
+    if (existingSurnames.length > 0) {
+        for (let i = 0; i < existingSurnames.length; i++) {
+            addAuthorGroup(existingSurnames[i], existingNames[i] || '');
+        }
+    } else {
+        // Hiç yazar yoksa boş bir grup ekle
+        addAuthorGroup('', '');
+    }
+
+    function addAuthorGroup(surname = '', name = '') {
+        authorCount++;
+        const authorGroup = document.createElement('div');
+        authorGroup.className = 'author-group mb-2';
+        authorGroup.innerHTML = `
+            <div class="row">
+                <div class="col-md-5">
+                    <input type="text" class="form-control author-surname" placeholder="Soyadı" value="${surname}" required>
+                </div>
+                <div class="col-md-5">
+                    <input type="text" class="form-control author-name" placeholder="Adı" value="${name}" required>
+                </div>
+                <div class="col-md-2">
+                    ${authorCount > 1 ? `
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-author-btn" title="Yazarı Sil">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        authorsContainer.appendChild(authorGroup);
+
+        // Silme butonuna event listener ekle
+        const removeBtn = authorGroup.querySelector('.remove-author-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                authorGroup.remove();
+                authorCount--;
+            });
+        }
+    }
+
+    // Yazar ekle butonu
+    addAuthorBtn.addEventListener('click', function() {
+        addAuthorGroup();
+    });
+
+    // Form submit edildiğinde yazarları birleştir
+    form.addEventListener('submit', function(e) {
+        const authorGroups = authorsContainer.querySelectorAll('.author-group');
+        const surnames = [];
+        const names = [];
+
+        authorGroups.forEach(group => {
+            const surname = group.querySelector('.author-surname').value.trim();
+            const name = group.querySelector('.author-name').value.trim();
+            if (surname && name) {
+                surnames.push(surname);
+                names.push(name);
+            }
+        });
+
+        hiddenSurnameField.value = surnames.join('; ');
+        hiddenNameField.value = names.join('; ');
+    });
+});
+</script>
 {% endblock %}
