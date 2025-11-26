@@ -978,7 +978,11 @@ a.hashtag-link:hover {
     color: #fff;
     padding: 8px 12px;
     border-radius: 6px;
-    white-space: nowrap;
+    white-space: normal;
+    max-width: 400px;
+    width: max-content;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
@@ -986,6 +990,8 @@ a.hashtag-link:hover {
     z-index: 1000;
     font-weight: normal;
     font-size: 0.9em;
+    text-align: left;
+    line-height: 1.4;
 }
 
 .spoiler-text:hover::after {
