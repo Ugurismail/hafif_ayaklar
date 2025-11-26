@@ -1088,21 +1088,21 @@ a.hashtag-link:hover {
 }
 /* Kaynaklar tablosu sütun genişlikleri */
 #kaynaklarim .table {
-  table-layout: fixed;
-  width: 100%;
+  table-layout: fixed !important;
+  width: 100% !important;
 }
 
 #kaynaklarim .table th:nth-child(1),
-#kaynaklarim .table td:nth-child(1) { width: 12%; } /* Yazar Soyadı */
+#kaynaklarim .table td:nth-child(1) { width: 12% !important; } /* Yazar Soyadı */
 #kaynaklarim .table th:nth-child(2),
-#kaynaklarim .table td:nth-child(2) { width: 12%; } /* Yazar Adı */
+#kaynaklarim .table td:nth-child(2) { width: 12% !important; } /* Yazar Adı */
 #kaynaklarim .table th:nth-child(3),
-#kaynaklarim .table td:nth-child(3) { width: 8%; } /* Yıl */
+#kaynaklarim .table td:nth-child(3) { width: 8% !important; } /* Yıl */
 #kaynaklarim .table th:nth-child(4),
-#kaynaklarim .table td:nth-child(4) { width: 20%; } /* Eser İsmi */
+#kaynaklarim .table td:nth-child(4) { width: 20% !important; } /* Eser İsmi */
 #kaynaklarim .table th:nth-child(5),
-#kaynaklarim .table td:nth-child(5) { width: 25%; } /* Ek Bilgiler */
+#kaynaklarim .table td:nth-child(5) { width: 25% !important; } /* Ek Bilgiler */
 #kaynaklarim .table th:nth-child(6),
-#kaynaklarim .table td:nth-child(6) { width: 10%; } /* Kullanım Sayısı */
+#kaynaklarim .table td:nth-child(6) { width: 10% !important; } /* Kullanım Sayısı */
 #kaynaklarim .table th:nth-child(7),
-#kaynaklarim .table td:nth-child(7) { width: 13%; } /* İşlemler */
+#kaynaklarim .table td:nth-child(7) { width: 13% !important; } /* İşlemler */
