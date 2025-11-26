@@ -253,19 +253,40 @@ def user_profile(request, username):
         avg_words_per_entry = total_words / total_entries if total_entries else 0
         all_texts_joined = (' '.join(cleaned_question_texts) + ' ' + ' '.join(cleaned_answer_texts)).lower()
         words = re.findall(r'\b\w+\b', all_texts_joined)
-        exclude_words_str = request.GET.get('exclude_words', '')
-        exclude_words_list = [w.strip() for w in exclude_words_str.split(',') if w.strip()]
-        exclude_words_set = set(word.lower() for word in exclude_words_list)
+
+        # Profildeki çıkarılmış kelimeleri yükle (kalıcı)
+        profile_excluded_words = user_profile.excluded_words if user_profile.excluded_words else ''
+        exclude_words_set = set(word.lower().strip() for word in profile_excluded_words.split(',') if word.strip())
+
+        # Eğer kullanıcı yeni kelimeler ekliyorsa (virgülle ayrılmış toplu ekleme)
+        new_exclude_words = request.GET.get('exclude_words', '').strip()
+        if new_exclude_words:
+            # Virgülle ayır ve ekle
+            new_words = re.split(r',\s*', new_exclude_words)
+            for word in new_words:
+                if word.strip():
+                    exclude_words_set.add(word.lower().strip())
+
+        # Tek kelime ekleme (eski mantık)
         exclude_word = request.GET.get('exclude_word', '').strip().lower()
+
         total_upvotes = ((questions_list.aggregate(total=Sum('upvotes'))['total'] or 0) +
                  (answers_list.aggregate(total=Sum('upvotes'))['total'] or 0))
         total_downvotes = ((questions_list.aggregate(total=Sum('downvotes'))['total'] or 0) +
                    (answers_list.aggregate(total=Sum('downvotes'))['total'] or 0))
         if exclude_word:
             exclude_words_set.add(exclude_word)
+
+        # Kelime geri alma
         include_word = request.GET.get('include_word', '').strip().lower()
         if include_word and include_word in exclude_words_set:
             exclude_words_set.remove(include_word)
+
+        # Profilde güncelle (sadece kendi profili ise)
+        if is_own_profile and (new_exclude_words or exclude_word or include_word):
+            user_profile.excluded_words = ', '.join(sorted(exclude_words_set))
+            user_profile.save()
+
         exclude_words_list = sorted(list(exclude_words_set))
         exclude_words_str = ', '.join(exclude_words_list)
         filtered_words = [word for word in words if word not in exclude_words_set]
@@ -308,6 +329,9 @@ def user_profile(request, username):
             default=None
         )
 
+        # Kaynak sayısı
+        total_references = Reference.objects.filter(created_by=profile_user).count()
+
         context.update({
             'total_words': total_words,
             'total_chars': total_chars,
@@ -323,6 +347,7 @@ def user_profile(request, username):
             'most_upvoted_entry': most_upvoted_entry,
             'most_downvoted_entry': most_downvoted_entry,
             'most_saved_entry': most_saved_entry,
+            'total_references': total_references,
         })
 
     if active_tab == 'davetler' and is_own_profile:

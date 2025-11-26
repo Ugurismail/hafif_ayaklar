@@ -969,7 +969,7 @@ a.hashtag-link:hover {
 }
 
 .spoiler-text::after {
-    content: attr(title);
+    content: attr(data-spoiler);
     position: absolute;
     left: 50%;
     bottom: 100%;

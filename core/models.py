@@ -85,6 +85,9 @@ class UserProfile(models.Model):
 
     font_family = models.CharField(max_length=100, default='EB Garamond')
 
+    # Kelime çıkarma için alan (virgülle ayrılmış)
+    excluded_words = models.TextField(blank=True, default='', help_text='Virgülle ayrılmış çıkarılacak kelimeler')
+
     # Diğer renk alanlarını da ekleyin
 
     def __str__(self):
@@ -360,7 +363,7 @@ class Reference(models.Model):
         max_length=255,
         blank=True,
         null=True,
-        verbose_name="Metin İsmi (Opsiyonel)"
+        verbose_name="Metin İsmi"
     )
     rest = models.TextField(max_length=2000, verbose_name="Künyenin Kalanı")
     abbreviation = models.CharField(
@@ -373,8 +376,6 @@ class Reference(models.Model):
 
     def __str__(self):
         metin = f", {self.metin_ismi}" if self.metin_ismi else ""
-        if self.abbreviation:
-            return f"{self.author_surname}, {self.author_name} ({self.year}){metin} - {self.abbreviation}"
         return f"{self.author_surname}, {self.author_name} ({self.year}){metin}"
 
     def get_usage_count(self):

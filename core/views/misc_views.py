@@ -247,6 +247,9 @@ def site_statistics(request):
     # Kullanıcı başına ortalama girdi (aktif kullanıcılar = user_count)
     avg_entries_per_user = round(total_entries / user_count, 2) if user_count else 0
 
+    # Toplam kaynak sayısı
+    total_references_count = Reference.objects.count()
+
     context = {
         'active_tab': active_tab,
         'user_count': user_count,
@@ -254,6 +257,7 @@ def site_statistics(request):
         'total_answers': total_answers,
         'total_likes': total_likes,
         'total_dislikes': total_dislikes,
+        'total_references_count': total_references_count,
         'top_question_users': top_question_users,
         'top_answer_users': top_answer_users,
         'top_liked_questions': top_liked_questions,

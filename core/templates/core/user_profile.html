@@ -380,16 +380,15 @@
                 <h5 class="mb-3 mt-4">Kelime Çıkar</h5>
                 <form method="get" action="">
                   <input type="hidden" name="tab" value="kelimeler">
-                  <input type="hidden" name="exclude_words" value="{{ exclude_words }}">
                   <div class="input-group mb-3">
-                    <input type="text" name="exclude_word" class="form-control" placeholder="Listeden çıkarmak istediğiniz kelimeyi girin...">
+                    <input type="text" name="exclude_words" class="form-control" placeholder="Virgülle ayırarak birden fazla kelime çıkarabilirsiniz (örn: ve, ama, için)">
                     <button class="btn btn-secondary" type="submit">
                       <i class="bi bi-dash-circle"></i> Çıkar
                     </button>
                   </div>
                 </form>
                 <p class="text-muted small">
-                  <i class="bi bi-lightbulb"></i> Çıkardığınız kelimeler "En Çok Kullandığınız Kelimeler" listesinde görünmeyecektir.
+                  <i class="bi bi-lightbulb"></i> Virgülle ayrılmış kelimeleri girerek toplu olarak çıkarabilirsiniz. Çıkardığınız kelimeler kalıcı olarak kaydedilir ve "En Çok Kullandığınız Kelimeler" listesinde görünmeyecektir.
                 </p>
               {% endif %}
               <h5 class="mt-4">Çıkarılmış Kelimeler</h5>
@@ -399,7 +398,7 @@
                     {% for word in exclude_words_list %}
                       <span class="badge rounded-pill bg-secondary excluded-word-badge">
                         {{ word }}
-                        <a href="?tab=kelimeler&include_word={{ word }}&exclude_words={{ exclude_words }}"
+                        <a href="?tab=kelimeler&include_word={{ word }}"
                            class="text-white text-decoration-none ms-1"
                            title="Geri Al"
                            style="opacity: 0.8;">
@@ -442,6 +441,10 @@
               <div class="stat-card">
                 <div class="stat-value">{{ total_saves }}</div>
                 <div class="stat-label">Kaydedilme</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">{{ total_references }}</div>
+                <div class="stat-label">Kaynak</div>
               </div>
             </div>
             <h6>En Çok Upvote Alan Girdi:</h6>
@@ -574,7 +577,6 @@
                         <th>Yıl</th>
                         <th>Eser İsmi</th>
                         <th>Ek Bilgiler</th>
-                        <th>Kısaltma</th>
                         <th>Kullanım Sayısı</th>
                         <th>İşlemler</th>
                       </tr>
@@ -587,7 +589,6 @@
                           <td>{{ ref.year }}</td>
                           <td>{{ ref.metin_ismi|default:"-" }}</td>
                           <td>{{ ref.rest }}</td>
-                          <td>{{ ref.abbreviation }}</td>
                           <td>{{ ref.get_usage_count }}</td>
                           <td>
                             {% if ref.created_by == user %}
@@ -804,7 +805,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     '<td>'+ ref.year +'</td>'+
                     '<td>'+ (ref.metin_ismi || '-') +'</td>'+
                     '<td>'+ ref.rest +'</td>'+
-                    '<td>'+ ref.abbreviation +'</td>'+
                     '<td>'+(ref.usage_count || 0)+'</td>'+
                     '<td>'+
                       '<a href="/reference/'+ ref.id + '/edit/?tab=kaynaklarim" class="btn btn-sm btn-primary" title="Düzenle"><i class="bi bi-pencil-square"></i></a> '+
@@ -814,7 +814,7 @@ document.addEventListener('DOMContentLoaded', function() {
         container.append(row);
       });
     } else {
-      container.append('<tr><td colspan="8">Sonuç bulunamadı.</td></tr>');
+      container.append('<tr><td colspan="7">Sonuç bulunamadı.</td></tr>');
     }
   }
   

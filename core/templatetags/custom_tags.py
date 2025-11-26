@@ -318,6 +318,6 @@ def spoiler_link(text):
         # HTML encode to prevent XSS
         from html import escape
         escaped_text = escape(hidden_text)
-        return f'<span class="spoiler-text" title="{escaped_text}"></span>'
+        return f'<span class="spoiler-text" data-spoiler="{escaped_text}"></span>'
 
     return mark_safe(re.sub(pattern, replace, text, flags=re.DOTALL))
