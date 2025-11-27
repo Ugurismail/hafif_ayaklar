@@ -389,11 +389,10 @@ def add_question_from_search(request):
     if request.method == 'POST':
         answer_form = AnswerForm(request.POST)
         if answer_form.is_valid():
-            # Yeni soru oluştur
-            question = Question.objects.create(
+            # Aynı soru metni varsa mevcut olanı kullan
+            question, created = Question.objects.get_or_create(
                 question_text=query,
-                user=request.user,
-                from_search=True  # Eğer modelinizde bu alan varsa
+                defaults={'user': request.user, 'from_search': True}
             )
             # Kullanıcıyı soru ile ilişkilendir
             question.users.add(request.user)

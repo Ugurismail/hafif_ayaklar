@@ -128,10 +128,10 @@ def poll_question_redirect(request, poll_id):
         # Soru mevcutsa direkt oraya git
         return redirect('question_detail', slug=poll.related_question.slug)
     else:
-        # Yeni başlık oluştur
-        q = Question.objects.create(
+        # Aynı soru metni varsa mevcut olanı kullan
+        q, created = Question.objects.get_or_create(
             question_text=f"anket:{poll.question_text}",
-            user=request.user
+            defaults={'user': request.user}
         )
         q.users.add(request.user)
         poll.related_question = q
