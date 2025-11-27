@@ -33,12 +33,14 @@
                    style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
                     <i class="bi bi-asterisk" style="font-size: 1.25em"></i>
                 </a>
+                {% if user.is_authenticated %}
                 <a href="?followed={% if show_followed_only %}0{% else %}1{% endif %}" id="followed-filter-btn"
                    title="{% if show_followed_only %}Tümünü Göster{% else %}Sadece Takip Ettiklerim{% endif %}"
                    class="vote-btn2 d-flex align-items-center justify-content-center {% if show_followed_only %}active-filter{% endif %}"
                    style="width: 32px; height: 32px; border-radius: 50%; transition: all 0.2s;">
                     <i class="bi bi-people-fill" style="font-size: 1.25em;"></i>
                 </a>
+                {% endif %}
             </h4> 
             <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
                 <ul class="list-unstyled" id="questions-list">
@@ -183,7 +185,7 @@
         <!-- sağ sütun -->
         <div class="col-md-2 d-flex flex-column sol-scroll" style="border-left: 1px solid #ccc; height: 100%; min-height: 0;">
             <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
-
+                {% if user.is_authenticated %}
                 <h5>Başlangıç Sorularınız</h5>
                 {% if starting_questions %}
                     <ul class="list-unstyled">
@@ -203,6 +205,12 @@
                 <!-- "Başlangıç Sorusu Ekle" Butonu -->
                 <a href="{% url 'add_starting_question' %}" class="btn btn-primary mt-2 col-12">Başlangıç Sorusu Ekle</a>
                 {% include 'core/pagination.html' with page_obj=starting_questions page_param='starting_page' %}
+                {% else %}
+                <h5>Hafif Ayaklar'a Hoş Geldiniz</h5>
+                <p>Başlangıç sorularınızı görmek ve oluşturmak için giriş yapın.</p>
+                <a href="{% url 'login' %}" class="btn btn-primary mt-2 col-12">Giriş Yap</a>
+                <a href="{% url 'signup' %}" class="btn btn-outline-primary mt-2 col-12">Üye Ol</a>
+                {% endif %}
             </div>
         </div>
     </div>
