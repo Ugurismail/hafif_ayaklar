@@ -250,7 +250,8 @@ def get_references(request):
     username = request.GET.get('username')
     user = get_object_or_404(User, username=username) if username else request.user
 
-    references = Reference.objects.all()
+    # Sadece kullanıcının kendi kaynaklarını getir
+    references = Reference.objects.filter(created_by=user)
     if q:
         references = references.filter(
             Q(author_surname__icontains=q) |
@@ -272,8 +273,10 @@ def get_references(request):
             'author_surname': ref.author_surname,
             'author_name': ref.author_name,
             'year': ref.year,
+            'metin_ismi': ref.metin_ismi or '',
             'rest': ref.rest,
             'abbreviation': ref.abbreviation or '',
+            'usage_count': ref.get_usage_count(),
             'display': str(ref),
         })
 
