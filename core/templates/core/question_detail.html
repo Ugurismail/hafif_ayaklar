@@ -84,7 +84,7 @@
   <div class="container mt-5" id="naber">
     <div class="row" style="height: 100vh; min-height: 500px;">
           <!-- SOL SÜTUN: TÜM SORULAR -->
-          <div class="col-md-2 d-flex flex-column sol-scroll" style="border-right: 1px solid #ccc; height: 90%; min-height: 0;">
+          <div class="col-12 col-md-2 order-2 order-md-1 d-flex flex-column sol-scroll" style="border-right: 1px solid #ccc; height: 90%; min-height: 0;">
             <h4 style="display: flex; justify-content: center; align-items: center; gap: 18px; min-height: 38px; margin-bottom: 0.5rem;">
               <a href="#" id="random-question-btn" title="Rastgele Başlık Diz" class="vote-btn2 d-flex align-items-center justify-content-center"
                  style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
@@ -94,12 +94,14 @@
                  style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
                   <i class="bi bi-asterisk" style="font-size: 1.25em"></i>
               </a>
+              {% if user.is_authenticated %}
               <a href="?followed={% if show_followed_only %}0{% else %}1{% endif %}" id="followed-filter-btn"
                  title="{% if show_followed_only %}Tümünü Göster{% else %}Sadece Takip Ettiklerim{% endif %}"
                  class="vote-btn2 d-flex align-items-center justify-content-center {% if show_followed_only %}active-filter{% endif %}"
                  style="width: 32px; height: 32px; border-radius: 50%; transition: all 0.2s;">
                   <i class="bi bi-people-fill" style="font-size: 1.25em;"></i>
               </a>
+              {% endif %}
           </h4>   
           <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
             <ul class="list-unstyled" id="questions-list">
@@ -118,7 +120,7 @@
           </div>
           
         <!-- ORTA SÜTUN -->
-        <div class="col-md-8 d-flex flex-column sol-scroll" style="height: 100%; min-height: 0;">
+        <div class="col-12 col-md-8 order-1 order-md-2 d-flex flex-column sol-scroll" style="height: 100%; min-height: 0;">
           <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
           
             <!-- Gizli input: question.id -->
@@ -521,7 +523,7 @@
             </div>
         </div>
           <!-- SAĞ SÜTUN: ALT SORULAR -->
-          <div class="col-md-2 d-flex flex-column" style="border-left: 1px solid #ccc; height: 100%; min-height: 0;">
+          <div class="col-12 col-md-2 order-3 order-md-3 d-flex flex-column" style="border-left: 1px solid #ccc; height: 100%; min-height: 0;">
             <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
                   <div class="row g-2">  <!-- Satır ekledik, boşluk için g-2 kullanıldı -->
                       {% if parents_list|length == 0 %}
