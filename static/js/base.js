@@ -314,27 +314,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // 2) Hiçbir sonuç "aktif" değil =>
-            //    Kullanıcının girdiği metinle tam eşleşen bir "question" var mı diye bakalım.
-            const typed = searchInput.value.trim().toLowerCase();
-
-            // lastSearchResults içinde "label.toLowerCase() === typed" olan question var mı?
-            let exactQuestion = lastSearchResults.find(res => {
-                if (res.type === 'question') {
-                    return res.label.toLowerCase() === typed;
-                }
-                return false;
-            });
-
-            if (exactQuestion) {
-                // Tam eşleşme bulduk => o başlığa git
-                window.location.href = exactQuestion.url;
-            } else {
-                // Tam eşleşme yok => yeni başlık
-                // (Arama sonuçlarında başka partial match'ler olabilir ama user Enter basınca
-                //  "ben bu kelimeyle yeni başlık açmak istiyorum" demek.)
-                if (searchInput.value.trim()) {
-                    window.location.href = '/add_question_from_search/?q=' + encodeURIComponent(searchInput.value.trim());
-                }
+            //    bkz view'ını kullan - bu view tam eşleşme varsa başlığa,
+            //    yoksa yeni başlık oluşturma sayfasına otomatik yönlendirir
+            if (searchInput.value.trim()) {
+                window.location.href = '/bkz/' + encodeURIComponent(searchInput.value.trim()) + '/';
             }
         }
     });
