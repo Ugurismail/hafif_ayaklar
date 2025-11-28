@@ -184,7 +184,7 @@
     // Kaynakları AJAX ile getir ve listele
     // -----------------------
     function kaynaklariListele(searchTerm = '', page = 1, pageSize = 5) {
-        const url = "{% url 'get_references' %}?q=" + encodeURIComponent(searchTerm) + "&page=" + page + "&page_size=" + pageSize;
+        const url = "{% url 'get_references' %}?scope=all&q=" + encodeURIComponent(searchTerm) + "&page=" + page + "&page_size=" + pageSize;
         fetch(url)
         .then(response => response.json())
         .then(data => {
@@ -358,7 +358,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    showToast("Kaynak başarıyla eklendi!", 'success');
+                    // Backend'den gelen mesajı göster
+                    showToast(data.message || "Kaynak başarıyla eklendi!", 'success');
                     kaynakForm.reset();
 
                     // Yazar alanlarını resetle (sadece ilk yazar grubu kalacak)

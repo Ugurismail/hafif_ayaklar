@@ -223,21 +223,49 @@ def get_all_definitions(request):
 def create_reference(request):
     """
     AJAX ile yeni bir Reference (Kaynak) oluşturmak için.
+    Aynı kaynağın duplicate olarak eklenmesini önlemek için kontrol yapar.
     """
     form = ReferenceForm(request.POST)
     if form.is_valid():
-        # commit=False ile kaynağı oluşturuyoruz, ardından created_by alanını ekliyoruz
-        reference_obj = form.save(commit=False)
-        reference_obj.created_by = request.user
-        reference_obj.save()
-        data = {
-            'status': 'success',
-            'reference': {
-                'id': reference_obj.id,
-                'display': str(reference_obj),
+        # Form verilerini al
+        author_surname = form.cleaned_data.get('author_surname')
+        author_name = form.cleaned_data.get('author_name')
+        year = form.cleaned_data.get('year')
+        metin_ismi = form.cleaned_data.get('metin_ismi')
+
+        # Duplicate kontrolü: Aynı yazar soyadı, adı, yıl ve metin ismi var mı?
+        existing_ref = Reference.objects.filter(
+            author_surname=author_surname,
+            author_name=author_name,
+            year=year,
+            metin_ismi=metin_ismi or '',
+        ).first()
+
+        if existing_ref:
+            # Varolan kaynağı döndür
+            data = {
+                'status': 'success',
+                'reference': {
+                    'id': existing_ref.id,
+                    'display': str(existing_ref),
+                },
+                'message': 'Bu kaynak zaten sistemde mevcut. Mevcut kaynak kullanılacak.'
             }
-        }
-        return JsonResponse(data, status=200)
+            return JsonResponse(data, status=200)
+        else:
+            # Yeni kaynak oluştur
+            reference_obj = form.save(commit=False)
+            reference_obj.created_by = request.user
+            reference_obj.save()
+            data = {
+                'status': 'success',
+                'reference': {
+                    'id': reference_obj.id,
+                    'display': str(reference_obj),
+                },
+                'message': 'Kaynak başarıyla eklendi!'
+            }
+            return JsonResponse(data, status=200)
     else:
         return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
 
@@ -248,10 +276,16 @@ def get_references(request):
     page = int(request.GET.get('page', 1))
     page_size = int(request.GET.get('page_size', 5))
     username = request.GET.get('username')
-    user = get_object_or_404(User, username=username) if username else request.user
+    scope = request.GET.get('scope', 'user')  # 'user' (varsayılan) veya 'all'
 
-    # Sadece kullanıcının kendi kaynaklarını getir
-    references = Reference.objects.filter(created_by=user)
+    # scope parametresine göre kaynakları filtrele
+    if scope == 'all':
+        # Tüm site kaynaklarını getir (yanıt yazarken kullanılacak)
+        references = Reference.objects.all()
+    else:
+        # Sadece belirli kullanıcının kaynaklarını getir (profil sayfası için)
+        user = get_object_or_404(User, username=username) if username else request.user
+        references = Reference.objects.filter(created_by=user)
     if q:
         references = references.filter(
             Q(author_surname__icontains=q) |
