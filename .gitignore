@@ -8,3 +8,12 @@ __pycache__/
 staticfiles/
 db.sqlite3
 *.sqlite3
+
+# Environment variables (sensitive)
+.env
+production.env
+*.env
+
+# Backups
+backups/
+*.backup
