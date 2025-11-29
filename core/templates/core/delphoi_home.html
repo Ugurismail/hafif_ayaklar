@@ -92,8 +92,8 @@
                         {{ edit_form.negative }}
                       </div>
                     {% endif %}
-                    <button type="submit" name="save_edit" class="btn btn-theme-success btn-sm">Kaydet</button>
-                    <a href="{% url 'delphoi_home' %}#collapse{{prophecy.id}}" class="btn btn-secondary btn-sm ms-2">Vazgeç</a>
+                    <button type="submit" name="save_edit" class="btn btn-theme-primary btn-sm">Kaydet</button>
+                    <a href="{% url 'delphoi_home' %}#collapse{{prophecy.id}}" class="btn btn-theme-secondary btn-sm ms-2">Vazgeç</a>
                   </form>
                 {% else %}
                   <div class="mb-2">{{ prophecy.text }}</div>
@@ -104,7 +104,7 @@
                   <form method="post" style="display:inline;" id="delete-prophecy-form-{{ prophecy.id }}">
                     {% csrf_token %}
                     <input type="hidden" name="delete_id" value="{{ prophecy.id }}">
-                    <button class="btn btn-theme-danger btn-sm ms-2" type="submit" class="delete-prophecy-btn" data-prophecy-id="{{ prophecy.id }}">Sil</button>
+                    <button class="btn btn-theme-secondary btn-sm ms-2" type="submit" class="delete-prophecy-btn" data-prophecy-id="{{ prophecy.id }}">Sil</button>
                   </form>
                 {% endif %}
               </div>
@@ -190,7 +190,7 @@
         </div>
         <div class="w-100 text-center">
           <button id="get_prophecy_btn"
-                  class="btn btn-theme-success btn-lg"
+                  class="btn btn-theme-primary btn-lg"
                   style="min-width:200px;"
                   {% if not can_request_prophecy %}disabled{% endif %}>
             Yanıtı Duy
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       const prophecyId = this.getAttribute('data-prophecy-id');
       const form = document.getElementById('delete-prophecy-form-' + prophecyId);
-      showConfirm('Bu kehaneti silmek istediğine emin misin?', 'Kehaneti Sil', 'Evet, Sil', 'btn-theme-danger').then(result => {
+      showConfirm('Bu kehaneti silmek istediğine emin misin?', 'Kehaneti Sil', 'Evet, Sil', 'btn-theme-secondary').then(result => {
         if (result) {
           form.submit();
         }

@@ -18,9 +18,9 @@
                 <td>{{ test.owner.username }}</td>
                 <td>{{ test.soru_sayisi }}</td>
                 <td>
-                    <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-sm btn-primary">Çöz</a>
+                    <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-sm btn-theme-primary">Çöz</a>
                 {% if user == test.owner %}
-                    <a href="{% url 'cikis_testi_sil' test.id %}" class="btn btn-secondary btn-sm">Testi Sil</a>
+                    <a href="{% url 'cikis_testi_sil' test.id %}" class="btn btn-theme-secondary btn-sm">Testi Sil</a>
                 {% endif %}
                 </td>
             </tr>

@@ -164,7 +164,7 @@
                     {% csrf_token %}
                     <input type="text" autocomplete="off" id="search-input" class="form-control" placeholder="Başlık/Soru ya da Kullanıcı Ara">
                     <div id="search-results"></div>
-                    <button type="button" class="btn btn-outline-secondary ms-1" id="advancedSearchBtn" title="Gelişmiş Arama">
+                    <button type="button" class="btn btn-outline-theme-secondary ms-1" id="advancedSearchBtn" title="Gelişmiş Arama">
                         <i class="bi bi-funnel"></i>
                     </button>
                 </form>
@@ -367,16 +367,32 @@
           </div> <!-- modal-body -->
           
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-            <button type="submit" class="btn btn-primary">Ara</button>
+            <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">Kapat</button>
+            <button type="submit" class="btn btn-theme-primary">Ara</button>
           </div>
         </form>
       </div>
     </div>
   </div>
-  
+
     <!-- İçerik -->
     <div class="container-fluid" id="mainContent">
+        <!-- Django Messages -->
+        {% if messages %}
+            <div class="container mt-4">
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {% else %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         {% block content %}
         {% endblock %}
     </div>
@@ -429,7 +445,7 @@
         
         <!-- "Yeni cümle ekle" butonu -->
         <button type="button"
-                class="btn btn-primary btn-sm me-2"
+                class="btn btn-theme-primary btn-sm me-2"
                 id="addSentenceBtn"
                 data-bs-toggle="tooltip" 
                 data-bs-placement="top" 
@@ -510,7 +526,7 @@
               <div class="mb-3">
                 <textarea name="sentence" class="form-control" rows="2" placeholder="Yeni random cümlenizi girin (max 280 karakter)"></textarea>
               </div>
-              <button type="submit" class="btn btn-primary w-100">Ekle</button>
+              <button type="submit" class="btn btn-theme-primary w-100">Ekle</button>
             </form>
           </div>
         </div>
@@ -734,8 +750,8 @@
          Emin misiniz?
        </div>
        <div class="modal-footer">
-         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-         <button type="button" class="btn btn-primary" id="globalConfirmBtn">Tamam</button>
+         <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">İptal</button>
+         <button type="button" class="btn btn-theme-primary" id="globalConfirmBtn">Tamam</button>
        </div>
      </div>
    </div>
@@ -809,7 +825,7 @@
     }
 
     // Global Confirm Dialog (replaces window.confirm)
-    function showConfirm(message, title = 'Onay', btnText = 'Tamam', btnClass = 'btn-primary') {
+    function showConfirm(message, title = 'Onay', btnText = 'Tamam', btnClass = 'btn-theme-primary') {
       return new Promise((resolve) => {
         const modal = document.getElementById('globalConfirmModal');
         const titleEl = document.getElementById('globalConfirmTitleText');

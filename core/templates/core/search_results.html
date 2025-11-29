@@ -7,8 +7,8 @@
   <!-- Arama kutusu -->
   <form method="get" action="{% url 'search' %}" class="input-group mb-4">
     <input type="text" class="form-control" name="q" placeholder="Başlık, yanıt veya kullanıcı ara..." value="{{ query }}">
-    <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Ara</button>
-    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#advancedSearchModal">
+    <button class="btn btn-theme-primary" type="submit"><i class="bi bi-search"></i> Ara</button>
+    <button class="btn btn-outline-theme-secondary" type="button" data-bs-toggle="modal" data-bs-target="#advancedSearchModal">
       <i class="bi bi-funnel-fill"></i>
     </button>
   </form>
@@ -114,8 +114,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-          <button type="submit" class="btn btn-primary">Ara</button>
+          <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">Kapat</button>
+          <button type="submit" class="btn btn-theme-primary">Ara</button>
         </div>
       </form>
     </div>

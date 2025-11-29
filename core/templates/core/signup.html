@@ -2,17 +2,6 @@
 {% load static %}
 
 {% block content %}
-{% if messages %}
-    <div class="container mt-4">
-      {% for message in messages %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
-        </div>
-      {% endfor %}
-    </div>
-{% endif %}
-
 <div class="container mt-5">
     <div class="row justify-content-center">
         <!-- Sol Taraf: Kayıt Formu -->
@@ -40,7 +29,7 @@
                             <label for="{{ form.invitation_code.id_for_label }}" class="form-label">Davetiye Kodu</label>
                             {{ form.invitation_code }}
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Yazar Ol</button>
+                        <button type="submit" class="btn btn-theme-primary w-100">Yazar Ol</button>
                     </form>
                     <hr>
                     <p class="text-center mb-0">

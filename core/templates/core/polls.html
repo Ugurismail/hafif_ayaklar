@@ -103,7 +103,7 @@
 {% block content %}
 <div class="container mt-5">
   <h2>Anketler</h2>
-  <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createPollModal">
+  <button class="btn btn-theme-primary mb-3" data-bs-toggle="modal" data-bs-target="#createPollModal">
     Yeni Anket Oluştur
   </button>
 
@@ -132,11 +132,11 @@
               <p class="card-subtitle mb-2 text-muted">Bitiş tarihi: {{ apoll.poll.end_date|date:"Y-m-d H:i" }}</p>
               <div class="mb-3">
                 {% if apoll.poll.related_question %}
-                  <a href="{% url 'poll_question_redirect' apoll.poll.id %}" class="btn btn-primary btn-sm me-2">Anket Başlığına Git</a>
+                  <a href="{% url 'poll_question_redirect' apoll.poll.id %}" class="btn btn-theme-primary btn-sm me-2">Anket Başlığına Git</a>
                 {% else %}
-                  <a href="{% url 'poll_question_redirect' apoll.poll.id %}" class="btn btn-primary btn-sm me-2">Anket Başlığı Oluştur</a>
+                  <a href="{% url 'poll_question_redirect' apoll.poll.id %}" class="btn btn-theme-primary btn-sm me-2">Anket Başlığı Oluştur</a>
                 {% endif %}
-                <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse"
+                <button class="btn btn-outline-theme-secondary btn-sm" type="button" data-bs-toggle="collapse"
                         data-bs-target="#poll-details-{{ apoll.poll.id }}" aria-expanded="false"
                         aria-controls="poll-details-{{ apoll.poll.id }}">
                   Detayları Göster
@@ -151,7 +151,7 @@
                     <span>
                       %{{ opt.percentage|floatformat:1 }} ({{ opt.votes }} oy)
                       {% if apoll.poll.is_active and not apoll.poll.options.all|user_has_voted:request.user %}
-                        <a href="{% url 'vote_poll' apoll.poll.id opt.option.id %}" class="btn btn-sm btn-theme-success ms-2">Oy Ver</a>
+                        <a href="{% url 'vote_poll' apoll.poll.id opt.option.id %}" class="btn btn-sm btn-theme-primary ms-2">Oy Ver</a>
                       {% endif %}
                     </span>
                   </li>
@@ -261,7 +261,7 @@
               <div class="text-danger">{{ form.is_anonymous.errors }}</div>
               {% endif %}
             </div>
-            <button type="button" class="btn btn-primary" id="toStep2Btn">İleri</button>
+            <button type="button" class="btn btn-theme-primary" id="toStep2Btn">İleri</button>
           </div>
           <!-- Adım 2 -->
           <div id="pollStep2" style="display: none;">
@@ -295,10 +295,10 @@
                 {% endwith %}
               {% endfor %}
             </div>
-            <button type="button" class="btn btn-secondary" id="addOptionBtn">Seçenek Ekle</button>
+            <button type="button" class="btn btn-theme-secondary" id="addOptionBtn">Seçenek Ekle</button>
             <div class="mt-3 d-flex justify-content-between">
-              <button type="button" class="btn btn-secondary" id="backToStep1Btn">Geri</button>
-              <button type="submit" class="btn btn-primary">Anketi Oluştur</button>
+              <button type="button" class="btn btn-theme-secondary" id="backToStep1Btn">Geri</button>
+              <button type="submit" class="btn btn-theme-primary">Anketi Oluştur</button>
             </div>
           </div>
         </div>

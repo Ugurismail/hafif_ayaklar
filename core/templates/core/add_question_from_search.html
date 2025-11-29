@@ -34,24 +34,24 @@
                     {{ answer_form.answer_text.label_tag }}
                     <!-- Araç Çubuğu -->
                     <div class="btn-toolbar mb-2" role="toolbar">
-                        <button type="button" class="btn btn-sm btn-outline-secondary format-btn me-2" data-format="bold">
+                        <button type="button" class="btn btn-sm btn-outline-theme-secondary format-btn me-2" data-format="bold">
                             <i class="bi bi-type-bold"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary format-btn me-2" data-format="italic">
+                        <button type="button" class="btn btn-sm btn-outline-theme-secondary format-btn me-2" data-format="italic">
                             <i class="bi bi-type-italic"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary insert-link-btn me-2">
+                        <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-link-btn me-2">
                             <i class="bi bi-link-45deg"></i> Link Ekle
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary insert-reference-btn me-2">
+                        <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-reference-btn me-2">
                             (bkz:soru)
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary insert-ref-link-btn me-2">
+                        <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-ref-link-btn me-2">
                             <i class="bi bi-box-arrow-in-up-right"></i> hede
                         </button>
 
                         <!-- TANIM MODAL BUTONU -->
-                        <button type="button" class="btn btn-sm btn-outline-secondary me-2"
+                        <button type="button" class="btn btn-sm btn-outline-theme-secondary me-2"
                                 data-bs-toggle="modal"
                                 data-bs-target="#definitionModal"
                                 title="Tanım">
@@ -59,14 +59,14 @@
                         </button>
 
                         <button type="button"
-                        class="btn btn-sm btn-outline-secondary me-2"
+                        class="btn btn-sm btn-outline-theme-secondary me-2"
                         data-bs-toggle="modal"
                         data-bs-target="#kaynakRefModal"
                         title="Kaynak">
                         <i class="bi bi-journal"></i> Kaynak
                       </button>
                         <!-- SPOILER (YILDIZ) BUTONU -->
-                        <button type="button" class="btn btn-sm btn-outline-secondary me-2 spoiler-btn"
+                        <button type="button" class="btn btn-sm btn-outline-theme-secondary me-2 spoiler-btn"
                                 title="gizle">
                           *
                         </button>
@@ -77,7 +77,7 @@
                 <!-- Hidden input for definition -->
                 <input type="hidden" name="definition_text" id="hiddenDefinitionText" value="">
 
-                <button type="button" class="btn btn-primary mt-2" onclick="submitFormWithDefinition()">Yanıtı Gönder</button>
+                <button type="button" class="btn btn-theme-primary mt-2" onclick="submitFormWithDefinition()">Yanıtı Gönder</button>
             </form>
         </div>
 
@@ -155,7 +155,7 @@
                             maxlength="1000"
                             placeholder="Tanımınızı girin..."></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Kaydet</button>
+                <button type="submit" class="btn btn-theme-primary">Kaydet</button>
               </form>
             </div>
 
@@ -168,7 +168,7 @@
               <!-- Sayfalama Alanı -->
               <div id="userDefPagination" class="mt-2"></div>
               <!-- Seçili Tanımı Ekle -->
-              <button type="button" class="btn btn-primary mt-2" id="insertUserDefinitionBtn">Seçili Tanımı Ekle</button>
+              <button type="button" class="btn btn-theme-primary mt-2" id="insertUserDefinitionBtn">Seçili Tanımı Ekle</button>
             </div>
 
             <!-- (3) GENEL TANIM (Tüm kullanıcıların tanımları) -->
@@ -180,7 +180,7 @@
               <!-- Sayfalama Alanı -->
               <div id="allDefPagination" class="mt-2"></div>
               <!-- Seçili Tanımı Ekle -->
-              <button type="button" class="btn btn-primary mt-2" id="insertGlobalDefinitionBtn">Seçili Tanımı Ekle</button>
+              <button type="button" class="btn btn-theme-primary mt-2" id="insertGlobalDefinitionBtn">Seçili Tanımı Ekle</button>
             </div>
 
           </div> <!-- /.tab-content -->
@@ -188,7 +188,7 @@
 
         <!-- Modal Footer -->
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+          <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">Kapat</button>
         </div>
       </div><!-- modal-content -->
     </div><!-- modal-dialog -->
@@ -212,8 +212,8 @@
                     <p>Bu yanıtı silmek istediğinizden emin misiniz?</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                    <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-theme-secondary">Evet, Sil</button>
                 </div>
             </form>
         </div>

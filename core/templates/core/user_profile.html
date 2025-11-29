@@ -73,30 +73,30 @@
           <hr>
           {% if is_own_profile %}
             <div class="d-grid gap-2">
-              <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#profilePhotoModal">
+              <button type="button" class="btn btn-outline-theme-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#profilePhotoModal">
                 Profil Fotosunu Güncelle
               </button>
-              <a href="{% url 'password_change' %}" class="btn btn-outline-secondary btn-sm">Şifreyi Değiştir</a>
-              <a href="{% url 'user_settings' %}" class="btn btn-outline-secondary btn-sm">Ayarlar</a>
-              <a href="{% url 'download_entries_json' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry'lerimi (JSON) İndir</a>
-              <a href="{% url 'download_entries_xlsx' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry'lerimi (Excel) İndir</a>
-              <a href="{% url 'download_entries_docx' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry'lerimi (Word) İndir</a>
-              <a href="{% url 'download_entries_pdf' profile_user.username %}" class="btn btn-outline-secondary btn-sm">Tüm Entry'lerimi (PDF) İndir</a>
+              <a href="{% url 'password_change' %}" class="btn btn-outline-theme-secondary btn-sm">Şifreyi Değiştir</a>
+              <a href="{% url 'user_settings' %}" class="btn btn-outline-theme-secondary btn-sm">Ayarlar</a>
+              <a href="{% url 'download_entries_json' profile_user.username %}" class="btn btn-outline-theme-secondary btn-sm">Tüm Entry'lerimi (JSON) İndir</a>
+              <a href="{% url 'download_entries_xlsx' profile_user.username %}" class="btn btn-outline-theme-secondary btn-sm">Tüm Entry'lerimi (Excel) İndir</a>
+              <a href="{% url 'download_entries_docx' profile_user.username %}" class="btn btn-outline-theme-secondary btn-sm">Tüm Entry'lerimi (Word) İndir</a>
+              <a href="{% url 'download_entries_pdf' profile_user.username %}" class="btn btn-outline-theme-secondary btn-sm">Tüm Entry'lerimi (PDF) İndir</a>
             </div>
           {% else %}
             {% if request.user.is_authenticated %}
               {% if is_following %}
                 <form action="{% url 'unfollow_user' profile_user.username %}" method="post" class="mb-2">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-outline-secondary btn-sm w-100">Takibi Bırak</button>
+                  <button type="submit" class="btn btn-outline-theme-secondary btn-sm w-100">Takibi Bırak</button>
                 </form>
               {% else %}
                 <form action="{% url 'follow_user' profile_user.username %}" method="post" class="mb-2">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-outline-secondary btn-sm w-100">Takip Et</button>
+                  <button type="submit" class="btn btn-outline-theme-secondary btn-sm w-100">Takip Et</button>
                 </form>
               {% endif %}
-              <a href="{% url 'message_detail' profile_user.username %}" class="btn btn-outline-secondary btn-sm w-100">Mesaj Gönder</a>
+              <a href="{% url 'message_detail' profile_user.username %}" class="btn btn-outline-theme-secondary btn-sm w-100">Mesaj Gönder</a>
             {% endif %}
           {% endif %}
         </div>
@@ -133,7 +133,7 @@
         <div class="card-footer text-end">
           <form action="{% url 'unpin_entry' %}" method="post" class="d-inline">
             {% csrf_token %}
-            <button type="submit" class="btn btn-sm btn-outline-danger">Sabitlenmiş Girdiyi Kaldır</button>
+            <button type="submit" class="btn btn-sm btn-outline-theme-secondary">Sabitlenmiş Girdiyi Kaldır</button>
           </form>
         </div>
         {% endif %}
@@ -214,7 +214,7 @@
                 {% csrf_token %}
                 <div class="input-group">
                   <input type="number" name="quota_granted" min="1" max="{{ remaining_invitations }}" value="1" class="form-control" style="max-width:100px;" required>
-                  <button type="submit" class="btn btn-primary btn-sm">Davetiye Oluştur</button>
+                  <button type="submit" class="btn btn-theme-primary btn-sm">Davetiye Oluştur</button>
                 </div>
               </form>
             {% else %}
@@ -281,7 +281,7 @@
                         <span class="text-muted ms-2 small">({{ answer.created_at|date:"d M Y H:i" }})</span>
                       </div>
                       {% if answer.user == request.user %}
-                        <button type="button" class="btn btn-sm btn-outline-danger delete-answer-btn"
+                        <button type="button" class="btn btn-sm btn-outline-theme-secondary delete-answer-btn"
                                 data-answer-id="{{ answer.id }}">
                           Sil
                         </button>
@@ -366,7 +366,7 @@
                   <input type="hidden" name="exclude_words" value="{{ exclude_words }}">
                   <div class="input-group mb-3">
                     <input type="text" name="search_word" class="form-control" placeholder="Aramak istediğiniz kelimeyi girin..." value="{{ search_word }}">
-                    <button class="btn btn-primary" type="submit">
+                    <button class="btn btn-theme-primary" type="submit">
                       <i class="bi bi-search"></i> Ara
                     </button>
                   </div>
@@ -382,7 +382,7 @@
                   <input type="hidden" name="tab" value="kelimeler">
                   <div class="input-group mb-3">
                     <input type="text" name="exclude_words" class="form-control" placeholder="Virgülle ayırarak birden fazla kelime çıkarabilirsiniz (örn: ve, ama, için)">
-                    <button class="btn btn-secondary" type="submit">
+                    <button class="btn btn-theme-secondary" type="submit">
                       <i class="bi bi-dash-circle"></i> Çıkar
                     </button>
                   </div>
@@ -516,7 +516,7 @@
                 <input type="hidden" name="tab" value="tanimlar">
                 <div class="input-group mb-3">
                   <input type="text" name="q" id="definitionsSearchInput" class="form-control" placeholder="Tanım arayın..." value="{{ request.GET.q }}">
-                  <button type="submit" class="btn btn-primary">Ara</button>
+                  <button type="submit" class="btn btn-theme-primary">Ara</button>
                 </div>
               </form>
               <table class="table custom-table table-sm">
@@ -538,8 +538,8 @@
                       <td>{{ definition.definition_text|truncatewords:25 }}</td>
                       <td>
                         {% if definition.user == user %}
-                        <a href="{% url 'edit_definition' definition.id %}?tab=tanimlar" class="btn btn-sm btn-primary">Düzenle</a>
-                        <button type="button" class="btn btn-sm btn-secondary delete-definition-btn"
+                        <a href="{% url 'edit_definition' definition.id %}?tab=tanimlar" class="btn btn-sm btn-theme-primary">Düzenle</a>
+                        <button type="button" class="btn btn-sm btn-theme-secondary delete-definition-btn"
                                 data-definition-id="{{ definition.id }}">
                           Sil
                         </button>
@@ -564,7 +564,7 @@
                 <input type="hidden" name="tab" value="kaynaklarim">
                 <div class="input-group mb-3">
                   <input type="text" name="q" id="referencesSearchInput" class="form-control" placeholder="Kaynak arayın..." value="{{ request.GET.q }}">
-                  <button type="submit" class="btn btn-primary">Ara</button>
+                  <button type="submit" class="btn btn-theme-primary">Ara</button>
                 </div>
               </form>
               <div id="referencesContainer">
@@ -592,10 +592,10 @@
                           <td>{{ ref.get_usage_count }}</td>
                           <td>
                             {% if ref.created_by == user %}
-                            <a href="{% url 'edit_reference' ref.id %}?tab=kaynaklarim" class="btn btn-sm btn-primary" title="Düzenle">
+                            <a href="{% url 'edit_reference' ref.id %}?tab=kaynaklarim" class="btn btn-sm btn-theme-primary" title="Düzenle">
                               <i class="bi bi-pencil-square"></i>
                             </a>
-                            <a href="{% url 'delete_reference' ref.id %}?tab=kaynaklarim" class="btn btn-sm btn-secondary" title="Sil">
+                            <a href="{% url 'delete_reference' ref.id %}?tab=kaynaklarim" class="btn btn-sm btn-theme-secondary" title="Sil">
                               <i class="bi bi-trash"></i>
                             </a>
                             {% endif %}
@@ -635,7 +635,7 @@
                           {{ saved.object.question_text|truncatewords:20 }}
                         </a>
                       </p>
-                      <a href="#" class="save-btn btn btn-sm btn-theme-success"
+                      <a href="#" class="save-btn btn btn-sm btn-theme-primary"
                          data-content-type="question"
                          data-object-id="{{ saved.object.id }}">
                         Kaydetmeyi Kaldır
@@ -717,8 +717,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-          <button type="submit" class="btn btn-primary">Güncelle</button>
+          <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-theme-primary">Güncelle</button>
         </div>
       </form>
     </div>
@@ -784,8 +784,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     '<td>'+ def.question_text +'</td>'+
                     '<td>'+ def.definition_text +'</td>'+
                     '<td>'+
-                      '<a href="/edit_definition/'+ def.id + '/?tab=tanimlar" class="btn btn-sm btn-primary">Düzenle</a> '+
-                      '<button type="button" class="btn btn-sm btn-secondary delete-definition-btn" data-definition-id="'+ def.id +'">Sil</button>'+
+                      '<a href="/edit_definition/'+ def.id + '/?tab=tanimlar" class="btn btn-sm btn-theme-primary">Düzenle</a> '+
+                      '<button type="button" class="btn btn-sm btn-theme-secondary delete-definition-btn" data-definition-id="'+ def.id +'">Sil</button>'+
                     '</td>'+
                   '</tr>';
         container.append(row);
@@ -807,8 +807,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     '<td>'+ ref.rest +'</td>'+
                     '<td>'+(ref.usage_count || 0)+'</td>'+
                     '<td>'+
-                      '<a href="/reference/'+ ref.id + '/edit/?tab=kaynaklarim" class="btn btn-sm btn-primary" title="Düzenle"><i class="bi bi-pencil-square"></i></a> '+
-                      '<a href="/reference/'+ ref.id + '/delete/?tab=kaynaklarim" class="btn btn-sm btn-secondary" title="Sil"><i class="bi bi-trash"></i></a>'+
+                      '<a href="/reference/'+ ref.id + '/edit/?tab=kaynaklarim" class="btn btn-sm btn-theme-primary" title="Düzenle"><i class="bi bi-pencil-square"></i></a> '+
+                      '<a href="/reference/'+ ref.id + '/delete/?tab=kaynaklarim" class="btn btn-sm btn-theme-secondary" title="Sil"><i class="bi bi-trash"></i></a>'+
                     '</td>'+
                   '</tr>';
         container.append(row);
@@ -883,7 +883,7 @@ function renderSavedItems(data, container) {
                 ${item.text}
               </a>
             </p>
-            <a href="#" class="save-btn btn btn-sm btn-theme-success"
+            <a href="#" class="save-btn btn btn-sm btn-theme-primary"
                data-content-type="question"
                data-object-id="${item.id}">
               Kaydetmeyi Kaldır
@@ -1067,7 +1067,7 @@ function debounce(func, delay) {
         'Bu yanıtı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
         'Yanıtı Sil',
         'Sil',
-        'btn-theme-danger'
+        'btn-theme-secondary'
       ).then(function(confirmed) {
         if (confirmed) {
           // CSRF token'ı al
@@ -1101,7 +1101,7 @@ function debounce(func, delay) {
         'Bu tanımı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
         'Tanımı Sil',
         'Sil',
-        'btn-theme-danger'
+        'btn-theme-secondary'
       ).then(function(confirmed) {
         if (confirmed) {
           // CSRF token'ı al

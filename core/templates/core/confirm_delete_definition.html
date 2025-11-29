@@ -5,8 +5,8 @@
     <p>{{ definition.question.question_text }}: {{ definition.definition_text|truncatewords:20 }}</p>
     <form method="post">
         {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Evet, Sil</button>
-        <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">Vazgeç</a>
+        <button type="submit" class="btn btn-theme-primary">Evet, Sil</button>
+        <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-theme-secondary">Vazgeç</a>
     </form>
 </div>
 {% endblock %}

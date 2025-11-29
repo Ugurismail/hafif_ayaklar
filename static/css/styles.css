@@ -973,85 +973,199 @@ a.hashtag-link:hover {
 .list-group-item:hover .btn-success {
     background-color: var(--button-background-color) !important;
     border-color: var(--button-text-color) !important;
+}
 
 /* ====================================
    THEME-AWARE CUSTOM CLASSES
    ==================================== */
 
-/* Theme-aware success buttons (use primary button color) */
-.btn-theme-success,
-.btn-outline-theme-success {
+/* Theme-aware primary buttons (first button - uses button_background_color) */
+.btn-theme-primary {
+    background-color: var(--button-background-color);
+    border-color: var(--button-background-color);
+    color: var(--button-text-color);
+}
+
+.btn-theme-primary:hover,
+.btn-theme-primary:focus,
+.btn-theme-primary:focus-visible {
+    background-color: var(--button-hover-background-color);
+    border-color: var(--button-hover-background-color);
+    color: var(--button-text-color);
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--button-background-color) 50%, transparent);
+}
+
+.btn-theme-primary:active {
+    background-color: var(--button-hover-background-color);
+    border-color: var(--button-hover-background-color);
+    color: var(--button-text-color);
+}
+
+/* Outline primary button */
+.btn-outline-theme-primary {
+    background-color: transparent;
+    border-color: var(--button-background-color);
+    color: var(--button-background-color);
+}
+
+.btn-outline-theme-primary:hover,
+.btn-outline-theme-primary:focus,
+.btn-outline-theme-primary:focus-visible {
+    background-color: var(--button-background-color);
+    border-color: var(--button-background-color);
+    color: var(--button-text-color);
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--button-background-color) 50%, transparent);
+}
+
+.btn-outline-theme-primary:active {
+    background-color: var(--button-background-color);
+    border-color: var(--button-background-color);
+    color: var(--button-text-color);
+}
+
+/* Theme-aware secondary buttons (second button - uses secondary_button_background_color) */
+.btn-theme-secondary {
+    background-color: var(--secondary-button-background-color);
+    border-color: var(--secondary-button-background-color);
+    color: var(--secondary-button-text-color);
+}
+
+.btn-theme-secondary:hover,
+.btn-theme-secondary:focus,
+.btn-theme-secondary:focus-visible {
+    background-color: var(--secondary-button-hover-background-color);
+    border-color: var(--secondary-button-hover-background-color);
+    color: var(--secondary-button-text-color);
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--secondary-button-background-color) 50%, transparent);
+}
+
+.btn-theme-secondary:active {
+    background-color: var(--secondary-button-hover-background-color);
+    border-color: var(--secondary-button-hover-background-color);
+    color: var(--secondary-button-text-color);
+}
+
+/* Outline secondary button - uses primary button color for visibility */
+.btn-outline-theme-secondary {
+    background-color: transparent;
+    border-color: var(--button-background-color);
+    color: var(--button-background-color);
+}
+
+.btn-outline-theme-secondary:hover,
+.btn-outline-theme-secondary:focus,
+.btn-outline-theme-secondary:focus-visible {
+    background-color: var(--button-background-color);
+    border-color: var(--button-background-color);
+    color: var(--button-text-color);
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--button-background-color) 50%, transparent);
+}
+
+.btn-outline-theme-secondary:active {
+    background-color: var(--button-hover-background-color);
+    border-color: var(--button-hover-background-color);
+    color: var(--button-text-color);
+}
+
+/* Theme-aware third buttons (third button - uses link_color for variety) */
+.btn-theme-third {
+    background-color: var(--link-color);
+    border-color: var(--link-color);
+    color: #ffffff;
+}
+
+.btn-theme-third:hover,
+.btn-theme-third:focus,
+.btn-theme-third:focus-visible {
+    background-color: var(--link-hover-color);
+    border-color: var(--link-hover-color);
+    color: #ffffff;
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--link-color) 50%, transparent);
+}
+
+.btn-theme-third:active {
+    background-color: var(--link-hover-color);
+    border-color: var(--link-hover-color);
+    color: #ffffff;
+}
+
+/* Outline third button */
+.btn-outline-theme-third {
+    background-color: transparent;
+    border-color: var(--link-color);
+    color: var(--link-color);
+}
+
+.btn-outline-theme-third:hover,
+.btn-outline-theme-third:focus,
+.btn-outline-theme-third:focus-visible {
+    background-color: var(--link-color);
+    border-color: var(--link-color);
+    color: #ffffff;
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--link-color) 50%, transparent);
+}
+
+.btn-outline-theme-third:active {
+    background-color: var(--link-color);
+    border-color: var(--link-color);
+    color: #ffffff;
+}
+
+/* Legacy support - keep old classes for backward compatibility */
+.btn-theme-success {
     background-color: var(--button-background-color);
     border-color: var(--button-background-color);
     color: var(--button-text-color);
 }
 
 .btn-theme-success:hover,
-.btn-outline-theme-success:hover {
+.btn-theme-success:focus,
+.btn-theme-success:focus-visible {
     background-color: var(--button-hover-background-color);
     border-color: var(--button-hover-background-color);
     color: var(--button-text-color);
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--button-background-color) 50%, transparent);
 }
 
-.btn-outline-theme-success {
-    background-color: transparent;
-    color: var(--button-background-color);
-}
-
-.btn-outline-theme-success:hover {
-    background-color: var(--button-background-color);
-    color: var(--button-text-color);
-}
-
-/* Theme-aware danger/destructive buttons (use secondary button color) */
-.btn-theme-danger,
-.btn-outline-theme-danger {
+.btn-theme-danger {
     background-color: var(--secondary-button-background-color);
     border-color: var(--secondary-button-background-color);
     color: var(--secondary-button-text-color);
 }
 
 .btn-theme-danger:hover,
-.btn-outline-theme-danger:hover {
+.btn-theme-danger:focus,
+.btn-theme-danger:focus-visible {
     background-color: var(--secondary-button-hover-background-color);
     border-color: var(--secondary-button-hover-background-color);
     color: var(--secondary-button-text-color);
-}
-
-.btn-outline-theme-danger {
-    background-color: transparent;
-    color: var(--secondary-button-background-color);
-}
-
-.btn-outline-theme-danger:hover {
-    background-color: var(--secondary-button-background-color);
-    color: var(--secondary-button-text-color);
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--secondary-button-background-color) 50%, transparent);
 }
 
 /* Theme-aware toasts */
-.toast-theme-success {
+.toast-theme-primary {
     background-color: var(--button-background-color);
     color: var(--button-text-color);
     border: none;
 }
 
-.toast-theme-danger {
+.toast-theme-secondary {
     background-color: var(--secondary-button-background-color);
     color: var(--secondary-button-text-color);
     border: none;
 }
 
 /* Theme-aware text colors */
-.text-theme-success {
+.text-theme-primary {
     color: var(--button-background-color);
 }
 
-.text-theme-warning {
-    color: var(--button-background-color);
-}
-
-.text-theme-danger {
+.text-theme-secondary {
     color: var(--secondary-button-background-color);
+}
+
+.text-theme-third {
+    color: var(--link-color);
 }
 
 /* ====================================

@@ -21,7 +21,7 @@
                     <b>Sen (<i class="bi bi-person"></i>)</b>
                     <form action="{% url 'cikis_sonuc_sil' sonuc.id %}" method="post" class="d-inline-block delete-result-form" id="delete-result-form-{{ sonuc.id }}">
                       {% csrf_token %}
-                      <button type="submit" class="btn btn-sm btn-primary ms-1 delete-result-btn" data-result-id="{{ sonuc.id }}">Sil</button>
+                      <button type="submit" class="btn btn-sm btn-theme-primary ms-1 delete-result-btn" data-result-id="{{ sonuc.id }}">Sil</button>
                     </form>
                   {% else %}
                     <span style="font-size:1.3em; color:#ffd700;">&#9733; Anonim</span>
@@ -46,8 +46,8 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'cikis_test_list' %}" class="btn btn-secondary btn-sm">Tüm Testlere Dön</a>
-    <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-primary btn-sm ms-2">Tekrar Çöz</a>
+    <a href="{% url 'cikis_test_list' %}" class="btn btn-theme-secondary btn-sm">Tüm Testlere Dön</a>
+    <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-theme-primary btn-sm ms-2">Tekrar Çöz</a>
 </div>
 
 <script>
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       const resultId = this.getAttribute('data-result-id');
       const form = document.getElementById('delete-result-form-' + resultId);
-      showConfirm('Sonucunuzu silmek istediğinize emin misiniz?', 'Sonucu Sil', 'Evet, Sil', 'btn-theme-danger').then(result => {
+      showConfirm('Sonucunuzu silmek istediğinize emin misiniz?', 'Sonucu Sil', 'Evet, Sil', 'btn-theme-secondary').then(result => {
         if (result) {
           form.submit();
         }

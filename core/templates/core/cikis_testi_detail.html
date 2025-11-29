@@ -5,14 +5,14 @@
     <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
         <h2>{{ test.title }}</h2>
         <div>
-            <a href="{% url 'cikis_testi_sonuc_list' test.id %}" class="btn btn-primary btn-sm ms-2">
+            <a href="{% url 'cikis_testi_sonuc_list' test.id %}" class="btn btn-theme-primary btn-sm ms-2">
                 <i class="bi bi-bar-chart-line"></i> Sonuçları Gör
             </a>
-            <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-secondary btn-sm ms-2">
+            <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-theme-secondary btn-sm ms-2">
                 <i class="bi bi-play-circle"></i> Testi Çöz
             </a>
             {% if user == test.owner %}
-                <a class="btn btn-primary btn-sm ms-2" href="{% url 'cikis_soru_ekle' test.id %}">
+                <a class="btn btn-theme-primary btn-sm ms-2" href="{% url 'cikis_soru_ekle' test.id %}">
                     <i class="bi bi-plus-circle"></i> Soru Ekle
                 </a>
             {% endif %}
@@ -43,7 +43,7 @@
                             <li class="d-flex justify-content-between align-items-center">
                                 <span>{{ sik.text }}</span>
                                 {% if user == test.owner %}
-                                    <a href="{% url 'cikis_sik_edit' sik.id %}" class="btn btn-sm btn-outline-primary ms-2 py-0">
+                                    <a href="{% url 'cikis_sik_edit' sik.id %}" class="btn btn-sm btn-outline-theme-primary ms-2 py-0">
                                         <i class="bi bi-pencil" title="Düzenle"></i>
                                     </a>
                                 {% endif %}
@@ -51,7 +51,7 @@
                         {% endfor %}
                         </ul>
                     {% if user == test.owner %}
-                        <a class="btn btn-sm btn-outline-secondary" href="{% url 'cikis_sik_ekle' soru.id %}">
+                        <a class="btn btn-sm btn-outline-theme-secondary" href="{% url 'cikis_sik_ekle' soru.id %}">
                             <i class="bi bi-plus"></i> Şık Ekle
                         </a>
                     {% endif %}
@@ -66,13 +66,13 @@
                 </td>
                 {% if user == test.owner %}
                 <td>
-                    <a class="btn btn-sm btn-outline-primary" href="{% url 'cikis_dogru_sik_sec' soru.id %}">
+                    <a class="btn btn-sm btn-outline-theme-primary" href="{% url 'cikis_dogru_sik_sec' soru.id %}">
                         <i class="bi bi-check2-circle"></i> Doğruyu Seç
                     </a>
-                    <a class="btn btn-sm btn-outline-primary" href="{% url 'cikis_soru_edit' soru.id %}">
+                    <a class="btn btn-sm btn-outline-theme-primary" href="{% url 'cikis_soru_edit' soru.id %}">
                         <i class="bi bi-pencil-square"></i> Düzenle
                     </a>
-                    <button class="btn btn-sm btn-outline-primary" onclick="showDeleteModal({{ soru.id }}, '{{ soru.question_text|escapejs }}')">
+                    <button class="btn btn-sm btn-outline-theme-primary" onclick="showDeleteModal({{ soru.id }}, '{{ soru.question_text|escapejs }}')">
                         <i class="bi bi-trash"></i> Sil
                     </button>
                 </td>
@@ -95,7 +95,7 @@
                            class="form-control d-inline-block"
                            style="width:90px;display:inline;"
                            min="0" max="{{ sorular|length }}" required>
-                    <button type="submit" class="btn btn-sm btn-outline-primary ms-1">
+                    <button type="submit" class="btn btn-sm btn-outline-theme-primary ms-1">
                         <i class="bi bi-pencil"></i> Çıkış Doğrusunu Değiştir
                     </button>
                 </form>
@@ -110,7 +110,7 @@
                            class="form-control d-inline-block"
                            style="width:90px;display:inline;"
                            min="0" max="{{ sorular|length }}" required>
-                    <button type="submit" class="btn btn-sm btn-theme-success ms-1">
+                    <button type="submit" class="btn btn-sm btn-theme-primary ms-1">
                         <i class="bi bi-save"></i> Kaydet
                     </button>
                 </form>
@@ -135,8 +135,8 @@
             <p>Bu soruyu silmek istediğinize emin misiniz?</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Vazgeç</button>
-            <button type="submit" class="btn btn-secondary">Sil</button>
+            <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">Vazgeç</button>
+            <button type="submit" class="btn btn-theme-secondary">Sil</button>
           </div>
         </form>
       </div>

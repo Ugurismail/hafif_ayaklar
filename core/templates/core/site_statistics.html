@@ -48,7 +48,7 @@
                         <input type="text" id="exclude_words" name="exclude_words" class="form-control" value="{{ exclude_words_input }}">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary mt-2">Ara</button>
+                <button type="submit" class="btn btn-theme-primary mt-2">Ara</button>
             </form>
             {% if search_word %}
                 <p><strong>"{{ search_word }}"</strong> kelimesi {{ search_word_count }} kez geçiyor.</p>
@@ -66,19 +66,63 @@
 
         <!-- Genel Tab -->
         <div class="tab-pane fade {% if active_tab == 'general' %}show active{% endif %}" id="general" role="tabpanel" aria-labelledby="general-tab">
-            <ul>
-                <li>Kullanıcı Sayısı (Soru/Yanıt Giren): {{ user_count }}</li>
-                <li>Toplam Soru Sayısı: {{ total_questions }}</li>
-                <li>Toplam Yanıt Sayısı: {{ total_answers }}</li>
-                <li>Toplam Beğeni Sayısı: {{ total_likes }}</li>
-                <li>Toplam Beğenmeme Sayısı: {{ total_dislikes }}</li>
-                <li>Toplam Kaynak Sayısı: {{ total_references_count }}</li>
-                <li><strong>Toplam Kelime Sayısı:</strong> {{ total_words }}</li>
-                <li><strong>Toplam Karakter Sayısı:</strong> {{ total_characters }}</li>
-                <li><strong>Ortalama Girdi Başına Kelime:</strong> {{ avg_words_per_entry }}</li>
-                <li><strong>Ortalama Girdi Başına Karakter:</strong> {{ avg_chars_per_entry }}</li>
-                <li><strong>Kullanıcı Başına Ortalama Girdi:</strong> {{ avg_entries_per_user }}</li>
-            </ul>
+            <div class="row mt-3">
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Kullanıcı Sayısı</h5>
+                            <p class="display-4">{{ user_count }}</p>
+                            <small class="text-muted">Soru/Yanıt Giren</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Toplam Soru</h5>
+                            <p class="display-4">{{ total_questions }}</p>
+                            <small class="text-muted">Başlık</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Toplam Yanıt</h5>
+                            <p class="display-4">{{ total_answers }}</p>
+                            <small class="text-muted">Entry</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">İçerik İstatistikleri</h5>
+                            <table class="table table-sm">
+                                <tr><td>Toplam Beğeni Sayısı</td><td class="text-end"><strong>{{ total_likes }}</strong></td></tr>
+                                <tr><td>Toplam Beğenmeme Sayısı</td><td class="text-end"><strong>{{ total_dislikes }}</strong></td></tr>
+                                <tr><td>Toplam Kaynak Sayısı</td><td class="text-end"><strong>{{ total_references_count }}</strong></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Metin İstatistikleri</h5>
+                            <table class="table table-sm">
+                                <tr><td>Toplam Kelime Sayısı</td><td class="text-end"><strong>{{ total_words }}</strong></td></tr>
+                                <tr><td>Toplam Karakter Sayısı</td><td class="text-end"><strong>{{ total_characters }}</strong></td></tr>
+                                <tr><td>Ortalama Girdi Başına Kelime</td><td class="text-end"><strong>{{ avg_words_per_entry }}</strong></td></tr>
+                                <tr><td>Ortalama Girdi Başına Karakter</td><td class="text-end"><strong>{{ avg_chars_per_entry }}</strong></td></tr>
+                                <tr><td>Kullanıcı Başına Ortalama Girdi</td><td class="text-end"><strong>{{ avg_entries_per_user }}</strong></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Kullanıcılar Tab -->
@@ -99,18 +143,36 @@
 
         <!-- Sorular & Yanıtlar Tab -->
         <div class="tab-pane fade {% if active_tab == 'questions-answers' %}show active{% endif %}" id="questions-answers" role="tabpanel" aria-labelledby="questions-answers-tab">
-            <h3 class="mt-3">En Çok Beğenilen Sorular</h3>
-            <ul class="mb-4">
+            <h3 class="mt-3 mb-3">En Çok Beğenilen Sorular</h3>
+            <div class="list-group mb-4">
                 {% for question in top_liked_questions %}
-                    <li><a href="{% url 'question_detail' question.slug %}">{{ question.question_text }}</a> - {{ question.like_count }} beğeni</li>
+                    <a href="{% url 'question_detail' question.slug %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ question.question_text }}</h6>
+                            <span class="badge bg-success rounded-pill">{{ question.like_count }} <i class="bi bi-hand-thumbs-up"></i></span>
+                        </div>
+                    </a>
+                {% empty %}
+                    <p class="text-muted">Henüz beğenilen soru yok.</p>
                 {% endfor %}
-            </ul>
-            <h3>En Çok Beğenilen Yanıtlar</h3>
-            <ul>
+            </div>
+            <h3 class="mb-3">En Çok Beğenilen Yanıtlar</h3>
+            <div class="list-group">
                 {% for answer in top_liked_answers %}
-                    <li>{{ answer.answer_text|truncatewords:20 }} - {{ answer.like_count }} beğeni</li>
+                    <a href="{% url 'single_answer' answer.question.slug answer.id %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div>
+                                <h6 class="mb-1">{{ answer.question.question_text }}</h6>
+                                <p class="mb-1 text-muted">{{ answer.answer_text|truncatewords:20 }}</p>
+                                <small class="text-muted">{{ answer.user.username }}</small>
+                            </div>
+                            <span class="badge bg-success rounded-pill align-self-start">{{ answer.like_count }} <i class="bi bi-hand-thumbs-up"></i></span>
+                        </div>
+                    </a>
+                {% empty %}
+                    <p class="text-muted">Henüz beğenilen yanıt yok.</p>
                 {% endfor %}
-            </ul>
+            </div>
         </div>
 
         <!-- Beğeniler & Kaydetmeler Tab -->
@@ -272,37 +334,64 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Dinamik kaynak araması
+    // Dinamik kaynak araması (AJAX ile backend'den ara)
     var referenceSearchInput = document.getElementById('referenceSearch');
+    var searchTimeout = null;
+
     if (referenceSearchInput) {
         referenceSearchInput.addEventListener('input', function() {
-            var searchValue = this.value.toLowerCase().trim();
-            var table = document.querySelector('#references table tbody');
-            if (!table) return;
+            var searchValue = this.value.trim();
 
-            var rows = table.querySelectorAll('tr');
-            var visibleCount = 0;
-
-            rows.forEach(function(row) {
-                var cells = row.querySelectorAll('td');
-                var textContent = '';
-                cells.forEach(function(cell) {
-                    textContent += cell.textContent.toLowerCase() + ' ';
-                });
-
-                if (!searchValue || textContent.includes(searchValue)) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            // Pagination'ı gizle eğer arama yapılıyorsa
-            var pagination = document.querySelector('#references .pagination');
-            if (pagination) {
-                pagination.style.display = searchValue ? 'none' : 'flex';
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
             }
+
+            // Search after 300ms delay (debounce)
+            searchTimeout = setTimeout(function() {
+                if (searchValue.length === 0) {
+                    // If search is empty, reload page to show original pagination
+                    window.location.href = '?tab=references';
+                    return;
+                }
+
+                // Fetch references from backend
+                fetch('{% url "get_references" %}?scope=all&q=' + encodeURIComponent(searchValue) + '&page_size=100')
+                    .then(response => response.json())
+                    .then(data => {
+                        var table = document.querySelector('#references table tbody');
+                        if (!table) return;
+
+                        // Clear existing rows
+                        table.innerHTML = '';
+
+                        if (data.references.length === 0) {
+                            var row = table.insertRow();
+                            var cell = row.insertCell(0);
+                            cell.colSpan = 6;
+                            cell.textContent = 'Sonuç bulunamadı';
+                            cell.style.textAlign = 'center';
+                        } else {
+                            // Add new rows
+                            data.references.forEach(function(ref) {
+                                var row = table.insertRow();
+                                row.insertCell(0).textContent = ref.author_surname;
+                                row.insertCell(1).textContent = ref.author_name;
+                                row.insertCell(2).textContent = ref.year;
+                                row.insertCell(3).textContent = ref.metin_ismi || '-';
+                                row.insertCell(4).textContent = ref.rest;
+                                row.insertCell(5).textContent = ref.usage_count;
+                            });
+                        }
+
+                        // Hide pagination during search
+                        var pagination = document.querySelector('#references .pagination');
+                        if (pagination) {
+                            pagination.style.display = 'none';
+                        }
+                    })
+                    .catch(error => console.error('Arama hatası:', error));
+            }, 300);
         });
     }
 });

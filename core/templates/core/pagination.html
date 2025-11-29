@@ -3,13 +3,13 @@
     <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
         <!-- Önceki Buton -->
         {% if page_obj.has_previous %}
-        <a class="btn btn-sm btn-outline-secondary"
+        <a class="btn btn-sm btn-outline-theme-secondary"
            href="?{% for key, value in request.GET.items %}{% if key != page_param %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}{{ page_param }}={{ page_obj.previous_page_number }}"
            title="Önceki Sayfa">
             <i class="bi bi-chevron-left"></i>
         </a>
         {% else %}
-        <button class="btn btn-sm btn-outline-secondary" disabled>
+        <button class="btn btn-sm btn-outline-theme-secondary" disabled>
             <i class="bi bi-chevron-left"></i>
         </button>
         {% endif %}
@@ -29,13 +29,13 @@
 
         <!-- Sonraki Buton -->
         {% if page_obj.has_next %}
-        <a class="btn btn-sm btn-outline-secondary"
+        <a class="btn btn-sm btn-outline-theme-secondary"
            href="?{% for key, value in request.GET.items %}{% if key != page_param %}{{ key }}={{ value|urlencode }}&{% endif %}{% endfor %}{{ page_param }}={{ page_obj.next_page_number }}"
            title="Sonraki Sayfa">
             <i class="bi bi-chevron-right"></i>
         </a>
         {% else %}
-        <button class="btn btn-sm btn-outline-secondary" disabled>
+        <button class="btn btn-sm btn-outline-theme-secondary" disabled>
             <i class="bi bi-chevron-right"></i>
         </button>
         {% endif %}

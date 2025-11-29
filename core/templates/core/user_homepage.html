@@ -206,13 +206,13 @@
                     <p>Henüz başlangıç sorunuz yok.</p>
                 {% endif %}
                 <!-- "Başlangıç Sorusu Ekle" Butonu -->
-                <a href="{% url 'add_starting_question' %}" class="btn btn-primary mt-2 col-12">Başlangıç Sorusu Ekle</a>
+                <a href="{% url 'add_starting_question' %}" class="btn btn-theme-primary mt-2 col-12">Başlangıç Sorusu Ekle</a>
                 {% include 'core/pagination.html' with page_obj=starting_questions page_param='starting_page' %}
                 {% else %}
                 <h5>Hafif Ayaklar'a Hoş Geldiniz</h5>
                 <p>Başlangıç sorularınızı görmek ve oluşturmak için giriş yapın.</p>
-                <a href="{% url 'login' %}" class="btn btn-primary mt-2 col-12">Giriş Yap</a>
-                <a href="{% url 'signup' %}" class="btn btn-outline-primary mt-2 col-12">Üye Ol</a>
+                <a href="{% url 'login' %}" class="btn btn-theme-primary mt-2 col-12">Giriş Yap</a>
+                <a href="{% url 'signup' %}" class="btn btn-outline-theme-primary mt-2 col-12">Üye Ol</a>
                 {% endif %}
             </div>
         </div>
@@ -234,8 +234,8 @@
                     <p>Bu yanıtı silmek istediğinizden emin misiniz?</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="submit" class="btn btn-theme-danger">Evet, Sil</button>
+                    <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-theme-secondary">Evet, Sil</button>
                 </div>
             </form>
         </div>
@@ -270,7 +270,7 @@
                   <label for="definitionText" class="form-label">Tanım (max 1000 karakter):</label>
                   <textarea class="form-control" id="definitionText" name="definition_text" rows="3" maxlength="1000"></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Kaydet</button>
+                <button type="submit" class="btn btn-theme-primary">Kaydet</button>
               </form>
             </div>
   
@@ -283,7 +283,7 @@
                   <!-- JavaScript ile doldurulacak -->
                 </select>
               </div>
-              <button type="button" class="btn btn-theme-success" id="insertDefinitionBtn">Tamam</button>
+              <button type="button" class="btn btn-theme-primary" id="insertDefinitionBtn">Tamam</button>
             </div>
           </div>
         </div>

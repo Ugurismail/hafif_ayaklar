@@ -9,7 +9,7 @@
         {% csrf_token %}
         {{ form.recipient }}
         {{ form.body|as_crispy_field }}
-        <button type="submit" class="btn btn-primary mt-2">Gönder</button>
+        <button type="submit" class="btn btn-theme-primary mt-2">Gönder</button>
     </form>
 </div>
 {% endblock %}

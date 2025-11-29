@@ -10,9 +10,9 @@
         <span>Çıkış doğrusuna ulaşamadınız.</span>
     {% endif %}
     <div class="mt-4">
-        <a href="{% url 'cikis_test_list' %}" class="btn btn-primary btn-sm">Test Listesine Dön</a>
-        <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-primary btn-sm ms-2">Tekrar Çöz</a>
-        <a href="{% url 'cikis_testi_sonuc_list' test.id %}" class="btn btn-primary btn-sm ms-2">Tüm Sonuçları Gör</a>
+        <a href="{% url 'cikis_test_list' %}" class="btn btn-theme-primary btn-sm">Test Listesine Dön</a>
+        <a href="{% url 'cikis_testi_coz' test.id %}" class="btn btn-theme-primary btn-sm ms-2">Tekrar Çöz</a>
+        <a href="{% url 'cikis_testi_sonuc_list' test.id %}" class="btn btn-theme-primary btn-sm ms-2">Tüm Sonuçları Gör</a>
     </div>
 </div>
 {% endblock %}

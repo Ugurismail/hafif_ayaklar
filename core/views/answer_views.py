@@ -188,6 +188,13 @@ def single_answer(request, slug, answer_id):
     VoteSaveService.annotate_user_votes(all_answers, request.user, Answer)
     saved_answer_ids, answer_save_dict = VoteSaveService.get_save_info(all_answers, request.user, Answer)
 
+    # Add vote and save data for focused_answer as well
+    VoteSaveService.annotate_user_votes([focused_answer], request.user, Answer)
+    focused_saved_ids, focused_save_dict = VoteSaveService.get_save_info([focused_answer], request.user, Answer)
+    # Merge focused answer data into existing dicts
+    saved_answer_ids = saved_answer_ids | focused_saved_ids
+    answer_save_dict.update(focused_save_dict)
+
     # Yanıt ekleme formu (only for authenticated users)
     if request.method == "POST" and request.user.is_authenticated:
         form = AnswerForm(request.POST)

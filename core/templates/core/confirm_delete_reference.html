@@ -13,8 +13,8 @@
           <form method="post">
             {% csrf_token %}
             <div class="d-flex justify-content-between">
-              <a href="{% url 'user_profile' request.user.username %}" class="btn btn-secondary">İptal</a>
-              <button type="submit" class="btn btn-theme-danger">Evet, Sil</button>
+              <a href="{% url 'user_profile' request.user.username %}" class="btn btn-theme-secondary">İptal</a>
+              <button type="submit" class="btn btn-theme-secondary">Evet, Sil</button>
             </div>
           </form>
         </div>

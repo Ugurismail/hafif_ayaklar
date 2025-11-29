@@ -15,11 +15,11 @@
                    placeholder="Kullanıcı adı ara..."
                    value="{{ search_query }}"
                    autocomplete="off">
-            <button class="btn btn-primary" type="submit">
+            <button class="btn btn-theme-primary" type="submit">
                 <i class="bi bi-search"></i> Ara
             </button>
             {% if search_query %}
-                <a href="{% url 'user_list' %}" class="btn btn-outline-secondary" id="clearBtn">
+                <a href="{% url 'user_list' %}" class="btn btn-outline-theme-secondary" id="clearBtn">
                     <i class="bi bi-x-circle"></i> Temizle
                 </a>
             {% endif %}
@@ -43,7 +43,7 @@
                     </a>
                     {% if user.id != request.user.id %}
                     <a href="{% url 'send_message_from_user' user.id %}"
-                       class="btn btn-outline-primary btn-sm ms-2 d-flex align-items-center"
+                       class="btn btn-outline-theme-primary btn-sm ms-2 d-flex align-items-center"
                        title="Mesaj Gönder">
                         <i class="bi bi-envelope"></i>
                     </a>

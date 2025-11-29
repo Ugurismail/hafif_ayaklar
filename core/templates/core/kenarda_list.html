@@ -3,53 +3,81 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2><i class="bi bi-hourglass"></i> Kenardakiler (Yanıt Taslaklarım)</h2>
-  <div class="row g-3">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="bi bi-hourglass-split"></i> Taslaklarım</h2>
     {% if taslaklar %}
+      <span class="badge bg-primary rounded-pill">{{ taslaklar|length }} Taslak</span>
+    {% endif %}
+  </div>
+
+  {% if taslaklar %}
+    <div class="row g-4">
       {% for t in taslaklar %}
-        <div class="col-md-6 col-lg-4">
-          <div class="card shadow-sm kenarda-card h-100">
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="card kenarda-card h-100 border-0 shadow-sm">
             <div class="card-body d-flex flex-column">
-              <h5 class="card-title">
-                <i class="bi bi-chat-square-text"></i>
+              <div class="d-flex align-items-start mb-3">
+                <div class="flex-grow-1">
+                  <h6 class="card-title mb-2">
+                    {% if t.question %}
+                      <a href="{% url 'question_detail' t.question.slug %}" class="text-decoration-none text-dark">
+                        <i class="bi bi-chat-square-text-fill text-primary me-1"></i>
+                        {{ t.question.question_text|truncatechars:50 }}
+                      </a>
+                    {% else %}
+                      <span class="text-muted">
+                        <i class="bi bi-question-circle me-1"></i>
+                        Bağlı soru yok
+                      </span>
+                    {% endif %}
+                  </h6>
+                  <small class="text-muted">
+                    <i class="bi bi-clock"></i> {{ t.updated_at|date:"d.m.Y H:i" }}
+                  </small>
+                </div>
+              </div>
+
+              <p class="card-text text-muted mb-3 flex-grow-1" style="font-size: 0.9rem;">
+                {{ t.content|truncatechars:120 }}
+              </p>
+
+              <div class="d-flex gap-2 mt-auto">
                 {% if t.question %}
-                  <a href="{% url 'question_detail' t.question.slug %}" class="text-decoration-none">
-                    {{ t.question.question_text|truncatechars:60 }}
-                  </a>
-                {% else %}
-                  [Bağlı soru yok]
-                {% endif %}
-              </h5>
-              <div class="card-text mb-3" style="white-space:pre-line;">{{ t.content|truncatechars:140 }}</div>
-              <small class="text-muted mb-2">{{ t.updated_at|date:"d.m.Y H:i" }}</small>
-              <div class="mt-auto">
-                {% if t.question %}
-                  <button class="btn btn-sm btn-outline-primary me-1 yukle-btn"
+                  <button class="btn btn-sm btn-theme-primary yukle-btn flex-fill"
                           data-taslak-id="{{ t.id }}"
                           data-taslak-content="{{ t.content|escapejs }}"
-                          data-question-slug="{{ t.question.slug }}">
-                    Yeniden Düzenle
+                          data-question-slug="{{ t.question.slug }}"
+                          title="Yeniden düzenle">
+                    <i class="bi bi-pencil-square"></i>
                   </button>
-                  <button class="btn btn-sm btn-outline-theme-success me-1 gonder-btn"
+                  <button class="btn btn-sm btn-theme-third gonder-btn flex-fill"
                           data-taslak-id="{{ t.id }}"
                           data-question-slug="{{ t.question.slug }}"
-                          data-taslak-content="{{ t.content|escapejs }}">
-                    Doğrudan Gönder
+                          data-taslak-content="{{ t.content|escapejs }}"
+                          title="Doğrudan gönder">
+                    <i class="bi bi-send-fill"></i>
                   </button>
                 {% endif %}
-                <button class="btn btn-sm btn-outline-theme-danger sil-btn"
-                        data-taslak-id="{{ t.id }}">
-                  <i class="bi bi-trash"></i> Sil
+                <button class="btn btn-sm btn-theme-secondary sil-btn"
+                        data-taslak-id="{{ t.id }}"
+                        title="Sil">
+                  <i class="bi bi-trash"></i>
                 </button>
               </div>
             </div>
           </div>
         </div>
       {% endfor %}
-    {% else %}
-      <p>Hiç taslak kaydınız yok.</p>
-    {% endif %}
-  </div>
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <div class="mb-4">
+        <i class="bi bi-inbox" style="font-size: 4rem; color: #dee2e6;"></i>
+      </div>
+      <h4 class="text-muted">Henüz taslak oluşturmadınız</h4>
+      <p class="text-muted">Yanıt yazarken "Kenarda Beklet" butonunu kullanarak taslak oluşturabilirsiniz.</p>
+    </div>
+  {% endif %}
 </div>
 
 <!-- Silme Onay Modal -->
@@ -66,8 +94,8 @@
         Bu taslağı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-        <button type="button" class="btn btn-theme-danger" id="confirmDeleteBtn">
+        <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">İptal</button>
+        <button type="button" class="btn btn-theme-secondary" id="confirmDeleteBtn">
           <i class="bi bi-trash"></i> Sil
         </button>
       </div>
@@ -89,8 +117,8 @@
         Taslak içeriğiyle yanıtı göndermek istediğinizden emin misiniz?
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-        <button type="button" class="btn btn-theme-success" id="confirmSendBtn">
+        <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">İptal</button>
+        <button type="button" class="btn btn-theme-third" id="confirmSendBtn">
           <i class="bi bi-send"></i> Gönder
         </button>
       </div>
@@ -123,12 +151,28 @@
 
 <style>
 .kenarda-card {
-  transition: box-shadow .2s, transform .2s;
-  border-radius: 1.25rem;
+  transition: all 0.3s ease;
+  border-radius: 0.75rem;
+  border-left: 4px solid transparent;
 }
+
 .kenarda-card:hover {
-  box-shadow: 0 4px 32px rgba(90,110,190,0.18), 0 1.5px 3px rgba(0,0,0,0.05);
-  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+  border-left-color: #0d6efd;
+}
+
+.kenarda-card .card-body {
+  padding: 1.25rem;
+}
+
+.kenarda-card .card-title a:hover {
+  color: #0d6efd !important;
+}
+
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
 }
 </style>
 

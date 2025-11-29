@@ -247,7 +247,7 @@
             <!-- "Tüm Yanıtları Göster" Butonu -->
             <!-- Eğer başka yanıtlar varsa göster -->
             {% if all_answers|length > 1 %}
-                <button id="show-all-answers" class="btn btn-primary mb-3">Tüm yanıtları göster</button>
+                <button id="show-all-answers" class="btn btn-theme-primary mb-3">Tüm yanıtları göster</button>
             {% endif %}
 
             <!-- Tüm Yanıtlar (Odaklanılan hariç) -->
@@ -369,40 +369,40 @@
                     <form method="post">
                         {% csrf_token %}
                         <div class="btn-toolbar mb-2" role="toolbar">
-                            <button type="button" class="btn btn-sm btn-outline-secondary format-btn me-2" data-format="bold">
+                            <button type="button" class="btn btn-sm btn-outline-theme-secondary format-btn me-2" data-format="bold">
                                 <i class="bi bi-type-bold"></i>
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary format-btn me-2" data-format="italic">
+                            <button type="button" class="btn btn-sm btn-outline-theme-secondary format-btn me-2" data-format="italic">
                                 <i class="bi bi-type-italic"></i>
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary insert-link-btn me-2">
+                            <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-link-btn me-2">
                                 <i class="bi bi-link-45deg"></i> Link Ekle
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary insert-reference-btn me-2">
+                            <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-reference-btn me-2">
                                 (bkz:soru)
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary insert-ref-link-btn me-2">
+                            <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-ref-link-btn me-2">
                                 <i class="bi bi-box-arrow-in-up-right"></i> hede
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="showDefinitionModalBtn"
+                            <button type="button" class="btn btn-sm btn-outline-theme-secondary me-2" id="showDefinitionModalBtn"
                                     title="Tanım">
                                 <i class="bi bi-book"></i> Tanım
                             </button>
                             <button type="button"
-                            class="btn btn-sm btn-outline-secondary me-2"
+                            class="btn btn-sm btn-outline-theme-secondary me-2"
                             data-bs-toggle="modal"
                             data-bs-target="#kaynakRefModal"
                             title="Kaynak">
                         <i class="bi bi-journal"></i> Kaynak
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary me-2 spoiler-btn"
+                            <button type="button" class="btn btn-sm btn-outline-theme-secondary me-2 spoiler-btn"
                                     title="gizle">
                                 *
                             </button>
                         </div>
                         {{ form.answer_text }}
-                        <button type="submit" class="btn btn-primary mt-2">Yanıtla</button>
-                        <button type="button" class="btn btn-secondary mt-2 ms-2" id="sabaha-birak-btn">Kenarda Dursun</button>
+                        <button type="submit" class="btn btn-theme-primary mt-2">Yanıtla</button>
+                        <button type="button" class="btn btn-theme-secondary mt-2 ms-2" id="sabaha-birak-btn">Kenarda Dursun</button>
                         <span id="sabahabirak-feedback" style="display:none;" class="text-theme-success ms-2">Taslak kaydedildi!</span>
                     </form>
                 </div>
@@ -411,8 +411,8 @@
             <div class="card mt-4">
                 <div class="card-body text-center">
                     <p class="mb-3">Yanıt yazmak için üye olmalısınız.</p>
-                    <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">Giriş Yap</a>
-                    <a href="{% url 'signup' %}" class="btn btn-outline-primary ms-2">Üye Ol</a>
+                    <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-theme-primary">Giriş Yap</a>
+                    <a href="{% url 'signup' %}" class="btn btn-outline-theme-primary ms-2">Üye Ol</a>
                 </div>
             </div>
             {% endif %}
@@ -424,17 +424,17 @@
             <div class="mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <div>
-                        <a href="{% url 'add_subquestion' question.slug %}" class="btn btn-outline-secondary btn-sm">
+                        <a href="{% url 'add_subquestion' question.slug %}" class="btn btn-outline-theme-secondary btn-sm">
                             <i class="bi bi-chevron-double-down" title="Alt Soru Ekle"> Alt Soru Ekle</i>
                         </a>
                         {% if question.parent_questions.count == 1 %}
                             {% with parent=question.parent_questions.first %}
-                                <a href="{% url 'question_detail' parent.slug %}" class="btn btn-outline-secondary btn-sm ms-2">
+                                <a href="{% url 'question_detail' parent.slug %}" class="btn btn-outline-theme-secondary btn-sm ms-2">
                                     <i class="bi bi-chevron-double-up" title="Üst Soruya Git"> Üst Soruya Git</i>
                                 </a>
                             {% endwith %}
                         {% elif question.parent_questions.count > 1 %}
-                            <button type="button" class="btn btn-outline-secondary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#parentQuestionsModal">
+                            <button type="button" class="btn btn-outline-theme-secondary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#parentQuestionsModal">
                                 <i class="bi bi-chevron-double-up" title="Üst Soruya Git"> Üst Soruya Git</i>
                             </button>
                             <div class="modal fade" id="parentQuestionsModal" tabindex="-1" aria-labelledby="parentQuestionsModalLabel" aria-hidden="true">
@@ -576,7 +576,7 @@
                                 </small>
                             </div>
                             <div>
-                                <button type="button" class="btn btn-sm btn-outline-secondary unlink-parent"
+                                <button type="button" class="btn btn-sm btn-outline-theme-secondary unlink-parent"
                                         data-parent-id="{{ parent.id }}"
                                         data-parent-title="{{ parent.question_text }}"
                                         title="Bağlantıyı Kaldır">
@@ -606,8 +606,8 @@
                 <p class="text-muted small">Not: Bu soru silinmez, sadece üst soruyla olan bağlantısı kopar.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                <button type="button" class="btn btn-secondary" id="confirmUnlinkBtn">Evet, Kaldır</button>
+                <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-theme-secondary" id="confirmUnlinkBtn">Evet, Kaldır</button>
             </div>
         </div>
     </div>
@@ -628,8 +628,8 @@
                     <p>Bu yanıtı silmek istediğinizden emin misiniz?</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                    <button type="submit" class="btn btn-theme-danger">Evet, Sil</button>
+                    <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-theme-secondary">Evet, Sil</button>
                 </div>
             </form>
         </div>
@@ -706,7 +706,7 @@
                             maxlength="1000"
                             placeholder="Tanımınızı girin..."></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Kaydet</button>
+                <button type="submit" class="btn btn-theme-primary">Kaydet</button>
               </form>
             </div>
             
@@ -719,7 +719,7 @@
               <!-- Sayfalama Alanı -->
               <div id="userDefPagination" class="mt-2"></div>
               <!-- Seçili Tanımı Ekle -->
-              <button type="button" class="btn btn-theme-success mt-2" id="insertUserDefinitionBtn">Seçili Tanımı Ekle</button>
+              <button type="button" class="btn btn-theme-primary mt-2" id="insertUserDefinitionBtn">Seçili Tanımı Ekle</button>
             </div>
             
             <!-- (3) GENEL TANIM (Tüm kullanıcıların tanımları) -->
@@ -731,7 +731,7 @@
               <!-- Sayfalama Alanı -->
               <div id="allDefPagination" class="mt-2"></div>
               <!-- Seçili Tanımı Ekle -->
-              <button type="button" class="btn btn-theme-success mt-2" id="insertGlobalDefinitionBtn">Seçili Tanımı Ekle</button>
+              <button type="button" class="btn btn-theme-primary mt-2" id="insertGlobalDefinitionBtn">Seçili Tanımı Ekle</button>
             </div>
             
           </div> <!-- /.tab-content -->
@@ -739,7 +739,7 @@
   
         <!-- Modal Footer (opsiyonel) -->
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+          <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">Kapat</button>
         </div>
   
       </div> <!-- /.modal-content -->
@@ -900,8 +900,8 @@
                 if (allAnswersDiv.style.display === 'none' || allAnswersDiv.style.display === '') {
                     allAnswersDiv.style.display = 'block';
                     showAllAnswersBtn.textContent = 'Tüm yanıtları gizle';
-                    showAllAnswersBtn.classList.remove('btn-primary');
-                    showAllAnswersBtn.classList.add('btn-secondary');
+                    showAllAnswersBtn.classList.remove('btn-theme-primary');
+                    showAllAnswersBtn.classList.add('btn-theme-secondary');
 
                     // Kelime sayımını tüm yanıtlar için tetikle
                     setTimeout(function() {
@@ -913,8 +913,8 @@
                 } else {
                     allAnswersDiv.style.display = 'none';
                     showAllAnswersBtn.textContent = 'Tüm yanıtları göster';
-                    showAllAnswersBtn.classList.remove('btn-secondary');
-                    showAllAnswersBtn.classList.add('btn-primary');
+                    showAllAnswersBtn.classList.remove('btn-theme-secondary');
+                    showAllAnswersBtn.classList.add('btn-theme-primary');
                 }
             });
         }

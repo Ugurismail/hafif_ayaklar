@@ -26,9 +26,9 @@
             {% endfor %}
         </ul>
         {% if not user_vote %}
-        <button type="submit" class="btn btn-primary mt-3">Oy Ver</button>
+        <button type="submit" class="btn btn-theme-primary mt-3">Oy Ver</button>
         {% endif %}
     </form>
-    <a href="{% url 'polls_home' %}" class="btn btn-secondary">Tüm Anketler</a>
+    <a href="{% url 'polls_home' %}" class="btn btn-theme-secondary">Tüm Anketler</a>
 </div>
 {% endblock %}

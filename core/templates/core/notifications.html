@@ -37,7 +37,7 @@
                         </div>
                         <div class="col-md-4">
                             {% if unread_count > 0 %}
-                            <button class="btn btn-primary w-100" id="mark-all-read-btn">
+                            <button class="btn btn-theme-primary w-100" id="mark-all-read-btn">
                                 <i class="bi bi-check-all"></i> Tümünü Okundu İşaretle
                             </button>
                             {% endif %}
@@ -92,17 +92,17 @@
                             <!-- Bağlantılar -->
                             <div class="ms-3">
                                 {% if notification.related_answer %}
-                                    <a href="{% url 'question_detail' notification.related_question.slug %}#answer-{{ notification.related_answer.id }}" class="btn btn-sm btn-outline-primary">
+                                    <a href="{% url 'question_detail' notification.related_question.slug %}#answer-{{ notification.related_answer.id }}" class="btn btn-sm btn-outline-theme-primary">
                                         <i class="bi bi-box-arrow-up-right"></i> Git
                                     </a>
                                 {% elif notification.related_question %}
-                                    <a href="{% url 'question_detail' notification.related_question.slug %}" class="btn btn-sm btn-outline-primary">
+                                    <a href="{% url 'question_detail' notification.related_question.slug %}" class="btn btn-sm btn-outline-theme-primary">
                                         <i class="bi bi-box-arrow-up-right"></i> Git
                                     </a>
                                 {% endif %}
 
                                 {% if not notification.is_read %}
-                                <button class="btn btn-sm btn-theme-success mark-read-btn" data-id="{{ notification.id }}">
+                                <button class="btn btn-sm btn-theme-primary mark-read-btn" data-id="{{ notification.id }}">
                                     <i class="bi bi-check"></i>
                                 </button>
                                 {% endif %}

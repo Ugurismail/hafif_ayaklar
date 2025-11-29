@@ -5,8 +5,8 @@
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button class="btn btn-primary">Kaydet</button>
-        <a class="btn btn-secondary" href="{% url 'cikis_testi_detail' test_id=sik.soru.test.id %}">Geri Dön</a>
+        <button class="btn btn-theme-primary">Kaydet</button>
+        <a class="btn btn-theme-secondary" href="{% url 'cikis_testi_detail' test_id=sik.soru.test.id %}">Geri Dön</a>
     </form>
 </div>
 {% endblock %}

@@ -10,7 +10,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1><i class="bi bi-broadcast-pin"></i> Hafif Ayaklar Radyo</h1>
                 {% if user.is_authenticated and user.userprofile.is_dj %}
-                    <a href="{% url 'dj_dashboard' %}" class="btn btn-primary">
+                    <a href="{% url 'dj_dashboard' %}" class="btn btn-theme-primary">
                         <i class="bi bi-mic"></i> DJ Paneli
                     </a>
                 {% endif %}
@@ -46,7 +46,7 @@
                                                     </p>
                                                 </div>
                                             </div>
-                                            <a href="{% url 'program_detail' program.id %}" class="btn btn-danger btn-sm">
+                                            <a href="{% url 'program_detail' program.id %}" class="btn btn-theme-secondary btn-sm">
                                                 <i class="bi bi-play-circle"></i> Dinle
                                             </a>
                                         </div>
@@ -83,7 +83,7 @@
                                                 - {{ program.end_time|date:"H:i" }}
                                             </small>
                                         </div>
-                                        <a href="{% url 'program_detail' program.id %}" class="btn btn-outline-primary btn-sm">
+                                        <a href="{% url 'program_detail' program.id %}" class="btn btn-outline-theme-primary btn-sm">
                                             Detaylar
                                         </a>
                                     </div>
