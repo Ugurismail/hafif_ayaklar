@@ -37,7 +37,7 @@ def ref_link(text):
         ref_text = match.group(1).strip()
         try:
             q = Question.objects.get(question_text__iexact=ref_text)
-            url = reverse('question_detail', args=[q.id])
+            url = reverse('question_detail', args=[q.slug])
             return f'<a href="{url}" target="_blank" style="text-decoration: none;">{ref_text}</a>'
         except Question.DoesNotExist:
             create_url = reverse('add_question_from_search') + f'?q={ref_text}'

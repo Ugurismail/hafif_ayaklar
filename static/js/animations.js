@@ -297,6 +297,12 @@ document.addEventListener('DOMContentLoaded', function() {
         card.style.cursor = 'pointer';
 
         card.addEventListener('click', function(e) {
+            // Don't navigate if user has selected text
+            const selection = window.getSelection();
+            if (selection && selection.toString().length > 0) {
+                return; // User is selecting text, don't navigate
+            }
+
             // Don't navigate if clicking on interactive elements
             const clickedElement = e.target;
             const isInteractive = clickedElement.closest('a, button, input, textarea, select, .vote-btn, .save-btn, .dropdown, .read-more, .bi-pencil-square, .bi-trash, i');

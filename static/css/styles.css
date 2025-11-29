@@ -1106,3 +1106,26 @@ a.hashtag-link:hover {
 #kaynaklarim .table td:nth-child(6) { width: 10% !important; } /* Kullanım Sayısı */
 #kaynaklarim .table th:nth-child(7),
 #kaynaklarim .table td:nth-child(7) { width: 13% !important; } /* İşlemler */
+
+/* ========== COLLAPSIBLE BIBLIOGRAPHY ========== */
+.bibliography-title {
+    transition: color 0.2s ease;
+}
+
+.bibliography-title:hover {
+    opacity: 0.7;
+}
+
+.bibliography-title .bibliography-chevron {
+    transition: transform 0.3s ease;
+    display: inline-block;
+}
+
+/* Rotate chevron when expanded */
+.bibliography-title[aria-expanded="true"] .bibliography-chevron {
+    transform: rotate(180deg);
+}
+
+.bibliography-section .collapse {
+    transition: height 0.3s ease;
+}

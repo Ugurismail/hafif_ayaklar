@@ -173,6 +173,9 @@
                                             </a>
                                         </li>
                                         {% endif %}
+                                        <li id="word-count-{{ answer.id }}" style="text-align:center;">
+                                            Kelime Sayısı: ...
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -427,5 +430,63 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-    
+
+<script>
+// Kelime sayma scripti
+function countWords(text) {
+    return (text || '')
+        .replace(/\n/g, ' ')
+        .replace(/<[^>]*>/g, '')
+        .replace(/\[\d+\]/g, '')
+        .replace(/\[\^\w+\]/g, '')
+        .split(' ')
+        .filter(word => word.trim().length > 0)
+        .length;
+}
+
+function updateWordCount(answerId) {
+    var answerCard = document.getElementById('answer-' + answerId);
+    var countElem = document.getElementById('word-count-' + answerId);
+
+    if (!countElem) {
+        return;
+    }
+
+    if (!answerCard) {
+        countElem.textContent = 'Kelime sayısı: N/A';
+        return;
+    }
+
+    // Tüm card-body içeriğini al, bibliography hariç
+    var cardBody = answerCard.querySelector('.card-body');
+    if (!cardBody) {
+        countElem.textContent = 'Kelime sayısı: N/A';
+        return;
+    }
+
+    // Clone the card-body
+    var clonedBody = cardBody.cloneNode(true);
+
+    // Remove elements we don't want to count
+    var elementsToRemove = clonedBody.querySelectorAll('.bibliography-section, .action, .dropdown, small, a[class*="btn"], button, .spoiler-text');
+    elementsToRemove.forEach(function(elem) {
+        elem.remove();
+    });
+
+    // Get all text content
+    var text = clonedBody.textContent || '';
+
+    var count = countWords(text);
+    countElem.textContent = 'Kelime sayısı: ' + count;
+}
+
+// Tüm yanıtlar için başlat
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[id^=word-count-]').forEach(function(countElem) {
+        var answerId = countElem.id.replace('word-count-', '');
+        updateWordCount(answerId);
+    });
+});
+</script>
+
 {% endblock %}

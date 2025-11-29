@@ -530,6 +530,13 @@ textarea.auto-expand.expanded {
     user-select: none;
 }
 
+/* Allow text selection within answer content */
+.answer.random-item-card .answer-text,
+.answer.random-item-card .card-body {
+    user-select: text;
+    cursor: text;
+}
+
 .answer.random-item-card:active {
     transform: scale(0.98);
 }

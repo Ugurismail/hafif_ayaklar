@@ -299,20 +299,25 @@
                         {% with bibliography=answer.answer_text|extract_bibliography %}
                           {% if bibliography %}
                             <div class="bibliography-section mt-4 pt-3 border-top">
-                              <h6 class="bibliography-title">Kaynakça</h6>
-                              <ol class="bibliography-list">
-                                {% for item in bibliography %}
-                                  <li class="bibliography-item">
-                                    {% if item.reference %}
-                                      <span class="reference-citation">
-                                        {{ item.formatted_authors }}{% if item.reference.metin_ismi %}. <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
-                                      </span>
-                                    {% else %}
-                                      <span class="reference-not-found">Kaynak bulunamadı (ID: {{ item.ref_id }})</span>
-                                    {% endif %}
-                                  </li>
-                                {% endfor %}
-                              </ol>
+                              <h6 class="bibliography-title d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#bibliography-full-{{ answer.id }}" aria-expanded="false" style="cursor: pointer; user-select: none;">
+                                <span>Kaynakça <small class="text-muted">({{ bibliography|length }})</small></span>
+                                <i class="bi bi-chevron-down bibliography-chevron" style="font-size: 0.9rem;"></i>
+                              </h6>
+                              <div id="bibliography-full-{{ answer.id }}" class="collapse">
+                                <ol class="bibliography-list">
+                                  {% for item in bibliography %}
+                                    <li class="bibliography-item">
+                                      {% if item.reference %}
+                                        <span class="reference-citation">
+                                          {{ item.formatted_authors }}{% if item.reference.metin_ismi %}. <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
+                                        </span>
+                                      {% else %}
+                                        <span class="reference-not-found">Kaynak bulunamadı (ID: {{ item.ref_id }})</span>
+                                      {% endif %}
+                                    </li>
+                                  {% endfor %}
+                                </ol>
+                              </div>
                             </div>
                           {% endif %}
                         {% endwith %}
@@ -326,20 +331,25 @@
                         {% with bibliography=answer.answer_text|extract_bibliography %}
                           {% if bibliography %}
                             <div class="bibliography-section mt-4 pt-3 border-top">
-                              <h6 class="bibliography-title">Kaynakça</h6>
-                              <ol class="bibliography-list">
-                                {% for item in bibliography %}
-                                  <li class="bibliography-item">
-                                    {% if item.reference %}
-                                      <span class="reference-citation">
-                                        {{ item.formatted_authors }}{% if item.reference.metin_ismi %}. <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
-                                      </span>
-                                    {% else %}
-                                      <span class="reference-not-found">Kaynak bulunamadı (ID: {{ item.ref_id }})</span>
-                                    {% endif %}
-                                  </li>
-                                {% endfor %}
-                              </ol>
+                              <h6 class="bibliography-title d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#bibliography-full-{{ answer.id }}" aria-expanded="false" style="cursor: pointer; user-select: none;">
+                                <span>Kaynakça <small class="text-muted">({{ bibliography|length }})</small></span>
+                                <i class="bi bi-chevron-down bibliography-chevron" style="font-size: 0.9rem;"></i>
+                              </h6>
+                              <div id="bibliography-full-{{ answer.id }}" class="collapse">
+                                <ol class="bibliography-list">
+                                  {% for item in bibliography %}
+                                    <li class="bibliography-item">
+                                      {% if item.reference %}
+                                        <span class="reference-citation">
+                                          {{ item.formatted_authors }}{% if item.reference.metin_ismi %}. <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
+                                        </span>
+                                      {% else %}
+                                        <span class="reference-not-found">Kaynak bulunamadı (ID: {{ item.ref_id }})</span>
+                                      {% endif %}
+                                    </li>
+                                  {% endfor %}
+                                </ol>
+                              </div>
                             </div>
                           {% endif %}
                         {% endwith %}
@@ -499,7 +509,7 @@
                     </button>
                     <!-- SPOILER (YILDIZ) BUTONU -->
                     <button type="button" class="btn btn-sm btn-outline-secondary me-2 spoiler-btn"
-                            title="Spoiler (Yıldız)">
+                            title="gizle">
                       *
                     </button>
                   </div>
@@ -1685,6 +1695,22 @@ document.addEventListener('DOMContentLoaded', function() {
               console.error('Error:', error);
               confirmModal.hide();
               showToast('Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
+          });
+      });
+  });
+  </script>
+
+  <script>
+  // Bibliography chevron rotation
+  document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.bibliography-section .collapse').forEach(function(collapseEl) {
+          collapseEl.addEventListener('show.bs.collapse', function() {
+              const chevron = this.previousElementSibling.querySelector('.bibliography-chevron');
+              if (chevron) chevron.style.transform = 'rotate(180deg)';
+          });
+          collapseEl.addEventListener('hide.bs.collapse', function() {
+              const chevron = this.previousElementSibling.querySelector('.bibliography-chevron');
+              if (chevron) chevron.style.transform = 'rotate(0deg)';
           });
       });
   });
