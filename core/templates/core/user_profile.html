@@ -288,9 +288,17 @@
                       {% endif %}
                     </div>
                     <div class="mt-2">
-                      <a href="{% url 'single_answer' answer.question.slug answer.id %}" class="text-body text-decoration-none">
-                        {{ answer.answer_text|truncatewords_html:40|safe }}
-                      </a>
+                      {% if answer.answer_text|length > 1000 %}
+                        <div id="answer-summary-profile-{{ answer.id }}">
+                          {{ answer.answer_text|slice:":1000"|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+                        </div>
+                        <div id="answer-full-profile-{{ answer.id }}" style="display: none;">
+                          {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                        </div>
+                        <a href="#" class="read-more" data-answer-id="profile-{{ answer.id }}">Tümünü Göster</a>
+                      {% else %}
+                        {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                      {% endif %}
                     </div>
                   </div>
                 </div>
@@ -649,10 +657,19 @@
                           {{ saved.object.question.question_text|truncatewords:20 }}
                         </a>
                       </p>
-                      <a href="{% url 'single_answer' saved.object.question.slug saved.object.id %}"
-                         class="text-body text-decoration-none">
-                        {{ saved.object.answer_text|truncatewords:20 }}
-                      </a>
+                      <div class="mt-2">
+                        {% if saved.object.answer_text|length > 1000 %}
+                          <div id="answer-summary-saved-{{ saved.object.id }}">
+                            {{ saved.object.answer_text|slice:":1000"|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+                          </div>
+                          <div id="answer-full-saved-{{ saved.object.id }}" style="display: none;">
+                            {{ saved.object.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                          </div>
+                          <a href="#" class="read-more" data-answer-id="saved-{{ saved.object.id }}">Tümünü Göster</a>
+                        {% else %}
+                          {{ saved.object.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                        {% endif %}
+                      </div>
                       <div class="position-absolute top-0 end-0 me-2 mt-2">
                         <a href="#" class="save-btn btn btn-sm btn-link icon-black-white"
                            data-content-type="answer"
