@@ -19,7 +19,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
-from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, UserProfile, QuestionFollow, AnswerFollow
+from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, UserProfile, QuestionFollow, AnswerFollow, QuestionRelationship
 from ..forms import AnswerForm
 from ..querysets import get_today_questions_queryset
 from ..utils import paginate_queryset
@@ -255,6 +255,39 @@ def single_answer(request, slug, answer_id):
 
         user_is_following_focused_answer = focused_answer.id in followed_answer_ids
 
+    # Bu sorunun TÜM alt sorularını al (question_detail ile tutarlılık için)
+    from collections import defaultdict
+    subquestion_rels = QuestionRelationship.objects.filter(
+        parent=question
+    ).select_related('child', 'child__user', 'user').order_by('created_at')
+
+    # Alt soruları grupla: {child_question: [users who added it]}
+    subquestions_map = defaultdict(list)
+    for rel in subquestion_rels:
+        subquestions_map[rel.child].append(rel.user)
+
+    # Liste formatına çevir
+    subquestions_list = [
+        {'question': child, 'added_by_users': users}
+        for child, users in subquestions_map.items()
+    ]
+
+    # Bu soruyu alt soru olarak ekleyen TÜM üst soruları al
+    parent_rels = QuestionRelationship.objects.filter(
+        child=question
+    ).select_related('parent', 'parent__user', 'user').order_by('created_at')
+
+    # Üst soruları grupla: {parent_question: [users who added this link]}
+    parents_map = defaultdict(list)
+    for rel in parent_rels:
+        parents_map[rel.parent].append(rel.user)
+
+    # Liste formatına çevir
+    parents_list = [
+        {'question': parent, 'added_by_users': users}
+        for parent, users in parents_map.items()
+    ]
+
     context = {
         'question': question,
         'focused_answer': focused_answer,
@@ -271,5 +304,7 @@ def single_answer(request, slug, answer_id):
         'user_is_following_question': user_is_following_question,
         'followed_answer_ids': followed_answer_ids,
         'user_is_following_focused_answer': user_is_following_focused_answer,
+        'subquestions_list': subquestions_list,
+        'parents_list': parents_list,
     }
     return render(request, 'core/single_answer.html', context)

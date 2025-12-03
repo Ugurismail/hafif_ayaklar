@@ -109,7 +109,7 @@
 
                     <!-- Mevcut Başlığı Bağla -->
                     <a href="#"
-                       class="save-btn ms-2"
+                       class="ms-2"
                        data-bs-toggle="modal"
                        data-bs-target="#linkExistingQuestionModal"
                        title="Mevcut Başlığı Alt Soru Olarak Ekle">
@@ -117,9 +117,9 @@
                     </a>
 
                     <!-- Üst Sorulardan Bağlantıyı Kaldır (makas ikonu) -->
-                    {% if question.parent_questions.exists %}
+                    {% if parents_list %}
                     <a href="#"
-                       class="save-btn ms-1"
+                       class="ms-1"
                        data-bs-toggle="modal"
                        data-bs-target="#unlinkParentsModal"
                        title="Üst Sorulardan Bağlantıyı Kaldır"
@@ -209,7 +209,8 @@
                                 {% endif %}
                             </small>
                             <div class="dropdown d-inline">
-                                <a href="#" class="text-decoration-none" id="dropdownMenu{{ focused_answer.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                <a href="#" class="text-decoration-none dropdown-toggle-dots" id="dropdownMenu{{ focused_answer.id }}" data-bs-toggle="dropdown" aria-expanded="false"
+                                   style="padding: 4px 8px; display: inline-block; min-width: 24px; text-align: center;">
                                     &#8226;&#8226;&#8226;
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu{{ focused_answer.id }}">
@@ -324,7 +325,8 @@
                                     </small>
 
                                     <div class="dropdown d-inline">
-                                        <a href="#" class="text-decoration-none" id="dropdownMenu{{ answer.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <a href="#" class="text-decoration-none dropdown-toggle-dots" id="dropdownMenu{{ answer.id }}" data-bs-toggle="dropdown" aria-expanded="false"
+                                           style="padding: 4px 8px; display: inline-block; min-width: 24px; text-align: center;">
                                             &#8226;&#8226;&#8226;
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu{{ answer.id }}">
