@@ -753,9 +753,8 @@ def collect_user_bibliography(target_user):
     if not all_text:
         return []
 
-    reference_map = {}
+    reference_ids = set()  # Store unique reference IDs
     reference_pages = {}  # Store page numbers for each reference
-    current_index = 1
 
     pattern = r'\(kaynak:(\d+)(?:,\s*sayfa:([^)]+))?\)'
     matches = re.finditer(pattern, all_text)
@@ -765,10 +764,10 @@ def collect_user_bibliography(target_user):
         sayfa = match.group(2)  # Optional: None or string (12-14, 123a etc.)
         ref_id = int(ref_id_str)
 
-        if ref_id not in reference_map:
-            reference_map[ref_id] = current_index
+        reference_ids.add(ref_id)
+
+        if ref_id not in reference_pages:
             reference_pages[ref_id] = []
-            current_index += 1
 
         # Collect page numbers if they exist
         if sayfa:
@@ -776,9 +775,9 @@ def collect_user_bibliography(target_user):
             if page_str not in reference_pages[ref_id]:
                 reference_pages[ref_id].append(page_str)
 
-    # Build the bibliography list
+    # Build the bibliography list - sorted by reference ID
     bibliography = []
-    for ref_id, ref_num in sorted(reference_map.items(), key=lambda x: x[1]):
+    for ref_id in sorted(reference_ids):
         try:
             ref_obj = Reference.objects.get(id=ref_id)
             pages = reference_pages.get(ref_id, [])
@@ -797,14 +796,14 @@ def collect_user_bibliography(target_user):
             formatted_authors = '; '.join(authors)
 
             bibliography.append({
-                'number': ref_num,
+                'number': ref_id,  # Orijinal kaynak ID'sini kullan
                 'reference': ref_obj,
                 'formatted_authors': formatted_authors,
                 'pages': pages
             })
         except Reference.DoesNotExist:
             bibliography.append({
-                'number': ref_num,
+                'number': ref_id,  # Orijinal kaynak ID'sini kullan
                 'reference': None,
                 'ref_id': ref_id,
                 'pages': []
