@@ -736,6 +736,83 @@ def shuffle_questions(request):
     ]})
 
 
+def collect_user_bibliography(target_user):
+    """
+    Kullanıcının tüm entry'lerinden kaynakları toplar ve bibliyografya listesi döndürür.
+    Returns: List of dicts containing reference information with numbering
+    """
+    from core.models import Answer, Reference
+
+    # Kullanıcının tüm yanıtlarını al
+    user_answers = Answer.objects.filter(user=target_user)
+
+    # Tüm entry metinlerini birleştir
+    all_text = ' '.join([answer.answer_text for answer in user_answers if answer.answer_text])
+
+    # extract_bibliography mantığını kullanarak kaynakları topla
+    if not all_text:
+        return []
+
+    reference_map = {}
+    reference_pages = {}  # Store page numbers for each reference
+    current_index = 1
+
+    pattern = r'\(kaynak:(\d+)(?:,\s*sayfa:([^)]+))?\)'
+    matches = re.finditer(pattern, all_text)
+
+    for match in matches:
+        ref_id_str = match.group(1)
+        sayfa = match.group(2)  # Optional: None or string (12-14, 123a etc.)
+        ref_id = int(ref_id_str)
+
+        if ref_id not in reference_map:
+            reference_map[ref_id] = current_index
+            reference_pages[ref_id] = []
+            current_index += 1
+
+        # Collect page numbers if they exist
+        if sayfa:
+            page_str = sayfa.strip()
+            if page_str not in reference_pages[ref_id]:
+                reference_pages[ref_id].append(page_str)
+
+    # Build the bibliography list
+    bibliography = []
+    for ref_id, ref_num in sorted(reference_map.items(), key=lambda x: x[1]):
+        try:
+            ref_obj = Reference.objects.get(id=ref_id)
+            pages = reference_pages.get(ref_id, [])
+
+            # Çoklu yazarları düzgün formatla
+            surnames = [s.strip() for s in ref_obj.author_surname.split(';') if s.strip()]
+            names = [n.strip() for n in ref_obj.author_name.split(';') if n.strip()]
+
+            authors = []
+            for i in range(max(len(surnames), len(names))):
+                surname = surnames[i] if i < len(surnames) else ''
+                name = names[i] if i < len(names) else ''
+                if surname or name:
+                    authors.append(f"{surname}, {name}".strip(', '))
+
+            formatted_authors = '; '.join(authors)
+
+            bibliography.append({
+                'number': ref_num,
+                'reference': ref_obj,
+                'formatted_authors': formatted_authors,
+                'pages': pages
+            })
+        except Reference.DoesNotExist:
+            bibliography.append({
+                'number': ref_num,
+                'reference': None,
+                'ref_id': ref_id,
+                'pages': []
+            })
+
+    return bibliography
+
+
 @login_required
 def download_entries_json(request, username):
     target_user = get_object_or_404(User, username=username)
@@ -764,9 +841,35 @@ def download_entries_json(request, username):
             'answers': answers_data
         })
 
+    # Collect bibliography
+    bibliography = collect_user_bibliography(target_user)
+    references_data = []
+    for bib_item in bibliography:
+        if bib_item.get('reference'):
+            ref = bib_item['reference']
+            ref_dict = {
+                'number': bib_item['number'],
+                'authors': bib_item['formatted_authors'],
+                'year': ref.year,
+                'title': ref.metin_ismi or '',
+                'rest': ref.rest,
+                'pages_used': bib_item['pages']
+            }
+            if ref.abbreviation:
+                ref_dict['abbreviation'] = ref.abbreviation
+            references_data.append(ref_dict)
+        else:
+            # Reference not found
+            references_data.append({
+                'number': bib_item['number'],
+                'ref_id': bib_item.get('ref_id'),
+                'error': 'Reference not found'
+            })
+
     final_data = {
         'username': target_user.username,
         'questions': questions_data,
+        'references': references_data
     }
 
     json_string = json.dumps(
@@ -810,6 +913,33 @@ def download_entries_xlsx(request, username):
 
         row_idx = answer_start_row + max(len(user_answers), 1)
         row_idx += 1
+
+    # Add bibliography sheet
+    bibliography = collect_user_bibliography(target_user)
+    if bibliography:
+        ws_refs = wb.create_sheet(title="Kaynaklar")
+
+        # Add headers
+        ws_refs.cell(row=1, column=1, value="No")
+        ws_refs.cell(row=1, column=2, value="Yazarlar")
+        ws_refs.cell(row=1, column=3, value="Yıl")
+        ws_refs.cell(row=1, column=4, value="Metin İsmi")
+        ws_refs.cell(row=1, column=5, value="Künye")
+        ws_refs.cell(row=1, column=6, value="Kullanılan Sayfalar")
+
+        # Add bibliography items
+        for idx, bib_item in enumerate(bibliography, start=2):
+            if bib_item.get('reference'):
+                ref = bib_item['reference']
+                ws_refs.cell(row=idx, column=1, value=bib_item['number'])
+                ws_refs.cell(row=idx, column=2, value=bib_item['formatted_authors'])
+                ws_refs.cell(row=idx, column=3, value=ref.year)
+                ws_refs.cell(row=idx, column=4, value=ref.metin_ismi or '')
+                ws_refs.cell(row=idx, column=5, value=ref.rest)
+                ws_refs.cell(row=idx, column=6, value=', '.join(bib_item['pages']) if bib_item['pages'] else '')
+            else:
+                ws_refs.cell(row=idx, column=1, value=bib_item['number'])
+                ws_refs.cell(row=idx, column=2, value='Kaynak bulunamadı')
 
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -893,6 +1023,34 @@ def download_entries_docx(request, username):
     for q in user_questions:
         add_question_tree_to_docx(document, q, target_user, level=1)
 
+    # Add bibliography section
+    bibliography = collect_user_bibliography(target_user)
+    if bibliography:
+        document.add_page_break()
+        document.add_heading('Kaynakça', level=1)
+
+        for bib_item in bibliography:
+            if bib_item.get('reference'):
+                ref = bib_item['reference']
+                # Format: [1] Dumézil, Georges (1950), Metin İsmi, Künye
+                ref_text = f"[{bib_item['number']}] {bib_item['formatted_authors']} ({ref.year})"
+                if ref.metin_ismi:
+                    ref_text += f", {ref.metin_ismi}"
+                ref_text += f", {ref.rest}"
+
+                # Add pages used if available
+                if bib_item['pages']:
+                    ref_text += f" (Kullanılan sayfalar: {', '.join(bib_item['pages'])})"
+
+                p = document.add_paragraph(ref_text)
+                p.paragraph_format.left_indent = Pt(18)
+                p.paragraph_format.space_after = Pt(6)
+            else:
+                # Reference not found
+                ref_text = f"[{bib_item['number']}] Kaynak bulunamadı (ID: {bib_item.get('ref_id')})"
+                p = document.add_paragraph(ref_text)
+                p.paragraph_format.left_indent = Pt(18)
+
     f = BytesIO()
     document.save(f)
     f.seek(0)
@@ -927,30 +1085,29 @@ def download_entries_pdf(request, username):
     # Container for PDF elements
     elements = []
 
-    # Register Turkish-compatible font
-    # Try to use Helvetica or Arial which support Turkish characters
+    # Register Turkish-compatible font (DejaVu Sans)
     try:
         import os
+        from django.conf import settings
 
-        # Try Helvetica first (available on macOS)
-        helvetica_path = '/System/Library/Fonts/Helvetica.ttc'
-        if os.path.exists(helvetica_path):
-            # For TTC files, we need to specify subfontIndex
-            pdfmetrics.registerFont(TTFont('TurkishFont', helvetica_path, subfontIndex=0))
-            pdfmetrics.registerFont(TTFont('TurkishFont-Bold', helvetica_path, subfontIndex=1))
+        # Use DejaVu Sans font from static/fonts directory
+        font_dir = os.path.join(settings.BASE_DIR, 'static', 'fonts')
+        dejavu_regular = os.path.join(font_dir, 'DejaVuSans.ttf')
+        dejavu_bold = os.path.join(font_dir, 'DejaVuSans-Bold.ttf')
+
+        if os.path.exists(dejavu_regular) and os.path.exists(dejavu_bold):
+            pdfmetrics.registerFont(TTFont('TurkishFont', dejavu_regular))
+            pdfmetrics.registerFont(TTFont('TurkishFont-Bold', dejavu_bold))
             font_name = 'TurkishFont'
+            font_name_bold = 'TurkishFont-Bold'
         else:
-            # Try Arial as fallback
-            arial_path = '/System/Library/Fonts/ArialHB.ttc'
-            if os.path.exists(arial_path):
-                pdfmetrics.registerFont(TTFont('TurkishFont', arial_path, subfontIndex=0))
-                font_name = 'TurkishFont'
-            else:
-                # Last resort: use built-in Helvetica (may not support all Turkish chars)
-                font_name = 'Helvetica'
+            # Fallback to Helvetica if fonts not found
+            font_name = 'Helvetica'
+            font_name_bold = 'Helvetica-Bold'
     except Exception as e:
         # If font registration fails, use built-in Helvetica
         font_name = 'Helvetica'
+        font_name_bold = 'Helvetica-Bold'
 
     # Define styles
     styles = getSampleStyleSheet()
@@ -1085,6 +1242,63 @@ def download_entries_pdf(request, username):
         add_question_tree(question, level=1)
         # Add page break after each main question
         elements.append(PageBreak())
+
+    # Add bibliography section
+    bibliography = collect_user_bibliography(target_user)
+    if bibliography:
+        # Add page break before bibliography
+        elements.append(PageBreak())
+
+        # Bibliography heading style
+        bib_heading_style = ParagraphStyle(
+            'BibliographyHeading',
+            parent=styles['Heading1'],
+            fontName=font_name_bold,
+            fontSize=18,
+            textColor='#2c3e50',
+            spaceAfter=20,
+            spaceBefore=12
+        )
+
+        # Bibliography item style
+        bib_item_style = ParagraphStyle(
+            'BibliographyItem',
+            parent=styles['BodyText'],
+            fontName=font_name,
+            fontSize=10,
+            textColor='#2c3e50',
+            spaceAfter=10,
+            leftIndent=20,
+            firstLineIndent=-20
+        )
+
+        # Add bibliography heading
+        bib_heading = Paragraph("Kaynakça", bib_heading_style)
+        elements.append(bib_heading)
+        elements.append(Spacer(1, 0.2*inch))
+
+        # Add bibliography items
+        for bib_item in bibliography:
+            if bib_item.get('reference'):
+                ref = bib_item['reference']
+                # Format: [1] Dumézil, Georges (1950), Metin İsmi, Künye
+                ref_text = f"[{bib_item['number']}] {clean_text(bib_item['formatted_authors'])} ({ref.year})"
+                if ref.metin_ismi:
+                    ref_text += f", {clean_text(ref.metin_ismi)}"
+                ref_text += f", {clean_text(ref.rest)}"
+
+                # Add pages used if available
+                if bib_item['pages']:
+                    pages_str = ', '.join(bib_item['pages'])
+                    ref_text += f" (Kullanılan sayfalar: {pages_str})"
+
+                bib_para = Paragraph(ref_text, bib_item_style)
+                elements.append(bib_para)
+            else:
+                # Reference not found
+                ref_text = f"[{bib_item['number']}] Kaynak bulunamadı (ID: {bib_item.get('ref_id')})"
+                bib_para = Paragraph(ref_text, bib_item_style)
+                elements.append(bib_para)
 
     # Build PDF
     doc.build(elements)
