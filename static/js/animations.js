@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Don't navigate if clicking on interactive elements
             const clickedElement = e.target;
-            const isInteractive = clickedElement.closest('a, button, input, textarea, select, .vote-btn, .save-btn, .dropdown, .read-more, .bi-pencil-square, .bi-trash, i');
+            const isInteractive = clickedElement.closest('a, button, input, textarea, select, .vote-btn, .save-btn, .dropdown, .read-more, .bi-pencil-square, .bi-trash, .bibliography-section, .bibliography-title, .bibliography-chevron, i');
 
             if (isInteractive) {
                 return; // Let the interactive element handle the click

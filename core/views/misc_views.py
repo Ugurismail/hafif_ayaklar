@@ -822,7 +822,8 @@ def download_entries_json(request, username):
             status=403
         )
 
-    user_questions = Question.objects.filter(user=target_user).order_by('created_at')
+    # Kullanıcının cevap verdiği TÜM soruları al
+    user_questions = Question.objects.filter(answers__user=target_user).distinct().order_by('created_at')
 
     questions_data = []
     for q in user_questions:
@@ -892,7 +893,8 @@ def download_entries_xlsx(request, username):
             status=403
         )
 
-    user_questions = Question.objects.filter(user=target_user).order_by('created_at')
+    # Kullanıcının cevap verdiği TÜM soruları al
+    user_questions = Question.objects.filter(answers__user=target_user).distinct().order_by('created_at')
 
     wb = Workbook()
     ws = wb.active
@@ -1001,9 +1003,8 @@ def download_entries_docx(request, username):
     if request.user != target_user and not request.user.is_superuser:
         return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
 
-    # Kullanıcının başlangıç sorularını al
-    starting_question_ids = StartingQuestion.objects.filter(user=target_user).values_list('question_id', flat=True)
-    user_questions = Question.objects.filter(id__in=starting_question_ids).order_by('created_at').distinct()
+    # Kullanıcının cevap verdiği TÜM soruları al
+    user_questions = Question.objects.filter(answers__user=target_user).distinct().order_by('created_at')
 
     document = Document()
 
@@ -1072,9 +1073,8 @@ def download_entries_pdf(request, username):
     if request.user != target_user and not request.user.is_superuser:
         return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
 
-    # Kullanıcının başlangıç sorularını al
-    starting_question_ids = StartingQuestion.objects.filter(user=target_user).values_list('question_id', flat=True)
-    user_questions = Question.objects.filter(id__in=starting_question_ids).order_by('created_at').distinct()
+    # Kullanıcının cevap verdiği TÜM soruları al
+    user_questions = Question.objects.filter(answers__user=target_user).distinct().order_by('created_at')
 
     # Create PDF buffer
     buffer = BytesIO()
@@ -1089,23 +1089,31 @@ def download_entries_pdf(request, username):
     try:
         import os
         from django.conf import settings
+        import logging
+        logger = logging.getLogger(__name__)
 
         # Use DejaVu Sans font from static/fonts directory
         font_dir = os.path.join(settings.BASE_DIR, 'static', 'fonts')
         dejavu_regular = os.path.join(font_dir, 'DejaVuSans.ttf')
         dejavu_bold = os.path.join(font_dir, 'DejaVuSans-Bold.ttf')
 
+        logger.info(f"Font paths - Regular: {dejavu_regular}, Bold: {dejavu_bold}")
+        logger.info(f"Regular exists: {os.path.exists(dejavu_regular)}, Bold exists: {os.path.exists(dejavu_bold)}")
+
         if os.path.exists(dejavu_regular) and os.path.exists(dejavu_bold):
             pdfmetrics.registerFont(TTFont('TurkishFont', dejavu_regular))
             pdfmetrics.registerFont(TTFont('TurkishFont-Bold', dejavu_bold))
             font_name = 'TurkishFont'
             font_name_bold = 'TurkishFont-Bold'
+            logger.info("DejaVu Sans fonts successfully registered!")
         else:
             # Fallback to Helvetica if fonts not found
+            logger.warning("DejaVu fonts not found! Falling back to Helvetica (no Turkish support)")
             font_name = 'Helvetica'
             font_name_bold = 'Helvetica-Bold'
     except Exception as e:
         # If font registration fails, use built-in Helvetica
+        logger.error(f"Font registration failed: {e}")
         font_name = 'Helvetica'
         font_name_bold = 'Helvetica-Bold'
 
