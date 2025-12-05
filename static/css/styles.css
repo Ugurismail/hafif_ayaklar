@@ -436,11 +436,23 @@ small:has(.dropdown.show) {
 
 .dropdown-menu .dropdown-item {
     color: var(--text-color) !important;
+    padding: 0.4rem 1rem !important; /* Daha compact padding */
 }
+
 .dropdown-item i {
     width: 20px;
     text-align: center;
     margin-right: 8px;
+}
+
+/* Dropdown menü genel spacing */
+.dropdown-menu {
+    padding: 0.3rem 0 !important; /* Üst-alt padding azaltıldı */
+}
+
+/* Dropdown içindeki li elementlerinin margin'ini kaldır */
+.dropdown-menu li {
+    margin: 0 !important;
 }
 
 /* Search Results */

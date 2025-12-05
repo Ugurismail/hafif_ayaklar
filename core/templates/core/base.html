@@ -267,25 +267,25 @@
                                     <i class="bi bi-people"></i> Tüm Kullanıcılar
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
                             <!-- Delphoi Kahini -->
                             <li>
                                 <a class="dropdown-item" href="{% url 'delphoi_home' %}">
-                                    <i class="fa-solid fa-hat-wizard"></i> Delphoi Kahini
+                                    <i class="fa-solid fa-hat-wizard"></i>Delphoi Kahini
                                 </a>
                             </li>
-                            <!-- Bizlik -->
+                            <!-- Bizlik - Geçici olarak devre dışı (henüz tam geliştirmedi) -->
+                            {% comment %}
                             <li>
                                 <a class="dropdown-item" href="https://uia1.pythonanywhere.com" target="_blank" rel="noopener noreferrer">
                                     <img src="{% static 'imgs/bizlik.svg' %}" alt="Bizlik" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;"> Bizlik
                                 </a>
                             </li>
+                            {% endcomment %}
                             <li>
                                 <a class="dropdown-item" href="{% url 'about' %}">
                                     <i class="bi bi-info-circle"></i> Hakkında
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item" href="{% url 'logout' %}" title="Çıkış"><i class="bi bi-box-arrow-right"></i> Çıkış Yap</a>
                             </li>
