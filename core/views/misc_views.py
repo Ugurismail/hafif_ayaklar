@@ -88,7 +88,11 @@ def user_homepage(request):
             user_profile = request.user.userprofile
             # UserProfile'dan User ID'lerini al
             followed_user_ids = user_profile.following.values_list('user_id', flat=True)
-            all_questions_qs = all_questions_qs.filter(user_id__in=followed_user_ids)
+            # Takip edilen kullanıcıların ya soru oluşturduğu ya da cevap verdiği başlıkları göster
+            all_questions_qs = all_questions_qs.filter(
+                Q(user_id__in=followed_user_ids) |  # Soruyu oluşturan takip edilen biri
+                Q(answers__user_id__in=followed_user_ids)  # Cevap veren takip edilen biri
+            ).distinct()
         except UserProfile.DoesNotExist:
             # Kullanıcının profili yoksa boş sonuç döndür
             all_questions_qs = Question.objects.none()
