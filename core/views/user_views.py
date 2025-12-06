@@ -335,6 +335,7 @@ def user_profile(request, username):
         context.update({
             'total_words': total_words,
             'total_chars': total_chars,
+            'total_entries': total_entries,
             'avg_words_per_entry': round(avg_words_per_entry, 2),
             'top_words': top_words,
             'exclude_words': exclude_words_str,
