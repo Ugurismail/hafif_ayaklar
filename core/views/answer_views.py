@@ -30,15 +30,29 @@ from ..services import VoteSaveService
 def get_user_answers(request):
     username = request.GET.get('username')
     q = request.GET.get('q', '').strip()
+    page = int(request.GET.get('page', 1))
+    page_size = int(request.GET.get('page_size', 50))
+
     user = get_object_or_404(User, username=username) if username else request.user
 
-    answers = Answer.objects.filter(user=user).select_related('question')
+    # Kronolojik sıralama: en eski en sonda (created_at artan)
+    answers = Answer.objects.filter(user=user).select_related('question').order_by('created_at')
+
     if q:
         answers = answers.filter(
             Q(answer_text__icontains=q) | Q(question__question_text__icontains=q)
         )
+
+    # Total count
+    total = answers.count()
+
+    # Pagination
+    start = (page - 1) * page_size
+    end = start + page_size
+    paginated_answers = answers[start:end]
+
     data = []
-    for answer in answers:
+    for answer in paginated_answers:
         data.append({
             'id': answer.id,
             'question_text': answer.question.question_text,
@@ -47,7 +61,14 @@ def get_user_answers(request):
             'question_url': reverse('question_detail', args=[answer.question.slug]),
             'created_at': answer.created_at.strftime("%d %b %Y %H:%M"),
         })
-    return JsonResponse({'answers': data})
+
+    return JsonResponse({
+        'answers': data,
+        'total': total,
+        'page': page,
+        'page_size': page_size,
+        'has_more': end < total
+    })
 
 
 @login_required

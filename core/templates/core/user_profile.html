@@ -771,8 +771,18 @@
             </div>
           </div>
 
-          <!-- Entry Seçimi -->
+          <!-- Tümünü İndir Checkbox -->
           <div class="mb-4">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="downloadAllCheckbox">
+              <label class="form-check-label fw-bold" for="downloadAllCheckbox">
+                Tüm entry'lerimi indir (seçim yapmadan hepsini indir)
+              </label>
+            </div>
+          </div>
+
+          <!-- Entry Seçimi (sadece "tümünü indir" seçili DEĞİLse göster) -->
+          <div class="mb-4" id="entrySelectionSection">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <label class="form-label fw-bold mb-0">Entry Seçimi</label>
               <div>
@@ -787,7 +797,12 @@
             <div id="entriesContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.25rem; padding: 1rem;">
               <p class="text-muted">Yükleniyor...</p>
             </div>
-            <small class="text-muted">Gösterilen: <span id="visibleCount">0</span> / Seçili: <span id="selectedCount">0</span></small>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+              <small class="text-muted">Gösterilen: <span id="visibleCount">0</span> / Seçili: <span id="selectedCount">0</span></small>
+              <button type="button" class="btn btn-sm btn-outline-theme-secondary" id="loadMoreButton" style="display: none;">
+                Daha Fazla Yükle
+              </button>
+            </div>
           </div>
 
           <!-- Sıralama -->
@@ -1213,32 +1228,94 @@ function debounce(func, delay) {
 
   // ========== ENTRY İNDİRME MODAL ==========
   const downloadModal = document.getElementById('downloadEntriesModal');
-  let userEntries = [];
-  let selectedEntries = new Set();
+  const downloadAllCheckbox = document.getElementById('downloadAllCheckbox');
+  const entrySelectionSection = document.getElementById('entrySelectionSection');
+  const loadMoreButton = document.getElementById('loadMoreButton');
 
-  // Modal açıldığında entry'leri yükle
+  let userEntries = [];
+  let currentPage = 1;
+  let hasMore = false;
+  let totalEntries = 0;
+  let currentSearchTerm = '';
+
+  // "Tümünü İndir" checkbox değişikliğini dinle
+  downloadAllCheckbox.addEventListener('change', function() {
+    if (this.checked) {
+      // Tümünü indir modunda: entry seçim bölümünü gizle
+      entrySelectionSection.style.display = 'none';
+    } else {
+      // Seçerek indir modunda: entry seçim bölümünü göster
+      entrySelectionSection.style.display = 'block';
+    }
+  });
+
+  // Modal açıldığında
   downloadModal.addEventListener('show.bs.modal', function() {
+    // Reset
+    downloadAllCheckbox.checked = false;
+    entrySelectionSection.style.display = 'block';
+    currentPage = 1;
+    userEntries = [];
+    currentSearchTerm = '';
+    document.getElementById('searchEntriesInput').value = '';
+
+    // İlk sayfayı yükle
     loadUserEntries();
   });
 
-  // Kullanıcının entry'lerini yükle
-  function loadUserEntries() {
+  // Pagination ile entry'leri yükle
+  function loadUserEntries(append = false) {
     const container = document.getElementById('entriesContainer');
-    container.innerHTML = '<p class="text-muted">Yükleniyor...</p>';
 
-    // Kullanıcının tüm cevaplarını al (sayfa üzerinden)
-    const answers = document.querySelectorAll('.answer[data-answer-id]');
-    userEntries = Array.from(answers).map(answer => ({
-      id: answer.dataset.answerId,
-      question: answer.querySelector('.question-title, h3, h5')?.textContent.trim() || 'Başlıksız',
-      preview: answer.querySelector('.answer-text')?.textContent.trim().substring(0, 100) || '',
-      date: answer.querySelector('.answer-date')?.textContent || ''
-    }));
-
-    if (userEntries.length === 0) {
-      container.innerHTML = '<p class="text-muted">Entry bulunamadı.</p>';
-      return;
+    if (!append) {
+      container.innerHTML = '<p class="text-muted">Yükleniyor...</p>';
     }
+
+    const url = `/get-user-answers/?username={{ profile_user.username }}&page=${currentPage}&page_size=50&q=${encodeURIComponent(currentSearchTerm)}`;
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        totalEntries = data.total;
+        hasMore = data.has_more;
+
+        const newEntries = data.answers.map(answer => ({
+          id: answer.id,
+          question: answer.question_text,
+          preview: answer.answer_text,
+          date: answer.created_at
+        }));
+
+        if (append) {
+          userEntries = userEntries.concat(newEntries);
+        } else {
+          userEntries = newEntries;
+        }
+
+        if (userEntries.length === 0) {
+          container.innerHTML = '<p class="text-muted">Entry bulunamadı.</p>';
+          loadMoreButton.style.display = 'none';
+          return;
+        }
+
+        renderEntries();
+
+        // "Daha Fazla Yükle" butonunu göster/gizle
+        if (hasMore) {
+          loadMoreButton.style.display = 'inline-block';
+        } else {
+          loadMoreButton.style.display = 'none';
+        }
+      })
+      .catch(error => {
+        console.error('Entry yükleme hatası:', error);
+        container.innerHTML = '<p class="text-danger">Entry\'ler yüklenirken hata oluştu.</p>';
+      });
+  }
+
+  // Entry'leri render et
+  function renderEntries() {
+    const container = document.getElementById('entriesContainer');
 
     // Entry'leri listele
     let html = '<div class="entry-selection-list" id="sortableEntries">';
@@ -1249,7 +1326,7 @@ function debounce(func, delay) {
             <input class="form-check-input me-2 entry-checkbox" type="checkbox" value="${entry.id}" id="entry${entry.id}">
             <label class="form-check-label flex-grow-1" for="entry${entry.id}" style="cursor: pointer;">
               <strong>${entry.question}</strong><br>
-              <small class="text-muted">${entry.preview}...</small>
+              <small class="text-muted">${entry.date} - ${entry.preview}</small>
             </label>
             <div class="drag-handle" style="padding: 0.25rem;">
               <i class="bi bi-grip-vertical"></i>
@@ -1323,52 +1400,58 @@ function debounce(func, delay) {
     document.getElementById('visibleCount').textContent = visible;
   }
 
-  // Entry arama fonksiyonu
+  // "Daha Fazla Yükle" butonu
+  loadMoreButton.addEventListener('click', function() {
+    currentPage++;
+    loadUserEntries(true); // append = true
+  });
+
+  // Entry arama fonksiyonu (server-side)
+  let searchTimeout;
   document.getElementById('searchEntriesInput').addEventListener('input', function(e) {
-    const searchTerm = e.target.value.toLowerCase().trim();
-    const entries = downloadModal.querySelectorAll('.entry-item');
+    clearTimeout(searchTimeout);
+    currentSearchTerm = e.target.value.trim();
 
-    entries.forEach(entry => {
-      const question = entry.querySelector('.form-check-label strong')?.textContent.toLowerCase() || '';
-      const preview = entry.querySelector('.form-check-label small')?.textContent.toLowerCase() || '';
-      const fullText = question + ' ' + preview;
-
-      if (searchTerm === '' || fullText.includes(searchTerm)) {
-        entry.style.display = '';
-      } else {
-        entry.style.display = 'none';
-      }
-    });
-
-    updateSelectedCount();
+    searchTimeout = setTimeout(() => {
+      currentPage = 1;
+      userEntries = [];
+      loadUserEntries();
+    }, 500); // 500ms debounce
   });
 
   // İndir butonu
   document.getElementById('downloadButton').addEventListener('click', function() {
     const format = downloadModal.querySelector('input[name="format"]:checked').value;
     const order = document.getElementById('orderSelect').value;
-    const selectedCheckboxes = downloadModal.querySelectorAll('.entry-checkbox:checked');
+    const downloadAll = downloadAllCheckbox.checked;
 
-    if (selectedCheckboxes.length === 0) {
-      alert('Lütfen en az bir entry seçin!');
-      return;
-    }
-
-    // Seçili entry ID'lerini al (sıralamaya göre)
     let entryIds = [];
-    if (order === 'custom') {
-      // DOM sırasına göre (drag-drop sonrası)
-      const allItems = downloadModal.querySelectorAll('.entry-item');
-      allItems.forEach(item => {
-        const checkbox = item.querySelector('.entry-checkbox');
-        if (checkbox && checkbox.checked) {
-          entryIds.push(checkbox.value);
-        }
-      });
-    } else {
-      // Hepsini al, backend'de sıralar
-      selectedCheckboxes.forEach(cb => entryIds.push(cb.value));
+
+    // Eğer "tümünü indir" SEÇİLİ DEĞİLSE, seçili entry'leri kontrol et
+    if (!downloadAll) {
+      const selectedCheckboxes = downloadModal.querySelectorAll('.entry-checkbox:checked');
+
+      if (selectedCheckboxes.length === 0) {
+        alert('Lütfen en az bir entry seçin veya "Tüm entry\'lerimi indir" seçeneğini işaretleyin!');
+        return;
+      }
+
+      // Seçili entry ID'lerini al (sıralamaya göre)
+      if (order === 'custom') {
+        // DOM sırasına göre (drag-drop sonrası)
+        const allItems = downloadModal.querySelectorAll('.entry-item');
+        allItems.forEach(item => {
+          const checkbox = item.querySelector('.entry-checkbox');
+          if (checkbox && checkbox.checked) {
+            entryIds.push(checkbox.value);
+          }
+        });
+      } else {
+        // Hepsini al, backend'de sıralar
+        selectedCheckboxes.forEach(cb => entryIds.push(cb.value));
+      }
     }
+    // Eğer "tümünü indir" seçiliyse, entry_ids BOŞ kalır (backend tümünü alır)
 
     // İndirme URL'ini oluştur
     const username = '{{ profile_user.username }}';
@@ -1401,11 +1484,14 @@ function debounce(func, delay) {
     csrfInput.value = csrfToken;
     form.appendChild(csrfInput);
 
-    const idsInput = document.createElement('input');
-    idsInput.type = 'hidden';
-    idsInput.name = 'entry_ids';
-    idsInput.value = entryIds.join(',');
-    form.appendChild(idsInput);
+    // Sadece "tümünü indir" SEÇİLİ DEĞİLSE entry_ids gönder
+    if (!downloadAll && entryIds.length > 0) {
+      const idsInput = document.createElement('input');
+      idsInput.type = 'hidden';
+      idsInput.name = 'entry_ids';
+      idsInput.value = entryIds.join(',');
+      form.appendChild(idsInput);
+    }
 
     const orderInput = document.createElement('input');
     orderInput.type = 'hidden';
