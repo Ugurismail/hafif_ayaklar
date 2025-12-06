@@ -962,7 +962,7 @@
     
         // Taslak içeriğini Django context'ten al (URL'den değil)
         {% if draft_content %}
-        const draftContent = {{ draft_content|escapejs|safe }};
+        const draftContent = "{{ draft_content|escapejs }}";
         if (draftContent && textarea) {
           textarea.value = draftContent;
           textarea.focus();

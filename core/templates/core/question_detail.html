@@ -1419,7 +1419,7 @@ document.getElementById('sabaha-birak-btn').onclick = function(e) {
       document.addEventListener('DOMContentLoaded', function() {
         // Taslak içeriğini Django context'ten al (URL'den değil)
         {% if draft_content %}
-        const draftContent = {{ draft_content|escapejs|safe }};
+        const draftContent = "{{ draft_content|escapejs }}";
         if (draftContent && document.getElementById('id_answer_text')) {
           document.getElementById('id_answer_text').value = draftContent;
           document.getElementById('id_answer_text').focus();
