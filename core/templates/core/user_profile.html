@@ -1274,8 +1274,14 @@ function debounce(func, delay) {
     const url = `/get-user-answers/?username={{ profile_user.username }}&page=${currentPage}&page_size=50&q=${encodeURIComponent(currentSearchTerm)}`;
 
     fetch(url)
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then(data => {
+        console.log('Entry yükleme başarılı:', data);
         totalEntries = data.total;
         hasMore = data.has_more;
 
@@ -1309,7 +1315,7 @@ function debounce(func, delay) {
       })
       .catch(error => {
         console.error('Entry yükleme hatası:', error);
-        container.innerHTML = '<p class="text-danger">Entry\'ler yüklenirken hata oluştu.</p>';
+        container.innerHTML = `<p class="text-danger">Entry'ler yüklenirken hata oluştu: ${error.message}</p>`;
       });
   }
 
@@ -1392,10 +1398,11 @@ function debounce(func, delay) {
     updateSelectedCount();
   });
 
-  // Seçili sayıyı güncelle (modal içinde ara)
+  // Seçili sayıyı güncelle
   function updateSelectedCount() {
     const count = downloadModal.querySelectorAll('.entry-checkbox:checked').length;
-    const visible = downloadModal.querySelectorAll('.entry-item:not([style*="display: none"])').length;
+    // Server-side arama yapıyoruz, görünen = yüklenen
+    const visible = userEntries.length;
     document.getElementById('selectedCount').textContent = count;
     document.getElementById('visibleCount').textContent = visible;
   }
