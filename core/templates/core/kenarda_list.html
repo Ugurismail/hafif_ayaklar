@@ -195,19 +195,14 @@ document.addEventListener('DOMContentLoaded', function() {
   // Yeniden Düzenle
   document.querySelectorAll('.yukle-btn').forEach(function(btn) {
     btn.onclick = function() {
-      var content = btn.getAttribute('data-taslak-content');
+      var taslakId = btn.getAttribute('data-taslak-id');
       var questionSlug = btn.getAttribute('data-question-slug');
       if (!questionSlug) {
         showToast('error', 'Soruya bağlı taslak değil!');
         return;
       }
-      // escapejs'in decode'u - unicode escape'leri düzelt
-      try {
-        content = decodeURIComponent(JSON.parse('"' + content.replace(/"/g, '\\"') + '"'));
-      } catch(e) {
-        // Eğer parse edilemezse olduğu gibi kullan
-      }
-      window.location.href = "/" + questionSlug + "/?draft=" + encodeURIComponent(content);
+      // İçerik yerine sadece taslak ID'sini gönder
+      window.location.href = "/" + questionSlug + "/?draft_id=" + taslakId;
     }
   });
 

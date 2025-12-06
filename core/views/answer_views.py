@@ -19,7 +19,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
-from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, UserProfile, QuestionFollow, AnswerFollow, QuestionRelationship
+from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, UserProfile, QuestionFollow, AnswerFollow, QuestionRelationship, Kenarda
 from ..forms import AnswerForm
 from ..querysets import get_today_questions_queryset
 from ..utils import paginate_queryset
@@ -313,6 +313,17 @@ def single_answer(request, slug, answer_id):
         for parent, users in parents_map.items()
     ]
 
+    # Taslak yükleme (draft_id parametresi varsa)
+    draft_content = None
+    if request.user.is_authenticated:
+        draft_id = request.GET.get('draft_id')
+        if draft_id:
+            try:
+                taslak = Kenarda.objects.get(pk=draft_id, user=request.user, question=question)
+                draft_content = taslak.content
+            except Kenarda.DoesNotExist:
+                pass
+
     context = {
         'question': question,
         'focused_answer': focused_answer,
@@ -327,6 +338,7 @@ def single_answer(request, slug, answer_id):
         'user_has_saved_question': user_has_saved_question,
         'question_save_count': question_save_count,
         'user_is_following_question': user_is_following_question,
+        'draft_content': draft_content,
         'followed_answer_ids': followed_answer_ids,
         'user_is_following_focused_answer': user_is_following_focused_answer,
         'subquestions_list': subquestions_list,

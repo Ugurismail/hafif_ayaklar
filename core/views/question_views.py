@@ -218,6 +218,17 @@ def question_detail(request, slug):
             answer__in=answers_page
         ).values_list('answer_id', flat=True))
 
+    # Taslak yükleme (draft_id parametresi varsa)
+    draft_content = None
+    if request.user.is_authenticated:
+        draft_id = request.GET.get('draft_id')
+        if draft_id:
+            try:
+                taslak = Kenarda.objects.get(pk=draft_id, user=request.user, question=question)
+                draft_content = taslak.content
+            except Kenarda.DoesNotExist:
+                pass
+
     context = {
         'question': question,
         'form': form,
@@ -237,6 +248,7 @@ def question_detail(request, slug):
         'followed_answer_ids': followed_answer_ids,
         'subquestions_list': subquestions_list,
         'parents_list': parents_list,
+        'draft_content': draft_content,
     }
     return render(request, 'core/question_detail.html', context)
 

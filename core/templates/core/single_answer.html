@@ -960,13 +960,14 @@
             });
         }
     
-        // TASLAKTAN YÜKLEME (URL'de ?draft= varsa textarea'ya doldur)
-        const urlParams = new URLSearchParams(window.location.search);
-        const draft = urlParams.get('draft');
-        if (draft && textarea) {
-          textarea.value = draft;
+        // Taslak içeriğini Django context'ten al (URL'den değil)
+        {% if draft_content %}
+        const draftContent = {{ draft_content|escapejs|safe }};
+        if (draftContent && textarea) {
+          textarea.value = draftContent;
           textarea.focus();
         }
+        {% endif %}
     });
     </script>
     
