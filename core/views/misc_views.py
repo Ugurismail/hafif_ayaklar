@@ -835,88 +835,60 @@ def download_entries_json(request, username):
     if request.method == 'POST':
         entry_ids_str = request.POST.get('entry_ids', '')
         if entry_ids_str:
-            entry_ids = [id.strip() for id in entry_ids_str.split(',') if id.strip()]
+            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
         order = request.POST.get('order', 'oldest')
 
-    # Parse entry_ids to separate questions and answers
-    question_ids = []
-    answer_ids = []
-
+    # Get selected answers or all answers
     if entry_ids:
-        for entry_id in entry_ids:
-            if entry_id.startswith('q_'):
-                question_ids.append(int(entry_id[2:]))
-            elif entry_id.startswith('a_'):
-                answer_ids.append(int(entry_id[2:]))
-            else:
-                # Old format (just numeric ID) - assume it's an answer for backward compatibility
-                answer_ids.append(int(entry_id))
-
-    # Get entries
-    all_entries = []
-
-    if entry_ids:
-        # Get specific questions and answers
-        user_questions = Question.objects.filter(id__in=question_ids, user=target_user) if question_ids else []
-        user_answers = Answer.objects.filter(id__in=answer_ids, user=target_user) if answer_ids else []
-
-        # Convert to list with type markers
-        for q in user_questions:
-            all_entries.append({'type': 'question', 'obj': q, 'created_at': q.created_at})
-        for a in user_answers:
-            all_entries.append({'type': 'answer', 'obj': a, 'created_at': a.created_at})
+        # Get specific answers by ID
+        user_answers = Answer.objects.filter(id__in=entry_ids, user=target_user)
 
         # Apply ordering
         if order == 'newest':
-            all_entries.sort(key=lambda x: x['created_at'], reverse=True)
+            user_answers = user_answers.order_by('-created_at')
         elif order == 'oldest':
-            all_entries.sort(key=lambda x: x['created_at'])
+            user_answers = user_answers.order_by('created_at')
+        # For 'custom', preserve the order from entry_ids list
         elif order == 'custom':
-            # Preserve the order from entry_ids list
-            entries_dict = {}
-            for entry in all_entries:
-                if entry['type'] == 'question':
-                    key = f"q_{entry['obj'].id}"
-                else:
-                    key = f"a_{entry['obj'].id}"
-                entries_dict[key] = entry
-            all_entries = [entries_dict[eid] for eid in entry_ids if eid in entries_dict]
+            # Django doesn't preserve IN clause order, so we need to sort manually
+            user_answers = list(user_answers)
+            answers_dict = {ans.id: ans for ans in user_answers}
+            user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
     else:
-        # Get all questions and answers
-        user_questions = Question.objects.filter(user=target_user)
-        user_answers = Answer.objects.filter(user=target_user)
+        # Get all answers (backward compatibility)
+        user_answers = Answer.objects.filter(user=target_user).order_by('created_at')
 
-        for q in user_questions:
-            all_entries.append({'type': 'question', 'obj': q, 'created_at': q.created_at})
-        for a in user_answers:
-            all_entries.append({'type': 'answer', 'obj': a, 'created_at': a.created_at})
+    # Group answers by question
+    questions_dict = {}
+    for ans in user_answers:
+        q = ans.question
+        if q.id not in questions_dict:
+            questions_dict[q.id] = {
+                'question': q,
+                'answers': []
+            }
+        questions_dict[q.id]['answers'].append(ans)
 
-        all_entries.sort(key=lambda x: x['created_at'])
+    questions_data = []
+    for _, q_data in questions_dict.items():
+        q = q_data['question']
+        q_answers = q_data['answers']
 
-    # Build entries data
-    entries_data = []
-    for entry in all_entries:
-        if entry['type'] == 'question':
-            q = entry['obj']
-            entries_data.append({
-                'type': 'question',
-                'question_text': q.question_text,
-                'created_at': q.created_at.isoformat(),
-                'url': request.build_absolute_uri(reverse('question_detail', args=[q.slug]))
-            })
-        else:  # answer
-            ans = entry['obj']
-            entries_data.append({
-                'type': 'answer',
-                'question_text': ans.question.question_text,
+        answers_data = []
+        for ans in q_answers:
+            answers_data.append({
                 'answer_text': ans.answer_text,
-                'created_at': ans.created_at.isoformat(),
-                'url': request.build_absolute_uri(reverse('single_answer', args=[ans.question.slug, ans.id]))
+                'answer_created_at': ans.created_at.isoformat(),
+                'answer_user': ans.user.username,
             })
+        questions_data.append({
+            'question_text': q.question_text,
+            'question_created_at': q.created_at.isoformat(),
+            'answers': answers_data
+        })
 
-    # Collect bibliography from all answers in all_entries
-    selected_answers = [e['obj'] for e in all_entries if e['type'] == 'answer']
-    bibliography = collect_user_bibliography(target_user, selected_answers if entry_ids else None)
+    # Collect bibliography from selected answers
+    bibliography = collect_user_bibliography(target_user, user_answers if entry_ids else None)
     references_data = []
     for bib_item in bibliography:
         if bib_item.get('reference'):
@@ -942,7 +914,7 @@ def download_entries_json(request, username):
 
     final_data = {
         'username': target_user.username,
-        'entries': entries_data,
+        'questions': questions_data,
         'references': references_data
     }
 
@@ -973,95 +945,62 @@ def download_entries_xlsx(request, username):
     if request.method == 'POST':
         entry_ids_str = request.POST.get('entry_ids', '')
         if entry_ids_str:
-            entry_ids = [id.strip() for id in entry_ids_str.split(',') if id.strip()]
+            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
         order = request.POST.get('order', 'oldest')
 
-    # Parse entry_ids to separate questions and answers
-    question_ids = []
-    answer_ids = []
-
+    # Get selected answers or all answers
     if entry_ids:
-        for entry_id in entry_ids:
-            if entry_id.startswith('q_'):
-                question_ids.append(int(entry_id[2:]))
-            elif entry_id.startswith('a_'):
-                answer_ids.append(int(entry_id[2:]))
-            else:
-                # Old format (just numeric ID) - assume it's an answer for backward compatibility
-                answer_ids.append(int(entry_id))
-
-    # Get entries
-    all_entries = []
-
-    if entry_ids:
-        # Get specific questions and answers
-        user_questions = Question.objects.filter(id__in=question_ids, user=target_user) if question_ids else []
-        user_answers = Answer.objects.filter(id__in=answer_ids, user=target_user) if answer_ids else []
-
-        # Convert to list with type markers
-        for q in user_questions:
-            all_entries.append({'type': 'question', 'obj': q, 'created_at': q.created_at})
-        for a in user_answers:
-            all_entries.append({'type': 'answer', 'obj': a, 'created_at': a.created_at})
+        # Get specific answers by ID
+        user_answers = Answer.objects.filter(id__in=entry_ids, user=target_user)
 
         # Apply ordering
         if order == 'newest':
-            all_entries.sort(key=lambda x: x['created_at'], reverse=True)
+            user_answers = user_answers.order_by('-created_at')
         elif order == 'oldest':
-            all_entries.sort(key=lambda x: x['created_at'])
+            user_answers = user_answers.order_by('created_at')
+        # For 'custom', preserve the order from entry_ids list
         elif order == 'custom':
-            # Preserve the order from entry_ids list
-            entries_dict = {}
-            for entry in all_entries:
-                if entry['type'] == 'question':
-                    key = f"q_{entry['obj'].id}"
-                else:
-                    key = f"a_{entry['obj'].id}"
-                entries_dict[key] = entry
-            all_entries = [entries_dict[eid] for eid in entry_ids if eid in entries_dict]
+            user_answers = list(user_answers)
+            answers_dict = {ans.id: ans for ans in user_answers}
+            user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
     else:
-        # Get all questions and answers
-        user_questions = Question.objects.filter(user=target_user)
-        user_answers = Answer.objects.filter(user=target_user)
+        # Get all answers (backward compatibility)
+        user_answers = Answer.objects.filter(user=target_user).order_by('created_at')
 
-        for q in user_questions:
-            all_entries.append({'type': 'question', 'obj': q, 'created_at': q.created_at})
-        for a in user_answers:
-            all_entries.append({'type': 'answer', 'obj': a, 'created_at': a.created_at})
-
-        all_entries.sort(key=lambda x: x['created_at'])
+    # Group answers by question
+    questions_dict = {}
+    for ans in user_answers:
+        q = ans.question
+        if q.id not in questions_dict:
+            questions_dict[q.id] = {
+                'question': q,
+                'answers': []
+            }
+        questions_dict[q.id]['answers'].append(ans)
 
     wb = Workbook()
     ws = wb.active
     ws.title = "Entries"
 
-    # Add headers
-    ws.cell(row=1, column=1, value="Tür")
-    ws.cell(row=1, column=2, value="Soru")
-    ws.cell(row=1, column=3, value="Yanıt/İçerik")
-    ws.cell(row=1, column=4, value="Tarih")
+    row_idx = 1
 
-    row_idx = 2
+    for _, q_data in questions_dict.items():
+        question = q_data['question']
+        q_answers = q_data['answers']
 
-    for entry in all_entries:
-        if entry['type'] == 'question':
-            q = entry['obj']
-            ws.cell(row=row_idx, column=1, value="Soru")
-            ws.cell(row=row_idx, column=2, value=q.question_text)
-            ws.cell(row=row_idx, column=3, value="")
-            ws.cell(row=row_idx, column=4, value=q.created_at.strftime("%Y-%m-%d %H:%M"))
-        else:  # answer
-            ans = entry['obj']
-            ws.cell(row=row_idx, column=1, value="Yanıt")
-            ws.cell(row=row_idx, column=2, value=ans.question.question_text)
-            ws.cell(row=row_idx, column=3, value=ans.answer_text)
-            ws.cell(row=row_idx, column=4, value=ans.created_at.strftime("%Y-%m-%d %H:%M"))
+        ws.cell(row=row_idx, column=1, value=question.question_text)
 
+        answer_start_row = row_idx
+
+        for i, ans in enumerate(q_answers):
+            current_row = answer_start_row + i
+            ws.cell(row=current_row, column=2, value=ans.answer_text)
+
+        row_idx = answer_start_row + max(len(q_answers), 1)
         row_idx += 1
 
     # Add bibliography sheet
-    selected_answers = [e['obj'] for e in all_entries if e['type'] == 'answer']
-    bibliography = collect_user_bibliography(target_user, selected_answers if entry_ids else None)
+    bibliography = collect_user_bibliography(target_user, user_answers if entry_ids else None)
     if bibliography:
         ws_refs = wb.create_sheet(title="Kaynaklar")
 
@@ -1154,67 +1093,42 @@ def download_entries_docx(request, username):
     if request.method == 'POST':
         entry_ids_str = request.POST.get('entry_ids', '')
         if entry_ids_str:
-            entry_ids = [id.strip() for id in entry_ids_str.split(',') if id.strip()]
+            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
         order = request.POST.get('order', 'oldest')
 
-    # Parse entry_ids to separate questions and answers
-    question_ids = []
-    answer_ids = []
-
+    # Get selected answers or all answers
     if entry_ids:
-        for entry_id in entry_ids:
-            if entry_id.startswith('q_'):
-                question_ids.append(int(entry_id[2:]))
-            elif entry_id.startswith('a_'):
-                answer_ids.append(int(entry_id[2:]))
-            else:
-                # Old format (just numeric ID) - assume it's an answer for backward compatibility
-                answer_ids.append(int(entry_id))
-
-    # Get entries
-    all_entries = []
-
-    if entry_ids:
-        # Get specific questions and answers
-        user_questions = Question.objects.filter(id__in=question_ids, user=target_user) if question_ids else []
-        user_answers = Answer.objects.filter(id__in=answer_ids, user=target_user) if answer_ids else []
-
-        # Convert to list with type markers
-        for q in user_questions:
-            all_entries.append({'type': 'question', 'obj': q, 'created_at': q.created_at})
-        for a in user_answers:
-            all_entries.append({'type': 'answer', 'obj': a, 'created_at': a.created_at})
+        # Get specific answers by ID
+        user_answers = Answer.objects.filter(id__in=entry_ids, user=target_user)
 
         # Apply ordering
         if order == 'newest':
-            all_entries.sort(key=lambda x: x['created_at'], reverse=True)
+            user_answers = user_answers.order_by('-created_at')
         elif order == 'oldest':
-            all_entries.sort(key=lambda x: x['created_at'])
+            user_answers = user_answers.order_by('created_at')
+        # For 'custom', preserve the order from entry_ids list
         elif order == 'custom':
-            # Preserve the order from entry_ids list
-            entries_dict = {}
-            for entry in all_entries:
-                if entry['type'] == 'question':
-                    key = f"q_{entry['obj'].id}"
-                else:
-                    key = f"a_{entry['obj'].id}"
-                entries_dict[key] = entry
-            all_entries = [entries_dict[eid] for eid in entry_ids if eid in entries_dict]
+            user_answers = list(user_answers)
+            answers_dict = {ans.id: ans for ans in user_answers}
+            user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
     else:
-        # Get all questions and answers
-        user_questions = Question.objects.filter(user=target_user)
-        user_answers = Answer.objects.filter(user=target_user)
+        # Get all answers (backward compatibility)
+        user_answers = Answer.objects.filter(user=target_user).order_by('created_at')
 
-        for q in user_questions:
-            all_entries.append({'type': 'question', 'obj': q, 'created_at': q.created_at})
-        for a in user_answers:
-            all_entries.append({'type': 'answer', 'obj': a, 'created_at': a.created_at})
-
-        all_entries.sort(key=lambda x: x['created_at'])
+    # Group answers by question
+    questions_dict = {}
+    for ans in user_answers:
+        q = ans.question
+        if q.id not in questions_dict:
+            questions_dict[q.id] = {
+                'question': q,
+                'answers': []
+            }
+        questions_dict[q.id]['answers'].append(ans)
 
     document = Document()
 
-    document.add_heading(f"{target_user.username} Entry'leri", 0)
+    document.add_heading(f"{target_user.username} Entries", 0)
 
     toc_paragraph = document.add_paragraph()
     insert_toc(toc_paragraph)
@@ -1227,33 +1141,25 @@ def download_entries_docx(request, username):
 
     document.add_page_break()
 
-    # Add entries chronologically
-    for entry in all_entries:
-        if entry['type'] == 'question':
-            q = entry['obj']
-            document.add_heading(q.question_text, level=1)
-            date_str = q.created_at.strftime("%Y-%m-%d %H:%M")
-            p = document.add_paragraph()
-            run = p.add_run(date_str + " - Soru")
-            run.font.size = Pt(9)
-            run.font.color.rgb = RGBColor(140, 140, 140)
-            run.italic = True
-            document.add_paragraph("")
-        else:  # answer
-            ans = entry['obj']
-            document.add_heading(ans.question.question_text, level=1)
-            date_str = ans.created_at.strftime("%Y-%m-%d %H:%M")
+    # Add selected questions and answers (not using tree structure when specific entries selected)
+    for _, q_data in questions_dict.items():
+        question = q_data['question']
+        q_answers = q_data['answers']
+
+        document.add_heading(question.question_text, level=1)
+
+        for answer in q_answers:
+            date_str = answer.created_at.strftime("%Y-%m-%d %H:%M")
             p = document.add_paragraph()
             run = p.add_run(date_str + "  ")
             run.font.size = Pt(9)
             run.font.color.rgb = RGBColor(140, 140, 140)
             run.italic = True
-            p.add_run(ans.answer_text)
+            p.add_run(answer.answer_text)
             document.add_paragraph("")
 
     # Add bibliography section
-    selected_answers = [e['obj'] for e in all_entries if e['type'] == 'answer']
-    bibliography = collect_user_bibliography(target_user, selected_answers if entry_ids else None)
+    bibliography = collect_user_bibliography(target_user, user_answers if entry_ids else None)
     if bibliography:
         document.add_page_break()
         document.add_heading('Kaynakça', level=1)
@@ -1308,63 +1214,38 @@ def download_entries_pdf(request, username):
     if request.method == 'POST':
         entry_ids_str = request.POST.get('entry_ids', '')
         if entry_ids_str:
-            entry_ids = [id.strip() for id in entry_ids_str.split(',') if id.strip()]
+            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
         order = request.POST.get('order', 'oldest')
 
-    # Parse entry_ids to separate questions and answers
-    question_ids = []
-    answer_ids = []
-
+    # Get selected answers or all answers
     if entry_ids:
-        for entry_id in entry_ids:
-            if entry_id.startswith('q_'):
-                question_ids.append(int(entry_id[2:]))
-            elif entry_id.startswith('a_'):
-                answer_ids.append(int(entry_id[2:]))
-            else:
-                # Old format (just numeric ID) - assume it's an answer for backward compatibility
-                answer_ids.append(int(entry_id))
-
-    # Get entries
-    all_entries = []
-
-    if entry_ids:
-        # Get specific questions and answers
-        user_questions = Question.objects.filter(id__in=question_ids, user=target_user) if question_ids else []
-        user_answers = Answer.objects.filter(id__in=answer_ids, user=target_user) if answer_ids else []
-
-        # Convert to list with type markers
-        for q in user_questions:
-            all_entries.append({'type': 'question', 'obj': q, 'created_at': q.created_at})
-        for a in user_answers:
-            all_entries.append({'type': 'answer', 'obj': a, 'created_at': a.created_at})
+        # Get specific answers by ID
+        user_answers = Answer.objects.filter(id__in=entry_ids, user=target_user)
 
         # Apply ordering
         if order == 'newest':
-            all_entries.sort(key=lambda x: x['created_at'], reverse=True)
+            user_answers = user_answers.order_by('-created_at')
         elif order == 'oldest':
-            all_entries.sort(key=lambda x: x['created_at'])
+            user_answers = user_answers.order_by('created_at')
+        # For 'custom', preserve the order from entry_ids list
         elif order == 'custom':
-            # Preserve the order from entry_ids list
-            entries_dict = {}
-            for entry in all_entries:
-                if entry['type'] == 'question':
-                    key = f"q_{entry['obj'].id}"
-                else:
-                    key = f"a_{entry['obj'].id}"
-                entries_dict[key] = entry
-            all_entries = [entries_dict[eid] for eid in entry_ids if eid in entries_dict]
+            user_answers = list(user_answers)
+            answers_dict = {ans.id: ans for ans in user_answers}
+            user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
     else:
-        # Get all questions and answers
-        user_questions = Question.objects.filter(user=target_user)
-        user_answers = Answer.objects.filter(user=target_user)
+        # Get all answers (backward compatibility)
+        user_answers = Answer.objects.filter(user=target_user).order_by('created_at')
 
-        for q in user_questions:
-            all_entries.append({'type': 'question', 'obj': q, 'created_at': q.created_at})
-        for a in user_answers:
-            all_entries.append({'type': 'answer', 'obj': a, 'created_at': a.created_at})
-
-        all_entries.sort(key=lambda x: x['created_at'])
+    # Group answers by question
+    questions_dict = {}
+    for ans in user_answers:
+        q = ans.question
+        if q.id not in questions_dict:
+            questions_dict[q.id] = {
+                'question': q,
+                'answers': []
+            }
+        questions_dict[q.id]['answers'].append(ans)
 
     # Create PDF buffer
     buffer = BytesIO()
@@ -1515,59 +1396,43 @@ def download_entries_pdf(request, username):
     elements.append(Paragraph("İçindekiler", toc_style))
     elements.append(Spacer(1, 0.2*inch))
 
-    # List all entries in TOC
-    for idx, entry in enumerate(all_entries, 1):
-        if entry['type'] == 'question':
-            q = entry['obj']
-            toc_text = f"{idx}. [Soru] {clean_text(q.question_text[:100])}"
-            if len(q.question_text) > 100:
-                toc_text += "..."
-        else:
-            ans = entry['obj']
-            toc_text = f"{idx}. [Yanıt] {clean_text(ans.question.question_text[:100])}"
-            if len(ans.question.question_text) > 100:
-                toc_text += "..."
+    # List all questions in TOC
+    for idx, (_, q_data) in enumerate(questions_dict.items(), 1):
+        question = q_data['question']
+        toc_text = f"{idx}. {clean_text(question.question_text[:100])}"
+        if len(question.question_text) > 100:
+            toc_text += "..."
         elements.append(Paragraph(toc_text, toc_item_style))
 
     elements.append(PageBreak())
 
-    # Add entries chronologically
-    for entry in all_entries:
-        if entry['type'] == 'question':
-            q = entry['obj']
-            # Add question heading
-            question_para = Paragraph(clean_text(q.question_text), h1_style)
-            elements.append(question_para)
-            elements.append(Spacer(1, 0.1*inch))
+    # Add selected questions and answers
+    for _, q_data in questions_dict.items():
+        question = q_data['question']
+        q_answers = q_data['answers']
 
-            # Add date
-            date_str = q.created_at.strftime("%Y-%m-%d %H:%M")
-            date_para = Paragraph(f"<i>{date_str} - Soru</i>", date_style)
-            elements.append(date_para)
-            elements.append(Spacer(1, 0.15*inch))
-        else:  # answer
-            ans = entry['obj']
-            # Add question heading
-            question_para = Paragraph(clean_text(ans.question.question_text), h1_style)
-            elements.append(question_para)
-            elements.append(Spacer(1, 0.1*inch))
+        # Add question heading
+        question_para = Paragraph(clean_text(question.question_text), h1_style)
+        elements.append(question_para)
+        elements.append(Spacer(1, 0.1*inch))
 
+        # Add user's answers to this question
+        for answer in q_answers:
             # Add date
-            date_str = ans.created_at.strftime("%Y-%m-%d %H:%M")
+            date_str = answer.created_at.strftime("%Y-%m-%d %H:%M")
             date_para = Paragraph(f"<i>{date_str}</i>", date_style)
             elements.append(date_para)
 
             # Add answer text
-            answer_para = Paragraph(clean_text(ans.answer_text), answer_style)
+            answer_para = Paragraph(clean_text(answer.answer_text), answer_style)
             elements.append(answer_para)
             elements.append(Spacer(1, 0.15*inch))
 
-        # Add page break after each entry
+        # Add page break after each question
         elements.append(PageBreak())
 
     # Add bibliography section
-    selected_answers = [e['obj'] for e in all_entries if e['type'] == 'answer']
-    bibliography = collect_user_bibliography(target_user, selected_answers if entry_ids else None)
+    bibliography = collect_user_bibliography(target_user, user_answers if entry_ids else None)
     if bibliography:
         # Add page break before bibliography
         elements.append(PageBreak())

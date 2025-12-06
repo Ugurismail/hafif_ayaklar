@@ -35,62 +35,32 @@ def get_user_answers(request):
 
     user = get_object_or_404(User, username=username) if username else request.user
 
-    # Get both questions and answers
-    questions = Question.objects.filter(user=user).order_by('created_at')
+    # Kronolojik sıralama: en eski en sonda (created_at artan)
     answers = Answer.objects.filter(user=user).select_related('question').order_by('created_at')
 
-    # Apply search filter
     if q:
-        questions = questions.filter(question_text__icontains=q)
         answers = answers.filter(
             Q(answer_text__icontains=q) | Q(question__question_text__icontains=q)
         )
 
-    # Convert to list and combine
-    all_entries = []
-
-    for question in questions:
-        all_entries.append({
-            'type': 'question',
-            'id': f'q_{question.id}',
-            'question_id': question.id,
-            'question_text': question.question_text,
-            'answer_text': question.question_text[:80] + '...' if len(question.question_text) > 80 else question.question_text,
-            'detail_url': reverse('question_detail', args=[question.slug]),
-            'question_url': reverse('question_detail', args=[question.slug]),
-            'created_at_obj': question.created_at,
-            'created_at': question.created_at.strftime("%d %b %Y %H:%M"),
-        })
-
-    for answer in answers:
-        all_entries.append({
-            'type': 'answer',
-            'id': f'a_{answer.id}',
-            'answer_id': answer.id,
-            'question_text': answer.question.question_text,
-            'answer_text': answer.answer_text[:80] + '...' if len(answer.answer_text) > 80 else answer.answer_text,
-            'detail_url': reverse('single_answer', args=[answer.question.slug, answer.id]),
-            'question_url': reverse('question_detail', args=[answer.question.slug]),
-            'created_at_obj': answer.created_at,
-            'created_at': answer.created_at.strftime("%d %b %Y %H:%M"),
-        })
-
-    # Sort by created_at (oldest first)
-    all_entries.sort(key=lambda x: x['created_at_obj'])
-
     # Total count
-    total = len(all_entries)
+    total = answers.count()
 
     # Pagination
     start = (page - 1) * page_size
     end = start + page_size
-    paginated_entries = all_entries[start:end]
+    paginated_answers = answers[start:end]
 
-    # Remove created_at_obj from response
     data = []
-    for entry in paginated_entries:
-        entry_data = {k: v for k, v in entry.items() if k != 'created_at_obj'}
-        data.append(entry_data)
+    for answer in paginated_answers:
+        data.append({
+            'id': answer.id,
+            'question_text': answer.question.question_text,
+            'answer_text': answer.answer_text[:80] + '...' if len(answer.answer_text) > 80 else answer.answer_text,
+            'detail_url': reverse('single_answer', args=[answer.question.slug, answer.id]),
+            'question_url': reverse('question_detail', args=[answer.question.slug]),
+            'created_at': answer.created_at.strftime("%d %b %Y %H:%M"),
+        })
 
     return JsonResponse({
         'answers': data,

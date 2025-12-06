@@ -249,7 +249,8 @@ def user_profile(request, username):
 
         total_words = sum(len(re.findall(r'\b\w+\b', entry)) for entry in all_entries)
         total_chars = sum(len(entry.replace(" ", "")) for entry in all_entries)
-        total_entries = len(all_entries)
+        # Entry = Answer (yanıt). Sorular sadece başlık, ayrı entry değil.
+        total_entries = len(cleaned_answer_texts)
         avg_words_per_entry = total_words / total_entries if total_entries else 0
         all_texts_joined = (' '.join(cleaned_question_texts) + ' ' + ' '.join(cleaned_answer_texts)).lower()
         words = re.findall(r'\b\w+\b', all_texts_joined)
