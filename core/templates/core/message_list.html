@@ -40,7 +40,7 @@
             {% if page_obj %}
                 <ul class="list-group mesaj-listesi">
                     {% for convo in page_obj %}
-                        {% with latest_message=convo.messages.0 other_user=convo.user %}
+                        {% with latest_message=convo.user_messages.0 other_user=convo.user %}
                         <a href="{% url 'message_detail' other_user.username %}" class="text-decoration-none text-dark">
                             <li class="list-group-item d-flex justify-content-between align-items-center {% if convo.unread_count > 0 %}unread-conversation{% endif %}">
                                 <div class="d-flex align-items-center">

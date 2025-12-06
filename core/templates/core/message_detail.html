@@ -40,7 +40,7 @@
         
                 <!-- Mesajlar Alanı -->
                 <div class="chat-messages flex-grow-1" id="chat-container">
-                    {% for message in messages %}
+                    {% for message in conversation_messages %}
                         <div class="message-item mb-3 {% if message.sender == request.user %}sent{% else %}received{% endif %}">
                             {% if message.sender != request.user %}
                                 {% if other_user.userprofile.photo %}

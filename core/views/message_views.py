@@ -56,7 +56,7 @@ def message_list(request):
 
         conversation_list.append({
             'user': other_user,
-            'messages': messages_with_user,
+            'user_messages': messages_with_user,
             'unread_count': unread_count,
             'last_message_time': last_message_time,
         })
@@ -99,7 +99,7 @@ def message_detail(request, username):
     ).update(is_read=True)
 
     # Mesajları doğru şekilde sıralayın: en eski önce, en yeni sonra
-    messages = Message.objects.filter(
+    conversation_messages = Message.objects.filter(
         Q(sender=request.user, recipient=other_user) |
         Q(sender=other_user, recipient=request.user)
     ).order_by('timestamp')  # 'timestamp' alanına göre artan sırada
@@ -148,7 +148,7 @@ def message_detail(request, username):
 
     context = {
         'other_user': other_user,
-        'messages': messages,
+        'conversation_messages': conversation_messages,
         'all_questions': all_questions,
         'show_followed_only': show_followed_only,
     }
@@ -157,8 +157,8 @@ def message_detail(request, username):
 
 @login_required
 def sent_messages(request):
-    messages = Message.objects.filter(sender=request.user).order_by('-timestamp')
-    return render(request, 'core/sent_messages.html', {'messages': messages})
+    sent_messages_list = Message.objects.filter(sender=request.user).order_by('-timestamp')
+    return render(request, 'core/sent_messages.html', {'sent_messages_list': sent_messages_list})
 
 
 @login_required
