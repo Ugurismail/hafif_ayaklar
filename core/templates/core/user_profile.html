@@ -1414,12 +1414,12 @@ function debounce(func, delay) {
   });
 
   // Entry arama fonksiyonu (server-side)
-  let searchTimeout;
+  let entryDownloadSearchTimeout;
   document.getElementById('searchEntriesInput').addEventListener('input', function(e) {
-    clearTimeout(searchTimeout);
+    clearTimeout(entryDownloadSearchTimeout);
     currentSearchTerm = e.target.value.trim();
 
-    searchTimeout = setTimeout(() => {
+    entryDownloadSearchTimeout = setTimeout(() => {
       currentPage = 1;
       userEntries = [];
       loadUserEntries();
