@@ -78,10 +78,9 @@
               </button>
               <a href="{% url 'password_change' %}" class="btn btn-outline-theme-secondary btn-sm">Şifreyi Değiştir</a>
               <a href="{% url 'user_settings' %}" class="btn btn-outline-theme-secondary btn-sm">Ayarlar</a>
-              <a href="{% url 'download_entries_json' profile_user.username %}" class="btn btn-outline-theme-secondary btn-sm">Tüm Entry'lerimi (JSON) İndir</a>
-              <a href="{% url 'download_entries_xlsx' profile_user.username %}" class="btn btn-outline-theme-secondary btn-sm">Tüm Entry'lerimi (Excel) İndir</a>
-              <a href="{% url 'download_entries_docx' profile_user.username %}" class="btn btn-outline-theme-secondary btn-sm">Tüm Entry'lerimi (Word) İndir</a>
-              <a href="{% url 'download_entries_pdf' profile_user.username %}" class="btn btn-outline-theme-secondary btn-sm">Tüm Entry'lerimi (PDF) İndir</a>
+              <button type="button" class="btn btn-outline-theme-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#downloadEntriesModal">
+                <i class="bi bi-download"></i> Entry'lerimi İndir
+              </button>
             </div>
           {% else %}
             {% if request.user.is_authenticated %}
@@ -271,14 +270,14 @@
             </div>
             <div id="answersList">
               {% for answer in answers %}
-                <div class="card mb-3 shadow-subtle border-0 answer-card">
+                <div class="card mb-3 shadow-subtle border-0 answer-card answer" data-answer-id="{{ answer.id }}">
                   <div class="card-body">
                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
                       <div>
-                        <a href="{% url 'question_detail' answer.question.slug %}" class="fw-bold text-decoration-none">
+                        <a href="{% url 'question_detail' answer.question.slug %}" class="fw-bold text-decoration-none question-title">
                           {{ answer.question.question_text }}
                         </a>
-                        <span class="text-muted ms-2 small">({{ answer.created_at|date:"d M Y H:i" }})</span>
+                        <span class="text-muted ms-2 small answer-date">({{ answer.created_at|date:"d M Y H:i" }})</span>
                       </div>
                       {% if answer.user == request.user %}
                         <button type="button" class="btn btn-sm btn-outline-theme-secondary delete-answer-btn"
@@ -287,7 +286,7 @@
                         </button>
                       {% endif %}
                     </div>
-                    <div class="mt-2">
+                    <div class="mt-2 answer-text">
                       {% if answer.answer_text|length > 1000 %}
                         <div id="answer-summary-profile-{{ answer.id }}">
                           {{ answer.answer_text|slice:":1000"|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
@@ -742,6 +741,76 @@
   </div>
 </div>
 
+<!-- Entry'leri İndir Modal -->
+<div class="modal fade" id="downloadEntriesModal" tabindex="-1" aria-labelledby="downloadEntriesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="downloadEntriesModalLabel">Entry'lerimi İndir</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <form id="downloadEntriesForm">
+          {% csrf_token %}
+
+          <!-- Format Seçimi -->
+          <div class="mb-4">
+            <label class="form-label fw-bold">İndirme Formatı</label>
+            <div class="btn-group w-100" role="group">
+              <input type="radio" class="btn-check" name="format" id="formatPDF" value="pdf" checked>
+              <label class="btn btn-outline-theme-secondary" for="formatPDF">PDF</label>
+
+              <input type="radio" class="btn-check" name="format" id="formatWord" value="docx">
+              <label class="btn btn-outline-theme-secondary" for="formatWord">Word</label>
+
+              <input type="radio" class="btn-check" name="format" id="formatExcel" value="xlsx">
+              <label class="btn btn-outline-theme-secondary" for="formatExcel">Excel</label>
+
+              <input type="radio" class="btn-check" name="format" id="formatJSON" value="json">
+              <label class="btn btn-outline-theme-secondary" for="formatJSON">JSON</label>
+            </div>
+          </div>
+
+          <!-- Entry Seçimi -->
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-bold mb-0">Entry Seçimi</label>
+              <div>
+                <button type="button" class="btn btn-sm btn-outline-theme-secondary" id="selectAllEntries">Tümünü Seç</button>
+                <button type="button" class="btn btn-sm btn-outline-theme-secondary" id="deselectAllEntries">Hiçbirini Seçme</button>
+              </div>
+            </div>
+            <!-- Arama -->
+            <div class="mb-2">
+              <input type="text" class="form-control form-control-sm" id="searchEntriesInput" placeholder="Entry'lerde ara (başlık veya metin)...">
+            </div>
+            <div id="entriesContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.25rem; padding: 1rem;">
+              <p class="text-muted">Yükleniyor...</p>
+            </div>
+            <small class="text-muted">Gösterilen: <span id="visibleCount">0</span> / Seçili: <span id="selectedCount">0</span></small>
+          </div>
+
+          <!-- Sıralama -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">Sıralama</label>
+            <select class="form-select" name="order" id="orderSelect">
+              <option value="oldest">En Eskiden En Yeniye</option>
+              <option value="newest">En Yeniden En Eskiye</option>
+              <option value="custom">Özel Sıralama (Seçim Sırasına Göre)</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">İptal</button>
+        <button type="button" class="btn btn-theme-primary" id="downloadButton">
+          <i class="bi bi-download"></i> İndir
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% include 'core/link_modal.html' %}
 {% include 'core/kaynak_ref.html' %}
 {% include 'core/reference_modal.html' %}
@@ -1140,6 +1209,215 @@ function debounce(func, delay) {
         }
       });
     }
+  });
+
+  // ========== ENTRY İNDİRME MODAL ==========
+  const downloadModal = document.getElementById('downloadEntriesModal');
+  let userEntries = [];
+  let selectedEntries = new Set();
+
+  // Modal açıldığında entry'leri yükle
+  downloadModal.addEventListener('show.bs.modal', function() {
+    loadUserEntries();
+  });
+
+  // Kullanıcının entry'lerini yükle
+  function loadUserEntries() {
+    const container = document.getElementById('entriesContainer');
+    container.innerHTML = '<p class="text-muted">Yükleniyor...</p>';
+
+    // Kullanıcının tüm cevaplarını al (sayfa üzerinden)
+    const answers = document.querySelectorAll('.answer[data-answer-id]');
+    userEntries = Array.from(answers).map(answer => ({
+      id: answer.dataset.answerId,
+      question: answer.querySelector('.question-title, h3, h5')?.textContent.trim() || 'Başlıksız',
+      preview: answer.querySelector('.answer-text')?.textContent.trim().substring(0, 100) || '',
+      date: answer.querySelector('.answer-date')?.textContent || ''
+    }));
+
+    if (userEntries.length === 0) {
+      container.innerHTML = '<p class="text-muted">Entry bulunamadı.</p>';
+      return;
+    }
+
+    // Entry'leri listele
+    let html = '<div class="entry-selection-list" id="sortableEntries">';
+    userEntries.forEach((entry, index) => {
+      html += `
+        <div class="form-check entry-item mb-2 p-2" style="border: 1px solid #dee2e6; border-radius: 0.25rem; cursor: move;" data-entry-id="${entry.id}" draggable="true">
+          <div class="d-flex align-items-start">
+            <input class="form-check-input me-2 entry-checkbox" type="checkbox" value="${entry.id}" id="entry${entry.id}">
+            <label class="form-check-label flex-grow-1" for="entry${entry.id}" style="cursor: pointer;">
+              <strong>${entry.question}</strong><br>
+              <small class="text-muted">${entry.preview}...</small>
+            </label>
+            <div class="drag-handle" style="padding: 0.25rem;">
+              <i class="bi bi-grip-vertical"></i>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+
+    // Checkbox değişikliklerini dinle (modal içinde ara)
+    const checkboxes = downloadModal.querySelectorAll('.entry-checkbox');
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', updateSelectedCount);
+    });
+
+    // Drag and drop özelliğini etkinleştir
+    initDragAndDrop();
+
+    updateSelectedCount();
+  }
+
+  // Drag and drop özelliği
+  function initDragAndDrop() {
+    const items = downloadModal.querySelectorAll('.entry-item');
+    let draggedElement = null;
+
+    items.forEach(item => {
+      item.addEventListener('dragstart', function(e) {
+        draggedElement = this;
+        this.style.opacity = '0.5';
+      });
+
+      item.addEventListener('dragend', function(e) {
+        this.style.opacity = '1';
+      });
+
+      item.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        if (this !== draggedElement) {
+          const rect = this.getBoundingClientRect();
+          const midpoint = rect.top + rect.height / 2;
+          if (e.clientY < midpoint) {
+            this.parentNode.insertBefore(draggedElement, this);
+          } else {
+            this.parentNode.insertBefore(draggedElement, this.nextSibling);
+          }
+        }
+      });
+    });
+  }
+
+  // Tümünü seç (modal içinde ara)
+  document.getElementById('selectAllEntries').addEventListener('click', function() {
+    downloadModal.querySelectorAll('.entry-checkbox').forEach(cb => cb.checked = true);
+    updateSelectedCount();
+  });
+
+  // Hiçbirini seçme (modal içinde ara)
+  document.getElementById('deselectAllEntries').addEventListener('click', function() {
+    downloadModal.querySelectorAll('.entry-checkbox').forEach(cb => cb.checked = false);
+    updateSelectedCount();
+  });
+
+  // Seçili sayıyı güncelle (modal içinde ara)
+  function updateSelectedCount() {
+    const count = downloadModal.querySelectorAll('.entry-checkbox:checked').length;
+    const visible = downloadModal.querySelectorAll('.entry-item:not([style*="display: none"])').length;
+    document.getElementById('selectedCount').textContent = count;
+    document.getElementById('visibleCount').textContent = visible;
+  }
+
+  // Entry arama fonksiyonu
+  document.getElementById('searchEntriesInput').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase().trim();
+    const entries = downloadModal.querySelectorAll('.entry-item');
+
+    entries.forEach(entry => {
+      const question = entry.querySelector('.form-check-label strong')?.textContent.toLowerCase() || '';
+      const preview = entry.querySelector('.form-check-label small')?.textContent.toLowerCase() || '';
+      const fullText = question + ' ' + preview;
+
+      if (searchTerm === '' || fullText.includes(searchTerm)) {
+        entry.style.display = '';
+      } else {
+        entry.style.display = 'none';
+      }
+    });
+
+    updateSelectedCount();
+  });
+
+  // İndir butonu
+  document.getElementById('downloadButton').addEventListener('click', function() {
+    const format = downloadModal.querySelector('input[name="format"]:checked').value;
+    const order = document.getElementById('orderSelect').value;
+    const selectedCheckboxes = downloadModal.querySelectorAll('.entry-checkbox:checked');
+
+    if (selectedCheckboxes.length === 0) {
+      alert('Lütfen en az bir entry seçin!');
+      return;
+    }
+
+    // Seçili entry ID'lerini al (sıralamaya göre)
+    let entryIds = [];
+    if (order === 'custom') {
+      // DOM sırasına göre (drag-drop sonrası)
+      const allItems = downloadModal.querySelectorAll('.entry-item');
+      allItems.forEach(item => {
+        const checkbox = item.querySelector('.entry-checkbox');
+        if (checkbox && checkbox.checked) {
+          entryIds.push(checkbox.value);
+        }
+      });
+    } else {
+      // Hepsini al, backend'de sıralar
+      selectedCheckboxes.forEach(cb => entryIds.push(cb.value));
+    }
+
+    // İndirme URL'ini oluştur
+    const username = '{{ profile_user.username }}';
+    let downloadUrl = '';
+
+    switch(format) {
+      case 'pdf':
+        downloadUrl = `/profile/${username}/download_entries_pdf/`;
+        break;
+      case 'docx':
+        downloadUrl = `/profile/${username}/download_entries_docx/`;
+        break;
+      case 'xlsx':
+        downloadUrl = `/profile/${username}/download_entries_xlsx/`;
+        break;
+      case 'json':
+        downloadUrl = `/profile/${username}/download_entries_json/`;
+        break;
+    }
+
+    // POST ile indir (entry ID'leri ve sıralama bilgisi ile)
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = downloadUrl;
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+
+    const idsInput = document.createElement('input');
+    idsInput.type = 'hidden';
+    idsInput.name = 'entry_ids';
+    idsInput.value = entryIds.join(',');
+    form.appendChild(idsInput);
+
+    const orderInput = document.createElement('input');
+    orderInput.type = 'hidden';
+    orderInput.name = 'order';
+    orderInput.value = order;
+    form.appendChild(orderInput);
+
+    document.body.appendChild(form);
+    form.submit();
+
+    // Modal'ı kapat
+    bootstrap.Modal.getInstance(downloadModal).hide();
   });
 </script>
 {% endblock extra_js %}

@@ -1079,6 +1079,17 @@ a.hashtag-link:hover {
     color: var(--button-text-color);
 }
 
+/* Fix for btn-check with custom theme buttons */
+.btn-check:checked + .btn-outline-theme-secondary {
+    background-color: var(--button-background-color);
+    border-color: var(--button-background-color);
+    color: var(--button-text-color);
+}
+
+.btn-check:focus + .btn-outline-theme-secondary {
+    box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--button-background-color) 50%, transparent);
+}
+
 /* Theme-aware third buttons (third button - uses link_color for variety) */
 .btn-theme-third {
     background-color: var(--link-color);

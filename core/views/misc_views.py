@@ -736,15 +736,21 @@ def shuffle_questions(request):
     ]})
 
 
-def collect_user_bibliography(target_user):
+def collect_user_bibliography(target_user, specific_answers=None):
     """
-    Kullanıcının tüm entry'lerinden kaynakları toplar ve bibliyografya listesi döndürür.
+    Kullanıcının entry'lerinden kaynakları toplar ve bibliyografya listesi döndürür.
+    Args:
+        target_user: User object
+        specific_answers: Optional list/queryset of specific Answer objects to collect from
     Returns: List of dicts containing reference information with numbering
     """
     from core.models import Answer, Reference
 
-    # Kullanıcının tüm yanıtlarını al
-    user_answers = Answer.objects.filter(user=target_user)
+    # Kullanıcının yanıtlarını al (belirtilmişse sadece belirli yanıtlar)
+    if specific_answers is not None:
+        user_answers = specific_answers
+    else:
+        user_answers = Answer.objects.filter(user=target_user)
 
     # Tüm entry metinlerini birleştir
     all_text = ' '.join([answer.answer_text for answer in user_answers if answer.answer_text])
@@ -756,7 +762,8 @@ def collect_user_bibliography(target_user):
     reference_ids = set()  # Store unique reference IDs
     reference_pages = {}  # Store page numbers for each reference
 
-    pattern = r'\(kaynak:(\d+)(?:,\s*sayfa:([^)]+))?\)'
+    # Daha robust pattern - büyük/küçük harf, boşlukları tolere et
+    pattern = r'\([Kk]aynak\s*:\s*(\d+)(?:\s*,\s*[Ss]ayfa\s*:\s*([^)]+))?\)'
     matches = re.finditer(pattern, all_text)
 
     for match in matches:
@@ -821,12 +828,51 @@ def download_entries_json(request, username):
             status=403
         )
 
-    # Kullanıcının cevap verdiği TÜM soruları al
-    user_questions = Question.objects.filter(answers__user=target_user).distinct().order_by('created_at')
+    # Get entry_ids and order from POST if provided
+    entry_ids = None
+    order = 'oldest'  # default
+
+    if request.method == 'POST':
+        entry_ids_str = request.POST.get('entry_ids', '')
+        if entry_ids_str:
+            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
+        order = request.POST.get('order', 'oldest')
+
+    # Get selected answers or all answers
+    if entry_ids:
+        # Get specific answers by ID
+        user_answers = Answer.objects.filter(id__in=entry_ids, user=target_user)
+
+        # Apply ordering
+        if order == 'newest':
+            user_answers = user_answers.order_by('-created_at')
+        elif order == 'oldest':
+            user_answers = user_answers.order_by('created_at')
+        # For 'custom', preserve the order from entry_ids list
+        elif order == 'custom':
+            # Django doesn't preserve IN clause order, so we need to sort manually
+            user_answers = list(user_answers)
+            answers_dict = {ans.id: ans for ans in user_answers}
+            user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
+    else:
+        # Get all answers (backward compatibility)
+        user_answers = Answer.objects.filter(user=target_user).order_by('created_at')
+
+    # Group answers by question
+    questions_dict = {}
+    for ans in user_answers:
+        q = ans.question
+        if q.id not in questions_dict:
+            questions_dict[q.id] = {
+                'question': q,
+                'answers': []
+            }
+        questions_dict[q.id]['answers'].append(ans)
 
     questions_data = []
-    for q in user_questions:
-        q_answers = q.answers.filter(user=target_user).order_by('created_at')
+    for _, q_data in questions_dict.items():
+        q = q_data['question']
+        q_answers = q_data['answers']
 
         answers_data = []
         for ans in q_answers:
@@ -841,8 +887,8 @@ def download_entries_json(request, username):
             'answers': answers_data
         })
 
-    # Collect bibliography
-    bibliography = collect_user_bibliography(target_user)
+    # Collect bibliography from selected answers
+    bibliography = collect_user_bibliography(target_user, user_answers if entry_ids else None)
     references_data = []
     for bib_item in bibliography:
         if bib_item.get('reference'):
@@ -892,8 +938,45 @@ def download_entries_xlsx(request, username):
             status=403
         )
 
-    # Kullanıcının cevap verdiği TÜM soruları al
-    user_questions = Question.objects.filter(answers__user=target_user).distinct().order_by('created_at')
+    # Get entry_ids and order from POST if provided
+    entry_ids = None
+    order = 'oldest'  # default
+
+    if request.method == 'POST':
+        entry_ids_str = request.POST.get('entry_ids', '')
+        if entry_ids_str:
+            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
+        order = request.POST.get('order', 'oldest')
+
+    # Get selected answers or all answers
+    if entry_ids:
+        # Get specific answers by ID
+        user_answers = Answer.objects.filter(id__in=entry_ids, user=target_user)
+
+        # Apply ordering
+        if order == 'newest':
+            user_answers = user_answers.order_by('-created_at')
+        elif order == 'oldest':
+            user_answers = user_answers.order_by('created_at')
+        # For 'custom', preserve the order from entry_ids list
+        elif order == 'custom':
+            user_answers = list(user_answers)
+            answers_dict = {ans.id: ans for ans in user_answers}
+            user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
+    else:
+        # Get all answers (backward compatibility)
+        user_answers = Answer.objects.filter(user=target_user).order_by('created_at')
+
+    # Group answers by question
+    questions_dict = {}
+    for ans in user_answers:
+        q = ans.question
+        if q.id not in questions_dict:
+            questions_dict[q.id] = {
+                'question': q,
+                'answers': []
+            }
+        questions_dict[q.id]['answers'].append(ans)
 
     wb = Workbook()
     ws = wb.active
@@ -901,22 +984,23 @@ def download_entries_xlsx(request, username):
 
     row_idx = 1
 
-    for question in user_questions:
-        ws.cell(row=row_idx, column=1, value=question.question_text)
+    for _, q_data in questions_dict.items():
+        question = q_data['question']
+        q_answers = q_data['answers']
 
-        user_answers = question.answers.filter(user=target_user).order_by('created_at')
+        ws.cell(row=row_idx, column=1, value=question.question_text)
 
         answer_start_row = row_idx
 
-        for i, ans in enumerate(user_answers):
+        for i, ans in enumerate(q_answers):
             current_row = answer_start_row + i
             ws.cell(row=current_row, column=2, value=ans.answer_text)
 
-        row_idx = answer_start_row + max(len(user_answers), 1)
+        row_idx = answer_start_row + max(len(q_answers), 1)
         row_idx += 1
 
     # Add bibliography sheet
-    bibliography = collect_user_bibliography(target_user)
+    bibliography = collect_user_bibliography(target_user, user_answers if entry_ids else None)
     if bibliography:
         ws_refs = wb.create_sheet(title="Kaynaklar")
 
@@ -1002,8 +1086,45 @@ def download_entries_docx(request, username):
     if request.user != target_user and not request.user.is_superuser:
         return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
 
-    # Kullanıcının cevap verdiği TÜM soruları al
-    user_questions = Question.objects.filter(answers__user=target_user).distinct().order_by('created_at')
+    # Get entry_ids and order from POST if provided
+    entry_ids = None
+    order = 'oldest'  # default
+
+    if request.method == 'POST':
+        entry_ids_str = request.POST.get('entry_ids', '')
+        if entry_ids_str:
+            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
+        order = request.POST.get('order', 'oldest')
+
+    # Get selected answers or all answers
+    if entry_ids:
+        # Get specific answers by ID
+        user_answers = Answer.objects.filter(id__in=entry_ids, user=target_user)
+
+        # Apply ordering
+        if order == 'newest':
+            user_answers = user_answers.order_by('-created_at')
+        elif order == 'oldest':
+            user_answers = user_answers.order_by('created_at')
+        # For 'custom', preserve the order from entry_ids list
+        elif order == 'custom':
+            user_answers = list(user_answers)
+            answers_dict = {ans.id: ans for ans in user_answers}
+            user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
+    else:
+        # Get all answers (backward compatibility)
+        user_answers = Answer.objects.filter(user=target_user).order_by('created_at')
+
+    # Group answers by question
+    questions_dict = {}
+    for ans in user_answers:
+        q = ans.question
+        if q.id not in questions_dict:
+            questions_dict[q.id] = {
+                'question': q,
+                'answers': []
+            }
+        questions_dict[q.id]['answers'].append(ans)
 
     document = Document()
 
@@ -1020,11 +1141,25 @@ def download_entries_docx(request, username):
 
     document.add_page_break()
 
-    for q in user_questions:
-        add_question_tree_to_docx(document, q, target_user, level=1)
+    # Add selected questions and answers (not using tree structure when specific entries selected)
+    for _, q_data in questions_dict.items():
+        question = q_data['question']
+        q_answers = q_data['answers']
+
+        document.add_heading(question.question_text, level=1)
+
+        for answer in q_answers:
+            date_str = answer.created_at.strftime("%Y-%m-%d %H:%M")
+            p = document.add_paragraph()
+            run = p.add_run(date_str + "  ")
+            run.font.size = Pt(9)
+            run.font.color.rgb = RGBColor(140, 140, 140)
+            run.italic = True
+            p.add_run(answer.answer_text)
+            document.add_paragraph("")
 
     # Add bibliography section
-    bibliography = collect_user_bibliography(target_user)
+    bibliography = collect_user_bibliography(target_user, user_answers if entry_ids else None)
     if bibliography:
         document.add_page_break()
         document.add_heading('Kaynakça', level=1)
@@ -1072,8 +1207,45 @@ def download_entries_pdf(request, username):
     if request.user != target_user and not request.user.is_superuser:
         return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
 
-    # Kullanıcının cevap verdiği TÜM soruları al
-    user_questions = Question.objects.filter(answers__user=target_user).distinct().order_by('created_at')
+    # Get entry_ids and order from POST if provided
+    entry_ids = None
+    order = 'oldest'  # default
+
+    if request.method == 'POST':
+        entry_ids_str = request.POST.get('entry_ids', '')
+        if entry_ids_str:
+            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
+        order = request.POST.get('order', 'oldest')
+
+    # Get selected answers or all answers
+    if entry_ids:
+        # Get specific answers by ID
+        user_answers = Answer.objects.filter(id__in=entry_ids, user=target_user)
+
+        # Apply ordering
+        if order == 'newest':
+            user_answers = user_answers.order_by('-created_at')
+        elif order == 'oldest':
+            user_answers = user_answers.order_by('created_at')
+        # For 'custom', preserve the order from entry_ids list
+        elif order == 'custom':
+            user_answers = list(user_answers)
+            answers_dict = {ans.id: ans for ans in user_answers}
+            user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
+    else:
+        # Get all answers (backward compatibility)
+        user_answers = Answer.objects.filter(user=target_user).order_by('created_at')
+
+    # Group answers by question
+    questions_dict = {}
+    for ans in user_answers:
+        q = ans.question
+        if q.id not in questions_dict:
+            questions_dict[q.id] = {
+                'question': q,
+                'answers': []
+            }
+        questions_dict[q.id]['answers'].append(ans)
 
     # Create PDF buffer
     buffer = BytesIO()
@@ -1202,30 +1374,50 @@ def download_entries_pdf(request, username):
         text = text.replace('\n', '<br/>')
         return text
 
-    # Recursive function to add questions and their tree
-    def add_question_tree(question, level=1, visited=None):
-        if visited is None:
-            visited = set()
-        if question.id in visited:
-            return
-        visited.add(question.id)
+    # Add Table of Contents
+    toc_style = ParagraphStyle(
+        'TOCHeading',
+        parent=styles['Heading1'],
+        fontName=font_name_bold,
+        fontSize=18,
+        textColor='#2c3e50',
+        spaceAfter=12
+    )
+    toc_item_style = ParagraphStyle(
+        'TOCItem',
+        parent=styles['Normal'],
+        fontName=font_name,
+        fontSize=11,
+        textColor='#34495e',
+        spaceAfter=6,
+        leftIndent=20
+    )
 
-        # Choose heading style based on level
-        if level == 1:
-            heading_style = h1_style
-        elif level == 2:
-            heading_style = h2_style
-        else:
-            heading_style = h3_style
+    elements.append(Paragraph("İçindekiler", toc_style))
+    elements.append(Spacer(1, 0.2*inch))
+
+    # List all questions in TOC
+    for idx, (_, q_data) in enumerate(questions_dict.items(), 1):
+        question = q_data['question']
+        toc_text = f"{idx}. {clean_text(question.question_text[:100])}"
+        if len(question.question_text) > 100:
+            toc_text += "..."
+        elements.append(Paragraph(toc_text, toc_item_style))
+
+    elements.append(PageBreak())
+
+    # Add selected questions and answers
+    for _, q_data in questions_dict.items():
+        question = q_data['question']
+        q_answers = q_data['answers']
 
         # Add question heading
-        question_para = Paragraph(clean_text(question.question_text), heading_style)
+        question_para = Paragraph(clean_text(question.question_text), h1_style)
         elements.append(question_para)
         elements.append(Spacer(1, 0.1*inch))
 
         # Add user's answers to this question
-        user_answers = question.answers.filter(user=target_user).order_by('created_at')
-        for answer in user_answers:
+        for answer in q_answers:
             # Add date
             date_str = answer.created_at.strftime("%Y-%m-%d %H:%M")
             date_para = Paragraph(f"<i>{date_str}</i>", date_style)
@@ -1236,22 +1428,11 @@ def download_entries_pdf(request, username):
             elements.append(answer_para)
             elements.append(Spacer(1, 0.15*inch))
 
-        # Process subquestions recursively (kullanıcı-bazlı)
-        subquestions_rels = QuestionRelationship.objects.filter(
-            parent=question,
-            user=target_user
-        ).select_related('child').order_by('created_at')
-        for rel in subquestions_rels:
-            add_question_tree(rel.child, level=min(level+1, 3), visited=visited)
-
-    # Add all questions
-    for question in user_questions:
-        add_question_tree(question, level=1)
-        # Add page break after each main question
+        # Add page break after each question
         elements.append(PageBreak())
 
     # Add bibliography section
-    bibliography = collect_user_bibliography(target_user)
+    bibliography = collect_user_bibliography(target_user, user_answers if entry_ids else None)
     if bibliography:
         # Add page break before bibliography
         elements.append(PageBreak())
