@@ -27,6 +27,7 @@ def kenarda_save(request):
 
         question_id = data.get("question_id")
         content = data.get("content", "")
+        title = data.get("title", "")  # Yeni başlıklar için başlık metni
 
         # Maksimum uzunluk kontrolü (50,000 karakter)
         if len(content) > 50000:
@@ -42,16 +43,27 @@ def kenarda_save(request):
                 question = Question.objects.get(id=question_id)
             except Question.DoesNotExist:
                 question = None
+
         # Mevcut taslak var mı?
-        existing = Kenarda.objects.filter(user=request.user, question=question, is_sent=False).first()
+        # Eğer question varsa question'a göre, yoksa title'a göre ara
+        if question:
+            existing = Kenarda.objects.filter(user=request.user, question=question, is_sent=False).first()
+        elif title:
+            existing = Kenarda.objects.filter(user=request.user, title=title, question__isnull=True, is_sent=False).first()
+        else:
+            existing = None
+
         if existing:
             existing.content = content
+            if title and not existing.question:  # Question yoksa title'ı güncelle
+                existing.title = title
             existing.updated_at = timezone.now()
             existing.save()
         else:
             Kenarda.objects.create(
                 user=request.user,
                 question=question,
+                title=title if not question else None,  # Question varsa title gereksiz
                 content=content,
                 is_sent=False
             )

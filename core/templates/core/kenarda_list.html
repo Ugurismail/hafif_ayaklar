@@ -25,10 +25,17 @@
                         {{ t.question.question_text|truncatechars:50 }}
                       </a>
                     {% else %}
-                      <span class="text-muted">
-                        <i class="bi bi-question-circle me-1"></i>
-                        Bağlı soru yok
-                      </span>
+                      {% if t.title %}
+                        <span class="fw-bold">
+                          <i class="bi bi-pencil-square me-1"></i>
+                          {{ t.title|truncatechars:50 }}
+                        </span>
+                      {% else %}
+                        <span class="text-muted">
+                          <i class="bi bi-question-circle me-1"></i>
+                          Bağlı soru yok
+                        </span>
+                      {% endif %}
                     {% endif %}
                   </h6>
                   <small class="text-muted">
@@ -42,14 +49,14 @@
               </p>
 
               <div class="d-flex gap-2 mt-auto">
-                {% if t.question %}
                   <button class="btn btn-sm btn-theme-primary yukle-btn flex-fill"
                           data-taslak-id="{{ t.id }}"
                           data-taslak-content="{{ t.content|escapejs }}"
-                          data-question-slug="{{ t.question.slug }}"
+                          data-question-slug="{% if t.question %}{{ t.question.slug }}{% endif %}"
                           title="Yeniden düzenle">
                     <i class="bi bi-pencil-square"></i>
                   </button>
+                {% if t.question %}
                   <button class="btn btn-sm btn-theme-third gonder-btn flex-fill"
                           data-taslak-id="{{ t.id }}"
                           data-question-slug="{{ t.question.slug }}"
@@ -197,11 +204,13 @@ document.addEventListener('DOMContentLoaded', function() {
     btn.onclick = function() {
       var taslakId = btn.getAttribute('data-taslak-id');
       var questionSlug = btn.getAttribute('data-question-slug');
+
       if (!questionSlug) {
-        showToast('error', 'Soruya bağlı taslak değil!');
+        // Question yoksa, yeni başlık açma sayfasına yönlendir
+        window.location.href = "{% url 'add_starting_question' %}?draft_id=" + taslakId;
         return;
       }
-      // İçerik yerine sadece taslak ID'sini gönder
+      // Question varsa, o soruya git
       window.location.href = "/" + questionSlug + "/?draft_id=" + taslakId;
     }
   });

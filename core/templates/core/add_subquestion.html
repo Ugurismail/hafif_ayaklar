@@ -89,6 +89,7 @@
                       <input type="hidden" name="definition_text" id="hiddenDefinitionText" value="">
 
                       <button type="submit" class="btn btn-theme-primary mt-3">Kaydet</button>
+                      <button type="button" class="btn btn-theme-secondary mt-3 ms-2" id="kenarda-dursun-btn">Kenarda Dursun</button>
                   </form>
               </div>
           </div>
@@ -342,5 +343,65 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 </script>
 
-    
+<script>
+// Kenarda Dursun (Taslak Kaydet)
+document.getElementById('kenarda-dursun-btn')?.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    const questionText = document.querySelector('input[name="question_text"], #id_question_text')?.value?.trim() || '';
+    const answerTextarea = document.getElementById('id_answer_text') || document.querySelector('textarea[name="answer_text"]');
+    const answerText = answerTextarea?.value?.trim() || '';
+
+    if (!questionText && !answerText) {
+        if (typeof showToast === 'function') {
+            showToast('Başlık veya içerik boş olamaz!', 'warning');
+        } else {
+            alert('Başlık veya içerik boş olamaz!');
+        }
+        return;
+    }
+
+    fetch("{% url 'kenarda_save' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({
+            title: questionText,
+            content: answerText,
+            question_id: null  // Yeni başlık için question_id yok
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === "ok") {
+            if (typeof showToast === 'function') {
+                showToast('Taslak başarıyla kaydedildi!', 'success', 1500);
+            } else {
+                alert('Taslak başarıyla kaydedildi!');
+            }
+            // Formu temizle
+            if (answerTextarea) answerTextarea.value = "";
+            const questionInput = document.querySelector('input[name="question_text"], #id_question_text');
+            if (questionInput) questionInput.value = "";
+        } else {
+            if (typeof showToast === 'function') {
+                showToast('Kaydetme başarısız: ' + (data.error || ''), 'error');
+            } else {
+                alert('Kaydetme başarısız!');
+            }
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        if (typeof showToast === 'function') {
+            showToast('Bir hata oluştu!', 'error');
+        } else {
+            alert('Bir hata oluştu!');
+        }
+    });
+});
+</script>
+
 {% endblock %}

@@ -699,10 +699,11 @@ def generate_question_nodes(questions, user_filter=None):
 
 
 def bkz_view(request, query):
-    try:
-        question = Question.objects.get(question_text__exact=query)
+    # Birden fazla aynı isimli soru olabilir, ilkini al
+    question = Question.objects.filter(question_text__exact=query).first()
+    if question:
         return redirect('question_detail', slug=question.slug)
-    except Question.DoesNotExist:
+    else:
         # Soru bulunamazsa, add_question_from_search sayfasına yönlendirin
         return redirect(f'{reverse("add_question_from_search")}?q={query}')
 
@@ -753,10 +754,24 @@ def add_starting_question(request):
     from ..models import Definition
     user_definitions = Definition.objects.filter(user=request.user).select_related('question').order_by('-created_at')[:10]
 
+    # Taslak yükleme (draft_id parametresi varsa)
+    draft_title = None
+    draft_content = None
+    draft_id = request.GET.get('draft_id')
+    if draft_id:
+        try:
+            taslak = Kenarda.objects.get(pk=draft_id, user=request.user)
+            draft_title = taslak.title
+            draft_content = taslak.content
+        except Kenarda.DoesNotExist:
+            pass
+
     return render(request, 'core/add_starting_question.html', {
         'form': form,
         'all_questions': all_questions,
         'user_definitions': user_definitions,
+        'draft_title': draft_title,
+        'draft_content': draft_content,
     })
 
 
