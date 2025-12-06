@@ -500,10 +500,19 @@ def user_list(request):
 
 @login_required
 def follow_user(request, username):
+    from ..models import Notification
+
     target_user = get_object_or_404(User, username=username)
     user_profile = request.user.userprofile
     target_profile = target_user.userprofile
     user_profile.following.add(target_profile)
+
+    # Create notification for the followed user
+    Notification.create_new_follower_notification(
+        recipient=target_user,
+        follower=request.user
+    )
+
     return redirect('user_profile', username=username)
 
 

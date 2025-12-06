@@ -86,8 +86,17 @@ def message_list(request):
 
 @login_required
 def message_detail(request, username):
+    from ..models import Notification
+
     other_user = get_object_or_404(User, username=username)
     Message.objects.filter(sender=other_user, recipient=request.user, is_read=False).update(is_read=True)
+
+    # Mark message notifications from this user as read
+    Notification.objects.filter(
+        recipient=request.user,
+        sender=other_user,
+        is_read=False
+    ).update(is_read=True)
 
     # Mesajları doğru şekilde sıralayın: en eski önce, en yeni sonra
     messages = Message.objects.filter(

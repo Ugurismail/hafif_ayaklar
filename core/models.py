@@ -636,6 +636,7 @@ class Notification(models.Model):
         ('question_update', 'Question Update'),    # Update to followed question
         ('new_subquestion', 'New Subquestion'),    # New subquestion to followed question
         ('followed_user_entry', 'Followed User Entry'),  # Entry from followed user
+        ('new_follower', 'New Follower'),          # Someone followed you
         ('system', 'System'),                      # System notifications
     )
 
@@ -752,6 +753,17 @@ class Notification(models.Model):
             message=message,
             related_answer=answer,
             related_question=answer.question
+        )
+
+    @classmethod
+    def create_new_follower_notification(cls, recipient, follower):
+        """Create notification when someone follows you"""
+        message = f"{follower.username} seni takip etmeye başladı"
+        return cls.objects.create(
+            recipient=recipient,
+            sender=follower,
+            notification_type='new_follower',
+            message=message
         )
 
 
