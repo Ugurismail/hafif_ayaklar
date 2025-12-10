@@ -391,8 +391,7 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
             } else {
                 alert('Taslak başarıyla kaydedildi!');
             }
-            // Sadece textarea'yı temizle (başlık query parametresinden geliyor)
-            if (answerTextarea) answerTextarea.value = "";
+            // Formu temizleme - kullanıcı üzerinde çalışmaya devam edebilir
         } else {
             if (typeof showToast === 'function') {
                 showToast('Kaydetme başarısız: ' + (data.error || ''), 'error');

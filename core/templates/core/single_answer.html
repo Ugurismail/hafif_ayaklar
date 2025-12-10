@@ -418,63 +418,100 @@
                 </div>
             </div>
             {% endif %}
+            </div>
         </div>
-    </div>
+        </div>
 
-        <!-- Sağ Sütun: Alt Sorular -->
-        <div class="col-md-2">
-            <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
+        <!-- Sağ Sütun: Alt ve Üst Sorular -->
+        <div class="col-md-2 d-flex flex-column" style="border-left: 1px solid #ccc; height: 100%; min-height: 0;">
+            <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
+                <div class="row g-2">
+                    {% if parents_list|length == 0 %}
+                    <div class="col-12 d-grid">
                         <a href="{% url 'add_subquestion' question.slug %}" class="btn btn-outline-theme-secondary btn-sm">
                             <i class="bi bi-chevron-double-down" title="Alt Soru Ekle"> Alt Soru Ekle</i>
                         </a>
-                        {% if question.parent_questions.count == 1 %}
-                            {% with parent=question.parent_questions.first %}
-                                <a href="{% url 'question_detail' parent.slug %}" class="btn btn-outline-theme-secondary btn-sm ms-2">
+                    </div>
+                    {% elif parents_list|length > 0 %}
+                    <div class="col-6 d-grid">
+                        <a href="{% url 'add_subquestion' question.slug %}" class="btn btn-outline-theme-secondary btn-sm">
+                            <i class="bi bi-chevron-double-down" title="Alt Soru Ekle"> Alt Soru Ekle</i>
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% if parents_list|length == 1 %}
+                        {% with parent_item=parents_list.0 %}
+                            <div class="col-6 d-grid">
+                                <a href="{% url 'question_detail' parent_item.question.slug %}" class="btn btn-outline-theme-secondary btn-sm">
                                     <i class="bi bi-chevron-double-up" title="Üst Soruya Git"> Üst Soruya Git</i>
                                 </a>
-                            {% endwith %}
-                        {% elif question.parent_questions.count > 1 %}
-                            <button type="button" class="btn btn-outline-theme-secondary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#parentQuestionsModal">
+                            </div>
+                        {% endwith %}
+                    {% elif parents_list|length > 1 %}
+                        <div class="col-6 d-grid">
+                            <button type="button" class="btn btn-outline-theme-secondary btn-sm"
+                                    data-bs-toggle="modal" data-bs-target="#parentQuestionsModal">
                                 <i class="bi bi-chevron-double-up" title="Üst Soruya Git"> Üst Soruya Git</i>
                             </button>
-                            <div class="modal fade" id="parentQuestionsModal" tabindex="-1" aria-labelledby="parentQuestionsModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Üst Sorular</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <ul class="list-group">
-                                                {% for parent in question.parent_questions.all %}
-                                                    <li class="list-group-item">
-                                                        <a href="{% url 'question_detail' parent.slug %}">{{ parent.question_text }}</a>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
+                        </div>
+
+                        <div class="modal fade" id="parentQuestionsModal" tabindex="-1"
+                            aria-labelledby="parentQuestionsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Üst Sorular</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Kapat"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <ul class="list-group parent-questions-list">
+                                            {% for parent_item in parents_list %}
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <a href="{% url 'question_detail' parent_item.question.slug %}">
+                                                            {{ parent_item.question.question_text }}
+                                                        </a>
+                                                        <br>
+                                                        <small class="">
+                                                            <a href="{% url 'user_profile' parent_item.question.user.username %}">
+                                                                {{ parent_item.question.user.username }}
+                                                            </a>
+                                                        </small>
+                                                    </div>
+                                                    <a href="{% url 'question_map' %}?question_id={{ parent_item.question.id }}"
+                                                       class="flex-shrink-0" title="Haritada Gör">
+                                                        <i class="bi bi-geo-alt"></i>
+                                                    </a>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
                 </div>
-                <ul class="list-group">
-                    {% if question.subquestions.all %}
-                        {% for subquestion in question.subquestions.all %}
+
+                <!-- Alt Sorular Listesi -->
+                <ul class="list-group mt-2 subquestions-list">
+                    {% if subquestions_list %}
+                        {% for subq_item in subquestions_list %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
-                                    <a href="{% url 'question_detail' subquestion.slug %}">
-                                        {{ subquestion.question_text }}
+                                    <a href="{% url 'question_detail' subq_item.question.slug %}">
+                                        {{ subq_item.question.question_text }}
                                     </a>
                                     <br>
-                                    <small class="text-muted">
-                                        <a href="{% url 'user_profile' subquestion.user.username %}">{{ subquestion.user.username }}</a>
+                                    <small class="">
+                                        <a href="{% url 'user_profile' subq_item.question.user.username %}">
+                                            {{ subq_item.question.user.username }}
+                                        </a>
                                     </small>
                                 </div>
-                                <a href="{% url 'question_map' %}?question_id={{ subquestion.id }}" title="Haritada Gör">
+                                <a href="{% url 'question_map' %}?question_id={{ subq_item.question.id }}"
+                                   class="flex-shrink-0" title="Haritada Gör">
                                     <i class="bi bi-geo-alt"></i>
                                 </a>
                             </li>
@@ -564,28 +601,30 @@
             <div class="modal-body">
                 <p class="text-muted mb-3">Bu soruyu bağlı olduğu üst sorulardan ayırabilirsiniz:</p>
                 <ul class="list-group unlink-parents-list">
-                    {% for parent in question.parent_questions.all %}
+                    {% for parent_item in parents_list %}
+                        {% if request.user in parent_item.added_by_users %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <a href="{% url 'question_detail' parent.slug %}">
-                                    {{ parent.question_text }}
+                                <a href="{% url 'question_detail' parent_item.question.slug %}">
+                                    {{ parent_item.question.question_text }}
                                 </a>
                                 <br>
                                 <small class="text-muted">
-                                    <a href="{% url 'user_profile' parent.user.username %}">
-                                        {{ parent.user.username }}
+                                    <a href="{% url 'user_profile' parent_item.question.user.username %}">
+                                        {{ parent_item.question.user.username }}
                                     </a>
                                 </small>
                             </div>
                             <div>
                                 <button type="button" class="btn btn-sm btn-outline-theme-secondary unlink-parent"
-                                        data-parent-id="{{ parent.id }}"
-                                        data-parent-title="{{ parent.question_text }}"
+                                        data-parent-id="{{ parent_item.question.id }}"
+                                        data-parent-title="{{ parent_item.question.question_text }}"
                                         title="Bağlantıyı Kaldır">
                                     Kaldır
                                 </button>
                             </div>
                         </li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             </div>

@@ -127,13 +127,25 @@ def add_answer(request, slug):
 
 @login_required
 def edit_answer(request, answer_id):
+    from ..models import Kenarda
+
     all_questions = get_today_questions_queryset()
     answer = get_object_or_404(Answer, id=answer_id, user=request.user)
-        # Başlangıç sorularını al
+    # Başlangıç sorularını al
     starting_questions = StartingQuestion.objects.filter(user=request.user).annotate(
         total_subquestions=Count('question__child_relationships', filter=Q(question__child_relationships__user=request.user)),
         latest_subquestion_date=Max('question__child_relationships__created_at', filter=Q(question__child_relationships__user=request.user))
     ).order_by(F('latest_subquestion_date').desc(nulls_last=True))
+
+    # Taslak yükleme
+    draft_content = None
+    draft_id = request.GET.get('draft_id')
+    if draft_id:
+        try:
+            draft = Kenarda.objects.get(id=draft_id, user=request.user, answer=answer)
+            draft_content = draft.content
+        except Kenarda.DoesNotExist:
+            pass
 
     if request.method == 'POST':
         form = AnswerForm(request.POST, instance=answer)
@@ -146,12 +158,30 @@ def edit_answer(request, answer_id):
             if mentioned_usernames:
                 send_mention_notifications(updated_answer, mentioned_usernames)
 
+            # Taslağı sil (eğer varsa)
+            if draft_id:
+                try:
+                    draft = Kenarda.objects.get(id=draft_id, user=request.user, answer=answer)
+                    draft.delete()
+                except Kenarda.DoesNotExist:
+                    pass
+
             messages.success(request, 'Yanıt başarıyla güncellendi.')
             return redirect('question_detail', slug=answer.question.slug)
     else:
-        form = AnswerForm(instance=answer)
+        # Taslak varsa, onun içeriğini yükle
+        if draft_content:
+            form = AnswerForm(initial={'answer_text': draft_content})
+        else:
+            form = AnswerForm(instance=answer)
 
-    return render(request, 'core/edit_answer.html', {'form': form, 'answer': answer,'all_questions': all_questions,'starting_questions': starting_questions,})
+    return render(request, 'core/edit_answer.html', {
+        'form': form,
+        'answer': answer,
+        'all_questions': all_questions,
+        'starting_questions': starting_questions,
+        'draft_content': draft_content
+    })
 
 
 @login_required

@@ -63,9 +63,10 @@
                         </div>
                         {{ form.answer_text }}
                         </div>
-        
-                        
+
+
                         <button type="submit" class="btn btn-theme-primary mt-2">Güncelle</button>
+                        <button type="button" class="btn btn-theme-secondary mt-2 ms-2" id="kenarda-dursun-btn">Kenarda Dursun</button>
                     </form>
                 </div>
             </div>
@@ -348,6 +349,60 @@
         textarea.addEventListener('blur', function() {
             this.style.height = this.dataset.initialHeight + "px";
         });
+    });
+});
+
+// Kenarda Dursun (Yanıt Düzenleme Taslağı)
+document.getElementById('kenarda-dursun-btn')?.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    const answerTextarea = document.getElementById('id_answer_text') || document.querySelector('textarea[name="answer_text"]');
+    const answerText = answerTextarea?.value?.trim() || '';
+
+    if (!answerText) {
+        if (typeof showToast === 'function') {
+            showToast('İçerik boş olamaz!', 'warning');
+        } else {
+            alert('İçerik boş olamaz!');
+        }
+        return;
+    }
+
+    fetch("{% url 'kenarda_save' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({
+            answer_id: {{ answer.id }},  // Var olan yanıtın ID'si
+            content: answerText
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === "ok") {
+            if (typeof showToast === 'function') {
+                showToast('Düzenleme taslak olarak kaydedildi!', 'success', 1500);
+            } else {
+                alert('Düzenleme taslak olarak kaydedildi!');
+            }
+            // Formu temizleme - kullanıcı üzerinde çalışmaya devam edebilir
+        } else {
+            if (typeof showToast === 'function') {
+                showToast('Kaydetme başarısız: ' + (data.error || ''), 'error');
+            } else {
+                alert('Kaydetme başarısız!');
+            }
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        if (typeof showToast === 'function') {
+            showToast('Bir hata oluştu!', 'error');
+        } else {
+            alert('Bir hata oluştu!');
+        }
     });
 });
 </script>

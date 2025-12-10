@@ -19,7 +19,13 @@
               <div class="d-flex align-items-start mb-3">
                 <div class="flex-grow-1">
                   <h6 class="card-title mb-2">
-                    {% if t.question %}
+                    {% if t.answer %}
+                      <a href="{% url 'question_detail' t.answer.question.slug %}#answer-{{ t.answer.id }}" class="text-decoration-none text-dark">
+                        <i class="bi bi-file-earmark-text text-warning me-1"></i>
+                        <span class="badge bg-warning text-dark me-1">Düzenleme</span>
+                        {{ t.answer.question.question_text|truncatechars:40 }}
+                      </a>
+                    {% elif t.question %}
                       <a href="{% url 'question_detail' t.question.slug %}" class="text-decoration-none text-dark">
                         <i class="bi bi-chat-square-text-fill text-primary me-1"></i>
                         {{ t.question.question_text|truncatechars:50 }}
@@ -53,6 +59,7 @@
                           data-taslak-id="{{ t.id }}"
                           data-taslak-content="{{ t.content|escapejs }}"
                           data-question-slug="{% if t.question %}{{ t.question.slug }}{% endif %}"
+                          data-answer-id="{% if t.answer %}{{ t.answer.id }}{% endif %}"
                           title="Yeniden düzenle">
                     <i class="bi bi-pencil-square"></i>
                   </button>
@@ -204,6 +211,13 @@ document.addEventListener('DOMContentLoaded', function() {
     btn.onclick = function() {
       var taslakId = btn.getAttribute('data-taslak-id');
       var questionSlug = btn.getAttribute('data-question-slug');
+      var answerId = btn.getAttribute('data-answer-id');
+
+      if (answerId) {
+        // Answer düzenleme taslağıysa, edit_answer sayfasına git
+        window.location.href = "/answer/" + answerId + "/edit/?draft_id=" + taslakId;
+        return;
+      }
 
       if (!questionSlug) {
         // Question yoksa, yeni başlık açma sayfasına yönlendir

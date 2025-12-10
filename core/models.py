@@ -427,7 +427,8 @@ class IATResult(models.Model):
 
 class Kenarda(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="kenardalar")
-    question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, blank=True, related_name="kenarda_taslaklar")  # <-- EKLENDİ!
+    question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, blank=True, related_name="kenarda_taslaklar")
+    answer = models.ForeignKey('Answer', on_delete=models.CASCADE, null=True, blank=True, related_name="kenarda_edits")  # Var olan yanıtın düzenleme taslağı
     title = models.CharField(max_length=200, blank=True, null=True)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -435,6 +436,8 @@ class Kenarda(models.Model):
     is_sent = models.BooleanField(default=False)
 
     def __str__(self):
+        if self.answer:
+            return f"[Düzenleme] {self.answer.question.question_text}"
         return f"{self.title or (self.question.question_text if self.question else '[Başlıksız]')}"
 
 class CikisTesti(models.Model):
