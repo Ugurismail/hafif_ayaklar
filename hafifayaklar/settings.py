@@ -15,9 +15,15 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4m3!p5t!fy=$22
 # CRITICAL: Set DEBUG=False in production
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# Parse ALLOWED_HOSTS from environment (comma-separated)
-allowed_hosts_str = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,uia1.pythonanywhere.com,ha-uia1.pythonanywhere.com,hafifayaklar.com,www.hafifayaklar.com')
-ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(',') if host.strip()]
+# Hardcoded ALLOWED_HOSTS to ensure all domains are always included
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    'uia1.pythonanywhere.com',
+    'ha-uia1.pythonanywhere.com',
+    'hafifayaklar.com',
+    'www.hafifayaklar.com'
+]
 
 # CSRF Trusted Origins (for production)
 csrf_origins_str = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
