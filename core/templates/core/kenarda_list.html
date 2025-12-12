@@ -60,6 +60,8 @@
                           data-taslak-content="{{ t.content|escapejs }}"
                           data-question-slug="{% if t.question %}{{ t.question.slug }}{% endif %}"
                           data-answer-id="{% if t.answer %}{{ t.answer.id }}{% endif %}"
+                          data-draft-source="{{ t.draft_source }}"
+                          data-taslak-title="{{ t.title|escapejs }}"
                           title="Yeniden düzenle">
                     <i class="bi bi-pencil-square"></i>
                   </button>
@@ -212,6 +214,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var taslakId = btn.getAttribute('data-taslak-id');
       var questionSlug = btn.getAttribute('data-question-slug');
       var answerId = btn.getAttribute('data-answer-id');
+      var draftSource = btn.getAttribute('data-draft-source');
+      var taslakTitle = btn.getAttribute('data-taslak-title');
 
       if (answerId) {
         // Answer düzenleme taslağıysa, edit_answer sayfasına git
@@ -220,8 +224,14 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       if (!questionSlug) {
-        // Question yoksa, yeni başlık açma sayfasına yönlendir
-        window.location.href = "{% url 'add_starting_question' %}?draft_id=" + taslakId;
+        // Question yoksa, draft_source'a göre yönlendir
+        if (draftSource === 'question_from_search' && taslakTitle) {
+          // Aramadan soru oluşturma sayfasına yönlendir
+          window.location.href = "{% url 'add_question_from_search' %}?q=" + encodeURIComponent(taslakTitle) + "&draft_id=" + taslakId;
+        } else {
+          // Başlangıç sorusu sayfasına yönlendir (varsayılan)
+          window.location.href = "{% url 'add_starting_question' %}?draft_id=" + taslakId;
+        }
         return;
       }
       // Question varsa, o soruya git

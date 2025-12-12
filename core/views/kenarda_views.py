@@ -29,6 +29,7 @@ def kenarda_save(request):
         answer_id = data.get("answer_id")  # Var olan yanıt düzenleme taslağı için
         content = data.get("content", "")
         title = data.get("title", "")  # Yeni başlıklar için başlık metni
+        draft_source = data.get("draft_source")  # Taslağın kaynağı
 
         # Maksimum uzunluk kontrolü (50,000 karakter)
         if len(content) > 50000:
@@ -67,6 +68,8 @@ def kenarda_save(request):
             existing.content = content
             if title and not existing.question and not existing.answer:  # Sadece yeni başlık taslağında title güncelle
                 existing.title = title
+            if draft_source:  # Kaynağı güncelle
+                existing.draft_source = draft_source
             existing.updated_at = timezone.now()
             existing.save()
         else:
@@ -76,6 +79,7 @@ def kenarda_save(request):
                 answer=answer,
                 title=title if (not question and not answer) else None,  # Sadece yeni başlık için title
                 content=content,
+                draft_source=draft_source,
                 is_sent=False
             )
         return JsonResponse({"status": "ok"})

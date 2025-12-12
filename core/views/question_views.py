@@ -402,6 +402,19 @@ def add_question_from_search(request):
     all_questions = get_today_questions_queryset()
     query = request.GET.get('q', '').strip()
 
+    # Taslak yükleme (draft_id parametresi varsa)
+    draft_content = None
+    draft_id = request.GET.get('draft_id')
+    if draft_id:
+        try:
+            taslak = Kenarda.objects.get(pk=draft_id, user=request.user)
+            draft_content = taslak.content
+            # Query yoksa, taslak başlığından al
+            if not query and taslak.title:
+                query = taslak.title
+        except Kenarda.DoesNotExist:
+            pass
+
     if request.method == 'POST':
         answer_form = AnswerForm(request.POST)
         if answer_form.is_valid():
@@ -449,6 +462,7 @@ def add_question_from_search(request):
         'answer_form': answer_form,
         'all_questions': all_questions,
         'user_definitions': user_definitions,
+        'draft_content': draft_content,
     })
 
 

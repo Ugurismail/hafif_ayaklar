@@ -13,40 +13,40 @@ function showToast(message, type = 'info', duration = 4000) {
     // Create unique ID for this toast
     const toastId = 'toast-' + Date.now();
 
-    // Determine icon and color based on type
-    let icon, bgClass, textClass;
+    // Determine icon and theme class based on type
+    let icon, themeClass, closeButtonClass;
     switch(type) {
         case 'success':
             icon = 'bi-check-circle-fill';
-            bgClass = 'bg-success';
-            textClass = 'text-white';
+            themeClass = 'toast-theme-success';
+            closeButtonClass = 'btn-close';
             break;
         case 'error':
             icon = 'bi-x-circle-fill';
-            bgClass = 'bg-danger';
-            textClass = 'text-white';
+            themeClass = 'toast-theme-error';
+            closeButtonClass = 'btn-close';
             break;
         case 'warning':
             icon = 'bi-exclamation-triangle-fill';
-            bgClass = 'bg-warning';
-            textClass = 'text-dark';
+            themeClass = 'toast-theme-warning';
+            closeButtonClass = 'btn-close';
             break;
         case 'info':
         default:
             icon = 'bi-info-circle-fill';
-            bgClass = 'bg-info';
-            textClass = 'text-white';
+            themeClass = 'toast-theme-info';
+            closeButtonClass = 'btn-close';
     }
 
-    // Create toast element
+    // Create toast element with theme classes
     const toastHtml = `
-        <div id="${toastId}" class="toast align-items-center ${bgClass} ${textClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div id="${toastId}" class="toast align-items-center ${themeClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body">
-                    <i class="bi ${icon} me-2"></i>
+                    <i class="bi ${icon} me-2 toast-icon"></i>
                     ${message}
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="${closeButtonClass} me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
     `;

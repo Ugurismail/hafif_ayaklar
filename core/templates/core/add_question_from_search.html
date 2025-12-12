@@ -227,7 +227,7 @@
 {% block extra_js %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-      // Sadece "auto-expand" sınıfına sahip textarea’ları seçiyoruz
+      // Sadece "auto-expand" sınıfına sahip textarea'ları seçiyoruz
       var textarea = document.querySelector('textarea.auto-expand');
       if (textarea) {
           // İlk odaklanmada 'expanded' sınıfını ekle
@@ -235,6 +235,15 @@
               this.classList.add('expanded');
           });
       }
+
+      // Taslak yükleme (draft_content varsa)
+      {% if draft_content %}
+      const answerTextarea = document.getElementById('id_answer_text') || document.querySelector('textarea[name="answer_text"]');
+      if (answerTextarea) {
+          answerTextarea.value = "{{ draft_content|escapejs }}";
+          answerTextarea.focus();
+      }
+      {% endif %}
   });
 </script>
 <script>
@@ -340,7 +349,8 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
         body: JSON.stringify({
             title: questionText,
             content: answerText,
-            question_id: null  // Yeni başlık için question_id yok
+            question_id: null,  // Yeni başlık için question_id yok
+            draft_source: 'question_from_search'  // Aramadan soru olarak işaretle
         })
     })
     .then(r => r.json())

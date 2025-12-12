@@ -376,7 +376,8 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
         },
         body: JSON.stringify({
             answer_id: {{ answer.id }},  // Var olan yanıtın ID'si
-            content: answerText
+            content: answerText,
+            draft_source: 'answer_edit'  // Yanıt düzenleme olarak işaretle
         })
     })
     .then(r => r.json())

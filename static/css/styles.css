@@ -32,6 +32,20 @@
     --pagination-text-color: #333;
     --body-font-family: "EB Garamond", serif;
     --yanit-card-background-color: #f9f9f9;
+
+    /* Toast notification colors */
+    --toast-success-bg: #d4edda;
+    --toast-success-border: #c3e6cb;
+    --toast-success-text: #155724;
+    --toast-error-bg: #f8d7da;
+    --toast-error-border: #f5c6cb;
+    --toast-error-text: #721c24;
+    --toast-warning-bg: #fff3cd;
+    --toast-warning-border: #ffeaa7;
+    --toast-warning-text: #856404;
+    --toast-info-bg: #d1ecf1;
+    --toast-info-border: #bee5eb;
+    --toast-info-text: #0c5460;
 }
 
 /* General Styles */
@@ -1265,4 +1279,45 @@ a.hashtag-link:hover {
 
 .bibliography-section .collapse {
     transition: height 0.3s ease;
+}
+
+/* Toast Notification Styles with Theme Colors */
+.toast-theme-success {
+    background-color: var(--toast-success-bg) !important;
+    border-left: 4px solid var(--toast-success-border) !important;
+    color: var(--toast-success-text) !important;
+}
+
+.toast-theme-success .toast-icon {
+    color: var(--toast-success-text) !important;
+}
+
+.toast-theme-error {
+    background-color: var(--toast-error-bg) !important;
+    border-left: 4px solid var(--toast-error-border) !important;
+    color: var(--toast-error-text) !important;
+}
+
+.toast-theme-error .toast-icon {
+    color: var(--toast-error-text) !important;
+}
+
+.toast-theme-warning {
+    background-color: var(--toast-warning-bg) !important;
+    border-left: 4px solid var(--toast-warning-border) !important;
+    color: var(--toast-warning-text) !important;
+}
+
+.toast-theme-warning .toast-icon {
+    color: var(--toast-warning-text) !important;
+}
+
+.toast-theme-info {
+    background-color: var(--toast-info-bg) !important;
+    border-left: 4px solid var(--toast-info-border) !important;
+    color: var(--toast-info-text) !important;
+}
+
+.toast-theme-info .toast-icon {
+    color: var(--toast-info-text) !important;
 }

@@ -429,11 +429,18 @@ class IATResult(models.Model):
 
 
 class Kenarda(models.Model):
+    DRAFT_SOURCE_CHOICES = [
+        ('starting_question', 'Başlangıç Sorusu'),
+        ('question_from_search', 'Aramadan Soru'),
+        ('answer_edit', 'Yanıt Düzenleme'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="kenardalar")
     question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, blank=True, related_name="kenarda_taslaklar")
     answer = models.ForeignKey('Answer', on_delete=models.CASCADE, null=True, blank=True, related_name="kenarda_edits")  # Var olan yanıtın düzenleme taslağı
     title = models.CharField(max_length=200, blank=True, null=True)
     content = models.TextField()
+    draft_source = models.CharField(max_length=30, choices=DRAFT_SOURCE_CHOICES, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_sent = models.BooleanField(default=False)

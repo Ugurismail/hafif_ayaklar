@@ -378,7 +378,8 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
         body: JSON.stringify({
             title: questionText,
             content: answerText,
-            question_id: null  // Yeni başlık için question_id yok
+            question_id: null,  // Yeni başlık için question_id yok
+            draft_source: 'starting_question'  // Başlangıç sorusu olarak işaretle
         })
     })
     .then(r => r.json())
