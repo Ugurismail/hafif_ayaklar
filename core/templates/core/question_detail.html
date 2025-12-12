@@ -382,19 +382,11 @@
                         <span class="save-count icon-number">{{ answer_save_dict|get_item:answer.id|default:"0" }}</span>
 
                         {% if answer.user == request.user %}
-                        {% if answer.user == request.user %}
-                          {% if answer.definition %}
-                              <a href="{% url 'edit_definition' answer.definition.id %}?tab=tanimlar" class="ms-2" title="Tanımı Düzenle">
-                                  <i class="bi bi-pencil-square "></i>
-                              </a>
-                          {% else %}
                               <a href="{% url 'edit_answer' answer.id %}" class="ms-2" title="Yanıtı Düzenle">
                                   <i class="bi bi-pencil-square "></i>
                               </a>
-                          {% endif %}
-                      {% endif %}
                           <a href="#" class="ms-2 delete-answer-btn"
-                            data-answer-id="{{ answer.id }}" 
+                            data-answer-id="{{ answer.id }}"
                             data-delete-url="{% url 'delete_answer' answer.id %}?next={{ request.path|urlencode }}"
                             title="Sil" data-bs-toggle="modal" data-bs-target="#deleteAnswerModal">
                             <i class="bi bi-trash "></i>

@@ -334,13 +334,13 @@ var referenceModalElem = document.getElementById('referenceModal');
       // Eğer questionSlug yoksa (yeni soru oluşturma), tanım metnini doğrudan ekle
       if (!questionSlug) {
         // Yeni soru oluşturma sayfasında - tanım metnini imlecin bulunduğu yere ekle
-        var start = answerTextarea.selectionStart;
-        var end = answerTextarea.selectionEnd;
-        var before = answerTextarea.value.substring(0, start);
-        var after = answerTextarea.value.substring(end);
+        // Eğer metin seçiliyse, seçimin sonuna ekle (seçili metni koruyoruz)
+        var insertPos = Math.max(answerTextarea.selectionStart, answerTextarea.selectionEnd);
+        var before = answerTextarea.value.substring(0, insertPos);
+        var after = answerTextarea.value.substring(insertPos);
 
         answerTextarea.value = before + definitionText + after;
-        answerTextarea.selectionStart = answerTextarea.selectionEnd = start + definitionText.length;
+        answerTextarea.selectionStart = answerTextarea.selectionEnd = insertPos + definitionText.length;
         answerTextarea.focus({ preventScroll: true });
 
         // Hidden input'a da ekle - backend'de Definition kaydı oluşturmak için
@@ -375,13 +375,13 @@ var referenceModalElem = document.getElementById('referenceModal');
       .then(data => {
          if (data.status === 'success') {
            // İmlecin bulunduğu konuma tanım metnini ekle (format değil)
-           var start = answerTextarea.selectionStart;
-           var end = answerTextarea.selectionEnd;
-           var before = answerTextarea.value.substring(0, start);
-           var after = answerTextarea.value.substring(end);
+           // Eğer metin seçiliyse, seçimin sonuna ekle (seçili metni koruyoruz)
+           var insertPos = Math.max(answerTextarea.selectionStart, answerTextarea.selectionEnd);
+           var before = answerTextarea.value.substring(0, insertPos);
+           var after = answerTextarea.value.substring(insertPos);
 
            answerTextarea.value = before + definitionText + after;
-           answerTextarea.selectionStart = answerTextarea.selectionEnd = start + definitionText.length;
+           answerTextarea.selectionStart = answerTextarea.selectionEnd = insertPos + definitionText.length;
            answerTextarea.focus({ preventScroll: true });
 
            // Modal'ı kapat
