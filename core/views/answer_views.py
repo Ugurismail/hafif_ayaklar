@@ -85,23 +85,20 @@ def add_answer(request, slug):
                 # select_for_update ile question'ı kilitle
                 question = Question.objects.select_for_update().get(slug=slug)
 
-                # Şimdi güvenli şekilde kontrol et
-                is_first_answer = not question.answers.exists()
-
                 answer = form.save(commit=False)
                 answer.question = question
                 answer.user = request.user
                 answer.save()
 
-                # Eğer tanım girilmişse ve bu ilk girdiyse, Definition oluştur
+                # Eğer tanım girilmişse, Definition oluştur (herhangi bir entry'de olabilir)
                 definition_text = request.POST.get('definition_text', '').strip()
-                if definition_text and is_first_answer:
+                if definition_text:
                     from ..models import Definition
                     Definition.objects.create(
                         user=request.user,
                         question=question,
                         definition_text=definition_text,
-                        answer=answer
+                        answer=None  # Tanım metnin içinde gömülü, ayrı bir answer değil
                     )
 
             # Transaction dışında mention bildirimleri gönder (daha hızlı)
@@ -120,8 +117,7 @@ def add_answer(request, slug):
 
     return render(request, 'core/add_answer.html', {
         'form': form,
-        'question': question,
-        'is_first_answer': is_first_answer
+        'question': question
     })
 
 

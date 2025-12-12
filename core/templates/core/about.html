@@ -65,33 +65,59 @@
     </div>
 
     <!-- 2) KURALLAR -->
-    <div class="tab-pane fade p-3" 
-         id="kurallar" 
+    <div class="tab-pane fade p-3"
+         id="kurallar"
          role="tabpanel"
          aria-labelledby="kurallar-tab">
       <h2>Kurallar</h2>
       <ol type="I">
         <li>
-          <p>Tek satır ile boşluk bırakılmaz, yeni paragrafa geçmek için iki kere enter tuşuna basınız</p>
+          <p><strong>Paragraf Oluşturma:</strong> Tek satır ile boşluk bırakılmaz, yeni paragrafa geçmek için iki kere enter tuşuna basınız.</p>
         </li>
+
         <li>
-          <p>Başlık/Sorunun ilk entrisi tanım olamaz.</p>
+          <p><strong>Metin Formatlama:</strong></p>
+          <ul>
+            <li><code>`metin`</code> şeklinde yazdığınız her şey kırmızı renkli görünür. Örnek: `Kırmızı renkli görüneceğim.`</li>
+            <li><code>*metin*</code> şeklinde yazdığınız her şey italik olur. Örnek: *italik görüneceğim*</li>
+            <li><code>**metin**</code> şeklinde yazdığınız her şey kalın olur. Örnek: **Kalın görüneceğim**</li>
+            <li>Cümleden/paragraftan sonra bir boşluk bırakıp (iki kere enter) <code>---</code> koyarsanız cümlenizin altına bir çizgi eklenir.</li>
+            <li>Bir cümlenin altına boşluk bırakmadan <code>---</code> koyarsanız cümle başlık haline gelir.</li>
+            <li><code>#</code> İşareti ile başlarsanız ardından yazdıklarınız büyük başlık olur. <code>##</code> ikinci büyük başlık, <code>###</code> üçüncü büyük başlık şeklinde daha küçük başlıklar oluşturabilirsiniz.</li>
+          </ul>
         </li>
+
         <li>
-          <p>Yazı alaında  ` ` içine yazdığınız her şey kırmızı renkli olur. `Kırmızı renkli görüneceğim.` </p>
-          <p>Yazı alaında  * * içine yazdığınız her şey italik olur. *italik görüneceğim* </p>
-          <p>Yazı alaında ** ** içine yazdığınız her şey kalın olur.  **Kalın görüneceğim**</p>
-          <p>Cümleden/paragraftan sonra aşağıya doğru bir boşluk bırakıp(iki kere enter tuşuna basarak) --- koyarsanız cümlenizin altına bir çizgi eklenir.</p>
-          <p>Bir cümlenin altına boşluk bırakmadan --- koyarsanız cümle başlık haline gelir.</p>
-          <p># İşareti ile başlarsanız ardından yazdıklarınız büyük başlık olur.
-             ##ikinci büyük başlık, ###Üçüncü büyük başlık, ####dördüncü büyük başlık,#####beşinci büyük başlık şeklinde kullanarak daha ufak başlıklara ulaşabilirsiniz. </p>
+          <p><strong>Gizli Metin (Spoiler):</strong> <code>-g- metin -g-</code> formatını kullanarak gizli metin oluşturabilirsiniz. Gizli metin <strong>*</strong> işareti olarak görünür ve üzerine gelindiğinde içerik gösterilir. Örnek: -g- Bu metin gizli olacak -g-</p>
+          <p class="text-muted small">Not: Eski format (<code>--gizli--metin--gizli--</code>) hala desteklenmektedir.</p>
         </li>
+
         <li>
-          <p>Başlıkları silemezsiniz. Düşünce zincirine eklerseniz kaldıramazsınız.</p>
+          <p><strong>Referans ve Bağlantılar:</strong></p>
+          <ul>
+            <li>Başlıklar arası referans vermek için <code>(bkz: başlık adı)</code> formatını kullanabilirsiniz.</li>
+            <li>Dış bağlantılar için araç çubuğundaki "Link Ekle" butonunu kullanabilirsiniz.</li>
+            <li>Kaynak eklemek için araç çubuğundaki "Kaynak" butonunu kullanabilirsiniz.</li>
+          </ul>
         </li>
-        <li>Verilen oylar değiştirilemez.</li>
+
+        <li>
+          <p><strong>Tanım Oluşturma:</strong> Yanıt yazarken araç çubuğundaki "Tanım" butonunu kullanarak kelime tanımları oluşturabilirsiniz. Tanımlar maksimum 1000 karakter olabilir.</p>
+        </li>
+
+        <li>
+          <p><strong>Taslak (Kenarda Dursun):</strong> Yanıt yazarken "Kenarda Dursun" butonunu kullanarak taslaklarınızı kaydedebilirsiniz. Taslaklarınıza profilinizden ulaşabilirsiniz.</p>
+        </li>
+
+        <li>
+          <p><strong>Başlık Silme:</strong> Kendi oluşturduğunuz başlıkları silebilirsiniz. Ancak başkalarının yanıt eklediği başlıklar sadece sizin için kaldırılır, tamamen silinmez.</p>
+        </li>
+
+        <li>
+          <p><strong>Oy Verme:</strong> Verdiğiniz oyları değiştirebilir veya geri alabilirsiniz. Aynı oy butonuna tekrar tıklayarak oyunuzu geri alabilir, farklı oya tıklayarak değiştirebilirsiniz.</p>
+        </li>
       </ol>
-      
+
     </div>
 
     <!-- 3) İLETİŞİM -->

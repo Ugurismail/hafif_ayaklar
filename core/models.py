@@ -353,7 +353,10 @@ class Definition(models.Model):
     answer = models.OneToOneField('Answer', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.question.question_text} / {self.user.username}"
+        try:
+            return f"{self.question.question_text} / {self.user.username}"
+        except Question.DoesNotExist:
+            return f"Tanım #{self.id} (Soru silinmiş)"
     
 class Reference(models.Model):
     author_surname = models.CharField(max_length=100, verbose_name="Yazar Soyadı")

@@ -339,9 +339,8 @@ def extract_bibliography(text):
 @register.filter
 def spoiler_link(text):
     """
-    --gizli--text--gizli-- formatını * işaretine çevirir, hover'da içeriği gösterir
+    -g- text -g- veya --gizli--text--gizli-- formatını * işaretine çevirir, hover'da içeriği gösterir
     """
-    pattern = r'--gizli--(.*?)--gizli--'
     def replace(match):
         hidden_text = match.group(1).strip()
         # HTML encode to prevent XSS
@@ -349,4 +348,12 @@ def spoiler_link(text):
         escaped_text = escape(hidden_text)
         return f'<span class="spoiler-text" data-bs-toggle="tooltip" data-bs-html="true" title="{escaped_text}">*</span>'
 
-    return mark_safe(re.sub(pattern, replace, text, flags=re.DOTALL))
+    # Yeni kısa format: -g- text -g-
+    pattern_new = r'-g-\s+(.*?)\s+-g-'
+    text = re.sub(pattern_new, replace, text, flags=re.DOTALL)
+
+    # Eski format için backward compatibility: --gizli--text--gizli--
+    pattern_old = r'--gizli--(.*?)--gizli--'
+    text = re.sub(pattern_old, replace, text, flags=re.DOTALL)
+
+    return mark_safe(text)

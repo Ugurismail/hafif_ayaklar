@@ -78,7 +78,7 @@
                 <input type="hidden" name="definition_text" id="hiddenDefinitionText" value="">
                 <input type="hidden" id="search_query" value="{{ query }}">
 
-                <button type="button" class="btn btn-theme-primary mt-2" onclick="submitFormWithDefinition()">Yanıtı Gönder</button>
+                <button type="submit" class="btn btn-theme-primary mt-2">Yanıtı Gönder</button>
                 <button type="button" class="btn btn-theme-secondary mt-2 ms-2" id="kenarda-dursun-btn">Kenarda Dursun</button>
             </form>
         </div>
@@ -251,46 +251,6 @@
 <script src="{% static 'js/answer_form.js' %}"></script>
 <script src="{% static 'js/vote_save.js' %}"></script>
 
-<script>
-function submitFormWithDefinition() {
-    console.log('submitFormWithDefinition çağrıldı');
-
-    const answerTextarea = document.getElementById('id_answer_text') ||
-                          document.querySelector('textarea[name="answer_text"]');
-    const hiddenDefinitionInput = document.getElementById('hiddenDefinitionText');
-    const form = document.getElementById('questionForm');
-
-    console.log('Answer textarea:', answerTextarea);
-    console.log('Definition input:', hiddenDefinitionInput);
-    console.log('Form:', form);
-
-    const answerText = answerTextarea ? answerTextarea.value.trim() : '';
-    const definitionText = hiddenDefinitionInput ? hiddenDefinitionInput.value.trim() : '';
-
-    console.log('Answer text:', answerText);
-    console.log('Definition text:', definitionText);
-
-    // Eğer tanım var ama yanıt yoksa, tanımı yanıt alanına kopyala
-    if (definitionText && !answerText) {
-        console.log('Tanımı yanıt alanına kopyalıyorum...');
-        answerTextarea.value = definitionText;
-    }
-
-    // Eğer ikisi de boşsa, uyarı ver
-    if (!definitionText && !answerText) {
-        if (typeof showToast === 'function') {
-            showToast('Lütfen en az bir tanım veya yanıt girin.', 'warning');
-        } else {
-            alert('Lütfen en az bir tanım veya yanıt girin.');
-        }
-        return false;
-    }
-
-    // Formu gönder
-    console.log('Form gönderiliyor...');
-    form.submit();
-}
-</script>
 
 <!-- Geri Kalan (Okuma, Paylaş vs.) -->
 <script>

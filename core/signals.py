@@ -25,8 +25,12 @@ def cleanup_question_relationships_on_answer_delete(sender, instance, **kwargs):
     3. question.users'dan kullanıcıyı çıkar
     4. Eğer bu sorunun hiç entry'si kalmadıysa, soruyu da sil
     """
-    question = instance.question
-    user = instance.user
+    try:
+        question = instance.question
+        user = instance.user
+    except Question.DoesNotExist:
+        # Question zaten silinmiş (CASCADE delete), cleanup yapılmasına gerek yok
+        return
 
     # Bu kullanıcının bu soruda başka entry'si var mı?
     has_other_entries = Answer.objects.filter(question=question, user=user).exists()

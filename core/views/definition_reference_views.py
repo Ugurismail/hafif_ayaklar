@@ -40,20 +40,13 @@ def create_definition(request, slug):
             definition_obj = form.save(commit=False)
             definition_obj.user = request.user
             definition_obj.question = question
-            definition_obj.save()
-
-            # TANIMI AYNI ZAMANDA ANSWER OLARAK DA KAYDET
-            answer_obj = Answer.objects.create(
-                question=question,
-                user=request.user,
-                answer_text=definition_obj.definition_text
-            )
-            # Oluşturulan answer'ı tanıma bağlayın
-            definition_obj.answer = answer_obj
+            # answer alanını boş bırak - tanım metnin içinde (tanim:...) olarak kullanılacak
+            definition_obj.answer = None
             definition_obj.save()
 
             return JsonResponse({
                 'status': 'success',
+                'definition_id': definition_obj.id,
                 'definition_text': definition_obj.definition_text,
                 'question_text': question.question_text
             }, status=200)

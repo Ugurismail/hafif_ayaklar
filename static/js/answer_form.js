@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
           var before = textarea.value.substring(0, start);
           var after = textarea.value.substring(end);
-          var spoilerText = '--gizli--' + selectedText + '--gizli--';
+          var spoilerText = '-g- ' + selectedText + ' -g-';
 
           textarea.value = before + spoilerText + after;
           textarea.selectionStart = start;
@@ -310,69 +310,90 @@ var referenceModalElem = document.getElementById('referenceModal');
   if (createDefinitionForm) {
     createDefinitionForm.addEventListener('submit', function(e) {
       e.preventDefault();
-      var definitionText = document.getElementById('definitionText').value;
+      var definitionText = document.getElementById('definitionText').value.trim();
       var definitionModalElem = document.getElementById('definitionModal');
+
       if (!definitionModalElem) {
         showToast("Tanım modal bulunamadı.", 'error');
         return;
       }
-      var questionSlug = definitionModalElem.dataset.questionSlug;
 
-      // Eğer questionSlug yoksa (yeni soru oluşturma sayfasında),
-      // hidden input'a kaydet ve yanıt textarea'sına ekle
-      if (!questionSlug) {
-        var hiddenInput = document.getElementById('hiddenDefinitionText');
-        var answerTextarea = document.getElementById('id_answer_text') ||
-                            document.querySelector('textarea[name="answer_text"]');
-
-        if (hiddenInput) {
-          hiddenInput.value = definitionText;
-
-          // Yanıt textarea'sına da ekle
-          if (answerTextarea) {
-            var currentText = answerTextarea.value.trim();
-            if (currentText) {
-              // Eğer yanıt alanında metin varsa, tanımı başa ekle
-              answerTextarea.value = definitionText + '\n\n' + currentText;
-            } else {
-              // Yanıt alanı boşsa, sadece tanımı ekle
-              answerTextarea.value = definitionText;
-            }
-          }
-
-          let modalInstance = bootstrap.Modal.getInstance(definitionModalElem);
-          if (modalInstance) {
-            modalInstance.hide();
-          }
-          showToast("Tanım eklendi!", 'success');
-          document.getElementById('definitionText').value = "";
-          return;
-        }
+      if (!definitionText) {
+        showToast("Lütfen bir tanım girin.", 'warning');
+        return;
       }
 
-      // questionSlug varsa, mevcut tanım oluşturma API'sine gönder
+      var questionSlug = definitionModalElem.dataset.questionSlug;
+      var answerTextarea = document.getElementById('id_answer_text') || document.querySelector('textarea[name="answer_text"]');
+
+      if (!answerTextarea) {
+        showToast("Yanıt alanı bulunamadı!", 'error');
+        return;
+      }
+
+      // Eğer questionSlug yoksa (yeni soru oluşturma), tanım metnini doğrudan ekle
+      if (!questionSlug) {
+        // Yeni soru oluşturma sayfasında - tanım metnini imlecin bulunduğu yere ekle
+        var start = answerTextarea.selectionStart;
+        var end = answerTextarea.selectionEnd;
+        var before = answerTextarea.value.substring(0, start);
+        var after = answerTextarea.value.substring(end);
+
+        answerTextarea.value = before + definitionText + after;
+        answerTextarea.selectionStart = answerTextarea.selectionEnd = start + definitionText.length;
+        answerTextarea.focus({ preventScroll: true });
+
+        // Hidden input'a da ekle - backend'de Definition kaydı oluşturmak için
+        var hiddenDefInput = document.getElementById('hiddenDefinitionText');
+        if (hiddenDefInput) {
+          hiddenDefInput.value = definitionText;
+        }
+
+        // Modal'ı kapat
+        let modalInstance = bootstrap.Modal.getInstance(definitionModalElem);
+        if (modalInstance) {
+          modalInstance.hide();
+        }
+
+        document.getElementById('definitionText').value = "";
+        showToast("Tanım metni eklendi! Yanıtı gönderdikten sonra tanım oluşturulacak.", 'success');
+        return;
+      }
+
+      // Mevcut soru için tanım oluşturma API'sine gönder
       fetch(`/create-definition/${questionSlug}/`, {
         method: 'POST',
         headers: {
           'X-CSRFToken': getCookie('csrftoken'),
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ definition_text: definitionText })
+        body: JSON.stringify({
+          definition_text: definitionText
+        })
       })
       .then(res => res.json())
       .then(data => {
          if (data.status === 'success') {
-           showToast("Tanım kaydedildi!", 'success');
+           // İmlecin bulunduğu konuma tanım metnini ekle (format değil)
+           var start = answerTextarea.selectionStart;
+           var end = answerTextarea.selectionEnd;
+           var before = answerTextarea.value.substring(0, start);
+           var after = answerTextarea.value.substring(end);
+
+           answerTextarea.value = before + definitionText + after;
+           answerTextarea.selectionStart = answerTextarea.selectionEnd = start + definitionText.length;
+           answerTextarea.focus({ preventScroll: true });
+
            // Modal'ı kapat
            let modalInstance = bootstrap.Modal.getInstance(definitionModalElem);
            if (modalInstance) {
              modalInstance.hide();
            }
+
            document.getElementById('definitionText').value = "";
-           // Sayfayı yenile
-           setTimeout(() => location.reload(), 1000);
+           showToast("Tanım eklendi!", 'success');
          } else {
-           showToast("Hata oluştu: " + JSON.stringify(data.errors || data), 'error');
+           showToast("Hata oluştu: " + JSON.stringify(data.errors || data.error || data), 'error');
          }
       })
       .catch(err => {

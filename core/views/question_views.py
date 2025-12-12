@@ -743,10 +743,10 @@ def add_starting_question(request):
                     user=request.user,
                     question=question,
                     definition_text=definition_text,
-                    answer=answer
+                    answer=None  # Tanım metnin içinde gömülü
                 )
 
-            return redirect('user_homepage')
+            return redirect('question_detail', slug=question.slug)
     else:
         form = StartingQuestionForm()
 

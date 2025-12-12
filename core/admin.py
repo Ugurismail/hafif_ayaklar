@@ -262,7 +262,10 @@ class DefinitionAdmin(admin.ModelAdmin):
     list_filter = ['created_at', 'user']
 
     def get_answer(self, obj):
-        return obj.answer.answer_text if obj.answer else '-'
+        try:
+            return obj.answer.answer_text if obj.answer else '-'
+        except Answer.DoesNotExist:
+            return '-'
     get_answer.short_description = 'Yanıt'
 
 

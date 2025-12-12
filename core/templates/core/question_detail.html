@@ -130,8 +130,8 @@
             <div class="d-flex justify-content-between align-items-center mb-2">
               
               <h1 class="h1 mb-0">
-                {{ question.question_text }}
-              
+                <a href="{% url 'question_detail' question.slug %}" class="text-decoration-none" style="color: inherit;">{{ question.question_text }}</a>
+
                 {# Haritada Gör butonu (mevcut özelliğin değişmedi) #}
                 {% if is_on_map %}
                   <a href="{% url 'question_map' %}?question_id={{ question.id }}" 
@@ -749,8 +749,6 @@
                                   </div>
                               </li>
                           {% endfor %}
-                      {% else %}
-                          <li class="list-group-item btn-theme-secondary">Bu sorunun henüz alt sorusu yok.</li>
                       {% endif %}
                   </ul>
               </div>
