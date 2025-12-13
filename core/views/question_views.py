@@ -820,6 +820,13 @@ def add_existing_subquestion(request, slug):
         if would_create_cycle_user_based(parent_question, current_question, request.user):
             return JsonResponse({'success': False, 'error': 'Bu bağlantı döngüsel bir ilişki oluşturacak'}, status=400)
 
+        # İki başlangıç sorusu birbirine eklenemez kontrolü
+        parent_is_starting = StartingQuestion.objects.filter(question=parent_question, user=request.user).exists()
+        child_is_starting = StartingQuestion.objects.filter(question=current_question, user=request.user).exists()
+
+        if parent_is_starting and child_is_starting:
+            return JsonResponse({'success': False, 'error': 'İki başlangıç sorusu birbirine eklenemez'}, status=400)
+
         # Kullanıcı-bazlı bağlantıyı ekle: parent_question -> current_question
         QuestionRelationship.objects.create(
             parent=parent_question,
@@ -979,12 +986,26 @@ def unlink_from_parent(request, slug, parent_id):
 
     if user_parent_count == 0:
         # Eğer zaten StartingQuestion değilse ekle
-        if not StartingQuestion.objects.filter(question=current_question).exists():
-            # Question'ın sahibi tarafından starting question olarak ekle
+        if not StartingQuestion.objects.filter(question=current_question, user=request.user).exists():
+            # Bağlantıyı koparan kullanıcı için starting question olarak ekle
             StartingQuestion.objects.create(
-                user=current_question.user,
+                user=request.user,
                 question=current_question
             )
+
+    # Parent kontrolü: Bu kullanıcı için parent'ın başka child'ı var mı?
+    parent_children_count = QuestionRelationship.objects.filter(
+        parent=parent_question,
+        user=request.user
+    ).count()
+
+    if parent_children_count == 0:
+        # Parent'ın artık hiç child'ı yok (bu kullanıcı için)
+        # Parent'ın StartingQuestion kaydını sil (ilişki kaydı, Question nesnesi değil)
+        StartingQuestion.objects.filter(
+            question=parent_question,
+            user=request.user
+        ).delete()
 
     return JsonResponse({
         'success': True,
