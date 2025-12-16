@@ -48,7 +48,7 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+<link rel="stylesheet" href="{% static 'css/profile.css' %}?v={% now 'U' %}">
 {% endblock %}
 
 {% block content %}

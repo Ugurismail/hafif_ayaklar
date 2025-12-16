@@ -25,7 +25,7 @@ html {
 }
 
 .profile-photo-wrapper:hover img {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 20px var(--shadow-color);
 }
 
 /* Follower/Following badges */
@@ -38,14 +38,18 @@ html {
 .stat-badge {
     padding: 0.4rem 0.8rem;
     border-radius: 20px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--content-background-color) 85%, var(--background-color)) 0%,
+        color-mix(in srgb, var(--content-background-color) 70%, var(--background-color)) 100%
+    );
     transition: all 0.3s ease;
     display: inline-block;
 }
 
 .stat-badge:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 /* ========== Button Enhancements ========== */
@@ -63,7 +67,7 @@ html {
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
+    background: color-mix(in srgb, var(--button-text-color) 10%, transparent);
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
 }
@@ -75,7 +79,7 @@ html {
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 .btn:active {
@@ -84,7 +88,7 @@ html {
 
 /* ========== Tab Navigation Enhancements ========== */
 .nav-tabs {
-    border-bottom: 2px solid #e9ecef;
+    border-bottom: 2px solid var(--border-color);
 }
 
 .nav-tabs .nav-link {
@@ -102,7 +106,7 @@ html {
     left: 50%;
     width: 0;
     height: 3px;
-    background: linear-gradient(90deg, #6E8CA7 0%, #4E647E 100%);
+    background: linear-gradient(90deg, var(--button-background-color) 0%, var(--link-hover-color) 100%);
     transform: translateX(-50%);
     transition: width 0.3s ease;
     border-radius: 3px 3px 0 0;
@@ -118,7 +122,7 @@ html {
 
 .nav-tabs .nav-link.active {
     font-weight: 600;
-    color: #000;
+    color: var(--text-color);
 }
 
 /* Tab content fade-in */
@@ -145,7 +149,7 @@ html {
 
 .card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 24px var(--shadow-color);
 }
 
 .card-header {
@@ -159,8 +163,8 @@ html {
 
 /* ========== Pinned Entry Enhancement ========== */
 .pinned-entry {
-    border-left: 4px solid #6E8CA7;
-    background: linear-gradient(to right, rgba(110, 140, 167, 0.03), transparent);
+    border-left: 4px solid var(--button-background-color);
+    background: linear-gradient(to right, color-mix(in srgb, var(--button-background-color) 3%, transparent), transparent);
 }
 
 /* ========== Entry Cards (Girdiler) ========== */
@@ -171,8 +175,8 @@ html {
 
 .answer-card:hover {
     border-left-color: var(--button-background-color);
-    background-color: var(--hover-background-color, rgba(0, 0, 0, 0.02));
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    background-color: var(--hover-background-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
 }
 
 /* ========== Statistics Section ========== */
@@ -185,28 +189,32 @@ html {
 
 .stat-card {
     padding: 1.5rem;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    background: linear-gradient(
+        135deg,
+        var(--content-background-color) 0%,
+        color-mix(in srgb, var(--content-background-color) 85%, var(--background-color)) 100%
+    );
     border-radius: 12px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--border-color);
     transition: all 0.3s ease;
 }
 
 .stat-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px var(--shadow-color);
     border-color: var(--button-background-color);
 }
 
 .stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: #6E8CA7;
+    color: var(--link-color);
     margin-bottom: 0.5rem;
 }
 
 .stat-label {
     font-size: 0.9rem;
-    color: #6c757d;
+    color: color-mix(in srgb, var(--text-color) 65%, transparent);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -220,7 +228,7 @@ html {
 .word-list li {
     padding: 0.75rem 1rem;
     margin-bottom: 0.5rem;
-    background: #f8f9fa;
+    background: color-mix(in srgb, var(--content-background-color) 85%, var(--background-color));
     border-radius: 8px;
     transition: all 0.3s ease;
     display: flex;
@@ -229,9 +237,9 @@ html {
 }
 
 .word-list li:hover {
-    background: var(--hover-background-color, rgba(0, 0, 0, 0.03));
+    background: var(--hover-background-color);
     transform: translateX(8px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px var(--shadow-color);
 }
 
 .word-list li:hover,
@@ -240,8 +248,8 @@ html {
 }
 
 .word-count-badge {
-    background: #6E8CA7;
-    color: white;
+    background: var(--button-background-color);
+    color: var(--button-text-color);
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
     font-size: 0.85rem;
@@ -251,7 +259,7 @@ html {
 /* ========== Form Enhancements ========== */
 .form-control, .form-select {
     transition: all 0.3s ease;
-    border: 2px solid #e9ecef;
+    border: 2px solid var(--border-color);
 }
 
 .form-control:focus, .form-select:focus {
@@ -271,7 +279,7 @@ html {
 }
 
 .search-input-wrapper input:focus {
-    box-shadow: 0 4px 12px rgba(110, 140, 167, 0.15);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--button-background-color) 25%, transparent);
 }
 
 /* ========== Table Enhancements ========== */
@@ -285,7 +293,7 @@ html {
 }
 
 .custom-table tbody tr:hover {
-    background-color: var(--hover-background-color, rgba(0, 0, 0, 0.02));
+    background-color: var(--hover-background-color);
     transform: scale(1.01);
 }
 
@@ -301,7 +309,7 @@ html {
 
 .badge:hover {
     transform: scale(1.05);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px var(--shadow-color);
 }
 
 /* ========== Excluded Words Badge ========== */
@@ -316,9 +324,9 @@ html {
 }
 
 .excluded-word-badge:hover {
-    background-color: #5a6268 !important;
+    background-color: var(--secondary-button-hover-background-color) !important;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 .excluded-word-badge a {
@@ -381,14 +389,14 @@ a:hover {
 
 .pagination .page-link:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 /* ========== Modal Enhancements ========== */
 .modal-content {
     border-radius: 16px;
     border: none;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 60px var(--shadow-color);
 }
 
 .modal-header {
@@ -427,7 +435,7 @@ a:hover {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(110, 140, 167, 0.02) 0%, transparent 100%);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--button-background-color) 2%, transparent) 0%, transparent 100%);
     pointer-events: none;
     border-radius: inherit;
 }
@@ -456,13 +464,13 @@ h4, h5, h6 {
 
 /* ========== Subtle Shadow Levels ========== */
 .shadow-subtle {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--text-color) 12%, transparent);
 }
 
 .shadow-medium {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--text-color) 18%, transparent);
 }
 
 .shadow-strong {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--text-color) 24%, transparent);
 }

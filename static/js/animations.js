@@ -106,7 +106,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========== ENHANCE FORM INTERACTIONS ==========
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
-        form.addEventListener('submit', function() {
+        form.addEventListener('submit', function(e) {
+            if (e.defaultPrevented) return;
+
             const submitBtn = form.querySelector('button[type="submit"]');
             if (submitBtn && !submitBtn.disabled) {
                 submitBtn.disabled = true;
@@ -115,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Re-enable after 3 seconds as fallback
                 setTimeout(() => {
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = submitBtn.dataset.originalText || 'Gönder';
+                    submitBtn.innerHTML = submitBtn.dataset.originalText || submitBtn.innerHTML || 'Gönder';
                 }, 3000);
             }
         });
@@ -232,18 +234,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ========== PREVENT DOUBLE SUBMIT ==========
-    let formSubmitted = false;
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', function(e) {
-            if (formSubmitted) {
+            if (e.defaultPrevented) return;
+
+            if (form.dataset.submitted === '1') {
                 e.preventDefault();
-                return false;
+                return;
             }
-            formSubmitted = true;
+
+            form.dataset.submitted = '1';
 
             // Reset after 3 seconds
             setTimeout(() => {
-                formSubmitted = false;
+                delete form.dataset.submitted;
             }, 3000);
         });
     });

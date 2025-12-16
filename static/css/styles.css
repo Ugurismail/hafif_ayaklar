@@ -1,70 +1,74 @@
 :root {
-    --secondary-button-background-color: #6c757d;
-    --secondary-button-hover-background-color: #495057;
-    --secondary-button-text-color: #fff;
+    /* Defaults use system colors; authenticated users override via :root in base.html */
+    --secondary-button-background-color: color-mix(in srgb, CanvasText 18%, Canvas);
+    --secondary-button-hover-background-color: color-mix(in srgb, CanvasText 26%, Canvas);
+    --secondary-button-text-color: CanvasText;
     --font-size: 16px;
-    --message-bubble: #f1f5fa;
-    --tbas-color: #222;
-    --background-color: #F5F5F5;
-    --text-color: #000000;
-    --header-background-color: #F5F5F5;
-    --header-text-color: #333333;
-    --link-color: #6E8CA7;
-    --link-hover-color: #4E647E;
-    --button-background-color: #6E8CA7;
-    --button-hover-background-color: #4E647E;
-    --button-text-color: #ffffff;
-    --hover-background-color: #e9ecef;
-    --icon-color: #6c757d;
-    --icon-hover-color: #343a40;
-    --answer-background-color: #fff;
-    --content-background-color: #ffffff;
-    --tab-background-color: #e9ecef;
-    --tab-text-color: #495057;
-    --tab-active-background-color: #fff;
-    --tab-active-text-color: #495057;
-    --dropdown-text-color: #fff;
-    --dropdown-hover-background-color: #495057;
-    --dropdown-hover-text-color: #fff;
-    --nav-link-hover-color: #fff;
-    --nav-link-hover-bg: #d3e2f1;
-    --pagination-background-color: #f1f1f1;
-    --pagination-text-color: #333;
+    --message-bubble: color-mix(in srgb, Highlight 14%, Canvas);
+    --tbas-color: CanvasText;
+    --background-color: Canvas;
+    --text-color: CanvasText;
+    --header-background-color: Canvas;
+    --header-text-color: CanvasText;
+    --link-color: LinkText;
+    --link-hover-color: LinkText;
+    --button-background-color: Highlight;
+    --button-hover-background-color: color-mix(in srgb, Highlight 82%, CanvasText);
+    --button-text-color: HighlightText;
+    --hover-background-color: color-mix(in srgb, CanvasText 6%, Canvas);
+    --icon-color: color-mix(in srgb, CanvasText 70%, transparent);
+    --icon-hover-color: CanvasText;
+    --answer-background-color: Canvas;
+    --content-background-color: Canvas;
+    --tab-background-color: color-mix(in srgb, CanvasText 5%, Canvas);
+    --tab-text-color: CanvasText;
+    --tab-active-background-color: Canvas;
+    --tab-active-text-color: CanvasText;
+    --dropdown-text-color: CanvasText;
+    --dropdown-hover-background-color: var(--hover-background-color);
+    --dropdown-hover-text-color: CanvasText;
+    --nav-link-hover-color: var(--header-text-color);
+    --nav-link-hover-bg: var(--hover-background-color);
+    --pagination-background-color: var(--content-background-color);
+    --pagination-text-color: var(--text-color);
     --body-font-family: "EB Garamond", serif;
-    --yanit-card-background-color: #f9f9f9;
+    --yanit-card-background-color: var(--content-background-color);
+
+    --border-color: color-mix(in srgb, var(--text-color) 25%, transparent);
+    --shadow-color: color-mix(in srgb, var(--text-color) 18%, transparent);
 
     /* Toast notification colors */
-    --toast-success-bg: #d4edda;
-    --toast-success-border: #c3e6cb;
-    --toast-success-text: #155724;
-    --toast-error-bg: #f8d7da;
-    --toast-error-border: #f5c6cb;
-    --toast-error-text: #721c24;
-    --toast-warning-bg: #fff3cd;
-    --toast-warning-border: #ffeaa7;
-    --toast-warning-text: #856404;
-    --toast-info-bg: #d1ecf1;
-    --toast-info-border: #bee5eb;
-    --toast-info-text: #0c5460;
+    --toast-success-bg: var(--content-background-color);
+    --toast-success-border: var(--secondary-button-background-color);
+    --toast-success-text: var(--text-color);
+    --toast-error-bg: var(--content-background-color);
+    --toast-error-border: var(--button-background-color);
+    --toast-error-text: var(--text-color);
+    --toast-warning-bg: var(--content-background-color);
+    --toast-warning-border: var(--link-hover-color);
+    --toast-warning-text: var(--text-color);
+    --toast-info-bg: var(--content-background-color);
+    --toast-info-border: var(--link-color);
+    --toast-info-text: var(--text-color);
 }
 
 /* General Styles */
 body {
-    background-color: var(--background-color, #ffffff);
-    color: var(--text-color, #000000);
+    background-color: var(--background-color);
+    color: var(--text-color);
     padding-top: 70px; /* Adjust according to your navbar height */
-    font-family: var(--body-font-family, "EB Garamond"), serif;
-    font-size: var(--font-size, 16px) !important;
+    font-family: var(--body-font-family), serif;
+    font-size: var(--font-size) !important;
 }
 
 a {
-    color: var(--link-color, #007bff);
+    color: var(--link-color);
     text-decoration: none;
 }
 
 
 .tbas-color{
-    color: var(--tbas-color, #000000);
+    color: var(--tbas-color);
 }
 
 .tbas-color:hover{
@@ -77,70 +81,70 @@ a {
 }
 
 a:hover {
-    color: var(--link-hover-color, #0056b3);
+    color: var(--link-hover-color);
     text-decoration: underline;
 }
 
 /* Navbar Styles */
 .navbar {
     padding: 1rem 1rem;
-    background-color: var(--header-background-color, #343a40);
-    color: var(--header-text-color, #ffffff);
-    border-bottom: 1px solid #e0e0e0;
+    background-color: var(--header-background-color);
+    color: var(--header-text-color);
+    border-bottom: 1px solid var(--border-color);
     transition: padding 0.3s ease, background-color 0.3s ease;
 }
 
 .navbar .navbar-brand,
 .navbar .nav-link,
 .navbar .dropdown-toggle {
-    color: var(--header-text-color, #ffffff) !important;
+    color: var(--header-text-color) !important;
     text-decoration: none !important;
     transition: color 0.3s ease, background-color 0.3s ease;
 }
 
 .navbar .nav-link:hover,
 .navbar .dropdown-toggle:hover {
-    color: var(--nav-link-hover-color, #ffffff) !important;
+    color: var(--nav-link-hover-color) !important;
     background-color: var(--nav-link-hover-bg) !important;
 }
 
 .navbar .dropdown-menu {
-    background-color: var(--header-background-color, #343a40);
-    color: var(--dropdown-text-color, #ffffff);
+    background-color: var(--header-background-color);
+    color: var(--dropdown-text-color);
     border: none;
 }
 
 .navbar .dropdown-menu .dropdown-item {
-    color: var(--dropdown-text-color, #ffffff);
+    color: var(--dropdown-text-color);
 }
 
 .navbar .dropdown-menu .dropdown-item:hover {
-    background-color: var(--dropdown-hover-background-color, #495057);
-    color: var(--dropdown-hover-text-color, #ffffff);
+    background-color: var(--dropdown-hover-background-color);
+    color: var(--dropdown-hover-text-color);
 }
 
 /* Buttons */
 .btn-primary {
-    background-color: var(--button-background-color, #007bff);
-    border-color: var(--button-background-color, #007bff);
-    color: var(--button-text-color, #ffffff);
+    background-color: var(--button-background-color);
+    border-color: var(--button-background-color);
+    color: var(--button-text-color);
 }
 
 .btn-primary:hover {
-    background-color: var(--button-hover-background-color, #0056b3);
-    border-color: var(--button-hover-background-color, #0056b3);
-    color: var(--button-text-color, #ffffff);
+    background-color: var(--button-hover-background-color);
+    border-color: var(--button-hover-background-color);
+    color: var(--button-text-color);
 }
 
 .btn-secondary{
-    background-color: var(--secondary-button-background-color, #6c757d);
-    border-color: var(--secondary-button-background-color, #6c757d);
-    color: var(--secondary-button-text-color, #ffffff);
+    background-color: var(--secondary-button-background-color);
+    border-color: var(--secondary-button-background-color);
+    color: var(--secondary-button-text-color);
 }
 .btn-secondary:hover{
-    background-color: var(--secondary-button-hover-background-color, #495057);
-    border-color: var(--secondary-button-hover-background-color, #495057);
-    color: var(--secondary-button-text-color, #ffffff);
+    background-color: var(--secondary-button-hover-background-color);
+    border-color: var(--secondary-button-hover-background-color);
+    color: var(--secondary-button-text-color);
 }
 
 .modal-content{
@@ -152,7 +156,7 @@ a:hover {
 .answer,
 .random-item-card {
     background-color: var(--background-color);
-    color: var(--text-color, #000000);
+    color: var(--text-color);
     padding: 15px;
     margin-bottom: 15px;
     border-radius: 5px;
@@ -161,7 +165,7 @@ a:hover {
 
 .answer {
     padding: 10px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
     position: relative;
     z-index: 1; /* Base z-index for answers */
 }
@@ -171,8 +175,8 @@ a:hover {
 }
 
 mark{
-    background-color: var(--button-background-color, #FF9800) !important;
-    color: var(--button-text-color, #000) !important;
+    background-color: var(--button-background-color) !important;
+    color: var(--button-text-color) !important;
     opacity: 0.9;
 }
 
@@ -196,13 +200,13 @@ mark{
 
 /* Tabs */
 .nav-tabs .nav-link {
-    background-color: var(--tab-background-color, #e9ecef);
-    color: var(--tab-text-color, #495057);
+    background-color: var(--tab-background-color);
+    color: var(--tab-text-color);
 }
 
 .nav-tabs .nav-link.active {
-    background-color: var(--tab-active-background-color, #ffffff);
-    color: var(--tab-active-text-color, #495057);
+    background-color: var(--tab-active-background-color);
+    color: var(--tab-active-text-color);
 }
 
 /* List Group */
@@ -235,6 +239,33 @@ mark{
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+}
+
+/* Tema renkleri (pagination) */
+.custom-pagination .page-link,
+.custom-pagination .form-select {
+    background: var(--pagination-background-color) !important;
+    color: var(--pagination-text-color) !important;
+    border-color: var(--pagination-background-color) !important;
+}
+
+.custom-pagination .page-link:hover,
+.custom-pagination .page-link:focus {
+    background: var(--hover-background-color, var(--pagination-background-color)) !important;
+    color: var(--pagination-text-color) !important;
+    border-color: var(--hover-background-color, var(--pagination-background-color)) !important;
+}
+
+.custom-pagination .page-item.active .page-link {
+    background: var(--secondary-button-background-color, var(--pagination-text-color)) !important;
+    color: var(--secondary-button-text-color) !important;
+    border-color: var(--secondary-button-background-color, var(--pagination-text-color)) !important;
+}
+
+.custom-pagination .page-item.active .page-link:hover,
+.custom-pagination .page-item.active .page-link:focus {
+    background: var(--secondary-button-hover-background-color, var(--secondary-button-background-color, var(--pagination-text-color))) !important;
+    border-color: var(--secondary-button-hover-background-color, var(--secondary-button-background-color, var(--pagination-text-color))) !important;
 }
 
 /* Select için ekstra margin ve min-width ver */
@@ -308,7 +339,7 @@ textarea.auto-expand.expanded {
 /* Vote and Save Buttons */
 .vote-btn,
 .save-btn {
-    color: var(--icon-color, #6c757d) !important;
+    color: var(--icon-color) !important;
     background: none;
     border: none;
     padding: 0;
@@ -318,7 +349,7 @@ textarea.auto-expand.expanded {
 }
 
 .vote-btn2{
-    color: var(--icon-color, #6c757d) !important;
+    color: var(--icon-color) !important;
     background: none;
     border: none;
     padding: 0;
@@ -329,7 +360,7 @@ textarea.auto-expand.expanded {
 
 .vote-btn:hover,
 .save-btn:hover {
-    color: var(--icon-hover-color, #343a40) !important;
+    color: var(--icon-hover-color) !important;
 }
 
 .vote-btn i,
@@ -340,11 +371,11 @@ textarea.auto-expand.expanded {
 /* Icons */
 .bi-geo-alt-fill {
     font-size: 1.2em;
-    color: var(--icon-color, #6c757d);
+    color: var(--icon-color);
 }
 
 .bi-geo-alt-fill:hover {
-    color: var(--icon-hover-color, #343a40);
+    color: var(--icon-hover-color);
 }
 
 /* Badges */
@@ -353,7 +384,7 @@ textarea.auto-expand.expanded {
 }
 
 .badge {
-    color: blue;
+    color: var(--link-color);
 }
 
 /* Voted Buttons */
@@ -366,32 +397,32 @@ textarea.auto-expand.expanded {
 }
 
 .voted-up {
-    color: green !important;
+    color: var(--secondary-button-background-color) !important;
     transform: scale(1.2);
     text-shadow:
-        0 0 5px rgba(0, 255, 0, 0.7),
-        0 0 10px rgba(0, 255, 0, 0.6),
-        0 0 20px rgba(0, 255, 0, 0.5),
-        0 0 40px rgba(0, 255, 0, 0.4);
+        0 0 5px color-mix(in srgb, var(--secondary-button-background-color) 70%, transparent),
+        0 0 10px color-mix(in srgb, var(--secondary-button-background-color) 55%, transparent),
+        0 0 20px color-mix(in srgb, var(--secondary-button-background-color) 40%, transparent),
+        0 0 40px color-mix(in srgb, var(--secondary-button-background-color) 30%, transparent);
 }
 
 .voted-down {
-    color: red !important;
+    color: var(--button-background-color) !important;
     transform: scale(1.2);
     text-shadow:
-        0 0 5px rgba(255, 0, 0, 0.7),
-        0 0 10px rgba(255, 0, 0, 0.6),
-        0 0 20px rgba(255, 0, 0, 0.5),
-        0 0 40px rgba(255, 0, 0, 0.4);
+        0 0 5px color-mix(in srgb, var(--button-background-color) 70%, transparent),
+        0 0 10px color-mix(in srgb, var(--button-background-color) 55%, transparent),
+        0 0 20px color-mix(in srgb, var(--button-background-color) 40%, transparent),
+        0 0 40px color-mix(in srgb, var(--button-background-color) 30%, transparent);
 }
 
 .bi-chevron-up:hover,
 .bi-chevron-down:hover {
-    color: #555;
+    color: var(--icon-hover-color);
     transform: scale(1.1);
     text-shadow:
-        0 0 3px rgba(0, 0, 0, 0.5),
-        0 0 6px rgba(0, 0, 0, 0.4);
+        0 0 3px color-mix(in srgb, var(--text-color) 45%, transparent),
+        0 0 6px color-mix(in srgb, var(--text-color) 35%, transparent);
 }
 
 /* Dropdown Icons */
@@ -489,20 +520,20 @@ small:has(.dropdown.show) {
     z-index: 1000;
     max-height: 300px;
     overflow-y: auto;
-    background-color: var(--content-background-color, #f8f9fa);
+    background-color: var(--content-background-color);
     border: none;
 }
 
 /* Sadece sonuç varsa border göster */
 #search-results:not(:empty),
 #user-search-results:not(:empty) {
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
 }
 
 #navbarNav.show #search-results { display: block; }
 /* Message Notifications */
 .msg {
-    color: blue;
+    color: var(--link-color);
 }
 
 
@@ -549,7 +580,7 @@ small:has(.dropdown.show) {
     border-radius: 6px; /* Daha küçük radius ile balon daha kompakt */
     max-width: 80%; 
     padding: 6px 8px; /* Daha az padding, daha kompakt görünüm */
-    color: #000;
+    color: var(--text-color);
 
 }
 
@@ -562,35 +593,35 @@ small:has(.dropdown.show) {
 .received-message small {
     display: block;
     font-size: 0.7em;
-    color: #666;
+    color: color-mix(in srgb, var(--text-color) 65%, transparent);
     text-align: right;
     margin-top: 3px;
 }
 
 .no-messages {
     text-align: center;
-    color: #999;
+    color: color-mix(in srgb, var(--text-color) 55%, transparent);
     padding: 20px;
 }
 
 .message-input {
     resize: none;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     border-radius: 10px 0 0 10px;
     padding: 10px;
     height: 100px;
 }
 
 .send-btn {
-    border: 1px solid var(--button-background-color, #007bff);
+    border: 1px solid var(--button-background-color);
     border-left: none;
     border-radius: 0 10px 10px 0;
-    background-color: var(--button-background-color, #007bff);
-    color: var(--button-text-color, #ffffff);
+    background-color: var(--button-background-color);
+    color: var(--button-text-color);
 }
 
 .unread-conversation {
-    background-color: rgba(173, 216, 230, 0.3) !important;
+    background-color: color-mix(in srgb, var(--message-bubble) 85%, var(--content-background-color)) !important;
 }
 
 .baslik:hover{
@@ -613,8 +644,8 @@ small:has(.dropdown.show) {
 
 
 .list-group-item{
-    background-color: var(--background-color);
-    border-color: var(--text-color);
+    background-color: var(--content-background-color);
+    border-color: var(--border-color);
     color: var(--text-color);
 }
 
@@ -624,12 +655,12 @@ small:has(.dropdown.show) {
 
 .custom-table {
     background-color: var(--background-color); /* İçerik arka plan rengi (site ayarınız varsa CSS değişkeniyle) */
-    color: var(--text-color, #000000);            /* Metin rengi */
+    color: var(--text-color);            /* Metin rengi */
   }
   
   .custom-table thead th {
     background-color: var(--background-color);
-    color: var(--header-text-color, #333333);
+    color: var(--header-text-color);
   }
   
   /* Alternatif: Zebra şerit efekti yerine sitenizle uyumlu satır arka planı */
@@ -666,13 +697,13 @@ small:has(.dropdown.show) {
 }
 
 .icon-black-white{
-    color: #000;
+    color: var(--text-color);
 }
 
 .invitation-tree ul {
     margin-left: 20px;
     padding-left: 20px;
-    border-left: 1px solid #ccc;
+    border-left: 1px solid var(--border-color);
 }
 
 .invitation-tree li {
@@ -687,7 +718,7 @@ small:has(.dropdown.show) {
     top: 10px;
     width: 20px;
     height: 0;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid var(--border-color);
 }
 .form-control{
     background-color: var(--background-color) !important;
@@ -744,15 +775,73 @@ color: var(--text-color);
 
 a.ms-2 i.bi-pencil-square,
 a.ms-2 i.bi-trash {
-    color: var(--icon-color, #000) !important;
+    color: var(--icon-color) !important;
 }
 
 .list-group-item:hover {
-    background-color: var(--hover-background-color, rgba(0, 0, 0, 0.03)) !important;
+    background-color: var(--hover-background-color) !important;
+}
+
+/* Theme-consistent hover background (same feel as other themed hovers) */
+.theme-hover-bg:hover,
+.theme-hover-bg:focus,
+.theme-hover-bg:focus-within {
+    background-color: color-mix(in srgb, var(--button-background-color) 8%, transparent) !important;
+}
+
+/* Messages list (thread rows) */
+.message-thread-item {
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    text-decoration: none !important;
+}
+
+.message-thread-item:hover {
+    text-decoration: none !important;
+}
+
+.message-thread-item,
+.message-thread-item .message-thread-title {
+    color: var(--text-color) !important;
+}
+
+.message-thread-item .message-thread-preview,
+.message-thread-item .message-thread-timestamp {
+    color: color-mix(
+        in srgb,
+        var(--text-color) 78%,
+        var(--content-background-color) 22%
+    ) !important;
+}
+
+.message-thread-item:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+}
+
+/* Unread rows should still react on hover */
+.message-thread-item.unread-conversation:hover {
+    background-color: color-mix(
+        in srgb,
+        var(--message-bubble) 70%,
+        color-mix(in srgb, var(--button-background-color) 8%, transparent) 30%
+    ) !important;
+}
+
+.mesaj-listesi .badge {
+    background-color: var(--secondary-button-background-color) !important;
+    color: var(--secondary-button-text-color) !important;
+}
+
+.custom-table tbody tr:hover {
+    background-color: var(--hover-background-color) !important;
+}
+
+.custom-table tbody tr:hover a {
+    color: var(--text-color) !important;
 }
 
 .list-group-item.active,
-.list-group-item:focus,
 .list-group-item-action.active,
 .list-group-item-action:active {
     background-color: var(--button-background-color) !important;
@@ -769,14 +858,91 @@ a.ms-2 i.bi-trash {
 }
 
 #parentQuestionsModal .list-group-item:hover {
-    background-color: var(--hover-background-color, rgba(0, 0, 0, 0.03)) !important;
+    background-color: var(--hover-background-color) !important;
     cursor: pointer !important;
 }
 
 ul.subquestions-list .list-group-item:hover {
-    background-color: inherit !important;
+    background-color: color-mix(in srgb, var(--button-background-color) 8%, transparent) !important;
+    cursor: pointer !important;
+}
+
+.subquestions-list .list-group-item,
+.parent-questions-list .list-group-item {
+    background-color: var(--content-background-color) !important;
+    color: var(--text-color) !important;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Fix mismatch on click/active (Bootstrap may apply active styles) */
+.subquestions-list .list-group-item:active,
+.subquestions-list .list-group-item.active,
+.subquestions-list .list-group-item:focus-within,
+.parent-questions-list .list-group-item:active,
+.parent-questions-list .list-group-item.active,
+.parent-questions-list .list-group-item:focus-within {
+    background-color: color-mix(in srgb, var(--button-background-color) 8%, transparent) !important;
+    color: var(--text-color) !important;
+}
+
+/* Prevent global ".list-group-item.active *" override from breaking these lists */
+.subquestions-list .list-group-item.active *,
+.parent-questions-list .list-group-item.active * {
     color: inherit !important;
-    cursor: default !important;
+}
+
+.subquestions-list .list-group-item.active .text-muted,
+.parent-questions-list .list-group-item.active .text-muted {
+    color: color-mix(in srgb, var(--text-color) 60%, transparent) !important;
+}
+
+/* Muted text should follow theme */
+.text-muted {
+    color: color-mix(in srgb, var(--text-color) 60%, transparent) !important;
+}
+
+.subquestions-list .list-group-item a,
+.parent-questions-list .list-group-item a {
+    color: var(--text-color) !important;
+    text-decoration: none;
+}
+
+.subquestions-list .list-group-item a:hover,
+.parent-questions-list .list-group-item a:hover {
+    color: var(--link-hover-color) !important;
+    text-decoration: none !important;
+}
+
+.subquestions-list .list-group-item i.bi,
+.parent-questions-list .list-group-item i.bi {
+    color: var(--icon-color) !important;
+}
+
+.subquestions-list .list-group-item:hover i.bi,
+.parent-questions-list .list-group-item:hover i.bi {
+    color: var(--icon-hover-color) !important;
+}
+
+.theme-panel-header {
+    background-color: var(--header-background-color) !important;
+    color: var(--header-text-color) !important;
+}
+
+.theme-panel-body {
+    background-color: var(--content-background-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* Fix close button alignment on Bootstrap alerts/modals/toasts */
+.alert-dismissible .btn-close {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    right: 1rem !important;
+    padding: 0 !important;
+}
+
+.toast .btn-close {
+    padding: 0 !important;
 }
 
 span.icon-number {
@@ -790,7 +956,7 @@ span.icon-number {
   
 
 .bi-pie-chart{
-    color: var(--icon-color, #6c757d);
+    color: var(--icon-color);
     font-size: 1.2em;
 }
 
@@ -801,8 +967,8 @@ span.icon-number {
     font-size: 2.3rem;
     font-weight: bold;
     border-radius: 12px;
-    background: #687dc7;
-    color: #fff;
+    background: var(--button-background-color);
+    color: var(--button-text-color);
     letter-spacing: .5px;
     margin-top: 2vw;
 }
@@ -821,31 +987,30 @@ span.icon-number {
 }
 
 .site-badge-success, .site-badge-danger, .site-badge-info {
-    /* background-color: var(--button-background-color, #007bff); */
-    background-color: black !important;
-    color: var(--button-text-color, #ffffff);
+    background-color: var(--button-background-color) !important;
+    color: var(--button-text-color);
     padding: 0.2em 0.5em;
     border-radius: 0.25em;
     font-size: 0.8em;
 
 }
 .bg-success, .bg-primary {
-    background-color: var(--button-background-color, #007bff) !important;
-    color: var(--button-text-color, #ffffff) !important;
+    background-color: var(--button-background-color) !important;
+    color: var(--button-text-color) !important;
 }
 .bg-danger{
-    background-color: var(--secondary-button-background-color, #6c757d) !important;
-    color: var(--secondary-button-text-color, #ffffff) !important;
+    background-color: var(--secondary-button-background-color) !important;
+    color: var(--secondary-button-text-color) !important;
 
 }
 .btn-outline-primary{
-    border-color: var(--button-background-color, #007bff) !important;
-    color: var(--button-background-color, #007bff) !important;
+    border-color: var(--button-background-color) !important;
+    color: var(--button-background-color) !important;
 }
 .btn-outline-primary:hover{
-    border-color: var(--button-hover-background-color, #0056b3) !important;
-    background-color: var(--button-background-color, #007bff) !important;
-    color: var(--button-text-color, #ffffff) !important;
+    border-color: var(--button-hover-background-color) !important;
+    background-color: var(--button-background-color) !important;
+    color: var(--button-text-color) !important;
 }
 .toast-body,.toast-header{
     background-color: var(--background-color) !important;
@@ -872,22 +1037,22 @@ span.icon-number {
   }
   
   .sol-scroll div[style*="overflow-y:auto"]::-webkit-scrollbar-thumb {
-    background: rgba(110, 140, 167, 0.18);   /* Yarı şeffaf */
+    background: color-mix(in srgb, var(--button-background-color) 18%, transparent);
     border-radius: 8px;
     transition: background 0.2s;
   }
   .sol-scroll div[style*="overflow-y:auto"]:hover::-webkit-scrollbar-thumb,
   .sol-scroll div[style*="overflow-y:auto"]:active::-webkit-scrollbar-thumb {
-    background: rgba(110, 140, 167, 0.38);   /* Scroll yapılınca biraz daha belirgin */
+    background: color-mix(in srgb, var(--button-background-color) 38%, transparent);
   }
   
   /* Firefox için */
   .sol-scroll div[style*="overflow-y:auto"] {
     scrollbar-width: thin;
-    scrollbar-color: rgba(110, 140, 167, 0.18) transparent;
+    scrollbar-color: color-mix(in srgb, var(--button-background-color) 18%, transparent) transparent;
   }
   .sol-scroll div[style*="overflow-y:auto"]:hover {
-    scrollbar-color: rgba(110, 140, 167, 0.38) transparent;
+    scrollbar-color: color-mix(in srgb, var(--button-background-color) 38%, transparent) transparent;
   }
   
 
@@ -903,28 +1068,28 @@ a.mention {
     font-weight: 500;
     padding: 2px 4px;
     border-radius: 3px;
-    background-color: rgba(0, 123, 255, 0.1);
+    background-color: color-mix(in srgb, var(--link-color) 12%, transparent);
     transition: all 0.2s ease;
 }
 
 a.mention:hover {
-    background-color: rgba(0, 123, 255, 0.2);
+    background-color: color-mix(in srgb, var(--link-color) 20%, transparent);
     color: var(--link-hover-color);
 }
 
 a.hashtag-link {
-    color: #0d6efd;
+    color: var(--link-color);
     text-decoration: none;
     font-weight: 500;
     padding: 2px 4px;
     border-radius: 3px;
-    background-color: rgba(13, 110, 253, 0.08);
+    background-color: color-mix(in srgb, var(--link-color) 10%, transparent);
     transition: all 0.2s ease;
 }
 
 a.hashtag-link:hover {
-    background-color: rgba(13, 110, 253, 0.15);
-    color: #0a58ca;
+    background-color: color-mix(in srgb, var(--link-color) 18%, transparent);
+    color: var(--link-hover-color);
     text-decoration: none;
 }
 
@@ -935,15 +1100,15 @@ a.hashtag-link:hover {
 
 .clickable-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 /* Bibliography Section Styles */
 .bibliography-section {
     margin-top: 1.5rem;
     padding-top: 1rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    background-color: rgba(0, 0, 0, 0.02);
+    border-top: 1px solid var(--border-color);
+    background-color: color-mix(in srgb, var(--text-color) 2%, transparent);
     border-radius: 4px;
     padding: 1rem;
 }
@@ -952,7 +1117,7 @@ a.hashtag-link:hover {
     font-weight: 600;
     font-size: 1.1rem;
     margin-bottom: 0.75rem;
-    color: var(--text-color, #333);
+    color: var(--text-color);
 }
 
 .bibliography-list {
@@ -968,7 +1133,7 @@ a.hashtag-link:hover {
 }
 
 .reference-citation {
-    color: var(--text-color, #333);
+    color: var(--text-color);
 }
 
 .reference-citation em {
@@ -976,14 +1141,14 @@ a.hashtag-link:hover {
 }
 
 .reference-not-found {
-    color: #dc3545;
+    color: var(--button-background-color);
     font-style: italic;
 }
 
 /* Spoiler (Yıldız) - gizli metin */
 .spoiler-text {
     cursor: help;
-    color: var(--link-color, #6E8CA7);
+    color: var(--link-color);
     font-weight: bold;
     user-select: none;
 }
@@ -1108,7 +1273,7 @@ a.hashtag-link:hover {
 .btn-theme-third {
     background-color: var(--link-color);
     border-color: var(--link-color);
-    color: #ffffff;
+    color: var(--button-text-color);
 }
 
 .btn-theme-third:hover,
@@ -1116,14 +1281,14 @@ a.hashtag-link:hover {
 .btn-theme-third:focus-visible {
     background-color: var(--link-hover-color);
     border-color: var(--link-hover-color);
-    color: #ffffff;
+    color: var(--button-text-color);
     box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--link-color) 50%, transparent);
 }
 
 .btn-theme-third:active {
     background-color: var(--link-hover-color);
     border-color: var(--link-hover-color);
-    color: #ffffff;
+    color: var(--button-text-color);
 }
 
 /* Outline third button */
@@ -1138,14 +1303,14 @@ a.hashtag-link:hover {
 .btn-outline-theme-third:focus-visible {
     background-color: var(--link-color);
     border-color: var(--link-color);
-    color: #ffffff;
+    color: var(--button-text-color);
     box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--link-color) 50%, transparent);
 }
 
 .btn-outline-theme-third:active {
     background-color: var(--link-color);
     border-color: var(--link-color);
-    color: #ffffff;
+    color: var(--button-text-color);
 }
 
 /* Legacy support - keep old classes for backward compatibility */
@@ -1283,41 +1448,83 @@ a.hashtag-link:hover {
 
 /* Toast Notification Styles with Theme Colors */
 .toast-theme-success {
-    background-color: var(--toast-success-bg) !important;
-    border-left: 4px solid var(--toast-success-border) !important;
-    color: var(--toast-success-text) !important;
+    background-color: var(--content-background-color, var(--toast-success-bg)) !important;
+    border-left: 4px solid var(--secondary-button-background-color, var(--toast-success-border)) !important;
+    color: var(--text-color, var(--toast-success-text)) !important;
 }
 
 .toast-theme-success .toast-icon {
-    color: var(--toast-success-text) !important;
+    color: var(--text-color, var(--toast-success-text)) !important;
 }
 
 .toast-theme-error {
-    background-color: var(--toast-error-bg) !important;
-    border-left: 4px solid var(--toast-error-border) !important;
-    color: var(--toast-error-text) !important;
+    background-color: var(--content-background-color) !important;
+    border-left: 4px solid var(--button-background-color) !important;
+    color: var(--text-color) !important;
 }
 
 .toast-theme-error .toast-icon {
-    color: var(--toast-error-text) !important;
+    color: var(--text-color) !important;
+}
+
+.toast-theme-danger {
+    background-color: var(--content-background-color) !important;
+    border-left: 4px solid var(--button-background-color) !important;
+    color: var(--text-color) !important;
 }
 
 .toast-theme-warning {
-    background-color: var(--toast-warning-bg) !important;
-    border-left: 4px solid var(--toast-warning-border) !important;
-    color: var(--toast-warning-text) !important;
+    background-color: var(--content-background-color) !important;
+    border-left: 4px solid var(--link-hover-color) !important;
+    color: var(--text-color) !important;
 }
 
 .toast-theme-warning .toast-icon {
-    color: var(--toast-warning-text) !important;
+    color: var(--text-color) !important;
 }
 
 .toast-theme-info {
-    background-color: var(--toast-info-bg) !important;
-    border-left: 4px solid var(--toast-info-border) !important;
-    color: var(--toast-info-text) !important;
+    background-color: var(--content-background-color) !important;
+    border-left: 4px solid var(--link-color) !important;
+    color: var(--text-color) !important;
 }
 
 .toast-theme-info .toast-icon {
-    color: var(--toast-info-text) !important;
+    color: var(--text-color) !important;
+}
+
+/* Themed Django alerts (messages framework) */
+.alert {
+    background-color: var(--content-background-color) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+.alert-success { border-left: 4px solid var(--secondary-button-background-color) !important; }
+.alert-danger  { border-left: 4px solid var(--button-background-color) !important; }
+.alert-warning { border-left: 4px solid var(--link-hover-color) !important; }
+.alert-info    { border-left: 4px solid var(--link-color) !important; }
+
+/* Make close buttons readable on both light/dark themes */
+.alert .btn-close,
+.toast .btn-close {
+    filter: none !important;
+    opacity: 0.7;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: 0;
+    background-color: transparent !important;
+    color: var(--text-color) !important;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 1rem 1rem;
+    background-image:
+        linear-gradient(45deg, transparent 47%, currentColor 47% 53%, transparent 53%),
+        linear-gradient(-45deg, transparent 47%, currentColor 47% 53%, transparent 53%);
+}
+
+.alert .btn-close:hover,
+.toast .btn-close:hover {
+    opacity: 1;
 }

@@ -229,8 +229,8 @@ def user_profile(request, username):
                 return ''
             # Remove markdown links but keep the link text: [text](url) -> text (must be FIRST)
             text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
-            # Remove (kaynak:ID) and (kaynak:ID, sayfa:NUM) bibliography citations
-            text = re.sub(r'\(kaynak:\d+(?:,\s*sayfa:[^\)]+)?\)', '', text)
+            # Remove bibliography citations: (kaynak:ID[, sayfa:NUM]) and short form (k:ID[ s:NUM])
+            text = re.sub(r'\((?:kaynak|k):\d+(?:(?:,\s*sayfa:[^\)]+)|(?:\s*s:[^\)]+))?\)', '', text)
             # Remove footnote references: [^ref], [1], [2], etc.
             text = re.sub(r'\[\^[^\]]+\]', '', text)  # [^1], [^ref], etc.
             text = re.sub(r'\[\d+\]', '', text)  # [1], [2], [3], etc.

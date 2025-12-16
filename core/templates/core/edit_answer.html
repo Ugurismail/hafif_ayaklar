@@ -307,7 +307,7 @@
           });
       }
     
-      // (4) Seçilen Kaynağı “(kaynak:ID)” olarak textarea’ya ekle
+      // (4) Seçilen Kaynağı “(k:ID)” olarak textarea’ya ekle
       seciliKaynakEkleBtn.addEventListener('click', function() {
         const secili = document.querySelector('input[name="kaynakSecimi"]:checked');
         if (!secili) {
@@ -320,8 +320,8 @@
           showToast("Yanıt textarea bulunamadı!", 'error');
           return;
         }
-        // Metin sonuna [ (kaynak:REF_ID) ] ekle
-        answerTextArea.value += ` (kaynak:${refId}) `;
+        // Metin sonuna [ (k:REF_ID) ] ekle
+        answerTextArea.value += ` (k:${refId}) `;
         kaynakRefModal.hide();
       });
     });

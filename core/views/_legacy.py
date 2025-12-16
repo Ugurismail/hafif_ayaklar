@@ -2355,12 +2355,13 @@ def get_user_definitions(request):
 
         data_list = []
         for d in page_obj.object_list:
-            usage_count_self = Answer.objects.filter(
-                user=user,
-                answer_text__icontains=f'(tanim:{d.question.question_text}:{d.id})'
+            token_long = f'(tanim:{d.question.question_text}:{d.id})'
+            token_short = f'(t:{d.question.question_text}:{d.id})'
+            usage_count_self = Answer.objects.filter(user=user).filter(
+                Q(answer_text__icontains=token_long) | Q(answer_text__icontains=token_short)
             ).count()
             usage_count_all = Answer.objects.filter(
-                answer_text__icontains=f'(tanim:{d.question.question_text}:{d.id})'
+                Q(answer_text__icontains=token_long) | Q(answer_text__icontains=token_short)
             ).count()
 
             data_list.append({
@@ -2466,8 +2467,10 @@ def get_all_definitions(request):
 
         data_list = []
         for d in page_obj.object_list:
+            token_long = f'(tanim:{d.question.question_text}:{d.id})'
+            token_short = f'(t:{d.question.question_text}:{d.id})'
             usage_count_all = Answer.objects.filter(
-                answer_text__icontains=f'(tanim:{d.question.question_text}:{d.id})'
+                Q(answer_text__icontains=token_long) | Q(answer_text__icontains=token_short)
             ).count()
             data_list.append({
                 'id': d.id,
@@ -2476,7 +2479,7 @@ def get_all_definitions(request):
                 'username': d.user.username,
                 'usage_count_all': usage_count_all,
             })
-            data_list = sorted(data_list, key=lambda x: -x['usage_count_all'])
+        data_list = sorted(data_list, key=lambda x: -x['usage_count_all'])
 
         return JsonResponse({
             'definitions': data_list,

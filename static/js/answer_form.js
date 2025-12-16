@@ -260,7 +260,7 @@ var referenceModalElem = document.getElementById('referenceModal');
 
       var selectedText = getSelectedText(textarea);
       if (selectedText) {
-          var refMarkup = `(ref:${selectedText})`;
+          var refMarkup = `(r:${selectedText})`;
           insertTextAtCursor(textarea, refMarkup);
       } else {
           showToast('Lütfen renkli bağlantı yapmak istediğiniz metni seçiniz.', 'warning');
@@ -472,7 +472,7 @@ var referenceModalElem = document.getElementById('referenceModal');
             // Prev
             if (data.current_page > 1) {
               let prevBtn = document.createElement('button');
-              prevBtn.classList.add('btn','btn-sm','btn-outline-secondary','me-2');
+              prevBtn.classList.add('btn','btn-sm','btn-outline-theme-secondary','me-2');
               prevBtn.textContent = 'Önceki';
               prevBtn.addEventListener('click', function() {
                 loadUserDefinitions(data.current_page - 1, userDefSearchInput.value.trim());
@@ -488,7 +488,7 @@ var referenceModalElem = document.getElementById('referenceModal');
             // Next
             if (data.current_page < data.total_pages) {
               let nextBtn = document.createElement('button');
-              nextBtn.classList.add('btn','btn-sm','btn-outline-secondary');
+              nextBtn.classList.add('btn','btn-sm','btn-outline-theme-secondary');
               nextBtn.textContent = 'Sonraki';
               nextBtn.addEventListener('click', function() {
                 loadUserDefinitions(data.current_page + 1, userDefSearchInput.value.trim());
@@ -521,7 +521,7 @@ var referenceModalElem = document.getElementById('referenceModal');
         return;
       }
 
-      let insertStr = ` (tanim:${questionWord}:${definitionId})`;
+      let insertStr = ` (t:${questionWord}:${definitionId})`;
 
       // İmlecin bulunduğu konuma ekle
       let start = answerTextarea.selectionStart;
@@ -611,7 +611,7 @@ var referenceModalElem = document.getElementById('referenceModal');
             if (data.current_page > 1) {
               let prevBtn = document.createElement('button');
               prevBtn.textContent = 'Önceki';
-              prevBtn.classList.add('btn','btn-sm','btn-outline-secondary','me-2');
+              prevBtn.classList.add('btn','btn-sm','btn-outline-theme-secondary','me-2');
               prevBtn.addEventListener('click', function(){
                 loadGlobalDefinitions(data.current_page - 1, allDefSearchInput.value.trim());
               });
@@ -627,7 +627,7 @@ var referenceModalElem = document.getElementById('referenceModal');
             if (data.current_page < data.total_pages) {
               let nextBtn = document.createElement('button');
               nextBtn.textContent = 'Sonraki';
-              nextBtn.classList.add('btn','btn-sm','btn-outline-secondary');
+              nextBtn.classList.add('btn','btn-sm','btn-outline-theme-secondary');
               nextBtn.addEventListener('click', function(){
                 loadGlobalDefinitions(data.current_page + 1, allDefSearchInput.value.trim());
               });
@@ -656,7 +656,7 @@ var referenceModalElem = document.getElementById('referenceModal');
         showToast("Yanıt textarea bulunamadı!", 'error');
         return;
       }
-      var insertStr = ` (tanim:${item.question_text}:${item.id})`;
+      var insertStr = ` (t:${item.question_text}:${item.id})`;
 
       // İmlecin bulunduğu konuma ekle
       var start = answerTextarea.selectionStart;

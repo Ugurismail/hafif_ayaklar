@@ -395,18 +395,21 @@ class Reference(models.Model):
 
     def get_usage_count(self):
         """
-        Answer modelindeki answer_text alanında, hem (kaynak:REF_ID) 
-        hem de (kaynak:REF_ID, sayfa:NUM) şeklinde geçen ifadeleri sayar.
+        Answer modelindeki answer_text alanında,
+        hem (kaynak:REF_ID[, sayfa:NUM]) hem de kısa form (k:REF_ID[ s:NUM])
+        şeklinde geçen ifadeleri sayar.
         """
         from .models import Answer  # Lokal import döngüsel importları önlemek için.
-        # Regex deseni: 
-        # \(kaynak:REF_ID     -> literal olarak "(kaynak:REF_ID"
-        # (?:,\s*sayfa:\d+)?   -> opsiyonel olarak ", sayfa:" ile başlayan ve sonrasında bir veya daha fazla rakam
-        # \)                   -> kapanış parantezi
-        pattern = re.compile(r'\(kaynak:{}(?:,\s*sayfa:\d+)?\)'.format(self.id))
+        from django.db.models import Q
+
+        pattern = re.compile(
+            r'\((?:kaynak|k):{}(?:(?:,\s*sayfa:[^)]+)|(?:\s*s:[^)]+))?\)'.format(self.id)
+        )
         count = 0
-        # İlk filtre, answer_text içerisinde "(kaynak:REF_ID" ifadesi geçiyorsa getiriyor
-        answers = Answer.objects.filter(answer_text__icontains=f"(kaynak:{self.id}")
+        # İlk filtre, answer_text içerisinde "(kaynak:REF_ID" veya "(k:REF_ID" ifadesi geçiyorsa getiriyor
+        answers = Answer.objects.filter(
+            Q(answer_text__icontains=f"(kaynak:{self.id}") | Q(answer_text__icontains=f"(k:{self.id}")
+        )
         for answer in answers:
             matches = pattern.findall(answer.answer_text)
             count += len(matches)

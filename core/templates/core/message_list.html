@@ -38,21 +38,21 @@
         <div class="col-md-10 mesaj-listesi">
             <h2>Mesajlar</h2>
             {% if page_obj %}
-                <ul class="list-group mesaj-listesi">
+                <div class="list-group mesaj-listesi">
                     {% for convo in page_obj %}
                         {% with latest_message=convo.user_messages.0 other_user=convo.user %}
-                        <a href="{% url 'message_detail' other_user.username %}" class="text-decoration-none text-dark">
-                            <li class="list-group-item d-flex justify-content-between align-items-center {% if convo.unread_count > 0 %}unread-conversation{% endif %}">
+                            <a href="{% url 'message_detail' other_user.username %}"
+                               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center message-thread-item theme-hover-bg {% if convo.unread_count > 0 %}unread-conversation{% endif %}"
+                               aria-label="Mesajı aç">
                                 <div class="d-flex align-items-center">
-                                    <!-- User Avatar -->
                                     {% if other_user.userprofile.photo %}
                                         <img src="{{ other_user.userprofile.photo.url }}" alt="{{ other_user.username }}" class="rounded-circle me-3" width="50" height="50">
                                     {% else %}
                                         <img src="{% static 'imgs/default_profile.jpg' %}" alt="{{ other_user.username }}" class="rounded-circle me-3" width="50" height="50">
                                     {% endif %}
                                     <div>
-                                        <h5 class="mb-1">{{ other_user.username }}</h5>
-                                        <p class="mb-0 text-muted" style="font-size: 0.9em;">
+                                        <h5 class="mb-1 message-thread-title">{{ other_user.username }}</h5>
+                                        <p class="mb-0 message-thread-preview" style="font-size: 0.9em;">
                                             {% if latest_message.sender == request.user %}
                                                 <strong>Sen:</strong> {{ latest_message.body|truncatechars:30 }}
                                             {% else %}
@@ -62,16 +62,15 @@
                                     </div>
                                 </div>
                                 <div class="text-end">
-                                    <small class="text-muted d-block">{{ latest_message.timestamp|date:"d M Y H:i" }}</small>
+                                    <small class="message-thread-timestamp d-block">{{ latest_message.timestamp|date:"d M Y H:i" }}</small>
                                     {% if convo.unread_count > 0 %}
                                         <span class="badge">{{ convo.unread_count }}</span>
                                     {% endif %}
                                 </div>
-                            </li>
-                        </a>
+                            </a>
                         {% endwith %}
                     {% endfor %}
-                </ul>
+                </div>
                 {% include 'core/pagination.html' with page_obj=page_obj page_param='message_page' %}
             {% else %}
                 <p>Henüz bir mesajınız yok.</p>

@@ -77,7 +77,7 @@
     width: 0;
     height: 0;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: color-mix(in srgb, var(--button-text-color) 30%, transparent);
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
 }
@@ -89,12 +89,12 @@
 
 .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 .btn:active {
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 /* ========== VOTE BUTTON ANIMATIONS ========== */
@@ -136,7 +136,7 @@
 
 .card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 16px var(--shadow-color);
 }
 
 /* Prevent transform when dropdown is open to avoid stacking context issues */
@@ -233,25 +233,10 @@ a:hover::after {
 #search-results .list-group-item:hover,
 #user-search-results .list-group-item:hover {
     transform: translateX(8px);
-    background-color: var(--hover-background-color, #f0f0f0);
+    background-color: var(--hover-background-color);
 }
 
-/* Gelişmiş arama sonuçları sayfası - /search/ */
-.container .list-group .list-group-item {
-    transition: all 0.2s ease;
-}
-
-.container .list-group .list-group-item:hover {
-    background-color: #6E8CA7 !important;
-}
-
-.container .list-group .list-group-item:hover,
-.container .list-group .list-group-item:hover *,
-.container .list-group .list-group-item:hover a,
-.container .list-group .list-group-item:hover .text-secondary,
-.container .list-group .list-group-item:hover .text-muted {
-    color: #ffffff !important;
-}
+/* List group hover colors are handled by theme styles (styles.css) */
 
 /* ========== NAVBAR SCROLL EFFECT ========== */
 
@@ -261,7 +246,7 @@ a:hover::after {
 
 .navbar.scrolled {
     padding: 0.5rem 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px var(--shadow-color);
 }
 
 /* ========== LOADING SPINNER ========== */
@@ -275,8 +260,8 @@ a:hover::after {
 .loading-spinner {
     width: 40px;
     height: 40px;
-    border: 4px solid rgba(0, 0, 0, 0.1);
-    border-left-color: var(--button-background-color, #007bff);
+    border: 4px solid var(--border-color);
+    border-left-color: var(--button-background-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -307,14 +292,14 @@ html {
 /* ========== FOCUS STATES ========== */
 
 *:focus {
-    outline: 2px solid var(--button-background-color, #007bff);
+    outline: 2px solid var(--button-background-color);
     outline-offset: 2px;
     transition: outline 0.2s ease;
 }
 
 .form-control:focus {
-    border-color: var(--button-background-color, #007bff);
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: var(--button-background-color);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--button-background-color) 35%, transparent);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -345,7 +330,7 @@ textarea.auto-expand.expanded {
 
 .page-link:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px var(--shadow-color);
 }
 
 /* ========== ALERT/TOAST ANIMATIONS ========== */
@@ -379,9 +364,9 @@ textarea.auto-expand.expanded {
 .skeleton {
     background: linear-gradient(
         90deg,
-        #f0f0f0 25%,
-        #e0e0e0 50%,
-        #f0f0f0 75%
+        color-mix(in srgb, var(--text-color) 6%, transparent) 25%,
+        color-mix(in srgb, var(--text-color) 10%, transparent) 50%,
+        color-mix(in srgb, var(--text-color) 6%, transparent) 75%
     );
     background-size: 1000px 100%;
     animation: shimmer 2s infinite;
@@ -402,7 +387,7 @@ textarea.auto-expand.expanded {
     top: 0;
     bottom: 0;
     width: 0;
-    background-color: var(--button-background-color, #007bff);
+    background-color: var(--button-background-color);
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 0;
     z-index: -1;
@@ -413,7 +398,7 @@ textarea.auto-expand.expanded {
 }
 
 .baslik:hover {
-    background-color: var(--hover-background-color, #f8f9fa);
+    background-color: var(--hover-background-color);
 }
 
 /* ========== ICON ANIMATIONS ========== */
@@ -438,7 +423,7 @@ textarea.auto-expand.expanded {
 
 .sent-message:hover, .received-message:hover {
     transform: scale(1.02);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px var(--shadow-color);
 }
 
 /* ========== SUBQUESTION LIST ANIMATION ========== */
@@ -449,7 +434,7 @@ textarea.auto-expand.expanded {
 }
 
 .subquestions-list .list-group-item:hover {
-    border-left-color: var(--button-background-color, #007bff);
+    border-left-color: var(--button-background-color);
     padding-left: 1.5rem;
 }
 
@@ -474,24 +459,24 @@ textarea.auto-expand.expanded {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--background-color, #f1f1f1);
+    background: var(--background-color);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--icon-color, #888);
+    background: var(--icon-color);
     border-radius: 10px;
     transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--icon-hover-color, #555);
+    background: var(--icon-hover-color);
 }
 
 /* Firefox */
 * {
     scrollbar-width: thin;
-    scrollbar-color: var(--icon-color, #888) var(--background-color, #f1f1f1);
+    scrollbar-color: var(--icon-color) var(--background-color);
 }
 
 /* ========== ACTIVE STATE ANIMATIONS ========== */
@@ -502,10 +487,10 @@ textarea.auto-expand.expanded {
 
 @keyframes activeGlow {
     0% {
-        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--button-background-color) 70%, transparent);
     }
     100% {
-        box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+        box-shadow: 0 0 0 10px color-mix(in srgb, var(--button-background-color) 0%, transparent);
     }
 }
 

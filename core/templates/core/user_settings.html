@@ -24,6 +24,7 @@
                 <option value="cyberpunk">Cyberpunk (Neon Futuristik)</option>
                 <option value="sakura">Sakura (Japon Kiraz Çiçeği)</option>
                 <option value="nordic">Nordic (İskandinav Minimalist)</option>
+                <option value="tokyo_night">Tokyo Night (Koyu Lacivert)</option>
             </select>
         </div>
         
@@ -42,6 +43,10 @@
                 <div class="col-md-3 mb-3">
                     <label for="message_bubble_color" class="form-label">Mesaj Baloncuk Rengi</label>
                     <input type="color" id="message_bubble_color" name="message_bubble_color" class="form-control form-control-color" value="{{ user_profile.message_bubble_color }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="yanit_card" class="form-label">Yanıt Kartı Arka Plan Rengi</label>
+                    <input type="color" id="yanit_card" name="yanit_card" class="form-control form-control-color" value="{{ user_profile.yanit_card|default:'#ffffff' }}">
                 </div>
                 <div class="col-md-3 mb-3">
                     <label for="tbas_color" class="form-label">Sol Başlıkların Rengi</label>
@@ -304,12 +309,26 @@
         document.documentElement.style.setProperty(variable, value);
     }
 
+    function normalizeCssVarValue(key, value) {
+        if (key === 'font_size') return `${parseInt(value, 10) || 16}px`;
+        if (key === 'font_family') return `"${String(value).replace(/\+/g, ' ')}"`;
+        return value;
+    }
+
+    function toCssVarName(key) {
+        // Settings form uses model field names; CSS vars don't always match 1:1.
+        if (key === 'message_bubble_color') return '--message-bubble';
+        if (key === 'yanit_card') return '--yanit-card-background-color';
+        if (key === 'font_family') return '--body-font-family';
+        return '--' + key.replace(/_/g, '-');
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        const colorInputs = document.querySelectorAll('input[type="color"]');
-        colorInputs.forEach(function(input) {
+        const previewInputs = document.querySelectorAll('input[type="color"], input[type="number"], select[name="font_family"]');
+        previewInputs.forEach(function(input) {
             input.addEventListener('input', function() {
-                const varName = '--' + this.name.replace(/_/g, '-');
-                updateColor(varName, this.value);
+                const varName = toCssVarName(this.name);
+                updateColor(varName, normalizeCssVarValue(this.name, this.value));
             });
         });
     });
@@ -701,23 +720,45 @@
     "pagination_background_color": "#ECF0F1",
     "pagination_text_color": "#2B3E50",
     "font_family": "Inter"
+},
+        "tokyo_night": {
+    "background_color": "#1A1B26",
+    "text_color": "#C0CAF5",
+    "header_background_color": "#16161E",
+    "header_text_color": "#7AA2F7",
+    "link_color": "#7DCFFF",
+    "link_hover_color": "#BB9AF7",
+    "button_background_color": "#7AA2F7",
+    "button_hover_background_color": "#3D59A1",
+    "button_text_color": "#FFFFFF",
+    "secondary_button_background_color": "#9ECE6A",
+    "secondary_button_hover_background_color": "#73DACA",
+    "secondary_button_text_color": "#1A1B26",
+    "message_bubble_color": "#24283B",
+    "tbas_color": "#C0CAF5",
+    "yanit_card": "#24283B",
+    "font_size": "16",
+    "hover_background_color": "#292E42",
+    "hover_text_color": "#C0CAF5",
+    "icon_color": "#7AA2F7",
+    "icon_hover_color": "#BB9AF7",
+    "answer_background_color": "#1F2335",
+    "content_background_color": "#1F2335",
+    "tab_background_color": "#16161E",
+    "tab_text_color": "#C0CAF5",
+    "tab_active_background_color": "#24283B",
+    "tab_active_text_color": "#7AA2F7",
+    "dropdown_text_color": "#C0CAF5",
+    "dropdown_hover_background_color": "#24283B",
+    "dropdown_hover_text_color": "#7AA2F7",
+    "nav_link_hover_color": "#C0CAF5",
+    "nav_link_hover_bg": "#292E42",
+    "pagination_background_color": "#24283B",
+    "pagination_text_color": "#C0CAF5",
+    "font_family": "Inter"
 }
     };
-    
-    function updateColor(variable, value) {
-        document.documentElement.style.setProperty(variable, value);
-    }
-    
     document.addEventListener('DOMContentLoaded', function() {
-        // Renk inputlarına canlı önizleme
-        const colorInputs = document.querySelectorAll('input[type="color"], input[type="number"], select[name="font_family"]');
-        colorInputs.forEach(function(input) {
-            input.addEventListener('input', function() {
-                const varName = '--' + this.name.replace(/_/g, '-');
-                updateColor(varName, this.value);
-            });
-        });
-    
         // TEMALAR
         document.getElementById('theme_select').addEventListener('change', function() {
             const theme = THEMES[this.value];
@@ -737,8 +778,8 @@
                     if (input.type === "number") input.value = parseInt(val);
                 }
                 // canlı olarak siteye uygula
-                const varName = '--' + key.replace(/_/g, '-');
-                updateColor(varName, val);
+                const varName = toCssVarName(key);
+                updateColor(varName, normalizeCssVarValue(key, val));
             }
         });
     });

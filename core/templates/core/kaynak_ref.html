@@ -208,7 +208,7 @@
                 pagContainer.innerHTML = '';
 
                 if (data.num_pages > 1) {
-                    let pagHtml = `<nav id="kaynak-pagination"><ul class="pagination pagination-sm justify-content-center mt-3">`;
+                    let pagHtml = `<nav id="kaynak-pagination"><ul class="pagination custom-pagination pagination-sm justify-content-center mt-3">`;
 
                     // Previous button
                     pagHtml += data.has_previous ?
@@ -441,7 +441,7 @@
                 showToast("Yanıt metin alanı (#id_answer_text) bulunamadı!", 'error');
                 return;
             }
-            let ekMetin = sayfaStr ? ` (kaynak:${refId}, sayfa:${sayfaStr}) ` : ` (kaynak:${refId}) `;
+            let ekMetin = sayfaStr ? ` (k:${refId} s:${sayfaStr}) ` : ` (k:${refId}) `;
             // İmleçte ekle (seçim varsa seçilen kısmı değiştir)
             if (typeof answerTextArea.selectionStart === 'number') {
                 const start = answerTextArea.selectionStart;

@@ -32,7 +32,7 @@ def bkz_link(text):
 
 @register.filter
 def ref_link(text):
-    pattern = r'\(ref:([^\)]+)\)'
+    pattern = r'\((?:ref|r):([^\)]+)\)'
     def replace_ref(match):
         ref_text = match.group(1).strip()
         try:
@@ -66,10 +66,10 @@ def tanim_link(text):
     if not text:
         return ""
 
-    # Yeni pattern: (tanim:kelime:ID)
+    # Pattern: (tanim:kelime:ID) veya kısa form (t:kelime:ID)
     #  Grup 1 => kelime
     #  Grup 2 => id
-    pattern = re.compile(r'\(tanim:([^:]+):(\d+)\)')
+    pattern = re.compile(r'\((?:tanim|t):([^:]+):(\d+)\)')
 
     def replacer(match):
         question_word = match.group(1).strip()  # "Özgürlük"
@@ -119,12 +119,12 @@ def reference_link(text):
     reference_map = {}
     current_index = 1
 
-    pattern = r'\(kaynak:(\d+)(?:,\s*sayfa:([^)]+))?\)'
+    pattern = re.compile(r'\((?:kaynak|k):(\d+)(?:(?:,\s*sayfa:([^)]+))|(?:\s*s:([^)]+)))?\)')
 
     def replace_reference(match):
         nonlocal current_index
         ref_id_str = match.group(1)
-        sayfa = match.group(2)  # Opsiyonel: None veya string (12-14, 123a vs.)
+        sayfa = match.group(2) or match.group(3)  # Opsiyonel: None veya string (12-14, 123a vs.)
         ref_id = int(ref_id_str)
 
         if ref_id not in reference_map:
@@ -160,7 +160,7 @@ def reference_link(text):
         html = f'<sup class="reference-tooltip" data-bs-toggle="tooltip" title="{full_citation}">[{ref_num}]</sup>'
         return html
 
-    new_text = re.sub(pattern, replace_reference, text)
+    new_text = pattern.sub(replace_reference, text)
     return mark_safe(new_text)
 
 @register.filter
@@ -281,12 +281,12 @@ def extract_bibliography(text):
     reference_pages = {}  # Store page numbers for each reference
     current_index = 1
 
-    pattern = r'\(kaynak:(\d+)(?:,\s*sayfa:([^)]+))?\)'
-    matches = re.finditer(pattern, text)
+    pattern = re.compile(r'\((?:kaynak|k):(\d+)(?:(?:,\s*sayfa:([^)]+))|(?:\s*s:([^)]+)))?\)')
+    matches = pattern.finditer(text)
 
     for match in matches:
         ref_id_str = match.group(1)
-        sayfa = match.group(2)  # Optional: None or string (12-14, 123a etc.)
+        sayfa = match.group(2) or match.group(3)  # Optional: None or string (12-14, 123a etc.)
         ref_id = int(ref_id_str)
 
         if ref_id not in reference_map:
