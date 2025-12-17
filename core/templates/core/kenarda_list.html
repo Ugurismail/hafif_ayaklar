@@ -224,6 +224,11 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       if (!questionSlug) {
+        // Yanıt düzenleme olarak işaretlenmiş ama yanıt/soru bağlamı yoksa yanlış sayfaya düşmesin
+        if (draftSource === 'answer_edit') {
+          showToast('error', 'Bu taslak bir yanıta bağlı değil (bağlam kayıp).');
+          return;
+        }
         // Question yoksa, draft_source'a göre yönlendir
         if (draftSource === 'question_from_search' && taslakTitle) {
           // Aramadan soru oluşturma sayfasına yönlendir

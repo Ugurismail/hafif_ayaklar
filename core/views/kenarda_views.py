@@ -27,13 +27,24 @@ def kenarda_save(request):
 
         question_id = data.get("question_id")
         answer_id = data.get("answer_id")  # Var olan yanıt düzenleme taslağı için
-        content = data.get("content", "")
-        title = data.get("title", "")  # Yeni başlıklar için başlık metni
+        content = (data.get("content") or "")
+        title = (data.get("title") or "").strip()  # Yeni başlıklar için başlık metni
         draft_source = data.get("draft_source")  # Taslağın kaynağı
 
         # Maksimum uzunluk kontrolü (50,000 karakter)
         if len(content) > 50000:
             return JsonResponse({"status": "fail", "error": "İçerik çok uzun (max 50000 karakter)"}, status=400)
+
+        # En az bir bağlam bilgisi olmalı; aksi halde taslak "başlangıç sorusu" gibi yanlış yerde açılabilir.
+        if not answer_id and not question_id and not title:
+            return JsonResponse(
+                {"status": "fail", "error": "Taslak bağlamı eksik (answer_id/question_id/title gerekli)"},
+                status=400,
+            )
+
+        # Kaynak bazlı basit doğrulamalar
+        if draft_source in {"starting_question", "question_from_search"} and not title:
+            return JsonResponse({"status": "fail", "error": "Başlık boş olamaz"}, status=400)
 
         question = None
         answer = None
@@ -50,6 +61,19 @@ def kenarda_save(request):
                 question = answer.question  # Answer'dan question'ı al
             except Answer.DoesNotExist:
                 return JsonResponse({"status": "fail", "error": "Yanıt bulunamadı veya size ait değil"}, status=403)
+
+        # Bazı edge-case'lerde client answer_id göndermeyebilir; ancak kullanıcı bu soruda tek bir yanıt
+        # yazdıysa, bunu "yanıt düzenleme" taslağı olarak yorumlayabiliriz (özellikle "ilk entry" durumu).
+        if not answer and question and draft_source == "answer_edit":
+            qs = Answer.objects.filter(question=question, user=request.user).order_by("created_at")
+            if qs.count() == 1:
+                answer = qs.first()
+                question = answer.question
+
+        # Eğer answer_id ile gelindiyse bu taslak kesinlikle "yanıt düzenleme" taslağıdır.
+        # (Client yanlışlıkla draft_source göndermese bile sınıflandırma bozulmasın.)
+        if answer:
+            draft_source = "answer_edit"
 
         # Mevcut taslak var mı?
         if answer:
