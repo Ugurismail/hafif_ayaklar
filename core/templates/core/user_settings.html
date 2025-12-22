@@ -11,28 +11,30 @@
 
         <div class="mb-3">
             <label for="theme_select" class="form-label">Hazır Tema:</label>
-            <select id="theme_select" class="form-select">
-                <option value="">-- Tema Seçin --</option>
-                <option value="default">Varsayılan</option>
-                <option value="gece">Gece Modu</option>
-                <option value="ocean">Ocean Breeze (Okyanus Mavisi)</option>
-                <option value="forest">Forest Zen (Orman Yeşili)</option>
-                <option value="sunset">Sunset Vibes (Gün Batımı)</option>
-                <option value="monochrome">Monochrome (Minimal Siyah-Beyaz)</option>
-                <option value="lavender">Lavanta Bahçesi (Mor & Lila)</option>
-                <option value="coffee">Kahve Molası (Sıcak Kahverengi)</option>
-                <option value="cyberpunk">Cyberpunk (Neon Futuristik)</option>
-                <option value="sakura">Sakura (Japon Kiraz Çiçeği)</option>
-                <option value="nordic">Nordic (İskandinav Minimalist)</option>
-                <option value="tokyo_night">Tokyo Night (Koyu Lacivert)</option>
-                <option value="old_money">Old Money (Klasik & Şık)</option>
-                <option value="the_man">The Man</option>
-                <option value="the_woman">The Woman</option>
-                <option value="the_2slgbtq_plus">The 2SLGBTQ+</option>
-                <option value="the_philosopher">The Philosopher</option>
-                <option value="the_artist">The Artist</option>
-            </select>
-        </div>
+	            <select id="theme_select" class="form-select">
+	                <option value="">-- Tema Seçin --</option>
+	                <option value="default">Varsayılan</option>
+	                <option value="gece">Gece Modu</option>
+	                <option value="ocean">Ocean Breeze (Okyanus Mavisi)</option>
+	                <option value="forest">Forest Zen (Orman Yeşili)</option>
+	                <option value="sunset">Sunset Vibes (Gün Batımı)</option>
+	                <option value="monochrome">Monochrome (Minimal Siyah-Beyaz)</option>
+	                <option value="lavender">Lavanta Bahçesi (Mor & Lila)</option>
+	                <option value="coffee">Kahve Molası (Sıcak Kahverengi)</option>
+	                <option value="cyberpunk">Cyberpunk (Neon Futuristik)</option>
+	                <option value="sakura">Sakura (Japon Kiraz Çiçeği)</option>
+	                <option value="nordic">Nordic (İskandinav Minimalist)</option>
+	                <option value="tokyo_night">Tokyo Night (Koyu Lacivert)</option>
+	                <option value="old_money">Old Money (Klasik & Şık)</option>
+	                <option value="the_man">The Man</option>
+	                <option value="the_woman">The Woman</option>
+	                <option value="the_2slgbtq_plus">The 2SLGBTQ+</option>
+	                <option value="the_philosopher">The Philosopher</option>
+	                <option value="the_artist">The Artist</option>
+	                <option value="harpci">Harpçi</option>
+	                <option value="ruhban">Ruhban</option>
+	            </select>
+	        </div>
         
         <!-- Genel Renkler -->
         <div class="card p-3 mb-3 cemil">
@@ -943,9 +945,9 @@
             "pagination_text_color": "#23232B",
             "font_family": "EB+Garamond"
         },
-        "the_artist": {
-            "background_color": "#FBF7F1",
-            "text_color": "#1A1B1E",
+	        "the_artist": {
+	            "background_color": "#FBF7F1",
+	            "text_color": "#1A1B1E",
             "header_background_color": "#111827",
             "header_text_color": "#FBF7F1",
             "link_color": "#1D4ED8",
@@ -975,14 +977,86 @@
             "dropdown_hover_text_color": "#111827",
             "nav_link_hover_color": "#FBF7F1",
             "nav_link_hover_bg": "#1F2937",
-            "pagination_background_color": "#FFFFFF",
-            "pagination_text_color": "#111827",
-            "font_family": "Playfair+Display"
-        }
-    };
-    document.addEventListener('DOMContentLoaded', function() {
-        // TEMALAR
-        document.getElementById('theme_select').addEventListener('change', function() {
+	            "pagination_background_color": "#FFFFFF",
+	            "pagination_text_color": "#111827",
+	            "font_family": "Playfair+Display"
+	        },
+	        "harpci": {
+	            "background_color": "#0E1116",
+	            "text_color": "#F4F1E8",
+	            "header_background_color": "#1B1F2A",
+	            "header_text_color": "#F4F1E8",
+	            "link_color": "#E11D48",
+	            "link_hover_color": "#F59E0B",
+	            "button_background_color": "#B91C1C",
+	            "button_hover_background_color": "#991B1B",
+	            "button_text_color": "#FDF2F2",
+	            "secondary_button_background_color": "#374151",
+	            "secondary_button_hover_background_color": "#1F2937",
+	            "secondary_button_text_color": "#F4F1E8",
+	            "message_bubble_color": "#1F2937",
+	            "tbas_color": "#F4F1E8",
+	            "yanit_card": "#111827",
+	            "font_size": "18",
+	            "hover_background_color": "#2B3240",
+	            "hover_text_color": "#F4F1E8",
+	            "icon_color": "#F59E0B",
+	            "icon_hover_color": "#E11D48",
+	            "answer_background_color": "#0E1116",
+	            "content_background_color": "#111827",
+	            "tab_background_color": "#0B1220",
+	            "tab_text_color": "#F4F1E8",
+	            "tab_active_background_color": "#111827",
+	            "tab_active_text_color": "#F59E0B",
+	            "dropdown_text_color": "#F4F1E8",
+	            "dropdown_hover_background_color": "#1F2937",
+	            "dropdown_hover_text_color": "#F59E0B",
+	            "nav_link_hover_color": "#F59E0B",
+	            "nav_link_hover_bg": "#111827",
+	            "pagination_background_color": "#111827",
+	            "pagination_text_color": "#F4F1E8",
+	            "font_family": "Oswald"
+	        },
+	        "ruhban": {
+	            "background_color": "#FAF8F0",
+	            "text_color": "#1A1C2A",
+	            "header_background_color": "#2A1234",
+	            "header_text_color": "#FAF8F0",
+	            "link_color": "#2E5EAA",
+	            "link_hover_color": "#B8860B",
+	            "button_background_color": "#B8860B",
+	            "button_hover_background_color": "#9A7209",
+	            "button_text_color": "#2A1234",
+	            "secondary_button_background_color": "#2A1234",
+	            "secondary_button_hover_background_color": "#1F0C26",
+	            "secondary_button_text_color": "#FAF8F0",
+	            "message_bubble_color": "#EEE7F4",
+	            "tbas_color": "#2A1234",
+	            "yanit_card": "#FFFFFF",
+	            "font_size": "18",
+	            "hover_background_color": "#F0EAF3",
+	            "hover_text_color": "#1A1C2A",
+	            "icon_color": "#2A1234",
+	            "icon_hover_color": "#B8860B",
+	            "answer_background_color": "#FAF8F0",
+	            "content_background_color": "#FFFFFF",
+	            "tab_background_color": "#F0EAF3",
+	            "tab_text_color": "#1A1C2A",
+	            "tab_active_background_color": "#FFFFFF",
+	            "tab_active_text_color": "#2A1234",
+	            "dropdown_text_color": "#1A1C2A",
+	            "dropdown_hover_background_color": "#E7DFF0",
+	            "dropdown_hover_text_color": "#2A1234",
+	            "nav_link_hover_color": "#FAF8F0",
+	            "nav_link_hover_bg": "#3A1E4C",
+	            "pagination_background_color": "#FFFFFF",
+	            "pagination_text_color": "#2A1234",
+	            "font_family": "Crimson+Pro"
+	        }
+	    };
+	    document.addEventListener('DOMContentLoaded', function() {
+	        // TEMALAR
+	        document.getElementById('theme_select').addEventListener('change', function() {
             const theme = THEMES[this.value];
             if (!theme) return;
             for (const [key, val] of Object.entries(theme)) {
