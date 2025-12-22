@@ -1388,13 +1388,14 @@ a.hashtag-link:hover {
 
 .popover {
     background-color: var(--content-background-color);
-    border-color: var(--header-background-color);
+    border-color: var(--border-color);
+    box-shadow: 0 10px 28px var(--shadow-color);
 }
 
 .popover-header {
     background-color: var(--header-background-color);
-    color: var(--text-color);
-    border-bottom: 1px solid var(--header-background-color);
+    color: var(--header-text-color);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .popover-body {
@@ -1402,10 +1403,10 @@ a.hashtag-link:hover {
 }
 
 .popover .popover-arrow::before {
-    border-top-color: var(--header-background-color);
-    border-bottom-color: var(--header-background-color);
-    border-left-color: var(--header-background-color);
-    border-right-color: var(--header-background-color);
+    border-top-color: var(--border-color);
+    border-bottom-color: var(--border-color);
+    border-left-color: var(--border-color);
+    border-right-color: var(--border-color);
 }
 
 .popover .popover-arrow::after {
