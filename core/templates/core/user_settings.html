@@ -315,15 +315,52 @@
 
 {% block extra_js %}
 <script>
-    function updateColor(variable, value) {
-        document.documentElement.style.setProperty(variable, value);
-    }
+    const SYSTEM_FONTS = new Set([
+        'Georgia',
+        'Times+New+Roman',
+        'Book+Antiqua',
+        'Courier+New',
+        'Comic+Sans+MS',
+        'Arial',
+        'Verdana',
+        'Helvetica',
+    ]);
 
-    function normalizeCssVarValue(key, value) {
-        if (key === 'font_size') return `${parseInt(value, 10) || 16}px`;
-        if (key === 'font_family') return `"${String(value).replace(/\+/g, ' ')}"`;
-        return value;
-    }
+	    function updateColor(variable, value) {
+	        document.documentElement.style.setProperty(variable, value);
+	    }
+
+	    function ensurePreviewFontLoaded(fontFamily) {
+	        if (!fontFamily) return;
+	        const fontValue = String(fontFamily).trim();
+
+	        const existingLink = document.getElementById('dynamicGoogleFont');
+	        if (SYSTEM_FONTS.has(fontValue)) {
+	            if (existingLink) existingLink.remove();
+	            return;
+	        }
+
+	        const familyParam = fontValue.replace(/\s+/g, '+');
+	        const href = `https://fonts.googleapis.com/css2?family=${familyParam}&display=swap`;
+
+	        const link = existingLink || (() => {
+	            const el = document.createElement('link');
+	            el.id = 'dynamicGoogleFont';
+	            el.rel = 'stylesheet';
+	            document.head.appendChild(el);
+	            return el;
+	        })();
+
+	        if (link.getAttribute('href') !== href) {
+	            link.setAttribute('href', href);
+	        }
+	    }
+
+	    function normalizeCssVarValue(key, value) {
+	        if (key === 'font_size') return `${parseInt(value, 10) || 16}px`;
+	        if (key === 'font_family') return `"${String(value).replace(/\+/g, ' ')}"`;
+	        return value;
+	    }
 
     function toCssVarName(key) {
         // Settings form uses model field names; CSS vars don't always match 1:1.
@@ -333,15 +370,21 @@
         return '--' + key.replace(/_/g, '-');
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const previewInputs = document.querySelectorAll('input[type="color"], input[type="number"], select[name="font_family"]');
-        previewInputs.forEach(function(input) {
-            input.addEventListener('input', function() {
-                const varName = toCssVarName(this.name);
-                updateColor(varName, normalizeCssVarValue(this.name, this.value));
-            });
-        });
-    });
+	    document.addEventListener('DOMContentLoaded', function() {
+	        const previewInputs = document.querySelectorAll('input[type="color"], input[type="number"], select[name="font_family"]');
+	        const fontSelect = document.querySelector('select[name="font_family"]');
+	        if (fontSelect) ensurePreviewFontLoaded(fontSelect.value);
+
+	        previewInputs.forEach(function(input) {
+	            input.addEventListener('input', function() {
+	                const varName = toCssVarName(this.name);
+	                updateColor(varName, normalizeCssVarValue(this.name, this.value));
+	                if (this.name === 'font_family') {
+	                    ensurePreviewFontLoaded(this.value);
+	                }
+	            });
+	        });
+	    });
 </script>
 <script>
     // TEMALAR BURADA TANIMLI (Sadece 6 kaliteli tema)
@@ -767,40 +810,40 @@
 	            "pagination_text_color": "#22312B",
 	            "font_family": "Crimson+Text"
 	        },
-        "the_man": {
-            "background_color": "#F1F4F8",
-            "text_color": "#0B0F1A",
-            "header_background_color": "#0B0F1A",
-            "header_text_color": "#F1F4F8",
-            "link_color": "#1E40AF",
-            "link_hover_color": "#2563EB",
-            "button_background_color": "#C77D3B",
-            "button_hover_background_color": "#B66A2C",
-            "button_text_color": "#0B0F1A",
-            "secondary_button_background_color": "#334155",
-            "secondary_button_hover_background_color": "#1F2937",
-            "secondary_button_text_color": "#F1F4F8",
-            "message_bubble_color": "#DDE6F0",
-            "tbas_color": "#0B0F1A",
-            "yanit_card": "#FFFFFF",
-            "font_size": "18",
-            "hover_background_color": "#E1EAF4",
-            "hover_text_color": "#0B0F1A",
-            "icon_color": "#0B0F1A",
-            "icon_hover_color": "#C77D3B",
-            "answer_background_color": "#F1F4F8",
-            "content_background_color": "#FFFFFF",
-            "tab_background_color": "#E6EDF5",
-            "tab_text_color": "#0B0F1A",
-            "tab_active_background_color": "#FFFFFF",
-            "tab_active_text_color": "#0B0F1A",
-            "dropdown_text_color": "#0B0F1A",
-            "dropdown_hover_background_color": "#E1EAF4",
-            "dropdown_hover_text_color": "#0B0F1A",
-            "nav_link_hover_color": "#F1F4F8",
+	        "the_man": {
+	            "background_color": "#F2F4F7",
+	            "text_color": "#0B0F1A",
+	            "header_background_color": "#0B1220",
+	            "header_text_color": "#F2F4F7",
+	            "link_color": "#1E40AF",
+	            "link_hover_color": "#2563EB",
+	            "button_background_color": "#B87333",
+	            "button_hover_background_color": "#A8652D",
+	            "button_text_color": "#0B1220",
+	            "secondary_button_background_color": "#334155",
+	            "secondary_button_hover_background_color": "#1F2937",
+	            "secondary_button_text_color": "#F2F4F7",
+	            "message_bubble_color": "#DCE3EC",
+	            "tbas_color": "#0B0F1A",
+	            "yanit_card": "#FFFFFF",
+	            "font_size": "18",
+	            "hover_background_color": "#E2E8F0",
+	            "hover_text_color": "#0B0F1A",
+	            "icon_color": "#0B1220",
+	            "icon_hover_color": "#B87333",
+	            "answer_background_color": "#F2F4F7",
+	            "content_background_color": "#FFFFFF",
+	            "tab_background_color": "#E2E8F0",
+	            "tab_text_color": "#0B0F1A",
+	            "tab_active_background_color": "#FFFFFF",
+	            "tab_active_text_color": "#0B1220",
+	            "dropdown_text_color": "#0B0F1A",
+	            "dropdown_hover_background_color": "#E2E8F0",
+	            "dropdown_hover_text_color": "#0B1220",
+	            "nav_link_hover_color": "#F2F4F7",
 	            "nav_link_hover_bg": "#111827",
 	            "pagination_background_color": "#FFFFFF",
-	            "pagination_text_color": "#0B0F1A",
+	            "pagination_text_color": "#0B1220",
 	            "font_family": "Lora"
 	        },
         "the_woman": {
@@ -875,42 +918,42 @@
             "pagination_text_color": "#F3F6FF",
             "font_family": "Poppins"
         },
-        "the_philosopher": {
-            "background_color": "#F3F4F6",
-            "text_color": "#111827",
-            "header_background_color": "#1E3A8A",
-            "header_text_color": "#EFF6FF",
-            "link_color": "#0F766E",
-            "link_hover_color": "#4C1D95",
-            "button_background_color": "#4C1D95",
-            "button_hover_background_color": "#3B0764",
-            "button_text_color": "#EFF6FF",
-            "secondary_button_background_color": "#334155",
-            "secondary_button_hover_background_color": "#1F2937",
-            "secondary_button_text_color": "#EFF6FF",
-            "message_bubble_color": "#E5E7EB",
-            "tbas_color": "#111827",
-            "yanit_card": "#FFFFFF",
-            "font_size": "18",
-            "hover_background_color": "#E5E7EB",
-            "hover_text_color": "#111827",
-            "icon_color": "#1E3A8A",
-            "icon_hover_color": "#4C1D95",
-            "answer_background_color": "#F3F4F6",
-            "content_background_color": "#FFFFFF",
-            "tab_background_color": "#E5E7EB",
-            "tab_text_color": "#111827",
-            "tab_active_background_color": "#FFFFFF",
-            "tab_active_text_color": "#1E3A8A",
-            "dropdown_text_color": "#111827",
-            "dropdown_hover_background_color": "#E5E7EB",
-            "dropdown_hover_text_color": "#1E3A8A",
-            "nav_link_hover_color": "#EFF6FF",
-            "nav_link_hover_bg": "#1E40AF",
-            "pagination_background_color": "#FFFFFF",
-            "pagination_text_color": "#1E3A8A",
-            "font_family": "Cardo"
-        },
+	        "the_philosopher": {
+	            "background_color": "#FAFAF9",
+	            "text_color": "#1C1917",
+	            "header_background_color": "#1C1917",
+	            "header_text_color": "#FAFAF9",
+	            "link_color": "#B45309",
+	            "link_hover_color": "#92400E",
+	            "button_background_color": "#B45309",
+	            "button_hover_background_color": "#92400E",
+	            "button_text_color": "#FAFAF9",
+	            "secondary_button_background_color": "#57534E",
+	            "secondary_button_hover_background_color": "#44403C",
+	            "secondary_button_text_color": "#FAFAF9",
+	            "message_bubble_color": "#F5F5F4",
+	            "tbas_color": "#1C1917",
+	            "yanit_card": "#FFFFFF",
+	            "font_size": "18",
+	            "hover_background_color": "#F5F5F4",
+	            "hover_text_color": "#1C1917",
+	            "icon_color": "#1C1917",
+	            "icon_hover_color": "#B45309",
+	            "answer_background_color": "#FAFAF9",
+	            "content_background_color": "#FFFFFF",
+	            "tab_background_color": "#F5F5F4",
+	            "tab_text_color": "#1C1917",
+	            "tab_active_background_color": "#FFFFFF",
+	            "tab_active_text_color": "#1C1917",
+	            "dropdown_text_color": "#1C1917",
+	            "dropdown_hover_background_color": "#F5F5F4",
+	            "dropdown_hover_text_color": "#1C1917",
+	            "nav_link_hover_color": "#FAFAF9",
+	            "nav_link_hover_bg": "#292524",
+	            "pagination_background_color": "#FFFFFF",
+	            "pagination_text_color": "#1C1917",
+	            "font_family": "Cardo"
+	        },
         "the_artist": {
             "background_color": "#FFF7ED",
             "text_color": "#111827",
@@ -1091,67 +1134,71 @@
             "pagination_text_color": "#F3E7D5",
             "font_family": "Vollkorn"
         },
-        "ruhban": {
-            "background_color": "#FBF7FF",
-            "text_color": "#1F102A",
-            "header_background_color": "#3B0764",
-            "header_text_color": "#FDF4FF",
-            "link_color": "#B8860B",
-            "link_hover_color": "#1D4ED8",
-            "button_background_color": "#B8860B",
-            "button_hover_background_color": "#9A7209",
-            "button_text_color": "#1F102A",
-            "secondary_button_background_color": "#4C1D95",
-            "secondary_button_hover_background_color": "#3B0764",
-            "secondary_button_text_color": "#FDF4FF",
-            "message_bubble_color": "#EFE7FF",
-            "tbas_color": "#3B0764",
-            "yanit_card": "#FFFFFF",
-            "font_size": "18",
-            "hover_background_color": "#F1E6FF",
-            "hover_text_color": "#1F102A",
-            "icon_color": "#3B0764",
-            "icon_hover_color": "#B8860B",
-            "answer_background_color": "#FBF7FF",
-            "content_background_color": "#FFFFFF",
-            "tab_background_color": "#F1E6FF",
-            "tab_text_color": "#1F102A",
-            "tab_active_background_color": "#FFFFFF",
-            "tab_active_text_color": "#3B0764",
-            "dropdown_text_color": "#1F102A",
-            "dropdown_hover_background_color": "#E7DFFB",
-            "dropdown_hover_text_color": "#3B0764",
-            "nav_link_hover_color": "#FDF4FF",
-            "nav_link_hover_bg": "#2E0650",
-            "pagination_background_color": "#FFFFFF",
-            "pagination_text_color": "#3B0764",
-            "font_family": "Crimson+Pro"
-        }
+	        "ruhban": {
+	            "background_color": "#F7F1E8",
+	            "text_color": "#1F102A",
+	            "header_background_color": "#2A0A2E",
+	            "header_text_color": "#F7F1E8",
+	            "link_color": "#B8860B",
+	            "link_hover_color": "#1D4ED8",
+	            "button_background_color": "#B8860B",
+	            "button_hover_background_color": "#9A7209",
+	            "button_text_color": "#1F102A",
+	            "secondary_button_background_color": "#3A1E4C",
+	            "secondary_button_hover_background_color": "#2E0650",
+	            "secondary_button_text_color": "#F7F1E8",
+	            "message_bubble_color": "#EFE7FF",
+	            "tbas_color": "#2A0A2E",
+	            "yanit_card": "#FFFFFF",
+	            "font_size": "18",
+	            "hover_background_color": "#F1E6FF",
+	            "hover_text_color": "#1F102A",
+	            "icon_color": "#2A0A2E",
+	            "icon_hover_color": "#B8860B",
+	            "answer_background_color": "#F7F1E8",
+	            "content_background_color": "#FFFFFF",
+	            "tab_background_color": "#F1E6FF",
+	            "tab_text_color": "#1F102A",
+	            "tab_active_background_color": "#FFFFFF",
+	            "tab_active_text_color": "#2A0A2E",
+	            "dropdown_text_color": "#1F102A",
+	            "dropdown_hover_background_color": "#E7DFFB",
+	            "dropdown_hover_text_color": "#2A0A2E",
+	            "nav_link_hover_color": "#F7F1E8",
+	            "nav_link_hover_bg": "#3A1E4C",
+	            "pagination_background_color": "#FFFFFF",
+	            "pagination_text_color": "#2A0A2E",
+	            "font_family": "Noto+Serif"
+	        }
 	    };
 	    document.addEventListener('DOMContentLoaded', function() {
 	        // TEMALAR
 	        document.getElementById('theme_select').addEventListener('change', function() {
-            const theme = THEMES[this.value];
-            if (!theme) return;
-            for (const [key, val] of Object.entries(theme)) {
-                // inputları doldur
-                let input = document.getElementsByName(key)[0];
-                if (input) {
-                    input.value = val;
-                    // select ise option'u seç
-                    if (input.tagName.toLowerCase() === 'select') {
-                        Array.from(input.options).forEach(opt => {
-                            if (opt.value.replace(/\+/g, ' ') === val || opt.value === val) opt.selected = true;
-                        });
-                    }
-                    // number ise direkt value ata
-                    if (input.type === "number") input.value = parseInt(val);
-                }
-                // canlı olarak siteye uygula
-                const varName = toCssVarName(key);
-                updateColor(varName, normalizeCssVarValue(key, val));
-            }
-        });
-    });
-    </script>
+	            const theme = THEMES[this.value];
+	            if (!theme) return;
+	            for (const [key, val] of Object.entries(theme)) {
+	                // inputları doldur
+	                let input = document.getElementsByName(key)[0];
+	                if (input) {
+	                    input.value = val;
+	                    // select ise option'u seç
+	                    if (input.tagName.toLowerCase() === 'select') {
+	                        Array.from(input.options).forEach(opt => {
+	                            if (opt.value.replace(/\+/g, ' ') === val || opt.value === val) opt.selected = true;
+	                        });
+	                    }
+	                    // number ise direkt value ata
+	                    if (input.type === "number") input.value = parseInt(val);
+	                }
+	                // canlı olarak siteye uygula
+	                const varName = toCssVarName(key);
+	                updateColor(varName, normalizeCssVarValue(key, val));
+	                if (key === 'font_family') {
+	                    const selectedFont = input && input.tagName.toLowerCase() === 'select' ? input.value : val;
+	                    ensurePreviewFontLoaded(selectedFont);
+	                }
+	            }
+	        });
+	    });
+	    </script>
 {% endblock %}
