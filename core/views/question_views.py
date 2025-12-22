@@ -112,7 +112,7 @@ def question_detail(request, slug):
             new_answer.question = question
             new_answer.save()
             Kenarda.objects.filter(user=request.user, question=question, is_sent=False).delete()
-            return redirect('question_detail', slug=question.slug)
+            return redirect('single_answer', slug=question.slug, answer_id=new_answer.id)
     else:
         form = AnswerForm()
 
@@ -449,7 +449,7 @@ def add_question_from_search(request):
                     answer=answer
                 )
 
-            return redirect('question_detail', slug=question.slug)
+            return redirect('single_answer', slug=question.slug, answer_id=answer.id)
     else:
         answer_form = AnswerForm()
 
@@ -713,8 +713,8 @@ def generate_question_nodes(questions, user_filter=None):
 
 
 def bkz_view(request, query):
-    # Birden fazla aynı isimli soru olabilir, ilkini al
-    question = Question.objects.filter(question_text__exact=query).first()
+    # Birden fazla aynı isimli soru olabilir, ilkini al (büyük/küçük harf duyarsız)
+    question = Question.objects.filter(question_text__iexact=query).first()
     if question:
         return redirect('question_detail', slug=question.slug)
     else:

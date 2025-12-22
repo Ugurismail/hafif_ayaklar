@@ -111,7 +111,7 @@ def add_answer(request, slug):
             from ..models import Kenarda
             silinen = Kenarda.objects.filter(user=request.user, question=question, is_sent=False)
             deleted_count, _ = silinen.delete()
-            return redirect('question_detail', slug=question.slug)
+            return redirect('single_answer', slug=question.slug, answer_id=answer.id)
     else:
         form = AnswerForm()
 
