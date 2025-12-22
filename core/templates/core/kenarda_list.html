@@ -197,17 +197,6 @@ document.addEventListener('DOMContentLoaded', function() {
   let currentTaslakId = null;
 
   // Toast gösterme fonksiyonu
-  function showToast(type, message) {
-    const toastEl = document.getElementById(type + 'Toast');
-    const messageEl = document.getElementById(type + 'ToastMessage');
-    messageEl.textContent = message;
-    const toast = new bootstrap.Toast(toastEl, {
-      autohide: true,
-      delay: 3000
-    });
-    toast.show();
-  }
-
   // Yeniden Düzenle
   document.querySelectorAll('.yukle-btn').forEach(function(btn) {
     btn.onclick = function() {
@@ -226,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!questionSlug) {
         // Yanıt düzenleme olarak işaretlenmiş ama yanıt/soru bağlamı yoksa yanlış sayfaya düşmesin
         if (draftSource === 'answer_edit') {
-          showToast('error', 'Bu taslak bir yanıta bağlı değil (bağlam kayıp).');
+          showToast('Bu taslak bir yanıta bağlı değil (bağlam kayıp).', 'error', 4000);
           return;
         }
         // Question yoksa, draft_source'a göre yönlendir
@@ -266,16 +255,16 @@ document.addEventListener('DOMContentLoaded', function() {
       deleteModal.hide();
 
       if(data.status == "ok") {
-        showToast('success', 'Taslak başarıyla silindi!');
+        showToast('Taslak başarıyla silindi!', 'success', 1500);
         setTimeout(() => location.reload(), 1500);
       } else {
-        showToast('error', 'Taslak silinemedi!');
+        showToast('Taslak silinemedi!', 'error', 4000);
       }
     })
     .catch(err => {
       const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
       deleteModal.hide();
-      showToast('error', 'Bir hata oluştu!');
+      showToast('Bir hata oluştu!', 'error', 4000);
     });
   };
 
@@ -301,19 +290,19 @@ document.addEventListener('DOMContentLoaded', function() {
       sendModal.hide();
 
       if(data.status == "ok") {
-        showToast('success', 'Yanıt başarıyla gönderildi!');
+        showToast('Yanıt başarıyla gönderildi!', 'success', 1500);
         // Yanıtın olduğu sayfaya yönlendir
         setTimeout(() => {
           window.location.href = "/" + data.question_slug + "/#answer-" + data.answer_id;
         }, 1000);
       } else {
-        showToast('error', 'Yanıt gönderilemedi!');
+        showToast('Yanıt gönderilemedi!', 'error', 4000);
       }
     })
     .catch(err => {
       const sendModal = bootstrap.Modal.getInstance(document.getElementById('sendConfirmModal'));
       sendModal.hide();
-      showToast('error', 'Bir hata oluştu!');
+      showToast('Bir hata oluştu!', 'error', 4000);
     });
   };
 });

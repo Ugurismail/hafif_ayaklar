@@ -381,10 +381,7 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
             } else {
                 alert('Taslak başarıyla kaydedildi!');
             }
-            // Formu temizle
-            if (answerTextarea) answerTextarea.value = "";
-            const questionInput = document.querySelector('input[name="question_text"], #id_question_text');
-            if (questionInput) questionInput.value = "";
+            // Formu temizleme - kullanıcı üzerinde çalışmaya devam edebilir
         } else {
             if (typeof showToast === 'function') {
                 showToast('Kaydetme başarısız: ' + (data.error || ''), 'error');

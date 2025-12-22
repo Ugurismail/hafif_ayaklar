@@ -1355,35 +1355,64 @@
   </script>
 
 <script>
-document.getElementById('sabaha-birak-btn').onclick = function(e) {
+document.addEventListener('DOMContentLoaded', function() {
+  const btn = document.getElementById('sabaha-birak-btn');
+  if (!btn) return;
+
+  const feedbackEl = document.getElementById('sabahabirak-feedback');
+  let hideFeedbackTimer = null;
+
+  function flashFeedback() {
+    if (!feedbackEl) return;
+    feedbackEl.style.display = 'inline';
+    if (hideFeedbackTimer) clearTimeout(hideFeedbackTimer);
+    hideFeedbackTimer = setTimeout(function() {
+      feedbackEl.style.display = 'none';
+    }, 1500);
+  }
+
+  btn.addEventListener('click', function(e) {
     e.preventDefault();
-    const content = document.getElementById('id_answer_text').value;
-    const questionId = document.getElementById('answer_form_question_id').value;
+
+    const textarea = document.getElementById('id_answer_text');
+    const questionId = document.getElementById('answer_form_question_id')?.value;
+    const content = (textarea?.value || '').trim();
+
+    if (!content) {
+      showToast('Kaydedilecek içerik yok!', 'warning', 1500);
+      return;
+    }
+    if (!questionId) {
+      showToast('Taslak bağlamı eksik (question_id).', 'error', 3000);
+      return;
+    }
+
     fetch("{% url 'kenarda_save' %}", {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            question_id: questionId,
-            content: content
-        })
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        question_id: questionId,
+        content: content
+      })
     })
     .then(res => res.json())
     .then(data => {
-        if (data.status === 'ok') {
-            document.getElementById('sabahabirak-feedback').style.display = 'inline';
-        } else {
-            showToast('Bir hata oluştu: ' + (data.error || ''), 'error');
-        }
+      if (data.status === 'ok') {
+        showToast('Taslak başarıyla kaydedildi!', 'success', 1500);
+        flashFeedback();
+      } else {
+        showToast('Kaydetme başarısız: ' + (data.error || ''), 'error', 4000);
+      }
     })
     .catch(err => {
-        showToast('Sunucu hatası: ' + err, 'error');
+      showToast('Sunucu hatası: ' + err, 'error', 4000);
     });
-};
-
-  </script>
+  });
+});
+</script>
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
