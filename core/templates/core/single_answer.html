@@ -959,53 +959,68 @@
     });
     </script>
 
-   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // SABAH BIRAK
-        var sabahaBirakBtn = document.getElementById('sabaha-birak-btn');
-        var textarea = document.getElementById('id_answer_text') || document.querySelector('textarea[name="answer_text"]');
-        var qid = window.question_id || (typeof QUESTION_ID !== "undefined" ? QUESTION_ID : null) || {{ question.id|default:"null" }};
-        if (sabahaBirakBtn && textarea && qid) {
-            sabahaBirakBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                var content = textarea.value.trim();
-                if (!content) {
-                    showToast("Kaydedilecek içerik yok!", 'warning');
-                    return;
-                }
-                fetch('/kenarda/save/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        question_id: qid,
-                        content: content
-                    })
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.status === "ok") {
-                        showToast("Taslak başarıyla kaydedildi!", 'success', 1500);
-                        textarea.value = "";
-                    } else {
-                        showToast("Kaydetme başarısız: " + (data.error || ""), 'error');
-                    }
-                });
-            });
-        }
-    
-        // Taslak içeriğini Django context'ten al (URL'den değil)
-        {% if draft_content %}
-        const draftContent = "{{ draft_content|escapejs }}";
-        if (draftContent && textarea) {
-          textarea.value = draftContent;
-          textarea.focus();
-        }
-        {% endif %}
-    });
-    </script>
+	   <script>
+	    document.addEventListener('DOMContentLoaded', function() {
+	        // KENARDA DURSUN (taslak kaydet)
+	        var sabahaBirakBtn = document.getElementById('sabaha-birak-btn');
+	        var textarea = document.getElementById('id_answer_text') || document.querySelector('textarea[name="answer_text"]');
+	        var feedbackEl = document.getElementById('sabahabirak-feedback');
+	        var hideFeedbackTimer = null;
+
+	        function flashFeedback() {
+	          if (!feedbackEl) return;
+	          feedbackEl.style.display = 'inline';
+	          if (hideFeedbackTimer) clearTimeout(hideFeedbackTimer);
+	          hideFeedbackTimer = setTimeout(function() {
+	            feedbackEl.style.display = 'none';
+	          }, 1500);
+	        }
+
+	        var qid = window.question_id || (typeof QUESTION_ID !== "undefined" ? QUESTION_ID : null) || {{ question.id|default:"null" }};
+	        if (sabahaBirakBtn && textarea && qid) {
+	            sabahaBirakBtn.addEventListener('click', function(e) {
+	                e.preventDefault();
+	                var content = (textarea.value || '').trim();
+	                if (!content) {
+	                    showToast("Kaydedilecek içerik yok!", 'warning', 1500);
+	                    return;
+	                }
+	                fetch("{% url 'kenarda_save' %}", {
+	                    method: 'POST',
+	                    headers: {
+	                        'Content-Type': 'application/json',
+	                        'X-CSRFToken': '{{ csrf_token }}'
+	                    },
+	                    body: JSON.stringify({
+	                        question_id: qid,
+	                        content: content
+	                    })
+	                })
+	                .then(r => r.json())
+	                .then(data => {
+	                    if (data.status === "ok") {
+	                        showToast("Taslak başarıyla kaydedildi!", 'success', 1500);
+	                        flashFeedback();
+	                    } else {
+	                        showToast("Kaydetme başarısız: " + (data.error || ""), 'error', 4000);
+	                    }
+	                })
+	                .catch(err => {
+	                    showToast("Sunucu hatası: " + err, 'error', 4000);
+	                });
+	            });
+	        }
+	    
+	        // Taslak içeriğini Django context'ten al (URL'den değil)
+	        {% if draft_content %}
+	        const draftContent = "{{ draft_content|escapejs }}";
+	        if (draftContent && textarea) {
+	          textarea.value = draftContent;
+	          textarea.focus();
+	        }
+	        {% endif %}
+	    });
+	    </script>
     
 
 <script>
