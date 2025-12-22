@@ -23,7 +23,11 @@ from core.models import (
 # 1) Standart Admin Kaydı (Invitation, UserProfile, SavedItem, Vote, PinnedEntry, Entry, RandomSentence)
 # =============================================================================
 admin.site.register(Invitation)
-admin.site.register(UserProfile)
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "last_seen", "invitation_quota", "is_dj")
+    ordering = ("-last_seen",)
+    search_fields = ("user__username", "user__email")
 admin.site.register(SavedItem)
 admin.site.register(Vote)
 admin.site.register(PinnedEntry)
@@ -48,12 +52,22 @@ class MassMessageForm(forms.Form):
 # - list_filter’e "groups" ekleyerek filtreleme yapabiliyoruz.
 # - Ayrıca, admin action ile seçili kullanıcılara mesaj gönderme işlevini de koruyoruz.
 class CustomUserAdmin(UserAdmin):
-    list_display = UserAdmin.list_display + ('display_groups',)
+    list_display = UserAdmin.list_display + ('display_groups', 'last_seen',)
     list_filter = UserAdmin.list_filter + ('groups',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related("userprofile")
     
     def display_groups(self, obj):
         return ", ".join(g.name for g in obj.groups.all())
     display_groups.short_description = "Gruplar"
+
+    def last_seen(self, obj):
+        profile = getattr(obj, "userprofile", None)
+        return getattr(profile, "last_seen", None)
+    last_seen.short_description = "Son aktif"
+    last_seen.admin_order_field = "userprofile__last_seen"
 
     actions = ["send_message_to_selected_users"]
 
