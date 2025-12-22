@@ -53,8 +53,8 @@
         </div>
 
         <!-- Orta Sütun: Soru Detayı ve Yanıtlar -->
-        <div class="col-md-8 d-flex flex-column sol-scroll" style="height: 100%; min-height: 0;">
-            <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
+        <div class="col-md-8 d-flex flex-column sol-scroll" style="height: 100%;">
+            <div style="flex: none; height: 100%; overflow-y:auto;">
             <!-- Soru Başlığı ve Harita İkonu -->
             <div class="action d-flex justify-content-between align-items-center">
                 <h1 class="h1 mb-0">
@@ -139,9 +139,9 @@
             </div>
 
             <!-- Odaklanılan Yanıt -->
-            <div class="card mb-3" id="answer-{{ focused_answer.id }}">
+            <div class="card mb-3 answer" id="answer-{{ focused_answer.id }}">
                 <div class="card-body">
-                    <div class="auto-expand answer-text" id="answerTextContent">{{ focused_answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}</div>
+                    <div class="answer-text" id="answerTextContent">{{ focused_answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}</div>
 
                     {# Kaynakça Bölümü #}
                     {% with bibliography=focused_answer.answer_text|extract_bibliography %}
@@ -958,7 +958,7 @@
         }
     });
     </script>
-   
+
    <script>
     document.addEventListener('DOMContentLoaded', function() {
         // SABAH BIRAK
@@ -1010,7 +1010,7 @@
 
 <script>
         document.addEventListener("DOMContentLoaded", function() {
-    document.querySelectorAll('.auto-expand').forEach(function(textarea) {
+    document.querySelectorAll('textarea.auto-expand').forEach(function(textarea) {
         // Başlangıç yüksekliğini kaydet
         textarea.dataset.initialHeight = textarea.offsetHeight;
 
