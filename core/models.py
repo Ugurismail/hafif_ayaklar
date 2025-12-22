@@ -37,6 +37,9 @@ class UserProfile(models.Model):
     following = models.ManyToManyField('self', symmetrical=False, related_name='followers', blank=True)
     photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True, validators=[validate_image_file])
 
+    # Last active timestamp (updated by middleware while user is browsing)
+    last_seen = models.DateTimeField(null=True, blank=True)
+
     # Radyo DJ yetkisi
     is_dj = models.BooleanField(default=False, verbose_name='DJ Yetkisi')
 
