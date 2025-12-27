@@ -297,6 +297,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========== CLICKABLE ANSWER CARDS ==========
     // Make only the answer text area clickable (go to single answer page)
     // This avoids interference with buttons and interactive elements
+    const disableSingleAnswerNav = document.querySelector('[data-disable-single-answer-nav="1"]') !== null;
+
+    if (disableSingleAnswerNav) {
+        return;
+    }
+
     document.querySelectorAll('.answer.random-item-card').forEach(card => {
         const answerTextElements = card.querySelectorAll('.answer-text');
 

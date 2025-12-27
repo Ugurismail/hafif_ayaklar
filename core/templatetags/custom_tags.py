@@ -2,8 +2,10 @@ import re
 from django import template
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from django.utils.html import escape
 from core.models import Question, PollVote, Definition,Reference
 from django.contrib.auth.models import User
+from urllib.parse import quote_plus
 
 
 
@@ -25,7 +27,7 @@ def bkz_link(text):
     def replace(match):
         query = match.group(1).strip()
         url = reverse('bkz', args=[query])
-        return f'(bkz: <a href="{url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">{query}</a>)'
+        return f'(bkz: <a href="{url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">{escape(query)}</a>)'
 
     return mark_safe(re.sub(pattern, replace, text))
 
@@ -38,10 +40,10 @@ def ref_link(text):
         try:
             q = Question.objects.get(question_text__iexact=ref_text)
             url = reverse('question_detail', args=[q.slug])
-            return f'<a href="{url}" target="_blank" style="text-decoration: none;">{ref_text}</a>'
+            return f'<a href="{url}" target="_blank" style="text-decoration: none;">{escape(ref_text)}</a>'
         except Question.DoesNotExist:
-            create_url = reverse('add_question_from_search') + f'?q={ref_text}'
-            return f'<a href="{create_url}" target="_blank" style="text-decoration: none;">{ref_text}</a>'
+            create_url = reverse('add_question_from_search') + f'?q={quote_plus(ref_text)}'
+            return f'<a href="{create_url}" target="_blank" style="text-decoration: none;">{escape(ref_text)}</a>'
 
     # Sonucu mark_safe() ile işaretleyerek HTML'nin render edilmesini sağlıyoruz.
     return mark_safe(re.sub(pattern, replace_ref, text))
@@ -92,14 +94,14 @@ def tanim_link(text):
                           data-bs-toggle="popover" 
                           data-bs-placement="top" 
                           data-bs-trigger="hover focus"
-                          data-bs-title="{user_name}"
-                          data-bs-content="{def_text}">
-                          {question_word}
+                          data-bs-title="{escape(user_name)}"
+                          data-bs-content="{escape(def_text)}">
+                          {escape(question_word)}
                        </span>'''
         except Definition.DoesNotExist:
             # ID bulunamadıysa => orijinal metni döndürmek yerine 
             # plain text olarak "kelime" döndürebiliriz veya "Tanım yok" diyen bir span.
-            return question_word
+            return escape(question_word)
 
     # text içinde tüm (tanim:word:id) kalıplarını replacer ile değiştir.
     new_text = pattern.sub(replacer, text)
@@ -157,7 +159,7 @@ def reference_link(text):
         except Reference.DoesNotExist:
             full_citation = f"Kaynak bulunamadı (ID: {ref_id})"
 
-        html = f'<sup class="reference-tooltip" data-bs-toggle="tooltip" title="{full_citation}">[{ref_num}]</sup>'
+        html = f'<sup class="reference-tooltip" data-bs-toggle="tooltip" title="{escape(full_citation)}">[{ref_num}]</sup>'
         return html
 
     new_text = pattern.sub(replace_reference, text)

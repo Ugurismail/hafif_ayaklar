@@ -525,3 +525,18 @@ textarea.auto-expand.expanded {
 .answer.random-item-card:active {
     transform: scale(0.98);
 }
+
+/* Question detail: keep hover feel but remove click "jump" + pointer cursor
+   when navigation-to-single-answer is disabled. */
+[data-disable-single-answer-nav="1"] .answer.random-item-card {
+    cursor: default;
+}
+
+[data-disable-single-answer-nav="1"] .answer.random-item-card:active {
+    transform: none !important;
+}
+
+/* User homepage: keep click-to-single-answer but remove click "jump" */
+[data-disable-card-active-scale="1"] .answer.random-item-card:active {
+    transform: none !important;
+}
