@@ -1040,12 +1040,15 @@ span.icon-number {
 }
 
 #naber {
-    height: 80vh;  /* Ana container'ın yüksekliği */
-    min-height: 450px;
+    /* Fill the viewport under the fixed navbar + mt-5 (3rem) used on the container,
+       so 3-column pages don't leave a large blank area at the bottom. */
+    height: calc(100vh - 70px - 3rem);
+    height: calc(100dvh - 70px - 3rem);
+    min-height: 500px;
 }
 
 #naber > .row {
-    height: 100%;  /* Row tüm yüksekliği kaplasın */
+    height: 100%;
 }
 
 @media (max-width: 991px) {
