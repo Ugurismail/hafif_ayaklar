@@ -102,6 +102,7 @@ urlpatterns = [
     # Aramalar
     path('get-user-questions/', views.get_user_questions, name='get_user_questions'),
     path('get-user-answers/', views.get_user_answers, name='get_user_answers'),
+    path('get-root-questions/', views.get_root_questions, name='get_root_questions'),
     path('get-saved-items/', views.get_saved_items, name='get_saved_items'),
 
     path('iat/', views.iat_start, name='iat_start'),
@@ -110,6 +111,7 @@ urlpatterns = [
     path('iat/result/', views.iat_result, name='iat_result'),
 
     path("kenarda/save/", views.kenarda_save, name="kenarda_save"),
+    path("kenarda/preview/", views.kenarda_preview, name="kenarda_preview"),
     path('kenarda/', views.kenarda_list, name='kenarda_list'),
     path('kenarda/sil/<int:pk>/', views.kenarda_sil, name='kenarda_sil'),
     path('kenarda/gonder/<int:pk>/', views.kenarda_gonder, name='kenarda_gonder'),

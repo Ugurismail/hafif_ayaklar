@@ -14,7 +14,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
 
-from ..models import Vote, SavedItem, PinnedEntry, Answer
+from ..models import Vote, SavedItem, PinnedEntry, Answer, Notification
 
 
 def vote(request):
@@ -84,6 +84,23 @@ def vote(request):
         obj.downvotes = downvotes
         obj.save()
 
+        # Notify answer owner on vote (only when vote is set, not removed)
+        try:
+            if (
+                content_type_obj.model == 'answer'
+                and value in (1, -1)
+                and getattr(obj, 'user_id', None)
+                and obj.user_id != request.user.id
+            ):
+                Notification.create_answer_vote_notification(
+                    recipient=obj.user,
+                    sender=request.user,
+                    answer=obj,
+                    value=value,
+                )
+        except Exception:
+            pass
+
         return JsonResponse({
             'upvotes': upvotes,
             'downvotes': downvotes,
@@ -136,6 +153,20 @@ def save_item(request):
                 content_type=content_type_obj,
                 object_id=object_id
             ).count()
+
+            # Notify answer owner on save (only for answers)
+            try:
+                if content_type_obj.model == 'answer':
+                    answer = Answer.objects.filter(id=object_id).select_related('user', 'question').first()
+                    if answer and answer.user_id != request.user.id:
+                        Notification.create_answer_save_notification(
+                            recipient=answer.user,
+                            sender=request.user,
+                            answer=answer,
+                        )
+            except Exception:
+                pass
+
             return JsonResponse({'status': 'saved', 'save_count': save_count})
 
 

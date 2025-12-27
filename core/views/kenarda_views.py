@@ -1,6 +1,7 @@
 """
 Kenarda (draft) views
 - kenarda_save
+- kenarda_preview
 - kenarda_list
 - kenarda_sil
 - kenarda_gonder
@@ -11,6 +12,7 @@ import json
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -108,6 +110,61 @@ def kenarda_save(request):
             )
         return JsonResponse({"status": "ok"})
     return JsonResponse({"status": "fail", "error": "Yetkisiz veya geçersiz istek"})
+
+
+@require_POST
+@login_required
+def kenarda_preview(request):
+    """
+    Render a private, server-side preview of a draft as if it were posted.
+    This is meant to be used right after kenarda_save succeeds.
+    """
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "fail", "error": "Geçersiz JSON formatı"}, status=400)
+
+    question_id = data.get("question_id")
+    answer_id = data.get("answer_id")
+    content = (data.get("content") or "")
+    title = (data.get("title") or "").strip()
+
+    if len(content) > 50000:
+        return JsonResponse({"status": "fail", "error": "İçerik çok uzun (max 50000 karakter)"}, status=400)
+
+    if not answer_id and not question_id and not title:
+        return JsonResponse(
+            {"status": "fail", "error": "Taslak bağlamı eksik (answer_id/question_id/title gerekli)"},
+            status=400,
+        )
+
+    question = None
+    if question_id:
+        question = Question.objects.filter(id=question_id).first()
+
+    if answer_id:
+        answer = Answer.objects.filter(id=answer_id, user=request.user).select_related("question").first()
+        if not answer:
+            return JsonResponse({"status": "fail", "error": "Yanıt bulunamadı veya size ait değil"}, status=403)
+        question = answer.question
+
+    question_text = title or (question.question_text if question else "")
+    preview_key = f"draft-{request.user.id}-{int(timezone.now().timestamp())}"
+
+    html = render_to_string(
+        "core/_answer_preview_card.html",
+        {
+            "preview_text": content,
+            "preview_user": request.user,
+            "preview_created_at": timezone.now(),
+            "preview_question_text": question_text,
+            "preview_question_slug": getattr(question, "slug", None),
+            "preview_key": preview_key,
+        },
+        request=request,
+    )
+
+    return JsonResponse({"status": "ok", "html": html})
 
 
 @login_required

@@ -32,19 +32,7 @@ from ..forms import AnswerForm, QuestionForm, StartingQuestionForm
 from ..querysets import get_today_questions_queryset
 from ..utils import paginate_queryset
 from ..services import VoteSaveService
-
-
-def get_user_color(user_id):
-    """Helper function imported from user_views"""
-    from .user_views import get_user_color as _get_user_color
-    return _get_user_color(user_id)
-
-
-@login_required
-def get_user_questions(request):
-    """This function is also in user_views.py - consider importing from there"""
-    from .user_views import get_user_questions as _get_user_questions
-    return _get_user_questions(request)
+from .user_views import get_user_color
 
 
 def question_detail(request, slug):

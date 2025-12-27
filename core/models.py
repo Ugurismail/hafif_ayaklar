@@ -656,6 +656,8 @@ class Notification(models.Model):
         ('new_subquestion', 'New Subquestion'),    # New subquestion to followed question
         ('followed_user_entry', 'Followed User Entry'),  # Entry from followed user
         ('new_follower', 'New Follower'),          # Someone followed you
+        ('answer_vote', 'Answer Vote'),            # Someone voted on your answer
+        ('answer_save', 'Answer Save'),            # Someone saved your answer
         ('system', 'System'),                      # System notifications
     )
 
@@ -783,6 +785,39 @@ class Notification(models.Model):
             sender=follower,
             notification_type='new_follower',
             message=message
+        )
+
+    @classmethod
+    def create_answer_vote_notification(cls, recipient, sender, answer, value):
+        """Create notification when someone upvotes/downvotes your answer"""
+        if value == 1:
+            verb = "beğendi"
+        elif value == -1:
+            verb = "beğenmedi"
+        else:
+            return None
+
+        message = f"{sender.username} yanıtını {verb}: {answer.question.question_text}"
+        return cls.objects.create(
+            recipient=recipient,
+            sender=sender,
+            notification_type='answer_vote',
+            message=message,
+            related_answer=answer,
+            related_question=answer.question
+        )
+
+    @classmethod
+    def create_answer_save_notification(cls, recipient, sender, answer):
+        """Create notification when someone saves your answer"""
+        message = f"{sender.username} yanıtını kaydetti: {answer.question.question_text}"
+        return cls.objects.create(
+            recipient=recipient,
+            sender=sender,
+            notification_type='answer_save',
+            message=message,
+            related_answer=answer,
+            related_question=answer.question
         )
 
 

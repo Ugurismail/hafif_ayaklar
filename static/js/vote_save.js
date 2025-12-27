@@ -5,13 +5,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const csrftoken = document.querySelector('meta[name="csrf-token"]')?.content || getCookie('csrftoken');
 
     // **Oylama İşlevselliği** (Upvote / Downvote)
-    document.addEventListener('click', function(event) {
-        if (event.target.matches('.vote-btn') || event.target.closest('.vote-btn')) {
+    // Capture fazında (window seviyesinde) dinle: bazı sayfalarda üst seviye handler'lar click'i yutabiliyor.
+    window.addEventListener('click', function(event) {
+        const voteButton = event.target.closest?.('.vote-btn');
+        if (voteButton) {
             event.preventDefault();
-            const voteButton = event.target.closest('.vote-btn');
+            event.stopPropagation();
             const contentType = voteButton.getAttribute('data-content-type');
             const objectId = voteButton.getAttribute('data-object-id');
             const value = parseInt(voteButton.getAttribute('data-value'));
+
+            if (!csrftoken) {
+                showToast('CSRF token bulunamadı. Sayfayı yenileyip tekrar deneyin.', 'error');
+                return;
+            }
 
             // FormData
             const formData = new FormData();
@@ -42,8 +49,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.upvotes !== undefined && data.downvotes !== undefined) {
                     if (contentType === 'question') {
                         // Soru up/down sayıları
-                        document.getElementById('question-upvotes').innerText = data.upvotes;
-                        document.getElementById('question-downvotes').innerText = data.downvotes;
+                        const upvotesEl = document.getElementById('question-upvotes');
+                        const downvotesEl = document.getElementById('question-downvotes');
+                        if (upvotesEl) upvotesEl.innerText = data.upvotes;
+                        if (downvotesEl) downvotesEl.innerText = data.downvotes;
 
                         const upvoteButton = document.querySelector(`.vote-btn[data-content-type="question"][data-object-id="${objectId}"][data-value="1"]`);
                         const downvoteButton = document.querySelector(`.vote-btn[data-content-type="question"][data-object-id="${objectId}"][data-value="-1"]`);
@@ -51,8 +60,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     } else if (contentType === 'answer') {
                         // Yanıt up/down sayıları
-                        document.getElementById(`answer-upvotes-${objectId}`).innerText = data.upvotes;
-                        document.getElementById(`answer-downvotes-${objectId}`).innerText = data.downvotes;
+                        const upvotesEl = document.getElementById(`answer-upvotes-${objectId}`);
+                        const downvotesEl = document.getElementById(`answer-downvotes-${objectId}`);
+                        if (upvotesEl) upvotesEl.innerText = data.upvotes;
+                        if (downvotesEl) downvotesEl.innerText = data.downvotes;
 
                         const upvoteButton = document.querySelector(`.vote-btn[data-content-type="answer"][data-object-id="${objectId}"][data-value="1"]`);
                         const downvoteButton = document.querySelector(`.vote-btn[data-content-type="answer"][data-object-id="${objectId}"][data-value="-1"]`);
@@ -67,15 +78,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast(error.message || 'Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
             });
         }
-    });
+    }, true);
 
     // **Kaydet / Kaydetmeyi Kaldır İşlevi** (Save / Unsave)
-    document.addEventListener('click', function(event) {
-        if (event.target.matches('.save-btn') || event.target.closest('.save-btn')) {
+    // Capture fazında (window seviyesinde) dinle: bazı sayfalarda üst seviye handler'lar click'i yutabiliyor.
+    window.addEventListener('click', function(event) {
+        const saveButton = event.target.closest?.('.save-btn');
+        if (saveButton) {
             event.preventDefault();
-            const saveButton = event.target.closest('.save-btn');
+            event.stopPropagation();
             const contentType = saveButton.getAttribute('data-content-type');
             const objectId = saveButton.getAttribute('data-object-id');
+
+            if (!csrftoken) {
+                showToast('CSRF token bulunamadı. Sayfayı yenileyip tekrar deneyin.', 'error');
+                return;
+            }
 
             // FormData
             const formData = new FormData();
@@ -130,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast(error.message || 'Bir hata oluştu. Lütfen tekrar deneyin.', 'error');
             });
         }
-    });
+    }, true);
 
     // Oy butonlarının görünümünü güncelle
     function updateVoteButtonStyles(upvoteButton, downvoteButton, userVoteValue) {

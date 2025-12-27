@@ -274,6 +274,8 @@ def get_references(request):
     page_size = int(request.GET.get('page_size', 5))
     username = request.GET.get('username')
     scope = request.GET.get('scope', 'user')  # 'user' (varsayılan) veya 'all'
+    reference_sort = request.GET.get('sort', 'alpha')
+    reference_order = request.GET.get('order', 'asc')
 
     # scope parametresine göre kaynakları filtrele
     if scope == 'all':
@@ -292,9 +294,27 @@ def get_references(request):
             Q(metin_ismi__icontains=q) |
             Q(year__iexact=q)
         )
-    references = references.order_by(Lower('author_surname'), 'year')
+    if reference_sort == 'year':
+        ordering = '-year' if reference_order == 'desc' else 'year'
+        references = references.order_by(ordering, Lower('author_surname'), Lower('author_name'))
+        ref_items = None
+    elif reference_sort == 'created':
+        ordering = '-id' if reference_order == 'desc' else 'id'
+        references = references.order_by(ordering)
+        ref_items = None
+    elif reference_sort == 'usage':
+        ref_items = list(references)
+        for ref in ref_items:
+            ref.usage_count = ref.get_usage_count()
+        ref_items.sort(
+            key=lambda r: (r.usage_count, r.id),
+            reverse=(reference_order != 'asc'),
+        )
+    else:
+        references = references.order_by(Lower('author_surname'), 'year')
+        ref_items = None
 
-    paginator = Paginator(references, page_size)
+    paginator = Paginator(ref_items if ref_items is not None else references, page_size)
     page_obj = paginator.get_page(page)
 
     data = []
@@ -307,7 +327,7 @@ def get_references(request):
             'metin_ismi': ref.metin_ismi or '',
             'rest': ref.rest,
             'abbreviation': ref.abbreviation or '',
-            'usage_count': ref.get_usage_count(),
+            'usage_count': getattr(ref, 'usage_count', None) if hasattr(ref, 'usage_count') else ref.get_usage_count(),
             'display': str(ref),
         })
 

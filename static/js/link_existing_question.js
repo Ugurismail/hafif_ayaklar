@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const resultsDiv = document.getElementById('link-question-search-results');
     const noResultsDiv = document.getElementById('link-question-no-results');
 
-    if (!modal || !searchInput || !resultsDiv) return;
+    if (!modal || !searchInput || !resultsDiv || !noResultsDiv) return;
 
     // Get question slug from data attribute or URL
     const questionSlug = modal.dataset.questionSlug ||
@@ -97,7 +97,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // Link selected question
     function linkQuestion(subquestionId, subquestionText) {
         // Get CSRF token
-        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfElement = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (!csrfElement) {
+            console.error('CSRF token not found');
+            showMessage('Güvenlik hatası: Sayfayı yenileyin', 'danger');
+            return;
+        }
+        const csrftoken = csrfElement.value;
 
         fetch(`/${questionSlug}/add-as-subquestion/`, {
             method: 'POST',

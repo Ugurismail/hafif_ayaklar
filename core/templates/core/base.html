@@ -383,18 +383,11 @@
 
     <!-- İçerik -->
     <div class="container-fluid" id="mainContent">
-        <!-- Django Messages -->
+        <!-- Django Messages (converted to toasts via JavaScript) -->
         {% if messages %}
-            <div class="container mt-4">
+            <div id="django-messages" style="display: none;">
                 {% for message in messages %}
-                    {% if message.tags == 'error' %}
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {% else %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {% endif %}
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
-                    </div>
+                    <div data-message="{{ message }}" data-tags="{{ message.tags }}"></div>
                 {% endfor %}
             </div>
         {% endif %}
@@ -516,7 +509,7 @@
     {% endif %}
 
     <!-- Toast Container for General Messages -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 10000;" id="toastContainer">
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 10000;" id="toastContainer">
     </div>
 
     <!-- Modal -->
@@ -551,6 +544,7 @@
     <script src="{% static 'js/animations.js' %}"></script>
     <script src="{% static 'js/dropdown_zindex.js' %}"></script>
     <script src="{% static 'js/homepage.js' %}?v={% now "U" %}"></script>
+    <script src="{% static 'js/kenarda_preview.js' %}?v={% now "U" %}"></script>
 
     {% block extra_js %}{% endblock %}
     <!-- Navbar küçülme ve transparanlık efekti -->
@@ -812,23 +806,29 @@
 
   <!-- Global Toast & Confirm Functions -->
   <script>
-    // Improved Toast Function with types
-    function showToast(message, type = 'success', duration = 3000) {
-      const toastEl = document.getElementById(type + 'Toast');
-      const messageEl = document.getElementById(type + 'ToastMessage');
+    // showToast() is now in base.js (loaded globally)
+    // getCookie() is now in base.js (loaded globally)
 
-      if (!toastEl || !messageEl) {
-        console.error('Toast element not found:', type);
-        return;
+    // Convert Django messages to toasts on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const messagesContainer = document.getElementById('django-messages');
+      if (messagesContainer) {
+        const messages = messagesContainer.querySelectorAll('[data-message]');
+        messages.forEach(function(msgElement) {
+          const message = msgElement.getAttribute('data-message');
+          let tags = msgElement.getAttribute('data-tags') || 'info';
+
+          // Map Django message tags to toast types
+          let toastType = 'info';
+          if (tags.includes('success')) toastType = 'success';
+          else if (tags.includes('error') || tags.includes('danger')) toastType = 'error';
+          else if (tags.includes('warning')) toastType = 'warning';
+
+          // Show toast with appropriate type
+          showToast(message, toastType, 4000);
+        });
       }
-
-      messageEl.textContent = message;
-      const toast = new bootstrap.Toast(toastEl, {
-        autohide: true,
-        delay: duration
-      });
-      toast.show();
-    }
+    });
 
     // Global Confirm Dialog (replaces window.confirm)
     function showConfirm(message, title = 'Onay', btnText = 'Tamam', btnClass = 'btn-theme-primary') {
@@ -860,11 +860,6 @@
 
         bsModal.show();
       });
-    }
-
-    // Backwards compatibility
-    function showToastOld(message, title = 'Başarılı', duration = 3000) {
-      showToast(message, 'success', duration);
     }
   </script>
 </body>

@@ -61,6 +61,7 @@
                                 *
                             </button>
                         </div>
+                        <div id="kenarda-preview-root" class="mb-2" style="display:none;"></div>
                         {{ form.answer_text }}
                         </div>
 
@@ -388,6 +389,14 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
                 showToast('Düzenleme taslak olarak kaydedildi!', 'success', 1500);
             } else {
                 alert('Düzenleme taslak olarak kaydedildi!');
+            }
+            if (typeof window.kenardaUpdatePreview === 'function') {
+                window.kenardaUpdatePreview({
+                    answer_id: {{ answer.id }},
+                    question_id: {{ answer.question.id }},
+                    content: answerText,
+                    draft_source: 'answer_edit'
+                });
             }
             // Formu temizleme - kullanıcı üzerinde çalışmaya devam edebilir
         } else {

@@ -1,7 +1,12 @@
 // static/js/question_map.js
 
 document.addEventListener('DOMContentLoaded', function () {
-    var width = document.getElementById('chart').clientWidth;
+    var chartElement = document.getElementById('chart');
+    if (!chartElement) {
+        console.error('Chart element not found');
+        return;
+    }
+    var width = chartElement.clientWidth;
     var height = 800;
     var svg, g, zoom, simulation, link, node, label, userLabelGroup, arrows;
     var nodesData = [], linksData = [], selectedUsers = [];
@@ -53,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let resultsDiv = document.getElementById('user-search-results');
         let currentFocus = -1;
 
-        if (!searchInput) return;
+        if (!searchInput || !resultsDiv) return;
 
         searchInput.addEventListener('input', function () {
             let q = this.value.trim();
@@ -166,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let resultsDiv = document.getElementById('question-search-results');
         let currentFocus = -1;
 
-        if (!searchInput) return;
+        if (!searchInput || !resultsDiv) return;
 
         searchInput.addEventListener('input', function () {
             let q = this.value.trim().toLowerCase();
@@ -244,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let currentFocus = -1;
         let currentHashtags = [];
 
-        if (!searchInput) return;
+        if (!searchInput || !resultsDiv) return;
 
         searchInput.addEventListener('input', function () {
             let q = this.value.trim().replace('#', '').toLowerCase();

@@ -1,0 +1,75 @@
+{% load custom_tags %}
+{% load markdownify %}
+
+<div class="d-flex align-items-center justify-content-between mb-2">
+  <small class="text-muted">Taslak önizleme (sadece sen)</small>
+  <span class="badge bg-light text-muted border">Kenarda</span>
+</div>
+
+<div class="card mb-3 answer" style="pointer-events: none;">
+  <div class="card-body">
+    {% if preview_question_slug %}
+      <div class="mb-2">
+        <small class="text-muted">
+          <a href="/{{ preview_question_slug }}/" class="text-decoration-none">{{ preview_question_text }}</a>
+        </small>
+      </div>
+    {% elif preview_question_text %}
+      <div class="mb-2">
+        <small class="text-muted">{{ preview_question_text }}</small>
+      </div>
+    {% endif %}
+
+    <div class="answer-text">
+      {{ preview_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+    </div>
+
+    {% with bibliography=preview_text|extract_bibliography %}
+      {% if bibliography %}
+        <div class="bibliography-section mt-4 pt-3 border-top">
+          <h6 class="bibliography-title d-flex justify-content-between align-items-center"
+              data-bs-toggle="collapse"
+              data-bs-target="#bibliography-{{ preview_key }}"
+              aria-expanded="false"
+              style="cursor: pointer; user-select: none;">
+            <span>Kaynakça <small class="text-muted">({{ bibliography|length }})</small></span>
+            <i class="bi bi-chevron-down bibliography-chevron" style="font-size: 0.9rem;"></i>
+          </h6>
+          <div id="bibliography-{{ preview_key }}" class="collapse">
+            <ol class="bibliography-list">
+              {% for item in bibliography %}
+                <li class="bibliography-item">
+                  {% if item.reference %}
+                    <span class="reference-citation">
+                      {{ item.formatted_authors }}{% if item.reference.metin_ismi %}. <em>{{ item.reference.metin_ismi }}</em>{% endif %} ({{ item.reference.year }}). {{ item.reference.rest }}{% if item.reference.abbreviation %} [{{ item.reference.abbreviation }}]{% endif %}{% if item.pages %}, s. {{ item.pages|join:", " }}{% endif %}.
+                    </span>
+                  {% else %}
+                    <span class="reference-not-found">Kaynak bulunamadı (ID: {{ item.ref_id }})</span>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ol>
+          </div>
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="action d-flex justify-content-between align-items-center mt-2">
+      <div class="text-muted">
+        <span class="me-1"><i class="bi-chevron-up"></i></span>
+        <span>0</span>
+        <span class="ms-2 me-1"><i class="bi-chevron-down"></i></span>
+        <span>0</span>
+        <span class="ms-3"><i class="bi bi-bookmark"></i></span>
+        <span class="save-count">0</span>
+      </div>
+      <div class="text-end">
+        <small class="text-muted me-2">
+          <a href="{% url 'user_profile' preview_user.username %}">{{ preview_user.username }}</a>
+          | {{ preview_created_at|date:"Y-m-d H:i" }}
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+

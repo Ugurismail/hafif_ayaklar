@@ -77,14 +77,16 @@
       .active-filter i {
           color: var(--button-text-color, #fff) !important;
       }
+
+	      /* NOTE: keep page-level CSS minimal; use shared styles in static css when possible. */
   </style>
   {% endblock %}
 
   {% block content %}
   <div class="container mt-5" id="naber">
-    <div class="row" style="height: 100vh; min-height: 500px;">
+    <div class="row three-panel-row" style="height: 100%; min-height: 500px;">
           <!-- SOL SÜTUN: TÜM SORULAR -->
-          <div class="col-12 col-md-2 order-2 order-md-1 d-flex flex-column sol-scroll" style="border-right: 1px solid #ccc; height: 90%; min-height: 0;">
+          <div class="col-5 col-md-2 order-1 order-md-1 d-flex flex-column sol-scroll" style="border-right: 1px solid #ccc; height: 100%; min-height: 0; min-width: 0;">
             <h4 style="display: flex; justify-content: center; align-items: center; gap: 18px; min-height: 38px; margin-bottom: 0.5rem;">
               <a href="#" id="random-question-btn" title="Rastgele Başlık Diz" class="vote-btn2 d-flex align-items-center justify-content-center"
                  style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
@@ -120,7 +122,7 @@
           </div>
           
         <!-- ORTA SÜTUN -->
-        <div class="col-12 col-md-8 order-1 order-md-2 d-flex flex-column sol-scroll" style="height: 100%; min-height: 0;">
+        <div class="col-5 col-md-8 order-2 order-md-2 d-flex flex-column sol-scroll" style="height: 100%; min-height: 0; min-width: 0;">
           <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
           
             <!-- Gizli input: question.id -->
@@ -506,6 +508,7 @@
                       *
                     </button>
                   </div>
+                  <div id="kenarda-preview-root" class="mb-2" style="display:none;"></div>
                   {{ form.answer_text }}
                   <button type="submit" class="btn btn-theme-primary mt-2">Yanıtla</button>
                   <button type="button" class="btn btn-theme-secondary mt-2 ms-2" id="sabaha-birak-btn">Kenarda Dursun</button>
@@ -526,7 +529,7 @@
             </div>
         </div>
           <!-- SAĞ SÜTUN: ALT SORULAR -->
-          <div class="col-12 col-md-2 order-3 order-md-3 d-flex flex-column" style="border-left: 1px solid #ccc; height: 100%; min-height: 0;">
+          <div class="col-2 col-md-2 order-3 order-md-3 d-flex flex-column" style="border-left: 1px solid #ccc; height: 100%; min-height: 0; min-width: 0;">
             <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
                   <div class="row g-2">  <!-- Satır ekledik, boşluk için g-2 kullanıldı -->
                       {% if parents_list|length == 0 %}
@@ -954,34 +957,12 @@
   </script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="{% static 'js/answer_form.js' %}"></script>
-  <script src="{% static 'js/vote_save.js' %}"></script>
+  <script src="{% static 'js/vote_save.js' %}?v={% now "U" %}"></script>
 
   <!-- Okuma (Read More), Kopyala, Paylaş, Yanıt Silme vb. İşlemleri -->
   <script>
   document.addEventListener('DOMContentLoaded', function() {
-      // OKUMA (Read More) İşlevi
-      const readMoreLinks = document.querySelectorAll('.read-more');
-      readMoreLinks.forEach(function(link) {
-          link.addEventListener('click', function(event) {
-              event.preventDefault();
-              const answerId = this.getAttribute('data-answer-id');
-              const summary = document.getElementById('answer-summary-' + answerId);
-              const fullText = document.getElementById('answer-full-' + answerId);
-              if (!summary || !fullText) return;
-              
-              // Computed stil ile summary'nin görünürlüğünü kontrol et
-              const summaryDisplay = window.getComputedStyle(summary).display;
-              if (summaryDisplay !== 'none') {
-                  summary.style.display = 'none';
-                  fullText.style.display = 'block';
-                  this.textContent = 'Daha az göster';
-              } else {
-                  summary.style.display = 'block';
-                  fullText.style.display = 'none';
-                  this.textContent = 'Tümünü Göster';
-              }
-          });
-      });
+      // OKUMA (Read More) işlevi localStorage destekli versiyon ile yönetiliyor (satır 1160)
 
       // Link Kopyala İşlevi (Toast ile)
       $('.copy-link-btn').click(function(e) {
@@ -1160,22 +1141,12 @@
           function reinitReadMore() {
               const readMoreLinks = answersDiv.querySelectorAll('.read-more');
 
-              // localStorage'dan açık yanıtları al
-              const expandedAnswers = JSON.parse(localStorage.getItem('expandedAnswers') || '[]');
-
               readMoreLinks.forEach(function(link) {
                   const answerId = link.getAttribute('data-answer-id');
                   const summary = document.getElementById('answer-summary-' + answerId);
                   const fullText = document.getElementById('answer-full-' + answerId);
 
                   if (!summary || !fullText) return;
-
-                  // Eğer bu yanıt localStorage'da açık olarak işaretlenmişse, aç
-                  if (expandedAnswers.includes(answerId)) {
-                      summary.style.display = 'none';
-                      fullText.style.display = 'block';
-                      link.textContent = 'Daha az göster';
-                  }
 
                   link.addEventListener('click', function(event) {
                       event.preventDefault();
@@ -1184,88 +1155,21 @@
                       const fullText = document.getElementById('answer-full-' + answerId);
                       if (!summary || !fullText) return;
 
-                      let expandedAnswers = JSON.parse(localStorage.getItem('expandedAnswers') || '[]');
-
                       if (summary.style.display === 'none') {
                           // Kapatıyoruz
                           summary.style.display = 'block';
                           fullText.style.display = 'none';
                           this.textContent = 'Tümünü Göster';
-
-                          // localStorage'dan çıkar
-                          expandedAnswers = expandedAnswers.filter(id => id !== answerId);
                       } else {
                           // Açıyoruz
                           summary.style.display = 'none';
                           fullText.style.display = 'block';
                           this.textContent = 'Daha az göster';
-
-                          // localStorage'a ekle
-                          if (!expandedAnswers.includes(answerId)) {
-                              expandedAnswers.push(answerId);
-                          }
                       }
-
-                      localStorage.setItem('expandedAnswers', JSON.stringify(expandedAnswers));
                   });
               });
           }
       });
-
-
-      document.addEventListener('DOMContentLoaded', function() {
-    // localStorage'dan açık yanıtları al
-    const expandedAnswers = JSON.parse(localStorage.getItem('expandedAnswers') || '[]');
-
-    // Her seferinde event'ları kaldır ve ekle (önce var olanları silmek için)
-    document.querySelectorAll('.read-more').forEach(function(link) {
-        link.onclick = null;
-        const answerId = link.getAttribute('data-answer-id');
-        const summary = document.getElementById('answer-summary-' + answerId);
-        const fullText = document.getElementById('answer-full-' + answerId);
-
-        if (!summary || !fullText) return;
-
-        // Eğer bu yanıt localStorage'da açık olarak işaretlenmişse, aç
-        if (expandedAnswers.includes(answerId)) {
-            summary.style.display = 'none';
-            fullText.style.display = 'block';
-            link.textContent = 'Daha az göster';
-        }
-
-        link.addEventListener('click', function(event) {
-            event.preventDefault();
-            var answerId = this.getAttribute('data-answer-id');
-            var summary = document.getElementById('answer-summary-' + answerId);
-            var fullText = document.getElementById('answer-full-' + answerId);
-            if (!summary || !fullText) return;
-
-            let expandedAnswers = JSON.parse(localStorage.getItem('expandedAnswers') || '[]');
-
-            if (summary.style.display === 'none') {
-                // Kapatıyoruz
-                summary.style.display = 'block';
-                fullText.style.display = 'none';
-                this.textContent = 'Tümünü Göster';
-
-                // localStorage'dan çıkar
-                expandedAnswers = expandedAnswers.filter(id => id !== answerId);
-            } else {
-                // Açıyoruz
-                summary.style.display = 'none';
-                fullText.style.display = 'block';
-                this.textContent = 'Daha az göster';
-
-                // localStorage'a ekle
-                if (!expandedAnswers.includes(answerId)) {
-                    expandedAnswers.push(answerId);
-                }
-            }
-
-            localStorage.setItem('expandedAnswers', JSON.stringify(expandedAnswers));
-        });
-    });
-});
   </script>
 <!-- poll -->
 <script>
@@ -1279,20 +1183,6 @@
     const openMap = new Map();   // pollId → {instance, hideTimer}
   
 
-    function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
     function show(icon, pid){
       fetch(popTpl.replace('0', pid))
         .then(r => r.json())
@@ -1403,6 +1293,12 @@ document.addEventListener('DOMContentLoaded', function() {
       if (data.status === 'ok') {
         showToast('Taslak başarıyla kaydedildi!', 'success', 1500);
         flashFeedback();
+        if (typeof window.kenardaUpdatePreview === 'function') {
+          window.kenardaUpdatePreview({
+            question_id: questionId,
+            content: content
+          });
+        }
       } else {
         showToast('Kaydetme başarısız: ' + (data.error || ''), 'error', 4000);
       }

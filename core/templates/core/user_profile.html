@@ -274,7 +274,7 @@
                   <div class="card-body">
                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
                       <div>
-                        <a href="{% url 'question_detail' answer.question.slug %}" class="fw-bold text-decoration-none question-title">
+                        <a href="{% url 'single_answer' answer.question.slug answer.id %}" class="fw-bold text-decoration-none question-title">
                           {{ answer.question.question_text }}
                         </a>
                         <span class="text-muted ms-2 small answer-date">({{ answer.created_at|date:"d M Y H:i" }})</span>
@@ -573,8 +573,13 @@
               <!-- Arama Formu -->
               <form method="get" action="" id="referencesSearchForm">
                 <input type="hidden" name="tab" value="kaynaklarim">
+                <input type="hidden" name="sort" id="referencesSortInput" value="{{ reference_sort|default:'alpha' }}">
+                <input type="hidden" name="order" id="referencesOrderInput" value="{{ reference_order|default:'asc' }}">
                 <div class="input-group mb-3">
                   <input type="text" name="q" id="referencesSearchInput" class="form-control" placeholder="Kaynak arayın..." value="{{ request.GET.q }}">
+                  <button class="btn btn-outline-theme-secondary" type="button" data-bs-toggle="modal" data-bs-target="#referencesSortModal" title="Sıralama">
+                    <i class="bi bi-sliders"></i>
+                  </button>
                   <button type="submit" class="btn btn-theme-primary">Ara</button>
                 </div>
               </form>
@@ -600,7 +605,7 @@
                           <td>{{ ref.year }}</td>
                           <td>{{ ref.metin_ismi|default:"-" }}</td>
                           <td>{{ ref.rest }}</td>
-                          <td>{{ ref.get_usage_count }}</td>
+                          <td>{{ ref.usage_count }}</td>
                           <td>
                             {% if ref.created_by == user %}
                             <a href="{% url 'edit_reference' ref.id %}?tab=kaynaklarim" class="btn btn-sm btn-theme-primary" title="Düzenle">
@@ -701,6 +706,43 @@
   </div>
 </div>
 
+<!-- Kaynaklarım Sıralama Modal -->
+<div class="modal fade" id="referencesSortModal" tabindex="-1" aria-labelledby="referencesSortModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-medium">
+      <div class="modal-header">
+        <h5 class="modal-title" id="referencesSortModalLabel">Kaynaklarım Sıralama</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="referencesSortSelect" class="form-label">Kriter</label>
+          <select class="form-select" id="referencesSortSelect">
+            <option value="alpha">Alfabetik</option>
+            <option value="usage">Kullanım</option>
+            <option value="year">Yıl</option>
+            <option value="created">Eklenme</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label for="referencesOrderSelect" class="form-label">Sıra</label>
+          <select class="form-select" id="referencesOrderSelect">
+            <option value="asc">Artan</option>
+            <option value="desc">Azalan</option>
+          </select>
+        </div>
+        <div class="text-muted small">
+          Kullanım sıralaması, kaynakların entry’lerde kaç kez geçtiğine göre hesaplanır.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-theme-secondary" data-bs-dismiss="modal">Vazgeç</button>
+        <button type="button" class="btn btn-theme-primary" id="referencesSortApplyBtn" data-bs-dismiss="modal">Uygula</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Profil Fotoğrafı Güncelleme Modal -->
 <div class="modal fade" id="profilePhotoModal" tabindex="-1" aria-labelledby="profilePhotoModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -783,6 +825,16 @@
                 Tüm entry'lerimi indir (seçim yapmadan hepsini indir)
               </label>
             </div>
+          </div>
+
+          <!-- Başlangıç Soruları Seçimi -->
+          <div class="mb-4" id="rootQuestionSection">
+            <label class="form-label fw-bold">Başlangıç Sorusuna Göre İndir</label>
+            <p class="text-muted small mb-2">Bir başlangıç sorusu seçerek o soruya ve tüm alt sorularına yazdığınız entry'leri indirebilirsiniz.</p>
+            <select class="form-select mb-2" id="rootQuestionSelect">
+              <option value="">-- Başlangıç sorusu seçin (opsiyonel) --</option>
+            </select>
+            <small class="text-muted">Yükleniyor...</small>
           </div>
 
           <!-- Entry Seçimi (sadece "tümünü indir" seçili DEĞİLse göster) -->
@@ -1030,13 +1082,35 @@ function renderSavedItems(data, container) {
   $(document).ready(function(){
   var profileUsername = "{{ profile_user.username }}";  // şablondan dinamik geliyor
 
+  function getReferenceSortParams() {
+    return {
+      sort: ($('#referencesSortInput').val() || 'alpha'),
+      order: ($('#referencesOrderInput').val() || 'asc'),
+    };
+  }
+
+  function syncReferenceSortModalFromInputs() {
+    var params = getReferenceSortParams();
+    var sortEl = document.getElementById('referencesSortSelect');
+    var orderEl = document.getElementById('referencesOrderSelect');
+    if (sortEl) sortEl.value = params.sort;
+    if (orderEl) orderEl.value = params.order;
+  }
+
   // Ortak dinamik arama fonksiyonu
   function setupDynamicSearch(inputSelector, endpointUrl, targetSelector, renderFunction, tabName) {
     $(inputSelector).on('keyup', debounce(function(){
       var query = $(this).val();
+      var data = { q: query };
+      // Kaynaklarım sekmesi: sıralama parametrelerini de gönder
+      if (inputSelector === '#referencesSearchInput') {
+        var params = getReferenceSortParams();
+        data.sort = params.sort;
+        data.order = params.order;
+      }
       $.ajax({
         url: endpointUrl,
-        data: { q: query },
+        data: data,
         dataType: "json",
         success: function(data) {
           var container = $(targetSelector);
@@ -1049,7 +1123,14 @@ function renderSavedItems(data, container) {
     // Input boşaltıldığında sekmeyi baştan yükle (tam reload ile)
     $(inputSelector).on('input', function() {
       if ($(this).val().trim() === '') {
-        window.location.href = window.location.pathname + "?tab=" + tabName;
+        if (inputSelector === '#referencesSearchInput') {
+          var params = getReferenceSortParams();
+          var sortValue = params.sort;
+          var orderValue = params.order;
+          window.location.href = window.location.pathname + "?tab=" + tabName + "&sort=" + encodeURIComponent(sortValue) + "&order=" + encodeURIComponent(orderValue);
+        } else {
+          window.location.href = window.location.pathname + "?tab=" + tabName;
+        }
       }
     });
   }
@@ -1083,6 +1164,19 @@ function renderSavedItems(data, container) {
     renderSavedItems,
     'kaydedilenler'
   );
+
+  // Kaynaklarım sıralama modalı
+  $('#referencesSortModal').on('show.bs.modal', function() {
+    syncReferenceSortModalFromInputs();
+  });
+
+  $('#referencesSortApplyBtn').on('click', function() {
+    var sortEl = document.getElementById('referencesSortSelect');
+    var orderEl = document.getElementById('referencesOrderSelect');
+    $('#referencesSortInput').val(sortEl ? sortEl.value : 'alpha');
+    $('#referencesOrderInput').val(orderEl ? orderEl.value : 'asc');
+    $('#referencesSearchForm').trigger('submit');
+  });
 });
 
 // Debounce fonksiyonu (aynen kalacak)
@@ -1262,8 +1356,57 @@ function debounce(func, delay) {
     userEntries = [];
     currentSearchTerm = '';
     document.getElementById('searchEntriesInput').value = '';
+    document.getElementById('rootQuestionSelect').value = '';
+
+    // Başlangıç sorularını yükle
+    loadRootQuestions();
 
     // İlk sayfayı yükle
+    loadUserEntries();
+  });
+
+  // Başlangıç sorularını yükle
+  function loadRootQuestions() {
+    const rootQuestionSelect = document.getElementById('rootQuestionSelect');
+    const statusText = document.querySelector('#rootQuestionSection small');
+
+    statusText.textContent = 'Yükleniyor...';
+    statusText.className = 'text-muted';
+
+    // Başlangıç sorularını al (parent_question__isnull=True olan sorular)
+    fetch(`/get-root-questions/?username={{ profile_user.username }}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Dropdown'ı temizle (ilk option hariç)
+        rootQuestionSelect.innerHTML = '<option value="">-- Başlangıç sorusu seçin (opsiyonel) --</option>';
+
+        // Başlangıç sorularını ekle
+        data.root_questions.forEach(question => {
+          const option = document.createElement('option');
+          option.value = question.id;
+          option.textContent = question.question_text;
+          rootQuestionSelect.appendChild(option);
+        });
+
+        statusText.textContent = `${data.root_questions.length} başlangıç sorusu bulundu.`;
+        statusText.className = 'text-success';
+      })
+      .catch(error => {
+        console.error('Başlangıç soruları yüklenirken hata:', error);
+        statusText.textContent = 'Başlangıç soruları yüklenirken hata oluştu.';
+        statusText.className = 'text-danger';
+      });
+  }
+
+  // Başlangıç sorusu seçildiğinde entry'leri filtrele
+  document.getElementById('rootQuestionSelect').addEventListener('change', function() {
+    currentPage = 1;
+    userEntries = [];
     loadUserEntries();
   });
 
@@ -1275,7 +1418,13 @@ function debounce(func, delay) {
       container.innerHTML = '<p class="text-muted">Yükleniyor...</p>';
     }
 
-    const url = `/get-user-answers/?username={{ profile_user.username }}&page=${currentPage}&page_size=50&q=${encodeURIComponent(currentSearchTerm)}`;
+    const rootQuestionId = document.getElementById('rootQuestionSelect').value;
+    let url = `/get-user-answers/?username={{ profile_user.username }}&page=${currentPage}&page_size=50&q=${encodeURIComponent(currentSearchTerm)}`;
+
+    // Eğer başlangıç sorusu seçildiyse, parametreye ekle
+    if (rootQuestionId) {
+      url += `&root_question_id=${rootQuestionId}`;
+    }
 
     fetch(url)
       .then(response => {
@@ -1435,15 +1584,16 @@ function debounce(func, delay) {
     const format = downloadModal.querySelector('input[name="format"]:checked').value;
     const order = document.getElementById('orderSelect').value;
     const downloadAll = downloadAllCheckbox.checked;
+    const rootQuestionId = document.getElementById('rootQuestionSelect').value;
 
     let entryIds = [];
 
-    // Eğer "tümünü indir" SEÇİLİ DEĞİLSE, seçili entry'leri kontrol et
-    if (!downloadAll) {
+    // Eğer "tümünü indir" veya "başlangıç sorusu" SEÇİLİ DEĞİLSE, seçili entry'leri kontrol et
+    if (!downloadAll && !rootQuestionId) {
       const selectedCheckboxes = downloadModal.querySelectorAll('.entry-checkbox:checked');
 
       if (selectedCheckboxes.length === 0) {
-        alert('Lütfen en az bir entry seçin veya "Tüm entry\'lerimi indir" seçeneğini işaretleyin!');
+        alert('Lütfen en az bir entry seçin, bir başlangıç sorusu seçin veya "Tüm entry\'lerimi indir" seçeneğini işaretleyin!');
         return;
       }
 
@@ -1461,6 +1611,25 @@ function debounce(func, delay) {
         // Hepsini al, backend'de sıralar
         selectedCheckboxes.forEach(cb => entryIds.push(cb.value));
       }
+    } else if (!downloadAll && rootQuestionId) {
+      // Başlangıç sorusu seçiliyse ama "tümünü indir" değilse
+      // Kullanıcı yine de spesifik entry'ler seçebilir
+      const selectedCheckboxes = downloadModal.querySelectorAll('.entry-checkbox:checked');
+      if (selectedCheckboxes.length > 0) {
+        // Seçili entry'ler varsa sadece onları indir
+        if (order === 'custom') {
+          const allItems = downloadModal.querySelectorAll('.entry-item');
+          allItems.forEach(item => {
+            const checkbox = item.querySelector('.entry-checkbox');
+            if (checkbox && checkbox.checked) {
+              entryIds.push(checkbox.value);
+            }
+          });
+        } else {
+          selectedCheckboxes.forEach(cb => entryIds.push(cb.value));
+        }
+      }
+      // Seçili entry yoksa, rootQuestionId backend'de filtreleme yapacak
     }
     // Eğer "tümünü indir" seçiliyse, entry_ids BOŞ kalır (backend tümünü alır)
 
@@ -1509,6 +1678,15 @@ function debounce(func, delay) {
     orderInput.name = 'order';
     orderInput.value = order;
     form.appendChild(orderInput);
+
+    // Başlangıç sorusu seçildiyse, onu da gönder
+    if (rootQuestionId) {
+      const rootQuestionInput = document.createElement('input');
+      rootQuestionInput.type = 'hidden';
+      rootQuestionInput.name = 'root_question_id';
+      rootQuestionInput.value = rootQuestionId;
+      form.appendChild(rootQuestionInput);
+    }
 
     document.body.appendChild(form);
     form.submit();

@@ -63,6 +63,7 @@ from ..models import (
 from ..utils import paginate_queryset
 from ..services import VoteSaveService
 from ..querysets import get_today_questions_queryset
+from .answer_views import get_all_descendant_question_ids
 
 
 def get_today_questions_page(request, per_page=25):
@@ -823,6 +824,56 @@ def collect_user_bibliography(target_user, specific_answers=None):
     return bibliography
 
 
+def get_filtered_user_answers(request, target_user):
+    """
+    Helper function to get filtered user answers based on request parameters.
+    Handles entry_ids, root_question_id, and order parameters.
+    Returns a queryset or list of Answer objects.
+    """
+    entry_ids = None
+    order = 'oldest'  # default
+    root_question_id = None
+
+    if request.method == 'POST':
+        entry_ids_str = request.POST.get('entry_ids', '')
+        if entry_ids_str:
+            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
+        order = request.POST.get('order', 'oldest')
+        root_question_id = request.POST.get('root_question_id', '')
+
+    # Start with base queryset
+    user_answers = Answer.objects.filter(user=target_user)
+
+    # Filter by root question if provided
+    if root_question_id:
+        try:
+            root_id = int(root_question_id)
+            question_ids = get_all_descendant_question_ids(root_id, target_user)
+            user_answers = user_answers.filter(question_id__in=question_ids)
+        except (ValueError, TypeError):
+            pass  # Invalid root_question_id, ignore
+
+    # Filter by specific entry IDs if provided
+    if entry_ids:
+        user_answers = user_answers.filter(id__in=entry_ids)
+
+    # Apply ordering
+    if order == 'newest':
+        user_answers = user_answers.order_by('-created_at')
+    elif order == 'oldest':
+        user_answers = user_answers.order_by('created_at')
+    elif order == 'custom' and entry_ids:
+        # For custom order, preserve the order from entry_ids list
+        user_answers = list(user_answers)
+        answers_dict = {ans.id: ans for ans in user_answers}
+        user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
+    else:
+        # Default to oldest
+        user_answers = user_answers.order_by('created_at')
+
+    return user_answers
+
+
 @login_required
 def download_entries_json(request, username):
     target_user = get_object_or_404(User, username=username)
@@ -832,35 +883,8 @@ def download_entries_json(request, username):
             status=403
         )
 
-    # Get entry_ids and order from POST if provided
-    entry_ids = None
-    order = 'oldest'  # default
-
-    if request.method == 'POST':
-        entry_ids_str = request.POST.get('entry_ids', '')
-        if entry_ids_str:
-            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
-        order = request.POST.get('order', 'oldest')
-
-    # Get selected answers or all answers
-    if entry_ids:
-        # Get specific answers by ID
-        user_answers = Answer.objects.filter(id__in=entry_ids, user=target_user)
-
-        # Apply ordering
-        if order == 'newest':
-            user_answers = user_answers.order_by('-created_at')
-        elif order == 'oldest':
-            user_answers = user_answers.order_by('created_at')
-        # For 'custom', preserve the order from entry_ids list
-        elif order == 'custom':
-            # Django doesn't preserve IN clause order, so we need to sort manually
-            user_answers = list(user_answers)
-            answers_dict = {ans.id: ans for ans in user_answers}
-            user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
-    else:
-        # Get all answers (backward compatibility)
-        user_answers = Answer.objects.filter(user=target_user).order_by('created_at')
+    # Get filtered answers using helper function
+    user_answers = get_filtered_user_answers(request, target_user)
 
     # Group answers by question
     questions_dict = {}
@@ -892,7 +916,7 @@ def download_entries_json(request, username):
         })
 
     # Collect bibliography from selected answers
-    bibliography = collect_user_bibliography(target_user, user_answers if entry_ids else None)
+    bibliography = collect_user_bibliography(target_user, user_answers)
     references_data = []
     for bib_item in bibliography:
         if bib_item.get('reference'):
@@ -942,34 +966,8 @@ def download_entries_xlsx(request, username):
             status=403
         )
 
-    # Get entry_ids and order from POST if provided
-    entry_ids = None
-    order = 'oldest'  # default
-
-    if request.method == 'POST':
-        entry_ids_str = request.POST.get('entry_ids', '')
-        if entry_ids_str:
-            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
-        order = request.POST.get('order', 'oldest')
-
-    # Get selected answers or all answers
-    if entry_ids:
-        # Get specific answers by ID
-        user_answers = Answer.objects.filter(id__in=entry_ids, user=target_user)
-
-        # Apply ordering
-        if order == 'newest':
-            user_answers = user_answers.order_by('-created_at')
-        elif order == 'oldest':
-            user_answers = user_answers.order_by('created_at')
-        # For 'custom', preserve the order from entry_ids list
-        elif order == 'custom':
-            user_answers = list(user_answers)
-            answers_dict = {ans.id: ans for ans in user_answers}
-            user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
-    else:
-        # Get all answers (backward compatibility)
-        user_answers = Answer.objects.filter(user=target_user).order_by('created_at')
+    # Get filtered answers using helper function
+    user_answers = get_filtered_user_answers(request, target_user)
 
     # Group answers by question
     questions_dict = {}
@@ -1004,7 +1002,7 @@ def download_entries_xlsx(request, username):
         row_idx += 1
 
     # Add bibliography sheet
-    bibliography = collect_user_bibliography(target_user, user_answers if entry_ids else None)
+    bibliography = collect_user_bibliography(target_user, user_answers)
     if bibliography:
         ws_refs = wb.create_sheet(title="Kaynaklar")
 
@@ -1090,34 +1088,8 @@ def download_entries_docx(request, username):
     if request.user != target_user and not request.user.is_superuser:
         return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
 
-    # Get entry_ids and order from POST if provided
-    entry_ids = None
-    order = 'oldest'  # default
-
-    if request.method == 'POST':
-        entry_ids_str = request.POST.get('entry_ids', '')
-        if entry_ids_str:
-            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
-        order = request.POST.get('order', 'oldest')
-
-    # Get selected answers or all answers
-    if entry_ids:
-        # Get specific answers by ID
-        user_answers = Answer.objects.filter(id__in=entry_ids, user=target_user)
-
-        # Apply ordering
-        if order == 'newest':
-            user_answers = user_answers.order_by('-created_at')
-        elif order == 'oldest':
-            user_answers = user_answers.order_by('created_at')
-        # For 'custom', preserve the order from entry_ids list
-        elif order == 'custom':
-            user_answers = list(user_answers)
-            answers_dict = {ans.id: ans for ans in user_answers}
-            user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
-    else:
-        # Get all answers (backward compatibility)
-        user_answers = Answer.objects.filter(user=target_user).order_by('created_at')
+    # Get filtered answers using helper function
+    user_answers = get_filtered_user_answers(request, target_user)
 
     # Group answers by question
     questions_dict = {}
@@ -1163,7 +1135,7 @@ def download_entries_docx(request, username):
             document.add_paragraph("")
 
     # Add bibliography section
-    bibliography = collect_user_bibliography(target_user, user_answers if entry_ids else None)
+    bibliography = collect_user_bibliography(target_user, user_answers)
     if bibliography:
         document.add_page_break()
         document.add_heading('Kaynakça', level=1)
@@ -1211,34 +1183,8 @@ def download_entries_pdf(request, username):
     if request.user != target_user and not request.user.is_superuser:
         return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
 
-    # Get entry_ids and order from POST if provided
-    entry_ids = None
-    order = 'oldest'  # default
-
-    if request.method == 'POST':
-        entry_ids_str = request.POST.get('entry_ids', '')
-        if entry_ids_str:
-            entry_ids = [int(id.strip()) for id in entry_ids_str.split(',') if id.strip()]
-        order = request.POST.get('order', 'oldest')
-
-    # Get selected answers or all answers
-    if entry_ids:
-        # Get specific answers by ID
-        user_answers = Answer.objects.filter(id__in=entry_ids, user=target_user)
-
-        # Apply ordering
-        if order == 'newest':
-            user_answers = user_answers.order_by('-created_at')
-        elif order == 'oldest':
-            user_answers = user_answers.order_by('created_at')
-        # For 'custom', preserve the order from entry_ids list
-        elif order == 'custom':
-            user_answers = list(user_answers)
-            answers_dict = {ans.id: ans for ans in user_answers}
-            user_answers = [answers_dict[id] for id in entry_ids if id in answers_dict]
-    else:
-        # Get all answers (backward compatibility)
-        user_answers = Answer.objects.filter(user=target_user).order_by('created_at')
+    # Get filtered answers using helper function
+    user_answers = get_filtered_user_answers(request, target_user)
 
     # Group answers by question
     questions_dict = {}
@@ -1436,7 +1382,7 @@ def download_entries_pdf(request, username):
         elements.append(PageBreak())
 
     # Add bibliography section
-    bibliography = collect_user_bibliography(target_user, user_answers if entry_ids else None)
+    bibliography = collect_user_bibliography(target_user, user_answers)
     if bibliography:
         # Add page break before bibliography
         elements.append(PageBreak())

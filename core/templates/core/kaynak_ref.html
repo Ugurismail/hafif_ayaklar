@@ -325,9 +325,17 @@
         authorCount = authorGroups.length;
     }
 
+    let isSubmitting = false;  // Form submit flag
+
     if (kaynakForm) {
         kaynakForm.addEventListener('submit', function(e) {
             e.preventDefault();
+
+            // Double submit kontrolü
+            if (isSubmitting) {
+                console.log('Form zaten gönderiliyor, tekrar submit engellendi');
+                return;
+            }
 
             // Tüm yazarları topla ve birleştir
             const surnames = [];
@@ -346,6 +354,14 @@
             // Hidden fieldları doldur (semicolon ile ayır)
             document.getElementById('id_author_surname').value = surnames.join('; ');
             document.getElementById('id_author_name').value = names.join('; ');
+
+            // Submit flag'i set et ve butonu disable et
+            isSubmitting = true;
+            const submitBtn = kaynakForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Kaydediliyor...';
+            }
 
             let formData = new FormData(kaynakForm);
             fetch("{% url 'create_reference' %}", {
@@ -386,6 +402,14 @@
             })
             .catch(err => {
                 showToast("Bir hata oluştu.", 'error');
+            })
+            .finally(() => {
+                // Her durumda (success veya error) flag'i ve butonu resetle
+                isSubmitting = false;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Kaydet';
+                }
             });
         });
     }
@@ -422,6 +446,8 @@
     // -----------------------
     // (3) Seçili Kaynağı Metne Ekle
     // -----------------------
+    let isAddingReference = false;  // Kaynak ekleme flag
+
     function bindKaynakBtn() {
         const oldBtn = document.getElementById('seciliKaynakEkleBtn');
         if (!oldBtn) return;
@@ -429,6 +455,12 @@
         oldBtn.parentNode.replaceChild(newBtn, oldBtn);
 
         newBtn.addEventListener('click', function() {
+            // Double click kontrolü
+            if (isAddingReference) {
+                console.log('Kaynak zaten ekleniyor, tekrar tıklama engellendi');
+                return;
+            }
+
             const secili = document.querySelector('input[name="kaynakSecimi"]:checked');
             if (!secili) {
                 showToast("Lütfen bir kaynak seçin.", 'warning');
@@ -441,6 +473,13 @@
                 showToast("Yanıt metin alanı (#id_answer_text) bulunamadı!", 'error');
                 return;
             }
+
+            // Flag set et ve butonu disable et
+            isAddingReference = true;
+            newBtn.disabled = true;
+            const originalText = newBtn.textContent;
+            newBtn.textContent = 'Ekleniyor...';
+
             let ekMetin = sayfaStr ? ` (k:${refId} s:${sayfaStr}) ` : ` (k:${refId}) `;
             // İmleçte ekle (seçim varsa seçilen kısmı değiştir)
             if (typeof answerTextArea.selectionStart === 'number') {
@@ -453,9 +492,18 @@
             } else {
                 answerTextArea.value += ekMetin;
             }
-            // Modalı kapat
-            const myModal = bootstrap.Modal.getInstance(document.getElementById(modalId));
-            if (myModal) myModal.hide();
+
+            // Kısa bir gecikme sonra modalı kapat ve flag'i resetle
+            setTimeout(() => {
+                // Modalı kapat
+                const myModal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+                if (myModal) myModal.hide();
+
+                // Flag ve buton resetle
+                isAddingReference = false;
+                newBtn.disabled = false;
+                newBtn.textContent = originalText;
+            }, 300);
         });
     }
 

@@ -278,31 +278,7 @@
 AgoraRTC.setLogLevel(4); // 4=NONE - completely disable logging
 AgoraRTC.disableLogUpload(); // Disable automatic log upload
 
-// Simple toast notification function
-function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} position-fixed top-0 start-50 translate-middle-x mt-3`;
-    toast.style.zIndex = '9999';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-}
-
-// Get CSRF token from cookie
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+// showToast() and getCookie() are now loaded globally from base.js
 
 const programId = {{ program.id }};
 const isLive = {{ program.is_live|yesno:'true,false' }};

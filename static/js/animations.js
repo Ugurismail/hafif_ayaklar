@@ -295,38 +295,45 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ========== CLICKABLE ANSWER CARDS ==========
-    // Make answer cards clickable (go to single answer page)
-    // But don't trigger when clicking on interactive elements
+    // Make only the answer text area clickable (go to single answer page)
+    // This avoids interference with buttons and interactive elements
     document.querySelectorAll('.answer.random-item-card').forEach(card => {
-        card.style.cursor = 'pointer';
+        const answerTextElements = card.querySelectorAll('.answer-text');
 
-        card.addEventListener('click', function(e) {
-            // Don't navigate if user has selected text
-            const selection = window.getSelection();
-            if (selection && selection.toString().length > 0) {
-                return; // User is selecting text, don't navigate
-            }
+        answerTextElements.forEach(answerText => {
+            answerText.style.cursor = 'pointer';
 
-            // Don't navigate if clicking on interactive elements
-            const clickedElement = e.target;
-            const isInteractive = clickedElement.closest('a, button, input, textarea, select, .vote-btn, .save-btn, .dropdown, .read-more, .bi-pencil-square, .bi-trash, .bibliography-section, .bibliography-title, .bibliography-chevron, i');
-
-            if (isInteractive) {
-                return; // Let the interactive element handle the click
-            }
-
-            // Get the single answer URL from the copy-link button
-            const copyLinkBtn = this.querySelector('.copy-link-btn');
-
-            if (copyLinkBtn) {
-                const singleAnswerUrl = copyLinkBtn.dataset.url;
-
-                if (singleAnswerUrl) {
-                    window.location.href = singleAnswerUrl;
+            answerText.addEventListener('click', function(e) {
+                // Don't navigate if user has selected text
+                const selection = window.getSelection();
+                if (selection && selection.toString().length > 0) {
+                    return;
                 }
-            }
+
+                // Don't navigate if clicking on links or other interactive elements within the text
+                const clickedElement = e.target;
+                if (clickedElement.closest('a, button, .read-more, .bibliography-section')) {
+                    return;
+                }
+
+                // Get the single answer URL from the copy-link button in parent card
+                const copyLinkBtn = card.querySelector('.copy-link-btn');
+
+                if (copyLinkBtn) {
+                    const singleAnswerUrl = copyLinkBtn.dataset.url;
+
+                    if (singleAnswerUrl) {
+                        window.location.href = singleAnswerUrl;
+                    }
+                }
+            });
         });
     });
+
+    // Note: We don't need stopPropagation here because the card click handler
+    // already checks for interactive elements and returns early if clicked.
+    // Using stopPropagation would prevent other event handlers (like vote_save.js)
+    // from working properly.
 });
 
 // ========== EXPORT UTILITIES ==========

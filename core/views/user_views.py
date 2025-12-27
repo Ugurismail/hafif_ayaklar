@@ -182,22 +182,54 @@ def user_profile(request, username):
                 Q(rest__icontains=search_query) |
                 Q(abbreviation__icontains=search_query)
             )
-        ref_paginator = Paginator(user_references, 5)
+        reference_sort = request.GET.get('sort', 'alpha')
+        reference_order = request.GET.get('order', 'asc')
+        context['reference_sort'] = reference_sort
+        context['reference_order'] = reference_order
+
+        if reference_sort == 'year':
+            ordering = '-year' if reference_order == 'desc' else 'year'
+            user_references = user_references.order_by(ordering, Lower('author_surname'), Lower('author_name'))
+            ref_items = None
+        elif reference_sort == 'created':
+            ordering = '-id' if reference_order == 'desc' else 'id'
+            user_references = user_references.order_by(ordering)
+            ref_items = None
+        elif reference_sort == 'usage':
+            ref_items = list(user_references)
+            for ref in ref_items:
+                ref.usage_count = ref.get_usage_count()
+            ref_items.sort(
+                key=lambda r: (r.usage_count, r.id),
+                reverse=(reference_order != 'asc'),
+            )
+        else:
+            user_references = user_references.order_by(Lower('author_surname'), 'year')
+            ref_items = None
+
+        ref_paginator = Paginator(ref_items if ref_items is not None else user_references, 5)
         r_page = request.GET.get('r_page', 1)
         try:
-            context['references_page'] = ref_paginator.page(r_page)
+            references_page = ref_paginator.page(r_page)
         except (PageNotAnInteger, EmptyPage):
-            context['references_page'] = ref_paginator.page(1)
+            references_page = ref_paginator.page(1)
+
+        # Avoid re-calculating usage count in templates
+        for ref in references_page.object_list:
+            if not hasattr(ref, 'usage_count'):
+                ref.usage_count = ref.get_usage_count()
+
+        context['references_page'] = references_page
 
     elif active_tab == 'kaydedilenler' and is_own_profile:
         question_ct = ContentType.objects.get_for_model(Question)
         answer_ct = ContentType.objects.get_for_model(Answer)
 
-        user_saved = SavedItem.objects.filter(user=profile_user).order_by('-saved_at')
+        user_saved = SavedItem.objects.filter(user=profile_user).select_related('content_type').order_by('-saved_at')
         question_ids = [si.object_id for si in user_saved if si.content_type_id == question_ct.id]
         answer_ids = [si.object_id for si in user_saved if si.content_type_id == answer_ct.id]
-        question_map = {q.id: q for q in Question.objects.filter(id__in=question_ids)}
-        answer_map = {a.id: a for a in Answer.objects.select_related('question').filter(id__in=answer_ids)}
+        question_map = {q.id: q for q in Question.objects.filter(id__in=question_ids).select_related('user')}
+        answer_map = {a.id: a for a in Answer.objects.select_related('question', 'user').filter(id__in=answer_ids)}
 
         saved_items_list = []
         for item in user_saved:

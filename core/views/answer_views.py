@@ -26,17 +26,53 @@ from ..utils import paginate_queryset
 from ..services import VoteSaveService
 
 
+def get_all_descendant_question_ids(root_question_id, user):
+    """
+    Belirli bir başlangıç sorusunun tüm alt sorularını (descendant) recursive olarak bulur.
+    user parametresi kullanıcı-bazlı QuestionRelationship için gerekli.
+    """
+    descendant_ids = set()
+    to_process = [root_question_id]
+
+    while to_process:
+        current_id = to_process.pop()
+        descendant_ids.add(current_id)
+
+        # Bu sorunun child'larını bul (kullanıcı-bazlı)
+        child_relationships = QuestionRelationship.objects.filter(
+            parent_id=current_id,
+            user=user
+        ).values_list('child_id', flat=True)
+
+        for child_id in child_relationships:
+            if child_id not in descendant_ids:
+                to_process.append(child_id)
+
+    return list(descendant_ids)
+
+
 @login_required
 def get_user_answers(request):
     username = request.GET.get('username')
     q = request.GET.get('q', '').strip()
     page = int(request.GET.get('page', 1))
     page_size = int(request.GET.get('page_size', 50))
+    root_question_id = request.GET.get('root_question_id', '').strip()
 
     user = get_object_or_404(User, username=username) if username else request.user
 
     # Kronolojik sıralama: en eski en sonda (created_at artan)
     answers = Answer.objects.filter(user=user).select_related('question').order_by('created_at')
+
+    # Başlangıç sorusu filtrelemesi
+    if root_question_id:
+        try:
+            root_id = int(root_question_id)
+            # Root sorusu ve tüm alt sorularını al
+            question_ids = get_all_descendant_question_ids(root_id, user)
+            answers = answers.filter(question_id__in=question_ids)
+        except (ValueError, TypeError):
+            pass  # Geçersiz root_question_id, görmezden gel
 
     if q:
         answers = answers.filter(
@@ -69,6 +105,37 @@ def get_user_answers(request):
         'page_size': page_size,
         'has_more': end < total
     })
+
+
+@login_required
+def get_root_questions(request):
+    """
+    Kullanıcının başlangıç sorularını döndürür (StartingQuestion modelinden).
+    Sadece kullanıcının yanıt verdiği starting question'ları gösterir.
+    """
+    username = request.GET.get('username')
+    user = get_object_or_404(User, username=username) if username else request.user
+
+    # Kullanıcının yanıt verdiği tüm soruları al
+    answered_question_ids = Answer.objects.filter(user=user).values_list('question_id', flat=True).distinct()
+
+    # Kullanıcının starting question'larını al ve yanıt verdiği olanları filtrele
+    starting_questions = StartingQuestion.objects.filter(
+        user=user,
+        question_id__in=answered_question_ids
+    ).select_related('question').order_by('question__question_text')
+
+    data = {
+        'root_questions': [
+            {
+                'id': sq.question.id,
+                'question_text': sq.question.question_text,
+            }
+            for sq in starting_questions
+        ]
+    }
+
+    return JsonResponse(data)
 
 
 @login_required

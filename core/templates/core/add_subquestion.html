@@ -77,11 +77,12 @@
                               <i class="bi bi-journal"></i> Kaynak
                             </button>
                               <!-- SPOILER (YILDIZ) BUTONU -->
-                              <button type="button" class="btn btn-sm btn-outline-theme-secondary me-2 spoiler-btn"
+                          <button type="button" class="btn btn-sm btn-outline-theme-secondary me-2 spoiler-btn"
                                       title="gizle">
                                 *
                               </button>
                           </div>
+                          <div id="kenarda-preview-root" class="mb-2" style="display:none;"></div>
                           {{ form.answer_text }}
                       </div>
 
@@ -380,6 +381,13 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
                 showToast('Taslak başarıyla kaydedildi!', 'success', 1500);
             } else {
                 alert('Taslak başarıyla kaydedildi!');
+            }
+            if (typeof window.kenardaUpdatePreview === 'function') {
+                window.kenardaUpdatePreview({
+                    title: questionText,
+                    content: answerText,
+                    question_id: null
+                });
             }
             // Formu temizleme - kullanıcı üzerinde çalışmaya devam edebilir
         } else {
