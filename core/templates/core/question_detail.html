@@ -461,14 +461,15 @@
           
             <!-- YANIT EKLEME FORMU -->
             {% if user.is_authenticated %}
-            <div class="card mt-4">
-              <div class="card-body yanit-card">
-                <form method="post">
-                  {% csrf_token %}
-                  <div class="btn-toolbar mb-2 yanit-card" role="toolbar">
-                    <!-- Bold/Italic -->
-                    <button type="button" class="btn btn-sm btn-outline-theme-secondary format-btn me-2"
-                            data-format="bold" title="Kalınlaştır">
+	            <div class="card mt-4">
+	              <div class="card-body yanit-card">
+	                <form method="post">
+	                  {% csrf_token %}
+	                  <div id="kenarda-preview-root" class="mb-2" style="display:none;"></div>
+	                  <div class="btn-toolbar mb-2 yanit-card" role="toolbar">
+	                    <!-- Bold/Italic -->
+	                    <button type="button" class="btn btn-sm btn-outline-theme-secondary format-btn me-2"
+	                            data-format="bold" title="Kalınlaştır">
                       <i class="bi bi-type-bold"></i>
                     </button>
                     <button type="button" class="btn btn-sm btn-outline-theme-secondary format-btn me-2"
@@ -503,19 +504,18 @@
                       <i class="bi bi-journal"></i> Kaynak
                     </button>
                     <!-- SPOILER (YILDIZ) BUTONU -->
-                    <button type="button" class="btn btn-sm btn-outline-theme-secondary me-2 spoiler-btn"
-                            title="gizle">
-                      *
-                    </button>
-                  </div>
-                  <div id="kenarda-preview-root" class="mb-2" style="display:none;"></div>
-                  {{ form.answer_text }}
-                  <button type="submit" class="btn btn-theme-primary mt-2">Yanıtla</button>
-                  <button type="button" class="btn btn-theme-secondary mt-2 ms-2" id="sabaha-birak-btn">Kenarda Dursun</button>
-                  <span id="sabahabirak-feedback" style="display:none;" class="text-theme-success ms-2">Taslak kaydedildi!</span>
-                </form>
-              </div>
-            </div>
+	                    <button type="button" class="btn btn-sm btn-outline-theme-secondary me-2 spoiler-btn"
+	                            title="gizle">
+	                      *
+	                    </button>
+	                  </div>
+	                  {{ form.answer_text }}
+	                  <button type="submit" class="btn btn-theme-primary mt-2">Yanıtla</button>
+	                  <button type="button" class="btn btn-theme-secondary mt-2 ms-2" id="sabaha-birak-btn">Kenarda Dursun</button>
+	                  <span id="sabahabirak-feedback" style="display:none;" class="text-theme-success ms-2">Taslak kaydedildi!</span>
+	                </form>
+	              </div>
+	            </div>
             {% else %}
             <div class="card mt-4">
               <div class="card-body text-center">

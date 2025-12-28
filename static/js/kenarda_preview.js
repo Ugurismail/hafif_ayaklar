@@ -17,8 +17,11 @@
     root.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
       const inst = bootstrap.Tooltip.getInstance(el);
       if (inst) inst.dispose();
+      const wantsHtml = (el.getAttribute('data-bs-html') || '').toLowerCase() === 'true';
       new bootstrap.Tooltip(el, {
-        trigger: 'hover',
+        container: 'body',
+        trigger: 'hover focus',
+        html: wantsHtml,
         delay: { show: 500, hide: 100 },
       });
     });
@@ -26,7 +29,24 @@
     root.querySelectorAll('[data-bs-toggle="popover"]').forEach((el) => {
       const inst = bootstrap.Popover.getInstance(el);
       if (inst) inst.dispose();
-      new bootstrap.Popover(el);
+      new bootstrap.Popover(el, {
+        container: 'body',
+        html: true,
+        trigger: el.getAttribute('data-bs-trigger') || 'hover focus',
+      });
+    });
+  }
+
+  function preventPreviewNavigation(root) {
+    if (!root) return;
+    if (root.dataset.kenardaPreviewNavBound === '1') return;
+    root.dataset.kenardaPreviewNavBound = '1';
+
+    root.addEventListener('click', function (e) {
+      const anchor = e.target && e.target.closest ? e.target.closest('a') : null;
+      if (!anchor) return;
+      e.preventDefault();
+      e.stopPropagation();
     });
   }
 
@@ -34,6 +54,8 @@
     const rootId = options.rootId || 'kenarda-preview-root';
     const root = document.getElementById(rootId);
     if (!root) return;
+
+    preventPreviewNavigation(root);
 
     try {
       const res = await fetch('/kenarda/preview/', {
@@ -60,4 +82,3 @@
 
   window.kenardaUpdatePreview = updateKenardaPreview;
 })();
-

@@ -26,12 +26,13 @@
                 <div class="card-header">
                     <h3>Yanıtı Düzenle</h3>
                 </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="form-group mt-3">
-                        <!-- Araç Çubuğu -->
-                        <div class="btn-toolbar mb-2" role="toolbar">
+	                <div class="card-body">
+	                    <form method="post">
+	                        {% csrf_token %}
+	                        <div class="form-group mt-3">
+	                        <!-- Araç Çubuğu -->
+	                        <div id="kenarda-preview-root" class="mb-2" style="display:none;"></div>
+	                        <div class="btn-toolbar mb-2" role="toolbar">
                             <button type="button" class="btn btn-sm btn-outline-theme-secondary format-btn me-2" data-format="bold">
                                 <i class="bi bi-type-bold"></i>
                             </button>
@@ -56,14 +57,13 @@
                                 <i class="bi bi-journal"></i> Kaynak
                             </button>
                             <!-- SPOILER (YILDIZ) BUTONU -->
-                            <button type="button" class="btn btn-sm btn-outline-theme-secondary me-2 spoiler-btn"
-                                    title="gizle">
-                                *
-                            </button>
-                        </div>
-                        <div id="kenarda-preview-root" class="mb-2" style="display:none;"></div>
-                        {{ form.answer_text }}
-                        </div>
+	                            <button type="button" class="btn btn-sm btn-outline-theme-secondary me-2 spoiler-btn"
+	                                    title="gizle">
+	                                *
+	                            </button>
+	                        </div>
+	                        {{ form.answer_text }}
+	                        </div>
 
 
                         <button type="submit" class="btn btn-theme-primary mt-2">Güncelle</button>
