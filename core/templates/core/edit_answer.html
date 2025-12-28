@@ -229,104 +229,24 @@
         });
     });
 </script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // (A) Kaynak Modal Elemanları
-      const gosterKaynakModalButonu = document.getElementById('gosterKaynakModalButonu');
-      const kaynakRefModalElem      = document.getElementById('kaynakRefModal');
-      const kaynakRefModal          = new bootstrap.Modal(kaynakRefModalElem);
-    
-      // (B) “Kaynak Ekle/Seç” sekmeleri
-      const kaynakEkleTab = document.getElementById('kaynak-ekle-tab');
-      const kaynakSecTab  = document.getElementById('kaynak-sec-tab');
-    
-      // (C) Kaynak Formu ve Listesi
-      const kaynakForm        = document.getElementById('kaynakForm');
-      const kaynakListesi     = document.getElementById('kaynakListesi');
-      const seciliKaynakEkleBtn = document.getElementById('seciliKaynakEkleBtn');
-    
-      // (1) Butona basınca modalı aç, “Kaynak Ekle” sekmesini göster
-      gosterKaynakModalButonu.addEventListener('click', function() {
-        kaynakRefModal.show();
-        kaynakEkleTab.click(); // Her açıldığında ilk sekmede başlasın
-      });
-    
-      // (2) Kaynak Formu: create_reference endpoint’ine POST
-      kaynakForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        let formData = new FormData(kaynakForm);
-    
-        fetch("{% url 'create_reference' %}", {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'X-CSRFToken': "{{ csrf_token }}",
-          },
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'success') {
-            showToast("Kaynak başarıyla eklendi!", 'success');
-            kaynakForm.reset();
-            // Otomatik olarak "Kaynak Seç" sekmesine geç
-            kaynakSecTab.click();
-            kaynaklariListele();
-          } else {
-            console.log(data.errors);
-            showToast("Form hatası: " + JSON.stringify(data.errors), 'error');
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          showToast("Bir hata oluştu.", 'error');
-        });
-      });
-    
-      // (3) “Kaynak Seç” sekmesine tıklanınca mevcut kayıtlı kaynakları getir
-      kaynakSecTab.addEventListener('click', function() {
-        kaynaklariListele();
-      });
-    
-      function kaynaklariListele() {
-        fetch("{% url 'get_references' %}")
-          .then(response => response.json())
-          .then(data => {
-            kaynakListesi.innerHTML = '';
-            data.references.forEach(ref => {
-              let label = document.createElement('label');
-              label.classList.add('list-group-item');
-              label.innerHTML = `
-                <input type="radio" name="kaynakSecimi" value="${ref.id}" class="form-check-input me-2" />
-                <span>${ref.display}</span>
-              `;
-              kaynakListesi.appendChild(label);
-            });
-          })
-          .catch(err => {
-            console.error(err);
-            showToast("Liste yüklenirken hata oluştu.", 'error');
-          });
-      }
-    
-      // (4) Seçilen Kaynağı “(k:ID)” olarak textarea’ya ekle
-      seciliKaynakEkleBtn.addEventListener('click', function() {
-        const secili = document.querySelector('input[name="kaynakSecimi"]:checked');
-        if (!secili) {
-          showToast("Lütfen bir kaynak seçin.", 'warning');
-          return;
-        }
-        const refId = secili.value;
-        const answerTextArea = document.getElementById('id_answer_text');
-        if (!answerTextArea) {
-          showToast("Yanıt textarea bulunamadı!", 'error');
-          return;
-        }
-        // Metin sonuna [ (k:REF_ID) ] ekle
-        answerTextArea.value += ` (k:${refId}) `;
-        kaynakRefModal.hide();
-      });
-    });
-</script>
+	<script>
+	    document.addEventListener('DOMContentLoaded', function() {
+	      // (A) Kaynak Modal Elemanları
+	      const gosterKaynakModalButonu = document.getElementById('gosterKaynakModalButonu');
+	      const kaynakRefModalElem      = document.getElementById('kaynakRefModal');
+	      if (!gosterKaynakModalButonu || !kaynakRefModalElem || typeof bootstrap === 'undefined') return;
+	      const kaynakRefModal = new bootstrap.Modal(kaynakRefModalElem);
+	      const kaynakEkleTab = document.getElementById('kaynak-ekle-tab');
+
+	      // Not: Kaynak modalının submit/arama/seçme event'leri `core/kaynak_ref.html` içinde bağlanıyor.
+	      // Burada sadece modalı açıyoruz; aksi halde aynı forma iki ayrı submit handler bağlanıp
+	      // iki POST isteği atılabiliyor.
+	      gosterKaynakModalButonu.addEventListener('click', function() {
+	        kaynakRefModal.show();
+	        kaynakEkleTab?.click();
+	      });
+	    });
+	</script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
       var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
