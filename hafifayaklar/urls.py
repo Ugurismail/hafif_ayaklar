@@ -5,6 +5,8 @@ from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from core.sitemaps import QuestionSitemap, UserProfileSitemap, StaticViewSitemap
 from django.views.generic import TemplateView
+from django.views.generic.base import RedirectView
+from django.templatetags.static import static as static_url
 import os
 
 sitemaps = {
@@ -20,6 +22,7 @@ urlpatterns = [
     path(f'{ADMIN_URL_PATH}/', admin.site.urls),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots_txt'),
+    path('favicon.ico', RedirectView.as_view(url=static_url('imgs/favicon.ico'), permanent=True), name='favicon'),
     path('', include('core.urls')),
 ]
 
