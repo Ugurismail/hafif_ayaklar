@@ -68,12 +68,12 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 MARKDOWNIFY = {
     "default": {
-        "BLEACH": False,
+        "BLEACH": True,
         "NL2BR": True,
         "WHITELIST_TAGS": [
             'a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
             'em', 'i', 'li', 'ol', 'strong', 'ul', 'p',
-            'pre', 'img',
+            'pre', 'img', 'br',
         ],
         "WHITELIST_ATTRS": ['href', 'src', 'alt'],
         "WHITELIST_PROTOCOLS": ['http', 'https'],

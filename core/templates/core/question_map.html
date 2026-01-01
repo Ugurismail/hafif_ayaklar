@@ -238,9 +238,7 @@
 <script src="https://d3js.org/d3.v6.min.js"></script>
 
 <!-- Map data -->
-<script id="question-nodes-data" type="application/json">
-    {{ question_nodes|safe }}
-</script>
+{{ question_nodes|json_script:"question-nodes-data" }}
 <script>
     var focusQuestionId = "{{ focus_question_id|default:'' }}";
 </script>

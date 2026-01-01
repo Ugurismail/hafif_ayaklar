@@ -533,7 +533,7 @@ def question_map(request):
         "links": links
     }
     return render(request, 'core/question_map.html', {
-        'question_nodes': json.dumps(question_nodes),
+        'question_nodes': question_nodes,
         'focus_question_id': question_id,
     })
 
