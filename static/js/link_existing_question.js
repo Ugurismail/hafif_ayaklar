@@ -11,8 +11,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const questionSlug = modal.dataset.questionSlug ||
         window.location.pathname.split('/').filter(p => p).slice(-1)[0];
 
-    // Also try to get question ID for search API (if available)
-    const questionId = document.getElementById('answer_form_question_id')?.value || '';
+    // Get question ID for search API
+    const questionId = modal.dataset.questionId ||
+        document.getElementById('answer_form_question_id')?.value ||
+        '';
 
     if (!questionSlug) {
         console.error('Question slug not found');
