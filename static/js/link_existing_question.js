@@ -76,12 +76,16 @@ document.addEventListener('DOMContentLoaded', function () {
                             const div = document.createElement('div');
                             div.className = 'list-group-item list-group-item-action';
                             div.style.cursor = 'pointer';
-                            div.innerHTML = `
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span>${item.text}</span>
-                                    <small class="text-muted">${item.answer_count} yanıt</small>
-                                </div>
-                            `;
+                            const row = document.createElement('div');
+                            row.className = 'd-flex justify-content-between align-items-center';
+                            const title = document.createElement('span');
+                            title.textContent = item.text;
+                            const meta = document.createElement('small');
+                            meta.className = 'text-muted';
+                            meta.textContent = `${item.answer_count} yanıt`;
+                            row.appendChild(title);
+                            row.appendChild(meta);
+                            div.appendChild(row);
                             div.dataset.questionId = item.id;
                             div.addEventListener('click', () => linkQuestion(item.id, item.text));
                             resultsDiv.appendChild(div);
@@ -142,10 +146,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
         alertDiv.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
+        alertDiv.textContent = String(message);
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'btn-close';
+        closeBtn.setAttribute('data-bs-dismiss', 'alert');
+        alertDiv.appendChild(closeBtn);
         document.body.appendChild(alertDiv);
         setTimeout(() => alertDiv.remove(), 5000);
     }

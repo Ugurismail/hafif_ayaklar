@@ -1,5 +1,14 @@
 /* base.js */
 
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 /**
  * Show a toast notification
  * @param {string} message - The message to display
@@ -39,12 +48,13 @@ function showToast(message, type = 'info', duration = 4000) {
     }
 
     // Create toast element with theme classes
+    const safeMessage = escapeHtml(message);
     const toastHtml = `
         <div id="${toastId}" class="toast align-items-center ${themeClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body">
                     <i class="bi ${icon} me-2 toast-icon"></i>
-                    ${message}
+                    ${safeMessage}
                 </div>
                 <button type="button" class="${closeButtonClass} me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>

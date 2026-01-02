@@ -20,14 +20,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 questionsList.innerHTML = '';
                 data.questions.forEach(function(q) {
                     const link = `/${q.slug}/`;
-                    questionsList.innerHTML += `
-                        <li class="tbas-color baslik d-flex justify-content-between align-items-center mt-2">
-                            <a href="${link}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
-                                <span>${q.text}</span>
-                                <small class="text-muted ms-2" style="min-width: 20px; text-align: right;">${q.answers_count}</small>
-                            </a>
-                        </li>
-                    `;
+                    const li = document.createElement('li');
+                    li.className = 'tbas-color baslik d-flex justify-content-between align-items-center mt-2';
+
+                    const a = document.createElement('a');
+                    a.href = link;
+                    a.className = 'tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100';
+
+                    const title = document.createElement('span');
+                    title.textContent = q.text;
+
+                    const count = document.createElement('small');
+                    count.className = 'text-muted ms-2';
+                    count.style.minWidth = '20px';
+                    count.style.textAlign = 'right';
+                    count.textContent = String(q.answers_count);
+
+                    a.appendChild(title);
+                    a.appendChild(count);
+                    li.appendChild(a);
+                    questionsList.appendChild(li);
                 });
             })
             .catch(error => {

@@ -209,13 +209,16 @@ export class ModalManager {
  * @param {number} duration - Duration in ms (default: 5000)
  */
 export function showMessage(message, type = 'success', duration = 5000) {
+    const safeMessage = String(message);
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
     alertDiv.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
+    alertDiv.textContent = safeMessage;
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'btn-close';
+    closeBtn.setAttribute('data-bs-dismiss', 'alert');
+    alertDiv.appendChild(closeBtn);
     document.body.appendChild(alertDiv);
 
     setTimeout(() => alertDiv.remove(), duration);

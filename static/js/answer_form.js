@@ -440,26 +440,50 @@ var referenceModalElem = document.getElementById('referenceModal');
         if (userDefinitionsList) {
           userDefinitionsList.innerHTML = '';
           if (!data.definitions || data.definitions.length === 0) {
-            userDefinitionsList.innerHTML = `<li class="list-group-item text-muted">Hiç tanım bulunamadı.</li>`;
+            const emptyItem = document.createElement('li');
+            emptyItem.className = 'list-group-item text-muted';
+            emptyItem.textContent = 'Hiç tanım bulunamadı.';
+            userDefinitionsList.appendChild(emptyItem);
           } else {
             data.definitions.forEach(function(d) {
               let shortDef = d.definition_text;
               if (shortDef.length > 50) {
                 shortDef = shortDef.substring(0,50) + '...';
               }
-              let itemJson = JSON.stringify(d);
               let li = document.createElement('li');
               li.classList.add('list-group-item');
-              li.innerHTML = `
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="userDef" value='${itemJson}'>
-                  <label class="form-check-label">
-                    <strong>${d.question_text}</strong>
-                    <em>(${shortDef})</em>
-                    <small class="text-muted">[Ben:${d.usage_count_self}, Tüm:${d.usage_count_all}]</small>
-                  </label>
-                </div>
-              `;
+
+              const wrapper = document.createElement('div');
+              wrapper.className = 'form-check';
+
+              const input = document.createElement('input');
+              input.className = 'form-check-input';
+              input.type = 'radio';
+              input.name = 'userDef';
+              input.value = JSON.stringify(d);
+              input.id = `userDef_${d.id}`;
+
+              const label = document.createElement('label');
+              label.className = 'form-check-label';
+              label.setAttribute('for', input.id);
+
+              const strong = document.createElement('strong');
+              strong.textContent = d.question_text;
+
+              const em = document.createElement('em');
+              em.textContent = ` (${shortDef})`;
+
+              const small = document.createElement('small');
+              small.className = 'text-muted';
+              small.textContent = ` [Ben:${d.usage_count_self}, Tüm:${d.usage_count_all}]`;
+
+              label.appendChild(strong);
+              label.appendChild(em);
+              label.appendChild(small);
+
+              wrapper.appendChild(input);
+              wrapper.appendChild(label);
+              li.appendChild(wrapper);
               userDefinitionsList.appendChild(li);
             });
           }
@@ -577,27 +601,55 @@ var referenceModalElem = document.getElementById('referenceModal');
         if (allDefinitionsList) {
           allDefinitionsList.innerHTML = '';
           if (!data.definitions || data.definitions.length === 0) {
-            allDefinitionsList.innerHTML = '<li class="list-group-item text-muted">Hiç tanım bulunamadı.</li>';
+            const emptyItem = document.createElement('li');
+            emptyItem.className = 'list-group-item text-muted';
+            emptyItem.textContent = 'Hiç tanım bulunamadı.';
+            allDefinitionsList.appendChild(emptyItem);
           } else {
             data.definitions.forEach(function(d) {
               let shortDef = d.definition_text;
               if (shortDef.length > 50) {
                 shortDef = shortDef.substring(0,50) + '...';
               }
-              let itemJson = JSON.stringify(d);
               let li = document.createElement('li');
               li.classList.add('list-group-item');
-              li.innerHTML = `
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="globalDef" value='${itemJson}'>
-                  <label class="form-check-label">
-                    <strong>${d.question_text}</strong>
-                    <em>(${shortDef})</em>
-                    <small class="text-muted">by ${d.username}</small>
-                    <small class="ms-2">[${d.usage_count_all} kez kullanılmış]</small>
-                  </label>
-                </div>
-              `;
+
+              const wrapper = document.createElement('div');
+              wrapper.className = 'form-check';
+
+              const input = document.createElement('input');
+              input.className = 'form-check-input';
+              input.type = 'radio';
+              input.name = 'globalDef';
+              input.value = JSON.stringify(d);
+              input.id = `globalDef_${d.id}`;
+
+              const label = document.createElement('label');
+              label.className = 'form-check-label';
+              label.setAttribute('for', input.id);
+
+              const strong = document.createElement('strong');
+              strong.textContent = d.question_text;
+
+              const em = document.createElement('em');
+              em.textContent = ` (${shortDef})`;
+
+              const by = document.createElement('small');
+              by.className = 'text-muted';
+              by.textContent = ` by ${d.username}`;
+
+              const usage = document.createElement('small');
+              usage.className = 'ms-2';
+              usage.textContent = ` [${d.usage_count_all} kez kullanılmış]`;
+
+              label.appendChild(strong);
+              label.appendChild(em);
+              label.appendChild(by);
+              label.appendChild(usage);
+
+              wrapper.appendChild(input);
+              wrapper.appendChild(label);
+              li.appendChild(wrapper);
               allDefinitionsList.appendChild(li);
             });
           }

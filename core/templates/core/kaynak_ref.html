@@ -193,10 +193,19 @@
             data.references.forEach(ref => {
                 let label = document.createElement('label');
                 label.classList.add('list-group-item');
-                label.innerHTML = `
-                    <input type="radio" name="kaynakSecimi" value="${ref.id}" class="form-check-input me-2" />
-                    <span style="white-space: normal; word-break: break-word;">${ref.display}</span>
-                `;
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = 'kaynakSecimi';
+                input.value = ref.id;
+                input.className = 'form-check-input me-2';
+
+                const span = document.createElement('span');
+                span.style.whiteSpace = 'normal';
+                span.style.wordBreak = 'break-word';
+                span.textContent = ref.display;
+
+                label.appendChild(input);
+                label.appendChild(span);
                 kaynakListesi.appendChild(label);
             });
 

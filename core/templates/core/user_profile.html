@@ -1410,9 +1410,18 @@ function debounce(func, delay) {
     loadUserEntries();
   });
 
-  // Pagination ile entry'leri yükle
-  function loadUserEntries(append = false) {
-    const container = document.getElementById('entriesContainer');
+	  // Pagination ile entry'leri yükle
+	  function escapeHtml(value) {
+	    return String(value)
+	      .replace(/&/g, '&amp;')
+	      .replace(/</g, '&lt;')
+	      .replace(/>/g, '&gt;')
+	      .replace(/"/g, '&quot;')
+	      .replace(/'/g, '&#39;');
+	  }
+
+	  function loadUserEntries(append = false) {
+	    const container = document.getElementById('entriesContainer');
 
     if (!append) {
       container.innerHTML = '<p class="text-muted">Yükleniyor...</p>';
@@ -1466,11 +1475,11 @@ function debounce(func, delay) {
           loadMoreButton.style.display = 'none';
         }
       })
-      .catch(error => {
-        console.error('Entry yükleme hatası:', error);
-        container.innerHTML = `<p class="text-danger">Entry'ler yüklenirken hata oluştu: ${error.message}</p>`;
-      });
-  }
+	      .catch(error => {
+	        console.error('Entry yükleme hatası:', error);
+	        container.innerHTML = `<p class="text-danger">Entry'ler yüklenirken hata oluştu: ${escapeHtml(error.message)}</p>`;
+	      });
+	  }
 
   // Entry'leri render et
   function renderEntries() {
@@ -1478,22 +1487,22 @@ function debounce(func, delay) {
 
     // Entry'leri listele
     let html = '<div class="entry-selection-list" id="sortableEntries">';
-    userEntries.forEach((entry, index) => {
-      html += `
-        <div class="form-check entry-item mb-2 p-2" style="border: 1px solid #dee2e6; border-radius: 0.25rem; cursor: move;" data-entry-id="${entry.id}" draggable="true">
-          <div class="d-flex align-items-start">
-            <input class="form-check-input me-2 entry-checkbox" type="checkbox" value="${entry.id}" id="entry${entry.id}">
-            <label class="form-check-label flex-grow-1" for="entry${entry.id}" style="cursor: pointer;">
-              <strong>${entry.question}</strong><br>
-              <small class="text-muted">${entry.date} - ${entry.preview}</small>
-            </label>
-            <div class="drag-handle" style="padding: 0.25rem;">
-              <i class="bi bi-grip-vertical"></i>
-            </div>
-          </div>
-        </div>
-      `;
-    });
+	    userEntries.forEach((entry, index) => {
+	      html += `
+	        <div class="form-check entry-item mb-2 p-2" style="border: 1px solid #dee2e6; border-radius: 0.25rem; cursor: move;" data-entry-id="${entry.id}" draggable="true">
+	          <div class="d-flex align-items-start">
+	            <input class="form-check-input me-2 entry-checkbox" type="checkbox" value="${entry.id}" id="entry${entry.id}">
+	            <label class="form-check-label flex-grow-1" for="entry${entry.id}" style="cursor: pointer;">
+	              <strong>${escapeHtml(entry.question)}</strong><br>
+	              <small class="text-muted">${escapeHtml(entry.date)} - ${escapeHtml(entry.preview)}</small>
+	            </label>
+	            <div class="drag-handle" style="padding: 0.25rem;">
+	              <i class="bi bi-grip-vertical"></i>
+	            </div>
+	          </div>
+	        </div>
+	      `;
+	    });
     html += '</div>';
     container.innerHTML = html;
 
