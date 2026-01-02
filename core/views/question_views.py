@@ -938,8 +938,8 @@ def search_questions_for_linking(request):
 def unlink_from_parent(request, slug, parent_id):
     """
     Child question'ın perspective'inden: Bu soruyu belirtilen parent'tan ayırır.
-    Eğer unlinking sonrası soru orphan kalırsa (hiç parent'ı yoksa),
-    otomatik olarak StartingQuestion olarak eklenir.
+    Not: Unlink sonrası soru orphan kalsa bile otomatik olarak StartingQuestion yapılmaz;
+    kullanıcı isterse ayrıca başlangıç sorusu olarak ekler.
     """
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST metodu gerekli'}, status=400)
@@ -966,20 +966,8 @@ def unlink_from_parent(request, slug, parent_id):
         user=request.user
     ).delete()
 
-    # Orphan kontrolü: Eğer kullanıcının bu sorunun hiç parent'ı kalmadıysa, StartingQuestion olarak ekle
-    user_parent_count = QuestionRelationship.objects.filter(
-        child=current_question,
-        user=request.user
-    ).count()
-
-    if user_parent_count == 0:
-        # Eğer zaten StartingQuestion değilse ekle
-        if not StartingQuestion.objects.filter(question=current_question, user=request.user).exists():
-            # Bağlantıyı koparan kullanıcı için starting question olarak ekle
-            StartingQuestion.objects.create(
-                user=request.user,
-                question=current_question
-            )
+    # Orphan kontrolü: Eğer kullanıcının bu sorunun hiç parent'ı kalmadıysa da
+    # StartingQuestion kaydı oluşturmayız (normal başlık olarak kalır).
 
     # Parent kontrolü: Bu kullanıcı için parent'ın başka child'ı var mı?
     parent_children_count = QuestionRelationship.objects.filter(
