@@ -220,10 +220,19 @@ mark{
     margin-bottom: 0;
 }
 
-/* Inline code styling: remove Bootstrap's pink/red code color */
+/* Inline code styling: make backticks look like normal text */
 code {
     color: inherit !important;
     background-color: transparent !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    padding: 0 !important;
+}
+
+/* Keep code blocks monospace (```...```) */
+pre,
+pre code {
+    font-family: var(--bs-font-monospace, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace) !important;
 }
 
 /* Tabs */
