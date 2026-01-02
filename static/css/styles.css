@@ -220,6 +220,12 @@ mark{
     margin-bottom: 0;
 }
 
+/* Inline code styling: remove Bootstrap's pink/red code color */
+code {
+    color: inherit !important;
+    background-color: transparent !important;
+}
+
 /* Tabs */
 .nav-tabs .nav-link {
     background-color: var(--tab-background-color);
