@@ -180,6 +180,14 @@
     const modalId        = 'kaynakRefModal';
     const kaynakRefModal = document.getElementById(modalId);
 
+    // Aynı partial bir sayfada birden fazla kez render edilirse çift event binding olmasın
+    if (kaynakRefModal && kaynakRefModal.dataset.initialized === '1') {
+        return;
+    }
+    if (kaynakRefModal) {
+        kaynakRefModal.dataset.initialized = '1';
+    }
+
     // -----------------------
     // Kaynakları AJAX ile getir ve listele
     // -----------------------

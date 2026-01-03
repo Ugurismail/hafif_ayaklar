@@ -12,11 +12,13 @@ Definition and reference views
 """
 
 import json
+from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import JsonResponse
@@ -224,45 +226,56 @@ def create_reference(request):
     """
     form = ReferenceForm(request.POST)
     if form.is_valid():
-        # Form verilerini al
-        author_surname = form.cleaned_data.get('author_surname')
-        author_name = form.cleaned_data.get('author_name')
+        def normalize_semicolon_list(value):
+            parts = [p.strip() for p in (value or '').split(';') if p.strip()]
+            return '; '.join(parts)
+
+        author_surname = normalize_semicolon_list(form.cleaned_data.get('author_surname'))
+        author_name = normalize_semicolon_list(form.cleaned_data.get('author_name'))
         year = form.cleaned_data.get('year')
-        metin_ismi = form.cleaned_data.get('metin_ismi')
+        metin_ismi = (form.cleaned_data.get('metin_ismi') or '').strip()
+        rest = (form.cleaned_data.get('rest') or '').strip()
+        abbreviation = (form.cleaned_data.get('abbreviation') or '').strip()
 
-        # Duplicate kontrolü: Aynı yazar soyadı, adı, yıl ve metin ismi var mı?
-        existing_ref = Reference.objects.filter(
-            author_surname=author_surname,
-            author_name=author_name,
-            year=year,
-            metin_ismi=metin_ismi or '',
-        ).first()
+        with transaction.atomic():
+            existing_qs = Reference.objects.filter(
+                created_by=request.user,
+                author_surname=author_surname,
+                author_name=author_name,
+                year=year,
+                rest=rest,
+            )
+            if metin_ismi:
+                existing_qs = existing_qs.filter(metin_ismi=metin_ismi)
+            else:
+                existing_qs = existing_qs.filter(Q(metin_ismi__isnull=True) | Q(metin_ismi=''))
+            if abbreviation:
+                existing_qs = existing_qs.filter(abbreviation=abbreviation)
+            else:
+                existing_qs = existing_qs.filter(Q(abbreviation__isnull=True) | Q(abbreviation=''))
 
-        if existing_ref:
-            # Varolan kaynağı döndür
-            data = {
-                'status': 'success',
-                'reference': {
-                    'id': existing_ref.id,
-                    'display': str(existing_ref),
-                },
-                'message': 'Bu kaynak zaten sistemde mevcut. Mevcut kaynak kullanılacak.'
-            }
-            return JsonResponse(data, status=200)
-        else:
-            # Yeni kaynak oluştur
+            existing_ref = existing_qs.order_by('id').first()
+            if existing_ref:
+                return JsonResponse({
+                    'status': 'success',
+                    'reference': {'id': existing_ref.id, 'display': str(existing_ref)},
+                    'message': 'Bu kaynak zaten ekli. Mevcut kaynak kullanılacak.'
+                }, status=200)
+
             reference_obj = form.save(commit=False)
             reference_obj.created_by = request.user
+            reference_obj.author_surname = author_surname
+            reference_obj.author_name = author_name
+            reference_obj.metin_ismi = metin_ismi or None
+            reference_obj.rest = rest
+            reference_obj.abbreviation = abbreviation or None
             reference_obj.save()
-            data = {
-                'status': 'success',
-                'reference': {
-                    'id': reference_obj.id,
-                    'display': str(reference_obj),
-                },
-                'message': 'Kaynak başarıyla eklendi!'
-            }
-            return JsonResponse(data, status=200)
+
+        return JsonResponse({
+            'status': 'success',
+            'reference': {'id': reference_obj.id, 'display': str(reference_obj)},
+            'message': 'Kaynak başarıyla eklendi!'
+        }, status=200)
     else:
         return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
 
@@ -352,8 +365,12 @@ def edit_reference(request, reference_id):
             form.save()
             messages.success(request, "Kaynak başarıyla güncellendi.")
             # Get tab parameter from GET or default to 'kaynaklarim'
-            tab = request.GET.get('tab', 'kaynaklarim')
-            return redirect(f"{reverse('user_profile', kwargs={'username': request.user.username})}?tab={tab}")
+            params = {'tab': request.GET.get('tab', 'kaynaklarim')}
+            for key in ('sort', 'order', 'q', 'r_page'):
+                val = (request.GET.get(key) or '').strip()
+                if val:
+                    params[key] = val
+            return redirect(f"{reverse('user_profile', kwargs={'username': request.user.username})}?{urlencode(params)}")
     else:
         form = ReferenceForm(instance=reference)
     return render(request, 'core/edit_reference.html', {'form': form})
@@ -366,7 +383,10 @@ def delete_reference(request, reference_id):
     if request.method == 'POST':
         reference.delete()
         messages.success(request, "Kaynak başarıyla silindi.")
-        # Get tab parameter from GET or default to 'kaynaklarim'
-        tab = request.GET.get('tab', 'kaynaklarim')
-        return redirect(f"{reverse('user_profile', kwargs={'username': request.user.username})}?tab={tab}")
+        params = {'tab': request.GET.get('tab', 'kaynaklarim')}
+        for key in ('sort', 'order', 'q', 'r_page'):
+            val = (request.GET.get(key) or '').strip()
+            if val:
+                params[key] = val
+        return redirect(f"{reverse('user_profile', kwargs={'username': request.user.username})}?{urlencode(params)}")
     return render(request, 'core/confirm_delete_reference.html', {'reference': reference})
