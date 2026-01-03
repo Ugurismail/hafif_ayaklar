@@ -1,0 +1,156 @@
+<!-- admin_merge_question_modal.html -->
+<div class="modal fade" id="adminMergeQuestionModal" tabindex="-1" aria-labelledby="adminMergeQuestionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="adminMergeQuestionModalLabel">Başlığı Taşı / Birleştir (Admin)</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          Bu işlem <strong>geri alınamaz</strong>. Bu başlıktaki <strong>tüm entry’ler</strong> hedef başlığa taşınır ve bu başlık <strong>silinir</strong>.
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Kaynak Başlık</label>
+          <input type="text" class="form-control" value="{{ question.question_text }}" disabled>
+          <small class="text-muted">Slug: <code>{{ question.slug }}</code> • ID: <code>{{ question.id }}</code></small>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Hedef Başlık Ara</label>
+          <input type="text" id="merge-question-search-input" class="form-control" placeholder="Hedef başlığı yazın..." autocomplete="off">
+          <div id="merge-question-search-results" class="list-group mt-2" role="listbox"></div>
+          <div id="merge-question-no-results" class="text-muted mt-2" style="display:none;">Sonuç bulunamadı</div>
+        </div>
+
+        <form method="post" action="{% url 'admin_merge_question' question.slug %}" id="adminMergeQuestionForm">
+          {% csrf_token %}
+          <input type="hidden" name="target_id" id="mergeTargetId" value="">
+
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="text-muted">
+              Seçilen hedef: <span id="mergeSelectedTargetText">—</span>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="confirmMergeCheck">
+              <label class="form-check-label" for="confirmMergeCheck">
+                Onaylıyorum, kaynak başlık silinecek.
+              </label>
+            </div>
+          </div>
+
+          <input type="hidden" name="confirm_merge" id="confirmMergeInput" value="0">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">İptal</button>
+        <button type="submit" form="adminMergeQuestionForm" class="btn btn-theme-secondary" id="adminMergeSubmitBtn" disabled>
+          Taşı ve Sil
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const modal = document.getElementById('adminMergeQuestionModal');
+  if (!modal) return;
+  if (modal.dataset.initialized === '1') return;
+  modal.dataset.initialized = '1';
+
+  const searchInput = document.getElementById('merge-question-search-input');
+  const resultsDiv = document.getElementById('merge-question-search-results');
+  const noResultsDiv = document.getElementById('merge-question-no-results');
+  const targetIdInput = document.getElementById('mergeTargetId');
+  const selectedText = document.getElementById('mergeSelectedTargetText');
+  const confirmCheck = document.getElementById('confirmMergeCheck');
+  const confirmInput = document.getElementById('confirmMergeInput');
+  const submitBtn = document.getElementById('adminMergeSubmitBtn');
+
+  if (!searchInput || !resultsDiv || !noResultsDiv || !targetIdInput || !selectedText || !confirmCheck || !confirmInput || !submitBtn) return;
+
+  const excludeId = String({{ question.id }});
+  let searchTimeout;
+
+  function syncSubmitState() {
+    const hasTarget = Boolean(targetIdInput.value);
+    const confirmed = confirmCheck.checked;
+    confirmInput.value = confirmed ? '1' : '0';
+    submitBtn.disabled = !(hasTarget && confirmed);
+  }
+
+  confirmCheck.addEventListener('change', syncSubmitState);
+
+  function clearResults() {
+    resultsDiv.innerHTML = '';
+    noResultsDiv.style.display = 'none';
+  }
+
+  function setTarget(id, text) {
+    targetIdInput.value = String(id);
+    selectedText.textContent = String(text);
+    syncSubmitState();
+  }
+
+  searchInput.addEventListener('input', function () {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim();
+
+    if (query.length < 2) {
+      clearResults();
+      return;
+    }
+
+    searchTimeout = setTimeout(() => {
+      fetch(`{% url 'search_questions_for_merging' %}?q=${encodeURIComponent(query)}&exclude_id=${encodeURIComponent(excludeId)}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+        .then(r => r.json())
+        .then(data => {
+          clearResults();
+          if (data.results && data.results.length > 0) {
+            data.results.forEach(item => {
+              const div = document.createElement('div');
+              div.className = 'list-group-item list-group-item-action';
+              div.style.cursor = 'pointer';
+
+              const row = document.createElement('div');
+              row.className = 'd-flex justify-content-between align-items-center gap-2';
+
+              const title = document.createElement('span');
+              title.textContent = item.text;
+
+              const meta = document.createElement('small');
+              meta.className = 'text-muted flex-shrink-0';
+              meta.textContent = `${item.answer_count} yanıt`;
+
+              row.appendChild(title);
+              row.appendChild(meta);
+              div.appendChild(row);
+
+              div.addEventListener('click', () => setTarget(item.id, item.text));
+              resultsDiv.appendChild(div);
+            });
+          } else {
+            noResultsDiv.style.display = 'block';
+          }
+        })
+        .catch(() => {
+          clearResults();
+          noResultsDiv.style.display = 'block';
+        });
+    }, 250);
+  });
+
+  modal.addEventListener('hidden.bs.modal', function () {
+    searchInput.value = '';
+    clearResults();
+    targetIdInput.value = '';
+    selectedText.textContent = '—';
+    confirmCheck.checked = false;
+    syncSubmitState();
+  });
+});
+</script>

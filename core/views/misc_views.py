@@ -874,6 +874,17 @@ def get_filtered_user_answers(request, target_user):
     return user_answers
 
 
+def is_custom_order_request(request):
+    """
+    Custom order only makes sense when specific entry_ids are provided.
+    """
+    if request.method != 'POST':
+        return False
+    order = request.POST.get('order', 'oldest')
+    entry_ids_str = (request.POST.get('entry_ids', '') or '').strip()
+    return order == 'custom' and bool(entry_ids_str)
+
+
 @login_required
 def download_entries_json(request, username):
     target_user = get_object_or_404(User, username=username)
@@ -885,6 +896,7 @@ def download_entries_json(request, username):
 
     # Get filtered answers using helper function
     user_answers = get_filtered_user_answers(request, target_user)
+    custom_order = is_custom_order_request(request)
 
     # Group answers by question
     questions_dict = {}
@@ -915,6 +927,18 @@ def download_entries_json(request, username):
             'answers': answers_data
         })
 
+    # Preserve the exact order (manual/selection order) when requested.
+    entries_data = []
+    if custom_order:
+        for ans in user_answers:
+            entries_data.append({
+                'question_text': ans.question.question_text,
+                'question_slug': ans.question.slug,
+                'answer_id': ans.id,
+                'answer_text': ans.answer_text,
+                'answer_created_at': ans.created_at.isoformat(),
+            })
+
     # Collect bibliography from selected answers
     bibliography = collect_user_bibliography(target_user, user_answers)
     references_data = []
@@ -943,6 +967,7 @@ def download_entries_json(request, username):
     final_data = {
         'username': target_user.username,
         'questions': questions_data,
+        'entries': entries_data,
         'references': references_data
     }
 
@@ -968,38 +993,46 @@ def download_entries_xlsx(request, username):
 
     # Get filtered answers using helper function
     user_answers = get_filtered_user_answers(request, target_user)
-
-    # Group answers by question
-    questions_dict = {}
-    for ans in user_answers:
-        q = ans.question
-        if q.id not in questions_dict:
-            questions_dict[q.id] = {
-                'question': q,
-                'answers': []
-            }
-        questions_dict[q.id]['answers'].append(ans)
+    custom_order = is_custom_order_request(request)
 
     wb = Workbook()
     ws = wb.active
     ws.title = "Entries"
 
-    row_idx = 1
+    if custom_order:
+        ws.cell(row=1, column=1, value="Soru")
+        ws.cell(row=1, column=2, value="Tarih")
+        ws.cell(row=1, column=3, value="Entry")
+        for i, ans in enumerate(user_answers, start=2):
+            ws.cell(row=i, column=1, value=ans.question.question_text)
+            ws.cell(row=i, column=2, value=ans.created_at.strftime("%Y-%m-%d %H:%M"))
+            ws.cell(row=i, column=3, value=ans.answer_text)
+    else:
+        # Group answers by question
+        questions_dict = {}
+        for ans in user_answers:
+            q = ans.question
+            if q.id not in questions_dict:
+                questions_dict[q.id] = {
+                    'question': q,
+                    'answers': []
+                }
+            questions_dict[q.id]['answers'].append(ans)
 
-    for _, q_data in questions_dict.items():
-        question = q_data['question']
-        q_answers = q_data['answers']
+        row_idx = 1
+        for _, q_data in questions_dict.items():
+            question = q_data['question']
+            q_answers = q_data['answers']
 
-        ws.cell(row=row_idx, column=1, value=question.question_text)
+            ws.cell(row=row_idx, column=1, value=question.question_text)
 
-        answer_start_row = row_idx
+            answer_start_row = row_idx
+            for j, ans in enumerate(q_answers):
+                current_row = answer_start_row + j
+                ws.cell(row=current_row, column=2, value=ans.answer_text)
 
-        for i, ans in enumerate(q_answers):
-            current_row = answer_start_row + i
-            ws.cell(row=current_row, column=2, value=ans.answer_text)
-
-        row_idx = answer_start_row + max(len(q_answers), 1)
-        row_idx += 1
+            row_idx = answer_start_row + max(len(q_answers), 1)
+            row_idx += 1
 
     # Add bibliography sheet
     bibliography = collect_user_bibliography(target_user, user_answers)
@@ -1090,49 +1123,65 @@ def download_entries_docx(request, username):
 
     # Get filtered answers using helper function
     user_answers = get_filtered_user_answers(request, target_user)
-
-    # Group answers by question
-    questions_dict = {}
-    for ans in user_answers:
-        q = ans.question
-        if q.id not in questions_dict:
-            questions_dict[q.id] = {
-                'question': q,
-                'answers': []
-            }
-        questions_dict[q.id]['answers'].append(ans)
+    custom_order = is_custom_order_request(request)
 
     document = Document()
 
     document.add_heading(f"{target_user.username} Entries", 0)
 
-    toc_paragraph = document.add_paragraph()
-    insert_toc(toc_paragraph)
+    if custom_order:
+        last_question_id = None
+        for ans in user_answers:
+            if ans.question_id != last_question_id:
+                document.add_heading(ans.question.question_text, level=1)
+                last_question_id = ans.question_id
 
-    instruction_text = (
-        "Belgeyi açtıktan sonra içindekiler bölümünü görmek için, Word içerisinde "
-        "alanı (veya tüm belgeyi) güncellemeniz gerekir (sağ tıklayıp 'Update Field' veya Ctrl+A ardından F9'a basabilirsiniz)."
-    )
-    document.add_paragraph(instruction_text)
-
-    document.add_page_break()
-
-    # Add selected questions and answers (not using tree structure when specific entries selected)
-    for _, q_data in questions_dict.items():
-        question = q_data['question']
-        q_answers = q_data['answers']
-
-        document.add_heading(question.question_text, level=1)
-
-        for answer in q_answers:
-            date_str = answer.created_at.strftime("%Y-%m-%d %H:%M")
+            date_str = ans.created_at.strftime("%Y-%m-%d %H:%M")
             p = document.add_paragraph()
             run = p.add_run(date_str + "  ")
             run.font.size = Pt(9)
             run.font.color.rgb = RGBColor(140, 140, 140)
             run.italic = True
-            p.add_run(answer.answer_text)
+            p.add_run(ans.answer_text)
             document.add_paragraph("")
+    else:
+        # Group answers by question
+        questions_dict = {}
+        for ans in user_answers:
+            q = ans.question
+            if q.id not in questions_dict:
+                questions_dict[q.id] = {
+                    'question': q,
+                    'answers': []
+                }
+            questions_dict[q.id]['answers'].append(ans)
+
+        toc_paragraph = document.add_paragraph()
+        insert_toc(toc_paragraph)
+
+        instruction_text = (
+            "Belgeyi açtıktan sonra içindekiler bölümünü görmek için, Word içerisinde "
+            "alanı (veya tüm belgeyi) güncellemeniz gerekir (sağ tıklayıp 'Update Field' veya Ctrl+A ardından F9'a basabilirsiniz)."
+        )
+        document.add_paragraph(instruction_text)
+
+        document.add_page_break()
+
+        for _, q_data in questions_dict.items():
+            question = q_data['question']
+            q_answers = q_data['answers']
+
+            document.add_heading(question.question_text, level=1)
+
+            for answer in q_answers:
+                date_str = answer.created_at.strftime("%Y-%m-%d %H:%M")
+                p = document.add_paragraph()
+                run = p.add_run(date_str + "  ")
+                run.font.size = Pt(9)
+                run.font.color.rgb = RGBColor(140, 140, 140)
+                run.italic = True
+                p.add_run(answer.answer_text)
+                document.add_paragraph("")
 
     # Add bibliography section
     bibliography = collect_user_bibliography(target_user, user_answers)
@@ -1185,17 +1234,7 @@ def download_entries_pdf(request, username):
 
     # Get filtered answers using helper function
     user_answers = get_filtered_user_answers(request, target_user)
-
-    # Group answers by question
-    questions_dict = {}
-    for ans in user_answers:
-        q = ans.question
-        if q.id not in questions_dict:
-            questions_dict[q.id] = {
-                'question': q,
-                'answers': []
-            }
-        questions_dict[q.id]['answers'].append(ans)
+    custom_order = is_custom_order_request(request)
 
     # Create PDF buffer
     buffer = BytesIO()
@@ -1324,62 +1363,82 @@ def download_entries_pdf(request, username):
         text = text.replace('\n', '<br/>')
         return text
 
-    # Add Table of Contents
-    toc_style = ParagraphStyle(
-        'TOCHeading',
-        parent=styles['Heading1'],
-        fontName=font_name_bold,
-        fontSize=18,
-        textColor='#2c3e50',
-        spaceAfter=12
-    )
-    toc_item_style = ParagraphStyle(
-        'TOCItem',
-        parent=styles['Normal'],
-        fontName=font_name,
-        fontSize=11,
-        textColor='#34495e',
-        spaceAfter=6,
-        leftIndent=20
-    )
+    if custom_order:
+        last_question_id = None
+        for answer in user_answers:
+            if answer.question_id != last_question_id:
+                question_para = Paragraph(clean_text(answer.question.question_text), h1_style)
+                elements.append(question_para)
+                elements.append(Spacer(1, 0.1*inch))
+                last_question_id = answer.question_id
 
-    elements.append(Paragraph("İçindekiler", toc_style))
-    elements.append(Spacer(1, 0.2*inch))
-
-    # List all questions in TOC
-    for idx, (_, q_data) in enumerate(questions_dict.items(), 1):
-        question = q_data['question']
-        toc_text = f"{idx}. {clean_text(question.question_text[:100])}"
-        if len(question.question_text) > 100:
-            toc_text += "..."
-        elements.append(Paragraph(toc_text, toc_item_style))
-
-    elements.append(PageBreak())
-
-    # Add selected questions and answers
-    for _, q_data in questions_dict.items():
-        question = q_data['question']
-        q_answers = q_data['answers']
-
-        # Add question heading
-        question_para = Paragraph(clean_text(question.question_text), h1_style)
-        elements.append(question_para)
-        elements.append(Spacer(1, 0.1*inch))
-
-        # Add user's answers to this question
-        for answer in q_answers:
-            # Add date
             date_str = answer.created_at.strftime("%Y-%m-%d %H:%M")
             date_para = Paragraph(f"<i>{date_str}</i>", date_style)
             elements.append(date_para)
-
-            # Add answer text
             answer_para = Paragraph(clean_text(answer.answer_text), answer_style)
             elements.append(answer_para)
             elements.append(Spacer(1, 0.15*inch))
+    else:
+        # Group answers by question
+        questions_dict = {}
+        for ans in user_answers:
+            q = ans.question
+            if q.id not in questions_dict:
+                questions_dict[q.id] = {
+                    'question': q,
+                    'answers': []
+                }
+            questions_dict[q.id]['answers'].append(ans)
 
-        # Add page break after each question
+        # Add Table of Contents
+        toc_style = ParagraphStyle(
+            'TOCHeading',
+            parent=styles['Heading1'],
+            fontName=font_name_bold,
+            fontSize=18,
+            textColor='#2c3e50',
+            spaceAfter=12
+        )
+        toc_item_style = ParagraphStyle(
+            'TOCItem',
+            parent=styles['Normal'],
+            fontName=font_name,
+            fontSize=11,
+            textColor='#34495e',
+            spaceAfter=6,
+            leftIndent=20
+        )
+
+        elements.append(Paragraph("İçindekiler", toc_style))
+        elements.append(Spacer(1, 0.2*inch))
+
+        for idx, (_, q_data) in enumerate(questions_dict.items(), 1):
+            question = q_data['question']
+            toc_text = f"{idx}. {clean_text(question.question_text[:100])}"
+            if len(question.question_text) > 100:
+                toc_text += "..."
+            elements.append(Paragraph(toc_text, toc_item_style))
+
         elements.append(PageBreak())
+
+        for _, q_data in questions_dict.items():
+            question = q_data['question']
+            q_answers = q_data['answers']
+
+            question_para = Paragraph(clean_text(question.question_text), h1_style)
+            elements.append(question_para)
+            elements.append(Spacer(1, 0.1*inch))
+
+            for answer in q_answers:
+                date_str = answer.created_at.strftime("%Y-%m-%d %H:%M")
+                date_para = Paragraph(f"<i>{date_str}</i>", date_style)
+                elements.append(date_para)
+
+                answer_para = Paragraph(clean_text(answer.answer_text), answer_style)
+                elements.append(answer_para)
+                elements.append(Spacer(1, 0.15*inch))
+
+            elements.append(PageBreak())
 
     # Add bibliography section
     bibliography = collect_user_bibliography(target_user, user_answers)

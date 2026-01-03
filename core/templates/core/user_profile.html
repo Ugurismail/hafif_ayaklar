@@ -608,10 +608,10 @@
                           <td>{{ ref.usage_count }}</td>
                           <td>
                             {% if ref.created_by == user %}
-                            <a href="{% url 'edit_reference' ref.id %}?tab=kaynaklarim" class="btn btn-sm btn-theme-primary" title="Düzenle">
+                            <a href="{% url 'edit_reference' ref.id %}?tab=kaynaklarim&sort={{ reference_sort|default:'alpha' }}&order={{ reference_order|default:'asc' }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}{% if request.GET.r_page %}&r_page={{ request.GET.r_page|urlencode }}{% endif %}" class="btn btn-sm btn-theme-primary" title="Düzenle">
                               <i class="bi bi-pencil-square"></i>
                             </a>
-                            <a href="{% url 'delete_reference' ref.id %}?tab=kaynaklarim" class="btn btn-sm btn-theme-secondary" title="Sil">
+                            <a href="{% url 'delete_reference' ref.id %}?tab=kaynaklarim&sort={{ reference_sort|default:'alpha' }}&order={{ reference_order|default:'asc' }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}{% if request.GET.r_page %}&r_page={{ request.GET.r_page|urlencode }}{% endif %}" class="btn btn-sm btn-theme-secondary" title="Sil">
                               <i class="bi bi-trash"></i>
                             </a>
                             {% endif %}
@@ -867,7 +867,7 @@
             <select class="form-select" name="order" id="orderSelect">
               <option value="oldest">En Eskiden En Yeniye</option>
               <option value="newest">En Yeniden En Eskiye</option>
-              <option value="custom">Özel Sıralama (Seçim Sırasına Göre)</option>
+              <option value="custom">Özel Sıralama (Sürükle-Bırak Sırasına Göre)</option>
             </select>
           </div>
         </form>
@@ -1203,15 +1203,17 @@ function debounce(func, delay) {
       }
     }
     var tabLinks = document.querySelectorAll('#profileTab .nav-link');
-    tabLinks.forEach(function(link) {
-      link.addEventListener('shown.bs.tab', function(e) {
-        var href = e.target.getAttribute('href');
-        var newTab = href.replace('#', '');
-        var newUrl = window.location.pathname + '?tab=' + newTab;
-        history.pushState({}, '', newUrl);
-      });
-    });
-  });
+	    tabLinks.forEach(function(link) {
+	      link.addEventListener('shown.bs.tab', function(e) {
+	        var href = e.target.getAttribute('href');
+	        var newTab = href.replace('#', '');
+	        var params = new URLSearchParams(window.location.search);
+	        params.set('tab', newTab);
+	        var newUrl = window.location.pathname + '?' + params.toString();
+	        history.pushState({}, '', newUrl);
+	      });
+	    });
+	  });
 
   // 8. Profil fotoğrafı önizleme
   var fileInput = document.getElementById('id_photo');
@@ -1329,8 +1331,10 @@ function debounce(func, delay) {
   const downloadAllCheckbox = document.getElementById('downloadAllCheckbox');
   const entrySelectionSection = document.getElementById('entrySelectionSection');
   const loadMoreButton = document.getElementById('loadMoreButton');
+  const orderSelect = document.getElementById('orderSelect');
 
   let userEntries = [];
+  let selectedEntryIds = new Set();
   let currentPage = 1;
   let hasMore = false;
   let totalEntries = 0;
@@ -1354,6 +1358,7 @@ function debounce(func, delay) {
     entrySelectionSection.style.display = 'block';
     currentPage = 1;
     userEntries = [];
+    selectedEntryIds = new Set();
     currentSearchTerm = '';
     document.getElementById('searchEntriesInput').value = '';
     document.getElementById('rootQuestionSelect').value = '';
@@ -1407,6 +1412,7 @@ function debounce(func, delay) {
   document.getElementById('rootQuestionSelect').addEventListener('change', function() {
     currentPage = 1;
     userEntries = [];
+    selectedEntryIds = new Set();
     loadUserEntries();
   });
 
@@ -1484,38 +1490,58 @@ function debounce(func, delay) {
   // Entry'leri render et
   function renderEntries() {
     const container = document.getElementById('entriesContainer');
+    const isCustomOrder = (orderSelect && orderSelect.value === 'custom');
 
     // Entry'leri listele
     let html = '<div class="entry-selection-list" id="sortableEntries">';
-	    userEntries.forEach((entry, index) => {
-	      html += `
-	        <div class="form-check entry-item mb-2 p-2" style="border: 1px solid #dee2e6; border-radius: 0.25rem; cursor: move;" data-entry-id="${entry.id}" draggable="true">
-	          <div class="d-flex align-items-start">
-	            <input class="form-check-input me-2 entry-checkbox" type="checkbox" value="${entry.id}" id="entry${entry.id}">
-	            <label class="form-check-label flex-grow-1" for="entry${entry.id}" style="cursor: pointer;">
-	              <strong>${escapeHtml(entry.question)}</strong><br>
-	              <small class="text-muted">${escapeHtml(entry.date)} - ${escapeHtml(entry.preview)}</small>
-	            </label>
-	            <div class="drag-handle" style="padding: 0.25rem;">
-	              <i class="bi bi-grip-vertical"></i>
-	            </div>
-	          </div>
-	        </div>
-	      `;
-	    });
+		    userEntries.forEach((entry, index) => {
+          const isChecked = selectedEntryIds.has(String(entry.id));
+		      html += `
+		        <div class="form-check entry-item mb-2 p-2 ${isChecked ? 'bg-light' : ''}" style="border: 1px solid #dee2e6; border-radius: 0.25rem; cursor: ${isCustomOrder ? 'move' : 'pointer'};" data-entry-id="${entry.id}" draggable="true">
+		          <div class="d-flex align-items-start">
+		            <input class="form-check-input me-2 entry-checkbox" type="checkbox" value="${entry.id}" id="entry${entry.id}" ${isChecked ? 'checked' : ''}>
+		            <label class="form-check-label flex-grow-1" for="entry${entry.id}" style="cursor: pointer;">
+		              <strong>${escapeHtml(entry.question)}</strong><br>
+		              <small class="text-muted">${escapeHtml(entry.date)} - ${escapeHtml(entry.preview)}</small>
+		            </label>
+		            <div class="drag-handle" style="padding: 0.25rem;">
+		              <i class="bi bi-grip-vertical"></i>
+		            </div>
+		          </div>
+		        </div>
+		      `;
+		    });
     html += '</div>';
     container.innerHTML = html;
 
     // Checkbox değişikliklerini dinle (modal içinde ara)
     const checkboxes = downloadModal.querySelectorAll('.entry-checkbox');
     checkboxes.forEach(cb => {
-      cb.addEventListener('change', updateSelectedCount);
+      cb.addEventListener('change', function() {
+        const item = cb.closest('.entry-item');
+        if (item) {
+          if (cb.checked) item.classList.add('bg-light');
+          else item.classList.remove('bg-light');
+        }
+        if (cb.checked) selectedEntryIds.add(cb.value);
+        else selectedEntryIds.delete(cb.value);
+        updateSelectedCount();
+      });
     });
 
     // Drag and drop özelliğini etkinleştir
     initDragAndDrop();
 
     updateSelectedCount();
+  }
+
+  function syncUserEntriesOrderFromDOM() {
+    const ids = Array.from(document.querySelectorAll('#sortableEntries .entry-item'))
+      .map(el => Number(el.dataset.entryId))
+      .filter(n => !Number.isNaN(n));
+    if (ids.length === 0) return;
+    const idx = new Map(ids.map((id, i) => [id, i]));
+    userEntries.sort((a, b) => (idx.get(a.id) ?? 1e9) - (idx.get(b.id) ?? 1e9));
   }
 
   // Drag and drop özelliği
@@ -1525,12 +1551,17 @@ function debounce(func, delay) {
 
     items.forEach(item => {
       item.addEventListener('dragstart', function(e) {
+        // Sürükleme yapılırsa otomatik olarak "custom" sıralamaya geç
+        if (orderSelect && orderSelect.value !== 'custom') {
+          orderSelect.value = 'custom';
+        }
         draggedElement = this;
         this.style.opacity = '0.5';
       });
 
       item.addEventListener('dragend', function(e) {
         this.style.opacity = '1';
+        syncUserEntriesOrderFromDOM();
       });
 
       item.addEventListener('dragover', function(e) {
@@ -1550,19 +1581,29 @@ function debounce(func, delay) {
 
   // Tümünü seç (modal içinde ara)
   document.getElementById('selectAllEntries').addEventListener('click', function() {
-    downloadModal.querySelectorAll('.entry-checkbox').forEach(cb => cb.checked = true);
+    downloadModal.querySelectorAll('.entry-checkbox').forEach(cb => {
+      cb.checked = true;
+      selectedEntryIds.add(cb.value);
+      const item = cb.closest('.entry-item');
+      if (item) item.classList.add('bg-light');
+    });
     updateSelectedCount();
   });
 
   // Hiçbirini seçme (modal içinde ara)
   document.getElementById('deselectAllEntries').addEventListener('click', function() {
-    downloadModal.querySelectorAll('.entry-checkbox').forEach(cb => cb.checked = false);
+    downloadModal.querySelectorAll('.entry-checkbox').forEach(cb => {
+      cb.checked = false;
+      selectedEntryIds.delete(cb.value);
+      const item = cb.closest('.entry-item');
+      if (item) item.classList.remove('bg-light');
+    });
     updateSelectedCount();
   });
 
   // Seçili sayıyı güncelle
   function updateSelectedCount() {
-    const count = downloadModal.querySelectorAll('.entry-checkbox:checked').length;
+    const count = selectedEntryIds.size;
     // Server-side arama yapıyoruz, görünen = yüklenen
     const visible = userEntries.length;
     document.getElementById('selectedCount').textContent = count;
@@ -1584,6 +1625,7 @@ function debounce(func, delay) {
     entryDownloadSearchTimeout = setTimeout(() => {
       currentPage = 1;
       userEntries = [];
+      selectedEntryIds = new Set();
       loadUserEntries();
     }, 500); // 500ms debounce
   });

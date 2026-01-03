@@ -127,6 +127,17 @@
                       <i class="bi bi-scissors"></i>
                     </a>
                     {% endif %}
+
+                    {% if user.is_superuser %}
+                    <!-- Admin: Başlık Taşı/Birleştir -->
+                    <a href="#"
+                       class="ms-2 text-theme-danger"
+                       data-bs-toggle="modal"
+                       data-bs-target="#adminMergeQuestionModal"
+                       title="Başlığı Taşı/Birleştir (Admin)">
+                      <i class="bi bi-arrow-right-circle"></i>
+                    </a>
+                    {% endif %}
                     {% endif %}
                 </div>
                 <!-- Sağ Kısım: Kullanıcı Bilgisi ve Tarih -->
@@ -586,6 +597,10 @@
 
 <!-- Link Existing Question Modal -->
 {% include 'core/link_existing_question_modal.html' %}
+
+{% if user.is_superuser %}
+  {% include 'core/admin_merge_question_modal.html' %}
+{% endif %}
 
 <!-- Unlink from Parents Modal -->
 <div class="modal fade" id="unlinkParentsModal" tabindex="-1"
