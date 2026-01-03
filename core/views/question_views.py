@@ -16,18 +16,20 @@ Question-related views
 
 import json
 from collections import defaultdict
+from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Max
 from django.http import JsonResponse
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 
 from ..models import (
     Question,
@@ -1096,8 +1098,24 @@ def admin_merge_question(request, slug):
                 parent.subquestions.add(target)
             parent.subquestions.remove(source)
 
-        # 1) Move answers (entryler)
-        Answer.objects.filter(question=source).update(question=target)
+        # 1) Move answers (entryler) and append them to the end of the target thread.
+        # We preserve the relative order of moved answers, but shift their timestamps
+        # to be after the latest existing answer in the target question.
+        target_latest = Answer.objects.filter(question=target).aggregate(latest=Max('created_at')).get('latest')
+        base_time = target_latest or timezone.now()
+
+        source_answers = list(
+            Answer.objects.select_for_update()
+            .filter(question=source)
+            .order_by('created_at', 'id')
+        )
+        for i, ans in enumerate(source_answers, start=1):
+            shifted = base_time + timedelta(seconds=i)
+            ans.question = target
+            ans.created_at = shifted
+            ans.updated_at = shifted
+        if source_answers:
+            Answer.objects.bulk_update(source_answers, ['question', 'created_at', 'updated_at'])
 
         # 2) Move user-generated question-bound content that should not disappear
         Definition.objects.filter(question=source).update(question=target)
