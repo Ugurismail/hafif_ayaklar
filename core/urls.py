@@ -44,7 +44,8 @@ urlpatterns = [
     path('reference-search/', views.reference_search, name='reference_search'),
     path('user-search/', views.user_search, name='user_search'),
     path('search-questions-for-linking/', views.search_questions_for_linking, name='search_questions_for_linking'),
-    path('admin/search-questions-for-merging/', views.search_questions_for_merging, name='search_questions_for_merging'),
+    # Admin-only endpoint (must NOT be under /admin/ because it conflicts with Django admin URLs)
+    path('merge/search-questions/', views.search_questions_for_merging, name='search_questions_for_merging'),
 
     # Kullanıcı Ayarları
     path('settings/', views.user_settings, name='user_settings'),
