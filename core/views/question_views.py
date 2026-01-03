@@ -24,10 +24,25 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q, Count
 from django.http import JsonResponse
+from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 
-from ..models import Question, Answer, SavedItem, Vote, StartingQuestion, Kenarda, UserProfile, QuestionFollow, AnswerFollow, QuestionRelationship
+from ..models import (
+    Question,
+    Answer,
+    SavedItem,
+    Vote,
+    StartingQuestion,
+    Kenarda,
+    UserProfile,
+    QuestionFollow,
+    AnswerFollow,
+    QuestionRelationship,
+    Definition,
+    HashtagUsage,
+)
 from ..forms import AnswerForm, QuestionForm, StartingQuestionForm
 from ..querysets import get_today_questions_queryset
 from ..utils import paginate_queryset
@@ -999,3 +1014,148 @@ def unlink_from_parent(request, slug, parent_id):
         'success': True,
         'message': f'"{parent_question.question_text}" sorusundan bağlantı kaldırıldı'
     })
+
+
+@login_required
+def search_questions_for_merging(request):
+    """
+    Admin-only search endpoint for merging questions.
+    Returns {id, slug, text, answer_count} results.
+    """
+    if not request.user.is_superuser:
+        return HttpResponseForbidden("Bu işlem sadece admin içindir.")
+
+    query = (request.GET.get('q') or '').strip()
+    exclude_id = request.GET.get('exclude_id')
+    if len(query) < 2:
+        return JsonResponse({'results': []})
+
+    qs = Question.objects.filter(question_text__icontains=query)
+    if exclude_id:
+        try:
+            qs = qs.exclude(id=int(exclude_id))
+        except (TypeError, ValueError):
+            pass
+
+    qs = qs.annotate(answer_count=Count('answers')).order_by('-created_at')[:10]
+    results = [
+        {'id': q.id, 'slug': q.slug, 'text': q.question_text, 'answer_count': q.answer_count}
+        for q in qs
+    ]
+    return JsonResponse({'results': results})
+
+
+@require_POST
+@login_required
+def admin_merge_question(request, slug):
+    """
+    Admin-only: move ALL answers from the source question into the target question,
+    then delete the source question.
+
+    Rules:
+    - Only admin (superuser) can run.
+    - Move all Answer rows (entryler) to target.
+    - Delete question-level votes/saves/follows for source (answer-level stays).
+    - Move map relations (StartingQuestion + QuestionRelationship) to target.
+    - Keep other user content that is question-bound (e.g. drafts/definitions/hashtags) by re-pointing.
+    """
+    if not request.user.is_superuser:
+        return HttpResponseForbidden("Bu işlem sadece admin içindir.")
+
+    target_id = request.POST.get('target_id')
+    confirm = request.POST.get('confirm_merge')
+    if not target_id or confirm != '1':
+        messages.error(request, "Hedef başlık seçin ve onaylayın.")
+        return redirect('question_detail', slug=slug)
+
+    try:
+        target_id_int = int(target_id)
+    except (TypeError, ValueError):
+        messages.error(request, "Geçersiz hedef başlık.")
+        return redirect('question_detail', slug=slug)
+
+    with transaction.atomic():
+        source = get_object_or_404(Question.objects.select_for_update(), slug=slug)
+        target = get_object_or_404(Question.objects.select_for_update(), id=target_id_int)
+
+        if source.id == target.id:
+            messages.error(request, "Kaynak ve hedef aynı olamaz.")
+            return redirect('question_detail', slug=slug)
+
+        source_title = source.question_text
+        target_title = target.question_text
+
+        # 0) Transfer legacy Question.subquestions graph (older map model)
+        # Move outgoing links (source -> child) to (target -> child)
+        for child in source.subquestions.all():
+            if child.id != target.id:
+                target.subquestions.add(child)
+        # Move incoming links (parent -> source) to (parent -> target)
+        for parent in source.parent_questions.all():
+            if parent.id != target.id:
+                parent.subquestions.add(target)
+            parent.subquestions.remove(source)
+
+        # 1) Move answers (entryler)
+        Answer.objects.filter(question=source).update(question=target)
+
+        # 2) Move user-generated question-bound content that should not disappear
+        Definition.objects.filter(question=source).update(question=target)
+        Kenarda.objects.filter(question=source).update(question=target)
+        HashtagUsage.objects.filter(question=source).update(question=target)
+
+        # 3) Merge question users set (used by map/node coloring)
+        target.users.add(*source.users.all())
+
+        # 4) Move map relations: StartingQuestion
+        starting_rows = list(StartingQuestion.objects.select_for_update().filter(question=source))
+        for sq in starting_rows:
+            if StartingQuestion.objects.filter(user=sq.user, question=target).exists():
+                sq.delete()
+            else:
+                sq.question = target
+                sq.save(update_fields=['question'])
+
+        # 5) Move map relations: user-based QuestionRelationship edges
+        rel_rows = list(
+            QuestionRelationship.objects.select_for_update().filter(
+                Q(parent=source) | Q(child=source)
+            )
+        )
+        for rel in rel_rows:
+            new_parent = target if rel.parent_id == source.id else rel.parent
+            new_child = target if rel.child_id == source.id else rel.child
+
+            # Drop self-links
+            if new_parent.id == new_child.id:
+                rel.delete()
+                continue
+
+            exists = QuestionRelationship.objects.filter(
+                parent=new_parent,
+                child=new_child,
+                user=rel.user
+            ).exists()
+            if not exists:
+                QuestionRelationship.objects.create(
+                    parent=new_parent,
+                    child=new_child,
+                    user=rel.user,
+                    created_at=rel.created_at,
+                )
+            rel.delete()
+
+        # 6) Delete question-level interactions for source
+        content_type_question = ContentType.objects.get_for_model(Question)
+        SavedItem.objects.filter(content_type=content_type_question, object_id=source.id).delete()
+        Vote.objects.filter(content_type=content_type_question, object_id=source.id).delete()
+        QuestionFollow.objects.filter(question=source).delete()
+
+        # 7) Finally delete the source question
+        source.delete()
+
+    messages.success(
+        request,
+        f'"{source_title}" başlığındaki entryler "{target_title}" başlığına taşındı ve eski başlık silindi.'
+    )
+    return redirect('question_detail', slug=target.slug)

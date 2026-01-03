@@ -44,6 +44,7 @@ urlpatterns = [
     path('reference-search/', views.reference_search, name='reference_search'),
     path('user-search/', views.user_search, name='user_search'),
     path('search-questions-for-linking/', views.search_questions_for_linking, name='search_questions_for_linking'),
+    path('admin/search-questions-for-merging/', views.search_questions_for_merging, name='search_questions_for_merging'),
 
     # Kullanıcı Ayarları
     path('settings/', views.user_settings, name='user_settings'),
@@ -177,6 +178,7 @@ urlpatterns = [
     path('<path:slug>/delete/', views.delete_question, name='delete_question'),
     path('<path:slug>/add-subquestion/', views.add_subquestion, name='add_subquestion'),
     path('<path:slug>/add-as-subquestion/', views.add_existing_subquestion, name='add_existing_subquestion'),
+    path('<path:slug>/admin-merge/', views.admin_merge_question, name='admin_merge_question'),
     path('<path:slug>/unlink-from-parent/<int:parent_id>/', views.unlink_from_parent, name='unlink_from_parent'),
     path('<path:slug>/filter_answers/', views.filter_answers, name='filter_answers'),
     # EN GENEL pattern EN SONDA (catch-all)
