@@ -367,5 +367,49 @@ document.addEventListener('DOMContentLoaded', function() {
     updateNotificationBadge();
 
     // Her 60 saniyede bir kontrol et (performans için)
-    setInterval(updateNotificationBadge, 60000);
+setInterval(updateNotificationBadge, 60000);
+});
+
+// Mobile side panels (questions list / subquestions) for 3-panel pages
+document.addEventListener('DOMContentLoaded', function() {
+    const body = document.body;
+    const backdrop = document.querySelector('.mobile-panel-backdrop');
+
+    function closePanels() {
+        body.classList.remove('mobile-panel-open', 'mobile-panel-left-open', 'mobile-panel-right-open');
+    }
+
+    function openPanel(side) {
+        closePanels();
+        body.classList.add('mobile-panel-open');
+        if (side === 'left') body.classList.add('mobile-panel-left-open');
+        if (side === 'right') body.classList.add('mobile-panel-right-open');
+    }
+
+    document.addEventListener('click', function(e) {
+        const openBtn = e.target.closest('[data-mobile-panel-open]');
+        if (openBtn) {
+            e.preventDefault();
+            openPanel(openBtn.getAttribute('data-mobile-panel-open'));
+            return;
+        }
+
+        const closeBtn = e.target.closest('[data-mobile-panel-close]');
+        if (closeBtn) {
+            e.preventDefault();
+            closePanels();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closePanels();
+    });
+
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 992) closePanels();
+    });
+
+    if (backdrop) {
+        backdrop.addEventListener('click', closePanels);
+    }
 });
