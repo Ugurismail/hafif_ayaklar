@@ -75,15 +75,17 @@ a {
     background-color: color-mix(in srgb, var(--button-background-color) 8%, transparent) !important;
 }
 
-/* Prevent occasional Bootstrap grid wrapping in 3-panel layouts
-   (caused by min-content sizing + subpixel rounding at certain viewport widths). */
-.three-panel-row {
-    flex-wrap: nowrap;
-}
+/* Prevent occasional Bootstrap grid wrapping in 3-panel layouts (desktop only).
+   On mobile, we allow normal flow to avoid collapsing scroll areas. */
+@media (min-width: 992px) {
+    .three-panel-row {
+        flex-wrap: nowrap;
+    }
 
-.three-panel-row > [class*="col-"] {
-    min-width: 0;
-    flex: 0 1 auto !important;
+    .three-panel-row > [class*="col-"] {
+        min-width: 0;
+        flex: 0 1 auto !important;
+    }
 }
 
 
@@ -1067,7 +1069,16 @@ span.icon-number {
 }
 
 @media (max-width: 991px) {
-    #naber, #naber > .row { height: auto; }
+    /* Keep an explicit height so column flex layouts don't collapse on mobile. */
+    #naber {
+        height: calc(100vh - 70px - 3rem);
+        height: calc(100dvh - 70px - 3rem);
+        min-height: 0;
+    }
+
+    #naber > .row {
+        height: 100%;
+    }
 }
 
 /* Sadece sol-scroll sınıfında scrollbar'ı özelleştirir */
