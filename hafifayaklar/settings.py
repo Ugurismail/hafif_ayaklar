@@ -15,6 +15,10 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4m3!p5t!fy=$22
 # CRITICAL: Set DEBUG=False in production
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
+# Static asset cache-busting version (keep stable so browser caching works).
+# Bump this (or set env var) when you deploy new static files.
+STATIC_ASSET_VERSION = os.environ.get('STATIC_ASSET_VERSION', '1')
+
 # Hardcoded ALLOWED_HOSTS to ensure all domains are always included
 ALLOWED_HOSTS = [
     '127.0.0.1',
@@ -108,6 +112,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.static_asset_version',
                 'core.context_processors.unread_message_count',
                 'core.context_processors.unread_notification_count',
             ],

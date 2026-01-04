@@ -1,6 +1,10 @@
 # core/context_processors.py
 
+from django.conf import settings
 from .models import Message, Notification
+
+def static_asset_version(request):
+    return {'STATIC_ASSET_VERSION': getattr(settings, 'STATIC_ASSET_VERSION', '1')}
 
 def unread_message_count(request):
     if request.user.is_authenticated:
