@@ -790,9 +790,9 @@ small:has(.dropdown.show) {
 /* Advanced search (funnel) button should visually match the search input */
 #advancedSearchBtn{
     background-color: var(--background-color) !important;
-    border-color: var(--text-color) !important;
+    border: 1px solid var(--text-color) !important;
     color: var(--text-color) !important;
-    margin-left: 0 !important;
+    margin-left: 0.35rem !important;
 }
 
 #advancedSearchBtn:hover,
@@ -804,18 +804,6 @@ small:has(.dropdown.show) {
     box-shadow: none !important;
 }
 
-/* Make the input + button feel like a single control in the navbar */
-#search-form #search-input{
-    border-right: 0 !important;
-    border-top-right-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-}
-
-#search-form #advancedSearchBtn{
-    border-left: 0 !important;
-    border-top-left-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-}
 #search-input::placeholder {
     color: var(--text-color);
 }
