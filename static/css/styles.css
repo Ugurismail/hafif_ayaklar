@@ -787,10 +787,34 @@ small:has(.dropdown.show) {
     color: var(--text-color);
 }
 
+/* Advanced search (funnel) button should visually match the search input */
 #advancedSearchBtn{
-border-color: var(--text-color);
-color: var(--text-color);
-  }
+    background-color: var(--background-color) !important;
+    border-color: var(--background-color) !important;
+    color: var(--text-color) !important;
+    margin-left: 0 !important;
+}
+
+#advancedSearchBtn:hover,
+#advancedSearchBtn:focus,
+#advancedSearchBtn:focus-visible{
+    background-color: var(--hover-background-color) !important;
+    border-color: var(--hover-background-color) !important;
+    color: var(--text-color) !important;
+    box-shadow: none !important;
+}
+
+/* Make the input + button feel like a single control in the navbar */
+#search-form #search-input{
+    border-right-color: var(--background-color) !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+#search-form #advancedSearchBtn{
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
 #search-input::placeholder {
     color: var(--text-color);
 }
