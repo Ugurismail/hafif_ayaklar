@@ -1098,6 +1098,7 @@ span.icon-number {
     }
 
     .mobile-panel{
+        display: none;
         position: fixed !important;
         top: 70px;
         bottom: 0;
@@ -1121,10 +1122,12 @@ span.icon-number {
     }
 
     body.mobile-panel-left-open .mobile-panel-left{
+        display: flex;
         transform: translateX(0);
     }
 
     body.mobile-panel-right-open .mobile-panel-right{
+        display: flex;
         transform: translateX(0);
     }
 
@@ -1138,6 +1141,11 @@ span.icon-number {
         overflow-x: auto;
         gap: 0.4rem;
         -webkit-overflow-scrolling: touch;
+    }
+
+    .btn-toolbar[role="toolbar"] .btn{
+        flex: 0 0 auto;
+        white-space: nowrap;
     }
 
     .btn-toolbar[role="toolbar"]::-webkit-scrollbar{
