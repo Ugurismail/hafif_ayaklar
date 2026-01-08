@@ -84,13 +84,19 @@
 
   {% block content %}
   <div class="container mt-5" id="naber" data-disable-single-answer-nav="1">
-    <div class="row three-panel-row">
-          <!-- SOL SÜTUN: TÜM SORULAR -->
-          <div class="col-5 col-md-2 order-1 order-md-1 d-flex flex-column sol-scroll" style="border-right: 1px solid #ccc; height: 100%; min-height: 0;">
-            <h4 style="display: flex; justify-content: center; align-items: center; gap: 18px; min-height: 38px; margin-bottom: 0.5rem;">
-              <a href="#" id="random-question-btn" title="Rastgele Başlık Diz" class="vote-btn2 d-flex align-items-center justify-content-center"
-                 style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
-                  <i class="bi bi-shuffle" style="font-size: 1.25em"></i>
+	    <div class="row three-panel-row">
+	          <!-- SOL SÜTUN: TÜM SORULAR -->
+	          <div class="col-5 col-md-2 col-lg-2 order-1 d-flex flex-column sol-scroll mobile-panel mobile-panel-left" style="border-right: 1px solid #ccc; height: 100%; min-height: 0;">
+	            <div class="d-lg-none d-flex justify-content-between align-items-center mb-2">
+	              <strong>Başlıklar</strong>
+	              <button type="button" class="btn btn-sm btn-outline-theme-secondary" data-mobile-panel-close aria-label="Kapat">
+	                <i class="bi bi-x"></i>
+	              </button>
+	            </div>
+	            <h4 style="display: flex; justify-content: center; align-items: center; gap: 18px; min-height: 38px; margin-bottom: 0.5rem;">
+	              <a href="#" id="random-question-btn" title="Rastgele Başlık Diz" class="vote-btn2 d-flex align-items-center justify-content-center"
+	                 style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
+	                  <i class="bi bi-shuffle" style="font-size: 1.25em"></i>
               </a>
               <a href="#" id="shuffle-btn" title="Rastgele Başlığa Git" class="vote-btn2 d-flex align-items-center justify-content-center"
                  style="width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;">
@@ -121,15 +127,27 @@
               {% include 'core/pagination.html' with page_obj=all_questions_page page_param='q_page' %}
           </div>
 
-        <!-- ORTA SÜTUN -->
-        <div class="col-5 col-md-8 order-2 order-md-2 d-flex flex-column sol-scroll" style="height: 100%; min-height: 0;">
-          <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
-          
-            <!-- Gizli input: question.id -->
-            <input type="hidden" id="answer_form_question_id" value="{{ question.id }}">
-          
-            <!-- Soru Başlık + Harita Linki + FİLTRE BUTONU -->
-            <div class="d-flex justify-content-between align-items-center mb-2">
+	        <!-- ORTA SÜTUN -->
+	        <div class="col-12 col-lg-8 order-2 d-flex flex-column sol-scroll" style="height: 100%; min-height: 0;">
+	          <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
+	          
+	            <!-- Gizli input: question.id -->
+	            <input type="hidden" id="answer_form_question_id" value="{{ question.id }}">
+
+	            <!-- Mobile controls: open side panels -->
+	            <div class="d-lg-none d-flex justify-content-between align-items-center mb-2 mobile-page-toolbar">
+	              <button type="button" class="btn btn-sm btn-outline-theme-secondary" data-mobile-panel-open="left">
+	                <i class="bi bi-list"></i> Başlıklar
+	              </button>
+	              <div class="d-flex gap-2">
+	                <button type="button" class="btn btn-sm btn-outline-theme-secondary" data-mobile-panel-open="right">
+	                  <i class="bi bi-layout-sidebar-inset"></i> Alt Sorular
+	                </button>
+	              </div>
+	            </div>
+	          
+	            <!-- Soru Başlık + Harita Linki + FİLTRE BUTONU -->
+	            <div class="d-flex justify-content-between align-items-center mb-2">
               
               <h1 class="h1 mb-0">
                 <a href="{% url 'question_detail' question.slug %}" class="text-decoration-none" style="color: inherit;">{{ question.question_text }}</a>
@@ -540,9 +558,15 @@
             </div>
         </div>
           <!-- SAĞ SÜTUN: ALT SORULAR -->
-          <div class="col-2 col-md-2 order-3 order-md-3 d-flex flex-column" style="border-left: 1px solid #ccc; height: 100%; min-height: 0;">
-            <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
-                  <div class="row g-2">  <!-- Satır ekledik, boşluk için g-2 kullanıldı -->
+	          <div class="col-2 col-md-2 col-lg-2 order-3 d-flex flex-column mobile-panel mobile-panel-right" style="border-left: 1px solid #ccc; height: 100%; min-height: 0;">
+	            <div class="d-lg-none d-flex justify-content-between align-items-center mb-2">
+	              <strong>Alt Sorular</strong>
+	              <button type="button" class="btn btn-sm btn-outline-theme-secondary" data-mobile-panel-close aria-label="Kapat">
+	                <i class="bi bi-x"></i>
+	              </button>
+	            </div>
+	            <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
+	                  <div class="row g-2">  <!-- Satır ekledik, boşluk için g-2 kullanıldı -->
                       {% if parents_list|length == 0 %}
                       <div class="col-12 d-grid">
                           <a href="{% url 'add_subquestion' question.slug %}" class="btn btn-outline-theme-secondary btn-sm">
