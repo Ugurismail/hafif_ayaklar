@@ -61,6 +61,51 @@ body {
     font-size: var(--font-size) !important;
 }
 
+/* Error pages (theme-aware, premium UX) */
+.error-page{
+    min-height: calc(100vh - 70px);
+    display: flex;
+    align-items: center;
+    padding: 2.5rem 0;
+}
+
+.error-card{
+    background: color-mix(in srgb, var(--content-background-color) 92%, transparent);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: 2.25rem 1.75rem;
+    box-shadow: 0 18px 50px color-mix(in srgb, var(--shadow-color) 60%, transparent);
+}
+
+.error-code{
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    font-size: clamp(4rem, 10vw, 7rem);
+    line-height: 1;
+    color: var(--text-color);
+    opacity: 0.95;
+    margin-bottom: 0.25rem;
+}
+
+.error-title{
+    color: var(--text-color);
+    letter-spacing: -0.02em;
+}
+
+.error-lead{
+    color: color-mix(in srgb, var(--text-color) 82%, transparent);
+    font-size: 1.05rem;
+}
+
+.error-actions .btn{
+    padding: 0.65rem 1.05rem;
+}
+
+.error-hint{
+    color: color-mix(in srgb, var(--text-color) 65%, transparent);
+    font-size: 0.95rem;
+}
+
 a {
     color: var(--link-color);
     text-decoration: none;
