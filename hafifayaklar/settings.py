@@ -12,8 +12,16 @@ load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4m3!p5t!fy=$22i7m==v!z$d#4-yq33=*1u_^e^=@cot@+9q))')
 
-# CRITICAL: Set DEBUG=False in production
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+# CRITICAL: Set DEBUG=False in production.
+# If DEBUG env var is not set, default to:
+# - True on local dev machines
+# - False on PythonAnywhere-like Linux home dirs (/home/...)
+_debug_env = os.environ.get('DEBUG')
+if _debug_env is None:
+    _is_hosted = os.environ.get('HOME', '').startswith('/home/')
+    DEBUG = not _is_hosted
+else:
+    DEBUG = _debug_env == 'True'
 
 # Static asset cache-busting version (keep stable so browser caching works).
 # Bump this (or set env var) when you deploy new static files.
@@ -97,6 +105,7 @@ MIDDLEWARE = [
     'core.middleware.LastSeenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.CustomErrorPagesMiddleware',
 ]
 
 ROOT_URLCONF = 'hafifayaklar.urls'
