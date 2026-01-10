@@ -106,6 +106,221 @@ body {
     font-size: 0.95rem;
 }
 
+/* --- Delphoi Kahini --- */
+.delphoi-oracle{
+    top: 24px;
+    z-index: 2;
+}
+
+.delphoi-hero{
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+    box-shadow: 0 18px 50px color-mix(in srgb, var(--shadow-color) 60%, transparent);
+}
+
+.delphoi-hero-gif{
+    display: block;
+    width: 100%;
+    height: 520px;
+    object-fit: cover;
+    filter: saturate(1.05) contrast(1.05);
+}
+
+.delphoi-hero::after{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.40) 0%,
+        rgba(0, 0, 0, 0.28) 40%,
+        rgba(0, 0, 0, 0.55) 100%
+    );
+    pointer-events: none;
+}
+
+.delphoi-hero-inner{
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 28px 22px;
+    text-align: center;
+    color: #fff;
+}
+
+.delphoi-hero-kicker{
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+}
+
+.delphoi-hero-title{
+    margin: 12px 0 4px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    font-size: clamp(2rem, 4vw, 3rem);
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.delphoi-hero-subtitle{
+    max-width: 720px;
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 14px;
+    text-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+}
+
+.delphoi-hero-actions{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.delphoi-prophecy-card{
+    margin-top: 14px;
+    border-radius: 18px;
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+    background: color-mix(in srgb, var(--content-background-color) 92%, transparent);
+    box-shadow: 0 12px 30px color-mix(in srgb, var(--shadow-color) 45%, transparent);
+    padding: 18px 18px;
+}
+
+.delphoi-prophecy-head{
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+}
+
+.delphoi-prophecy{
+    padding: 16px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+    background: color-mix(in srgb, var(--content-background-color) 82%, transparent);
+}
+
+.delphoi-prophecy-quote{
+    margin: 0;
+    font-size: clamp(1.2rem, 2.1vw, 1.8rem);
+    line-height: 1.55;
+    font-weight: 700;
+    text-align: center;
+}
+
+.delphoi-prophecy-quote::before,
+.delphoi-prophecy-quote::after{
+    color: var(--button-background-color, #8B860B);
+    opacity: 0.65;
+}
+
+.delphoi-prophecy-quote::before{
+    content: "“";
+    margin-right: 0.15em;
+}
+
+.delphoi-prophecy-quote::after{
+    content: "”";
+    margin-left: 0.1em;
+}
+
+.delphoi-prophecy-empty{
+    color: color-mix(in srgb, var(--text-color) 72%, transparent);
+    font-size: 1.05rem;
+    text-align: center;
+}
+
+.delphoi-wait{
+    margin-top: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--text-color) 70%, transparent);
+    text-align: center;
+}
+
+.delphoi-ask-btn{
+    min-width: 220px;
+}
+
+.delphoi-countdown{
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: clamp(3rem, 7vw, 5rem);
+    color: #fff;
+    text-shadow: 0 0 18px rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    pointer-events: none;
+}
+
+.delphoi-side-section{
+    border-radius: 14px;
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+    background: color-mix(in srgb, var(--content-background-color) 92%, transparent);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--shadow-color) 35%, transparent);
+    padding: 12px 12px;
+}
+
+.delphoi-side-section + .delphoi-side-section{
+    margin-top: 12px;
+}
+
+.delphoi-side-summary{
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.delphoi-side-summary::-webkit-details-marker{
+    display: none;
+}
+
+.delphoi-side-meta{
+    font-weight: 650;
+    font-size: 0.9rem;
+    color: color-mix(in srgb, var(--text-color) 65%, transparent);
+    white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .delphoi-oracle{
+        position: static !important;
+        top: auto;
+    }
+
+    .delphoi-hero-gif{
+        height: 360px;
+    }
+
+    .delphoi-prophecy-quote,
+    .delphoi-prophecy-empty,
+    .delphoi-wait{
+        text-align: left;
+    }
+}
+
 a {
     color: var(--link-color);
     text-decoration: none;
