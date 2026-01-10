@@ -90,9 +90,9 @@ def delphoi_home(request):
     last_request = DelphoiRequest.objects.filter(user=user, question=question).order_by('-requested_at').first()
     can_request_prophecy = True
     wait_until = None
-    if last_request and (now - last_request.requested_at) < timedelta(hours=24):
+    if last_request and (now - last_request.requested_at) < timedelta(seconds=24):
         can_request_prophecy = False
-        wait_until = last_request.requested_at + timedelta(hours=24)
+        wait_until = last_request.requested_at + timedelta(seconds=24)
 
     prophecy_result = request.GET.get('prophecy_result')  # Sadece istek sonrası döner (redirectte)
 
@@ -129,9 +129,9 @@ def delphoi_result(request):
             question=question
         ).select_for_update().order_by('-requested_at').first()
 
-        if last_request and (now - last_request.requested_at) < timedelta(hours=24):
+        if last_request and (now - last_request.requested_at) < timedelta(seconds=24):
             # Hala süresi dolmadıysa, ana sayfaya bekleme zamanı ile dön
-            wait_until = last_request.requested_at + timedelta(hours=24)
+            wait_until = last_request.requested_at + timedelta(seconds=24)
             return redirect(f"{request.build_absolute_uri('/delphoi/')}?wait_until={wait_until.isoformat()}")
 
         # Rastgele prophecy seçimi (veritabanı seviyesinde)

@@ -5,7 +5,7 @@
 <div class="container py-4">
   <div class="row g-4">
     <!-- SOL SÜTUN: Kurallar + Form + Kendi Kehanetlerin -->
-    <div class="col-lg-3 col-12 order-2 order-lg-1">
+    <div class="col-lg-2 col-12 order-2 order-lg-1">
       <div class="accordion mb-4" id="rulesAccordion">
         <div class="accordion-item">
           <h2 class="accordion-header" id="headingRules">
@@ -63,7 +63,7 @@
         </div>
       </details>
 
-      <details class="delphoi-side-section">
+      <details class="delphoi-side-section"{% if edit_id or updated_id %} open{% endif %}>
         <summary class="delphoi-side-summary">
           Kendi Kehanetlerin
           <span class="delphoi-side-meta">{{ prophecies|length }}</span>
@@ -73,9 +73,9 @@
         {% for prophecy in prophecies %}
           <div class="accordion-item mb-2">
             <h2 class="accordion-header" id="heading{{prophecy.id}}">
-              <button class="accordion-button collapsed d-flex align-items-center{% if edit_id == prophecy.id or updated_id == prophecy.id %} show{% endif %}"
+              <button class="accordion-button d-flex align-items-center{% if not (edit_id == prophecy.id or updated_id == prophecy.id) %} collapsed{% endif %}"
                       type="button" data-bs-toggle="collapse"
-                      data-bs-target="#collapse{{prophecy.id}}" aria-expanded="false" aria-controls="collapse{{prophecy.id}}">
+                      data-bs-target="#collapse{{prophecy.id}}" aria-expanded="{% if edit_id == prophecy.id or updated_id == prophecy.id %}true{% else %}false{% endif %}" aria-controls="collapse{{prophecy.id}}">
                 <span class="me-2">{{ forloop.counter }}.</span>
                 {% if prophecy.type == 'positive' %}
                   <span class="badge me-2" style="background-color: var(--button-background-color); color: var(--button-text-color);">Pozitif</span>
@@ -110,14 +110,11 @@
                   </form>
                 {% else %}
                   <div class="mb-2">{{ prophecy.text }}</div>
-                  <form method="get" style="display:inline;">
-                    <input type="hidden" name="edit" value="{{ prophecy.id }}">
-                    <button class="btn-theme btn-sm" type="submit">Düzenle</button>
-                  </form>
+                  <a class="btn-theme btn-sm" href="{% url 'delphoi_home' %}?edit={{ prophecy.id }}#collapse{{ prophecy.id }}">Düzenle</a>
                   <form method="post" style="display:inline;" id="delete-prophecy-form-{{ prophecy.id }}">
                     {% csrf_token %}
                     <input type="hidden" name="delete_id" value="{{ prophecy.id }}">
-                    <button class="btn btn-theme-secondary btn-sm ms-2" type="submit" class="delete-prophecy-btn" data-prophecy-id="{{ prophecy.id }}">Sil</button>
+                    <button class="btn btn-theme-secondary btn-sm ms-2 delete-prophecy-btn" type="submit" data-prophecy-id="{{ prophecy.id }}">Sil</button>
                   </form>
                 {% endif %}
               </div>
@@ -132,7 +129,7 @@
     </div>
 
     <!-- SAĞ SÜTUN: Kahin (ana deneyim) -->
-    <div class="col-lg-9 col-12 order-1 order-lg-2">
+    <div class="col-lg-10 col-12 order-1 order-lg-2">
       <div class="delphoi-oracle sticky-top">
         <div class="delphoi-hero">
           <img src="{% static 'imgs/delphoi.gif' %}" alt="Delphoi Kahini" class="delphoi-hero-gif">
@@ -141,7 +138,7 @@
           <div class="delphoi-hero-inner">
             <div class="delphoi-hero-kicker">Delphoi Tapınağı</div>
             <h1 class="delphoi-hero-title">Kahin</h1>
-            <div class="delphoi-hero-subtitle">Yanıtını duymaya geldin.</div>
+            <div class="delphoi-hero-subtitle">Danışmak istediğini düşün; kahin duyuyor. Sorunu hazırla ve “Yanıtı Duy”a bas.</div>
 
             <div class="delphoi-hero-actions">
               <button id="get_prophecy_btn"
@@ -149,9 +146,6 @@
                       {% if not can_request_prophecy %}disabled{% endif %}>
                 Yanıtı Duy
               </button>
-              <div class="delphoi-actions-hint">
-                Geri sayım başlayacak; 5 saniye sonra kehanet açığa çıkacak.
-              </div>
             </div>
           </div>
         </div>
