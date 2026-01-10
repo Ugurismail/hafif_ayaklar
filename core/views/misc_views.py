@@ -689,19 +689,19 @@ def custom_400_view(request, exception):
 
 
 def custom_404_view(request, exception):
-    response = render(request, 'core/404.html')
+    response = render(request, '404.html')
     response.status_code = 404
     return response
 
 
 def custom_403_view(request, exception):
-    response = render(request, 'core/403.html')
+    response = render(request, '403.html')
     response.status_code = 403
     return response
 
 
 def custom_500_view(request):
-    response = render(request, 'core/500.html')
+    response = render(request, '500.html')
     response.status_code = 500
     return response
 

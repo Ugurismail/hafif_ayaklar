@@ -13,7 +13,8 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4m3!p5t!fy=$22i7m==v!z$d#4-yq33=*1u_^e^=@cot@+9q))')
 
 # CRITICAL: Set DEBUG=False in production
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+# Default to False so production doesn't accidentally run with DEBUG=True.
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 # Static asset cache-busting version (keep stable so browser caching works).
 # Bump this (or set env var) when you deploy new static files.

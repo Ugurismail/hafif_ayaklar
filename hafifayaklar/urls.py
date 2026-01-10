@@ -29,7 +29,8 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# Custom error handlers
-handler404 = 'django.views.defaults.page_not_found'
-handler500 = 'django.views.defaults.server_error'
-handler403 = 'django.views.defaults.permission_denied'
+# Custom error handlers (use our themed templates)
+handler400 = 'core.views.custom_400_view'
+handler403 = 'core.views.custom_403_view'
+handler404 = 'core.views.custom_404_view'
+handler500 = 'core.views.custom_500_view'
