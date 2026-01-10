@@ -1,44 +1,8 @@
 {% extends 'core/base.html' %}
-{% load static %}
 
 {% block title %}Erişim Engellendi - 403{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 text-center">
-            <div class="card shadow-sm p-5" style="background-color: var(--content-background-color); border-radius: 15px;">
-                <div class="card-body">
-                    <h1 class="display-1 fw-bold" style="color: var(--text-color); font-size: 8rem;">403</h1>
-                    <h2 class="mb-4" style="color: var(--text-color);">Erişim Engellendi</h2>
-                    <p class="lead mb-4" style="color: var(--text-color); opacity: 0.8;">
-                        Bu sayfaya erişim yetkiniz bulunmuyor.
-                    </p>
-
-                    <div class="d-flex justify-content-center gap-3 mt-4">
-                        <a href="{% url 'user_homepage' %}" class="btn btn-lg"
-                           style="background-color: var(--button-background-color);
-                                  color: var(--button-text-color);
-                                  border-radius: 8px;">
-                            <i class="bi bi-house-door"></i> Ana Sayfaya Dön
-                        </a>
-                        <button onclick="history.back()" class="btn btn-lg"
-                                style="background-color: var(--secondary-button-background-color);
-                                       color: var(--secondary-button-text-color);
-                                       border-radius: 8px;">
-                            <i class="bi bi-arrow-left"></i> Geri Dön
-                        </button>
-                    </div>
-
-                    <div class="mt-5">
-                        <p style="color: var(--text-color); opacity: 0.6;">
-                            <i class="bi bi-shield-exclamation"></i>
-                            Erişim için gerekli yetkilere sahip değilsiniz.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% url 'user_homepage' as home_url %}
+{% include "core/_error_card.html" with code="403" title="Erişim Engellendi" message="Bu sayfaya erişim yetkiniz bulunmuyor." primary_href=home_url primary_text="Ana Sayfaya Dön" primary_icon="bi-house-door" secondary_action="back" secondary_icon="bi-arrow-left" hint="Erişim için gerekli yetkilere sahip değilsiniz." %}
 {% endblock %}

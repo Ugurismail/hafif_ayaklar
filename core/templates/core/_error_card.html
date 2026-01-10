@@ -1,0 +1,48 @@
+<div class="error-page">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7 col-md-9">
+        <div class="error-card text-center">
+          <div class="error-code">{{ code }}</div>
+          <h1 class="error-title mb-2">{{ title }}</h1>
+          {% if message %}
+          <p class="error-lead mb-4">{{ message }}</p>
+          {% endif %}
+
+          <div class="d-flex justify-content-center flex-wrap gap-2 error-actions">
+            {% if primary_href and primary_text %}
+              <a href="{{ primary_href }}" class="btn btn-theme-primary">
+                {% if primary_icon %}<i class="bi {{ primary_icon }} me-1"></i>{% endif %}
+                {{ primary_text }}
+              </a>
+            {% endif %}
+
+            {% if secondary_action == "back" %}
+              <button type="button" class="btn btn-theme-secondary" onclick="history.back()">
+                {% if secondary_icon %}<i class="bi {{ secondary_icon }} me-1"></i>{% endif %}
+                {{ secondary_text|default:"Geri Dön" }}
+              </button>
+            {% elif secondary_action == "reload" %}
+              <button type="button" class="btn btn-theme-secondary" onclick="location.reload()">
+                {% if secondary_icon %}<i class="bi {{ secondary_icon }} me-1"></i>{% endif %}
+                {{ secondary_text|default:"Tekrar Dene" }}
+              </button>
+            {% elif secondary_href and secondary_text %}
+              <a href="{{ secondary_href }}" class="btn btn-theme-secondary">
+                {% if secondary_icon %}<i class="bi {{ secondary_icon }} me-1"></i>{% endif %}
+                {{ secondary_text }}
+              </a>
+            {% endif %}
+          </div>
+
+          {% if hint %}
+          <div class="error-hint mt-4">
+            <i class="bi bi-info-circle me-1"></i>{{ hint }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
