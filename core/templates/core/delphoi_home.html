@@ -73,7 +73,7 @@
         {% for prophecy in prophecies %}
           <div class="accordion-item mb-2">
             <h2 class="accordion-header" id="heading{{prophecy.id}}">
-              <button class="accordion-button d-flex align-items-center{% if not (edit_id == prophecy.id or updated_id == prophecy.id) %} collapsed{% endif %}"
+              <button class="accordion-button d-flex align-items-center{% if edit_id == prophecy.id or updated_id == prophecy.id %}{% else %} collapsed{% endif %}"
                       type="button" data-bs-toggle="collapse"
                       data-bs-target="#collapse{{prophecy.id}}" aria-expanded="{% if edit_id == prophecy.id or updated_id == prophecy.id %}true{% else %}false{% endif %}" aria-controls="collapse{{prophecy.id}}">
                 <span class="me-2">{{ forloop.counter }}.</span>
