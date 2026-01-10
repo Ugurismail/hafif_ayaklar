@@ -123,7 +123,19 @@ var referenceModalElem = document.getElementById('referenceModal');
 
   // Modalı açan buton
   if (insertReferenceBtn) {
-    insertReferenceBtn.addEventListener('click', function () {
+    insertReferenceBtn.addEventListener('click', function (e) {
+      // Eğer kullanıcı metin seçtiyse modal açmadan direkt (bkz: ...) ekle
+      var textarea = document.getElementById('id_answer_text') ||
+                    document.querySelector('textarea[name="answer_text"]');
+      if (textarea) {
+        var selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
+        if (selectedText) {
+          if (e) e.preventDefault();
+          insertBkzReference(selectedText);
+          return;
+        }
+      }
+
       referenceModal.show();
       if (referenceSearchInput) referenceSearchInput.value = '';
       if (referenceSearchResults) referenceSearchResults.innerHTML = '';
@@ -234,7 +246,8 @@ var referenceModalElem = document.getElementById('referenceModal');
   
 
   function insertBkzReference(text) {
-    var textarea = document.getElementById('id_answer_text');
+    var textarea = document.getElementById('id_answer_text') ||
+                  document.querySelector('textarea[name="answer_text"]');
     if (!textarea) return;
     var start = textarea.selectionStart;
     var end = textarea.selectionEnd;
