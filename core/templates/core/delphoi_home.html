@@ -5,16 +5,16 @@
 <div class="container py-4">
   <div class="row g-4">
     <!-- SOL SÜTUN: Kurallar + Form + Kendi Kehanetlerin -->
-    <div class="col-md-4 col-12">
+    <div class="col-lg-3 col-12 order-2 order-lg-1">
       <div class="accordion mb-4" id="rulesAccordion">
         <div class="accordion-item">
           <h2 class="accordion-header" id="headingRules">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapseRules" aria-expanded="true" aria-controls="collapseRules">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseRules" aria-expanded="false" aria-controls="collapseRules">
               Delphoi Kuralları
             </button>
           </h2>
-          <div id="collapseRules" class="accordion-collapse collapse show" aria-labelledby="headingRules">
+          <div id="collapseRules" class="accordion-collapse collapse" aria-labelledby="headingRules">
             <div class="accordion-body">
               <ul>
                 <li>Her gün Kahine <b>bir kere</b> danışabilirsiniz.</li>
@@ -27,36 +27,49 @@
           </div>
         </div>
       </div>
-      <form id="delphoi-form" method="post" class="p-3 border rounded" style="background-color: var(--hover-background-color);">
-        {% csrf_token %}
-        <div class="mb-2">
-          {{ form.positive.label_tag }} {{ form.positive }}
-          <div class="text-end small">
-            Girilen: {{ positive_count }}/3
-            {% if positive_count >= 3 %}<span class="text-theme-danger"> (limit doldu)</span>{% endif %}
-          </div>
+      <details class="delphoi-side-section mb-3">
+        <summary class="delphoi-side-summary">
+          Kehanetlerini Yaz
+          <span class="delphoi-side-meta">{{ positive_count }}/3 · {{ negative_count }}/3</span>
+        </summary>
+        <div class="pt-3">
+          <form id="delphoi-form" method="post" class="p-3 border rounded" style="background-color: var(--hover-background-color);">
+            {% csrf_token %}
+            <div class="mb-2">
+              {{ form.positive.label_tag }} {{ form.positive }}
+              <div class="text-end small">
+                Girilen: {{ positive_count }}/3
+                {% if positive_count >= 3 %}<span class="text-theme-danger"> (limit doldu)</span>{% endif %}
+              </div>
+            </div>
+            <div class="mb-2">
+              {{ form.negative.label_tag }} {{ form.negative }}
+              <div class="text-end small">
+                Girilen: {{ negative_count }}/3
+                {% if negative_count >= 3 %}<span class="text-theme-danger"> (limit doldu)</span>{% endif %}
+              </div>
+            </div>
+            <div class="text-center">
+              <button type="submit" id="submit_prophecies_btn" class="btn-theme mt-3" {% if disable_form %}disabled{% endif %}>
+                Kehanetleri Gönder
+              </button>
+            </div>
+            {% if disable_form %}
+              <div class="alert alert-warning mt-3 p-2 text-center">
+                3 pozitif ve 3 negatif kehanet sınırına ulaştınız.
+              </div>
+            {% endif %}
+          </form>
         </div>
-        <div class="mb-2">
-          {{ form.negative.label_tag }} {{ form.negative }}
-          <div class="text-end small">
-            Girilen: {{ negative_count }}/3
-            {% if negative_count >= 3 %}<span class="text-theme-danger"> (limit doldu)</span>{% endif %}
-          </div>
-        </div>
-        <div class="text-center">
-          <button type="submit" id="submit_prophecies_btn" class="btn-theme mt-3" {% if disable_form %}disabled{% endif %}>
-            Kehanetleri Gönder
-          </button>
-        </div>
-        {% if disable_form %}
-          <div class="alert alert-warning mt-3 p-2 text-center">
-            3 pozitif ve 3 negatif kehanet sınırına ulaştınız.
-          </div>
-        {% endif %}
-      </form>
-      <hr>
-      <h5 class="fw-bold mb-2">Kendi Kehanetlerin</h5>
-      <div class="accordion" id="myPropheciesAccordion">
+      </details>
+
+      <details class="delphoi-side-section">
+        <summary class="delphoi-side-summary">
+          Kendi Kehanetlerin
+          <span class="delphoi-side-meta">{{ prophecies|length }}</span>
+        </summary>
+        <div class="pt-3">
+          <div class="accordion" id="myPropheciesAccordion">
         {% for prophecy in prophecies %}
           <div class="accordion-item mb-2">
             <h2 class="accordion-header" id="heading{{prophecy.id}}">
@@ -113,69 +126,68 @@
         {% empty %}
           <div class="alert alert-info p-2 text-center mb-0">Hiç kehanet girmemişsiniz.</div>
         {% endfor %}
-      </div>
+          </div>
+        </div>
+      </details>
     </div>
 
-    <!-- SAĞ SÜTUN: Kahin (sonuç odaklı) -->
-    <div class="col-md-8 col-12">
+    <!-- SAĞ SÜTUN: Kahin (ana deneyim) -->
+    <div class="col-lg-9 col-12 order-1 order-lg-2">
       <div class="delphoi-oracle sticky-top">
-        <div class="delphoi-oracle-card">
-          <img src="{% static 'imgs/delphoi.gif' %}" alt="" class="delphoi-oracle-bg" aria-hidden="true">
-
+        <div class="delphoi-hero">
+          <img src="{% static 'imgs/delphoi.gif' %}" alt="Delphoi Kahini" class="delphoi-hero-gif">
           <div id="countdown" class="delphoi-countdown" style="display:none;" aria-hidden="true"></div>
 
-          <div class="delphoi-oracle-inner">
-            <div class="delphoi-oracle-kicker">Delphoi Kahini</div>
-            <h2 class="delphoi-oracle-title">Kehanet</h2>
+          <div class="delphoi-hero-inner">
+            <div class="delphoi-hero-kicker">Delphoi Tapınağı</div>
+            <h1 class="delphoi-hero-title">Kahin</h1>
+            <div class="delphoi-hero-subtitle">Yanıtını duymaya geldin.</div>
 
-            <div id="prophecyResult" class="delphoi-prophecy" role="status" aria-live="polite">
-              {% if prophecy_result %}
-                <blockquote class="delphoi-prophecy-quote">
-                  {{ prophecy_result }}
-                </blockquote>
-              {% elif not can_request_prophecy and wait_until %}
-                <div class="delphoi-prophecy-empty">
-                  Bugünlük kehanet hakkını kullandın.
-                </div>
-              {% else %}
-                <div class="delphoi-prophecy-empty">
-                  Hazır olduğunda aşağıdan “Yanıtı Duy”a bas.
-                </div>
-              {% endif %}
-
-              {% if not can_request_prophecy and wait_until %}
-                <div class="delphoi-wait">
-                  Tekrar danışmak için <span id="waitTime">{{ wait_until|date:"d.m.Y H:i" }}</span> beklemelisin.
-                </div>
-                <script>
-                  // Kalan zamanı canlı göster
-                  const waitUntil = new Date("{{ wait_until|date:'Y-m-d H:i:s' }}".replace(' ', 'T'));
-                  function updateWaitTime() {
-                    const now = new Date();
-                    let diff = Math.max(0, (waitUntil - now)/1000);
-                    let h = Math.floor(diff/3600);
-                    let m = Math.floor((diff%3600)/60);
-                    let s = Math.floor(diff%60);
-                    document.getElementById('waitTime').innerText =
-                      (h>0 ? h+' saat, ':'') + (m>0 ? m+' dk ':'') + s + ' sn';
-                  }
-                  updateWaitTime();
-                  setInterval(updateWaitTime, 1000);
-                </script>
-              {% endif %}
-            </div>
-
-            <div class="delphoi-actions">
+            <div class="delphoi-hero-actions">
               <button id="get_prophecy_btn"
                       class="btn btn-theme-primary btn-lg delphoi-ask-btn"
                       {% if not can_request_prophecy %}disabled{% endif %}>
                 Yanıtı Duy
               </button>
               <div class="delphoi-actions-hint">
-                5 saniyelik bir “hazırlık” sonrası kehaneti duyacaksın.
+                Geri sayım başlayacak; 5 saniye sonra kehanet açığa çıkacak.
               </div>
             </div>
           </div>
+        </div>
+
+        <div class="delphoi-prophecy-card">
+          <div class="delphoi-prophecy-head">Kehanet</div>
+          <div id="prophecyResult" class="delphoi-prophecy" role="status" aria-live="polite">
+            {% if prophecy_result %}
+              <blockquote class="delphoi-prophecy-quote">{{ prophecy_result }}</blockquote>
+            {% elif not can_request_prophecy and wait_until %}
+              <div class="delphoi-prophecy-empty">Bugünlük kehanet hakkını kullandın.</div>
+            {% else %}
+              <div class="delphoi-prophecy-empty">Henüz bir şey söylenmedi. “Yanıtı Duy” ile çağır.</div>
+            {% endif %}
+          </div>
+
+          {% if not can_request_prophecy and wait_until %}
+            <div class="delphoi-wait">
+              Tekrar danışmak için <span id="waitTime">{{ wait_until|date:"d.m.Y H:i" }}</span> beklemelisin.
+            </div>
+            <script>
+              // Kalan zamanı canlı göster
+              const waitUntil = new Date("{{ wait_until|date:'Y-m-d H:i:s' }}".replace(' ', 'T'));
+              function updateWaitTime() {
+                const now = new Date();
+                let diff = Math.max(0, (waitUntil - now)/1000);
+                let h = Math.floor(diff/3600);
+                let m = Math.floor((diff%3600)/60);
+                let s = Math.floor(diff%60);
+                document.getElementById('waitTime').innerText =
+                  (h>0 ? h+' saat, ':'') + (m>0 ? m+' dk ':'') + s + ' sn';
+              }
+              updateWaitTime();
+              setInterval(updateWaitTime, 1000);
+            </script>
+          {% endif %}
         </div>
       </div>
     </div>
