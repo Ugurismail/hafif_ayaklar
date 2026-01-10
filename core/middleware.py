@@ -3,9 +3,42 @@ from __future__ import annotations
 from datetime import timedelta
 
 from django.db import DatabaseError
+from django.http import Http404
+from django.shortcuts import render
 from django.utils import timezone
 
 from .models import UserProfile
+
+
+class CustomErrorPagesMiddleware:
+    """
+    Forces custom 404 pages on hosted environments even if DEBUG=True.
+
+    This avoids Django's technical 404 pages leaking into production if DEBUG
+    is accidentally enabled on the server.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        if self._should_use_custom_errors(request) and getattr(response, "status_code", None) == 404:
+            return render(request, "404.html", status=404)
+        return response
+
+    def process_exception(self, request, exception):
+        if self._should_use_custom_errors(request) and isinstance(exception, Http404):
+            return render(request, "404.html", status=404)
+        return None
+
+    @staticmethod
+    def _should_use_custom_errors(request):
+        try:
+            host = (request.get_host() or "").split(":", 1)[0].lower()
+        except Exception:
+            host = ""
+        return host not in {"127.0.0.1", "localhost"}
 
 
 class LastSeenMiddleware:
@@ -63,4 +96,3 @@ class LastSeenMiddleware:
             pass
 
         return response
-
