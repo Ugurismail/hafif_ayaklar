@@ -121,12 +121,46 @@ var referenceModalElem = document.getElementById('referenceModal');
   var noResultsDiv = document.getElementById('no-results');
   var addCurrentQueryBtn = document.getElementById('add-current-query');
 
+  function getAnswerTextarea() {
+    return document.getElementById('id_answer_text') ||
+          document.querySelector('textarea[name="answer_text"]');
+  }
+
   // Modalı açan buton
   if (insertReferenceBtn) {
+    var bkzInlineHandled = false;
+
+    function tryInlineBkzInsert(e) {
+      if (bkzInlineHandled) return;
+
+      var textarea = getAnswerTextarea();
+      if (!textarea) return;
+
+      // Seçim, butona basınca bazı tarayıcılarda click anında kaybolabiliyor.
+      // Bu yüzden pointerdown/mousedown anında yakalayıp doğrudan ekliyoruz.
+      var selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
+      if (!selectedText) return;
+
+      bkzInlineHandled = true;
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      insertBkzReference(selectedText);
+    }
+
+    insertReferenceBtn.addEventListener('pointerdown', tryInlineBkzInsert, true);
+    insertReferenceBtn.addEventListener('mousedown', tryInlineBkzInsert, true);
+
     insertReferenceBtn.addEventListener('click', function (e) {
       // Eğer kullanıcı metin seçtiyse modal açmadan direkt (bkz: ...) ekle
-      var textarea = document.getElementById('id_answer_text') ||
-                    document.querySelector('textarea[name="answer_text"]');
+      if (bkzInlineHandled) {
+        bkzInlineHandled = false;
+        if (e) e.preventDefault();
+        return;
+      }
+
+      var textarea = getAnswerTextarea();
       if (textarea) {
         var selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
         if (selectedText) {
@@ -246,8 +280,7 @@ var referenceModalElem = document.getElementById('referenceModal');
   
 
   function insertBkzReference(text) {
-    var textarea = document.getElementById('id_answer_text') ||
-                  document.querySelector('textarea[name="answer_text"]');
+    var textarea = getAnswerTextarea();
     if (!textarea) return;
     var start = textarea.selectionStart;
     var end = textarea.selectionEnd;
