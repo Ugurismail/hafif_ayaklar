@@ -12,16 +12,15 @@ load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4m3!p5t!fy=$22i7m==v!z$d#4-yq33=*1u_^e^=@cot@+9q))')
 
-# CRITICAL: Set DEBUG=False in production.
-# If DEBUG env var is not set, default to:
-# - True on local dev machines
-# - False on PythonAnywhere-like Linux home dirs (/home/...)
-_debug_env = os.environ.get('DEBUG')
+IS_HOSTED = os.environ.get('HOME', '').startswith('/home/')
+
+# Default DEBUG to False everywhere (so error pages render locally too).
+# To enable debug explicitly, set `DJANGO_DEBUG=True` (or `DEBUG=True` for backwards-compat).
+_debug_env = os.environ.get('DJANGO_DEBUG', os.environ.get('DEBUG'))
 if _debug_env is None:
-    _is_hosted = os.environ.get('HOME', '').startswith('/home/')
-    DEBUG = not _is_hosted
+    DEBUG = False
 else:
-    DEBUG = _debug_env == 'True'
+    DEBUG = str(_debug_env).lower() in ('1', 'true', 'yes', 'on')
 
 # Static asset cache-busting version (keep stable so browser caching works).
 # Bump this (or set env var) when you deploy new static files.
@@ -43,8 +42,8 @@ if csrf_origins_str:
     CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins_str.split(',') if origin.strip()]
 
 # Production security settings
-# These should be enabled in production (when DEBUG=False)
-if not DEBUG:
+# These should be enabled in production (hosted + DEBUG=False).
+if IS_HOSTED and not DEBUG:
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True

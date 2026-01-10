@@ -1,11 +1,26 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from django.conf import settings
 from .views import map_data_view
 from . import views
 
 urlpatterns = [
     # Ana Sayfa
     path('', views.user_homepage, name='user_homepage'),
+
+    # Debug-only: themed error pages preview (local dev only)
+    # Note: must be above the catch-all question routes.
+    *(
+        [
+            path('__error__/400/', views.debug_show_400, name='debug_error_400'),
+            path('__error__/403/', views.debug_show_403, name='debug_error_403'),
+            path('__error__/404/', views.debug_show_404, name='debug_error_404'),
+            path('__error__/500/', views.debug_show_500, name='debug_error_500'),
+            path('__error__/502/', views.debug_show_502, name='debug_error_502'),
+        ]
+        if not getattr(settings, 'IS_HOSTED', False)
+        else []
+    ),
 
 
     # Kullanıcı Kayıt ve Giriş

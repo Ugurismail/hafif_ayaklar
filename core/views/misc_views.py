@@ -33,10 +33,11 @@ from io import BytesIO
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count, Max, F
 from django.db.models.functions import Coalesce
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -710,6 +711,57 @@ def custom_502_view(request):
     response = render(request, 'core/502.html')
     response.status_code = 502
     return response
+
+
+def _ensure_localhost_request(request):
+    host = (request.get_host() or '').split(':', 1)[0]
+    if host not in ('127.0.0.1', 'localhost'):
+        raise Http404
+
+
+def debug_show_400(request):
+    _ensure_localhost_request(request)
+    return custom_400_view(request, exception=None)
+
+
+def debug_show_403(request):
+    _ensure_localhost_request(request)
+    return custom_403_view(request, exception=None)
+
+
+def debug_show_404(request):
+    _ensure_localhost_request(request)
+    return custom_404_view(request, exception=None)
+
+
+def debug_show_500(request):
+    _ensure_localhost_request(request)
+    return custom_500_view(request)
+
+
+def debug_show_502(request):
+    _ensure_localhost_request(request)
+    return custom_502_view(request)
+
+
+def debug_raise_400(request):
+    _ensure_localhost_request(request)
+    raise SuspiciousOperation("Debug 400")
+
+
+def debug_raise_403(request):
+    _ensure_localhost_request(request)
+    raise PermissionDenied("Debug 403")
+
+
+def debug_raise_404(request):
+    _ensure_localhost_request(request)
+    raise Http404("Debug 404")
+
+
+def debug_raise_500(request):
+    _ensure_localhost_request(request)
+    raise RuntimeError("Debug 500")
 
 
 @require_POST
