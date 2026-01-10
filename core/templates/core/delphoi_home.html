@@ -169,6 +169,7 @@
             <script>
               // Kalan zamanı canlı göster
               const waitUntil = new Date("{{ wait_until|date:'Y-m-d H:i:s' }}".replace(' ', 'T'));
+              let delphoiWaitInterval = null;
               function updateWaitTime() {
                 const now = new Date();
                 let diff = Math.max(0, (waitUntil - now)/1000);
@@ -177,9 +178,13 @@
                 let s = Math.floor(diff%60);
                 document.getElementById('waitTime').innerText =
                   (h>0 ? h+' saat, ':'') + (m>0 ? m+' dk ':'') + s + ' sn';
+                if (diff <= 0) {
+                  if (delphoiWaitInterval) clearInterval(delphoiWaitInterval);
+                  window.location.href = "{% url 'delphoi_home' %}";
+                }
               }
               updateWaitTime();
-              setInterval(updateWaitTime, 1000);
+              delphoiWaitInterval = setInterval(updateWaitTime, 1000);
             </script>
           {% endif %}
         </div>
