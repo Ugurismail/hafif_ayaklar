@@ -116,85 +116,66 @@
       </div>
     </div>
 
-    <!-- SAĞ SÜTUN: GIF ve Sonuç Sticky Üstte -->
+    <!-- SAĞ SÜTUN: Kahin (sonuç odaklı) -->
     <div class="col-md-8 col-12">
-      <div class="sticky-top" style="top: 24px; z-index: 2;">
-        <div class="position-relative w-100 mb-3 d-flex justify-content-center" style="height:350px; min-height:250px;">
-          <img src="{% static 'imgs/delphoi.gif' %}" alt="Delphoi GIF"
-              class="shadow"
-              style="max-width: 100%; max-height: 100%; object-fit: cover; border-radius:18px; width: 100%; min-width:320px;"/>
-          <div id="countdown"
-              class="position-absolute top-50 start-50 translate-middle fw-bold text-white"
-              style="font-size:4rem; text-shadow:0 0 16px #000; display:none; pointer-events:none;"></div>
-        </div>
-        <div class="w-100 text-center mb-4">
-          <div id="prophecyResult"
-          class="border rounded p-4 shadow-sm"
-          style="font-size:1.3rem; min-height:100px; max-width:720px; margin: 0 auto; background-color: var(--card-background-color, #fff);">
-     
-       {% if prophecy_result %}
-         <strong>{{ prophecy_result }}</strong>
-         {% if not can_request_prophecy and wait_until %}
-           <div class="mt-3">
-             <b>
-               Kahine tekrar danışmak için  
-               <span id="waitTime">
-                 {{ wait_until|date:"d.m.Y H:i" }}
-               </span>  
-               beklemelisiniz.
-             </b>
-           </div>
-           <script>
-             // Kalan zamanı canlı göster
-             const waitUntil = new Date("{{ wait_until|date:'Y-m-d H:i:s' }}".replace(' ', 'T'));
-             function updateWaitTime() {
-               const now = new Date();
-               let diff = Math.max(0, (waitUntil - now)/1000);
-               let h = Math.floor(diff/3600);
-               let m = Math.floor((diff%3600)/60);
-               let s = Math.floor(diff%60);
-               document.getElementById('waitTime').innerText =
-                 (h>0 ? h+' saat, ':'') + (m>0 ? m+' dk ':'') + s + ' sn';
-             }
-             updateWaitTime();
-             setInterval(updateWaitTime, 1000);
-           </script>
-         {% endif %}
-       {% elif not can_request_prophecy and wait_until %}
-         <b>
-           Kahine tekrar danışmak için  
-           <span id="waitTime">
-             {{ wait_until|date:"d.m.Y H:i" }}
-           </span>  
-           beklemelisiniz.
-         </b>
-         <script>
-           // Kalan zamanı canlı göster
-           const waitUntil = new Date("{{ wait_until|date:'Y-m-d H:i:s' }}".replace(' ', 'T'));
-           function updateWaitTime() {
-             const now = new Date();
-             let diff = Math.max(0, (waitUntil - now)/1000);
-             let h = Math.floor(diff/3600);
-             let m = Math.floor((diff%3600)/60);
-             let s = Math.floor(diff%60);
-             document.getElementById('waitTime').innerText =
-               (h>0 ? h+' saat, ':'') + (m>0 ? m+' dk ':'') + s + ' sn';
-           }
-           updateWaitTime();
-           setInterval(updateWaitTime, 1000);
-         </script>
-       {% else %}
-         <span class="text-muted">Sorunuzu belirledikten sonra tuşa tıklayın.</span>
-       {% endif %}
-     </div>
-        </div>
-        <div class="w-100 text-center">
-          <button id="get_prophecy_btn"
-                  class="btn btn-theme-primary btn-lg"
-                  style="min-width:200px;"
-                  {% if not can_request_prophecy %}disabled{% endif %}>
-            Yanıtı Duy
-          </button>
+      <div class="delphoi-oracle sticky-top">
+        <div class="delphoi-oracle-card">
+          <img src="{% static 'imgs/delphoi.gif' %}" alt="" class="delphoi-oracle-bg" aria-hidden="true">
+
+          <div id="countdown" class="delphoi-countdown" style="display:none;" aria-hidden="true"></div>
+
+          <div class="delphoi-oracle-inner">
+            <div class="delphoi-oracle-kicker">Delphoi Kahini</div>
+            <h2 class="delphoi-oracle-title">Kehanet</h2>
+
+            <div id="prophecyResult" class="delphoi-prophecy" role="status" aria-live="polite">
+              {% if prophecy_result %}
+                <blockquote class="delphoi-prophecy-quote">
+                  {{ prophecy_result }}
+                </blockquote>
+              {% elif not can_request_prophecy and wait_until %}
+                <div class="delphoi-prophecy-empty">
+                  Bugünlük kehanet hakkını kullandın.
+                </div>
+              {% else %}
+                <div class="delphoi-prophecy-empty">
+                  Hazır olduğunda aşağıdan “Yanıtı Duy”a bas.
+                </div>
+              {% endif %}
+
+              {% if not can_request_prophecy and wait_until %}
+                <div class="delphoi-wait">
+                  Tekrar danışmak için <span id="waitTime">{{ wait_until|date:"d.m.Y H:i" }}</span> beklemelisin.
+                </div>
+                <script>
+                  // Kalan zamanı canlı göster
+                  const waitUntil = new Date("{{ wait_until|date:'Y-m-d H:i:s' }}".replace(' ', 'T'));
+                  function updateWaitTime() {
+                    const now = new Date();
+                    let diff = Math.max(0, (waitUntil - now)/1000);
+                    let h = Math.floor(diff/3600);
+                    let m = Math.floor((diff%3600)/60);
+                    let s = Math.floor(diff%60);
+                    document.getElementById('waitTime').innerText =
+                      (h>0 ? h+' saat, ':'') + (m>0 ? m+' dk ':'') + s + ' sn';
+                  }
+                  updateWaitTime();
+                  setInterval(updateWaitTime, 1000);
+                </script>
+              {% endif %}
+            </div>
+
+            <div class="delphoi-actions">
+              <button id="get_prophecy_btn"
+                      class="btn btn-theme-primary btn-lg delphoi-ask-btn"
+                      {% if not can_request_prophecy %}disabled{% endif %}>
+                Yanıtı Duy
+              </button>
+              <div class="delphoi-actions-hint">
+                5 saniyelik bir “hazırlık” sonrası kehaneti duyacaksın.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -229,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (getProphecyBtn.disabled) return;
       e.preventDefault();
       let sec = 5;
-      countdownDiv.style.display = 'block';
+      countdownDiv.style.display = 'flex';
       countdownDiv.textContent = sec;
       getProphecyBtn.disabled = true;
       let interval = setInterval(function() {
