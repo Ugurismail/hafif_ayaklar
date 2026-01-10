@@ -724,7 +724,8 @@ def bkz_view(request, query):
         return redirect('question_detail', slug=question.slug)
     else:
         # Soru bulunamazsa, add_question_from_search sayfasına yönlendirin
-        return redirect(f'{reverse("add_question_from_search")}?q={query}')
+        from urllib.parse import urlencode
+        return redirect(f'{reverse("add_question_from_search")}?{urlencode({"q": query})}')
 
 
 @login_required
