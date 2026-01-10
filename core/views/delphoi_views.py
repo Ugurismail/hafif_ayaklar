@@ -42,7 +42,7 @@ def delphoi_home(request):
     edit_form = None
     if edit_id:
         edit_prophecy = get_object_or_404(DelphoiProphecy, id=edit_id, user=user)
-        if request.method == 'POST' and 'save_edit' in request.POST:
+        if request.method == 'POST' and 'delete_id' not in request.POST:
             edit_form = DelphoiProphecyForm(request.POST)
             if edit_prophecy.type == 'positive':
                 edit_form.fields['negative'].required = False
@@ -53,6 +53,7 @@ def delphoi_home(request):
                     edit_form.cleaned_data['positive'] if edit_prophecy.type == 'positive'
                     else edit_form.cleaned_data['negative']
                 )
+                new_text = (new_text or '').strip()
                 if edit_prophecy.text != new_text:
                     edit_prophecy.text = new_text
                     edit_prophecy.save()
