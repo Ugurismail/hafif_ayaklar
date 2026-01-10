@@ -123,7 +123,11 @@ class Question(models.Model):
         if not self.slug:
             from django.utils.text import slugify
             import uuid
-            base_slug = slugify(self.question_text, allow_unicode=True)[:250]
+            base_slug = slugify(self.question_text, allow_unicode=True).strip('-')[:250]
+            if not base_slug:
+                # If title has only symbols/punctuation, slugify can return empty.
+                # Use a short random slug so the question is still reachable.
+                base_slug = f"q-{uuid.uuid4().hex[:10]}"
             self.slug = base_slug
             # Eğer slug zaten varsa sonuna unique ID ekle
             counter = 1
