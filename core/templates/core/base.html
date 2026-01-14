@@ -571,12 +571,12 @@
             })();
 
             window.MathJax = {
-                loader: { load: ['[tex]/ams'] },
+                loader: { load: ['[tex]/ams', '[tex]/amsfonts'] },
                 tex: {
                     inlineMath: [['$', '$']],
                     displayMath: [['$$', '$$']],
                     processEscapes: true,
-                    packages: { '[+]': ['ams'] },
+                    packages: { '[+]': ['ams', 'amsfonts'] },
                 },
                 options: {
                     skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
