@@ -551,6 +551,25 @@
 	    {% block extra_js %}{% endblock %}
 
         <script>
+            (function () {
+                const pending = [];
+
+                window.hafifAyaklarRenderMath = function (root) {
+                    const target = root || document.body;
+                    if (!window.MathJax || typeof window.MathJax.typesetPromise !== 'function') {
+                        pending.push(target);
+                        return;
+                    }
+                    try {
+                        window.MathJax.typesetPromise([target]);
+                    } catch (e) {
+                        // silent
+                    }
+                };
+
+                window.__hafifAyaklarMathPending = pending;
+            })();
+
             window.MathJax = {
                 loader: { load: ['[tex]/ams'] },
                 tex: {
@@ -562,27 +581,23 @@
                 options: {
                     skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
                 },
-                startup: { typeset: false },
-            };
-
-            window.hafifAyaklarRenderMath = function (root) {
-                if (!window.MathJax || typeof window.MathJax.typesetPromise !== 'function') return;
-                try {
-                    window.MathJax.typesetPromise([root || document.body]);
-                } catch (e) {
-                    // silent
-                }
-            };
-
-            document.addEventListener('DOMContentLoaded', function () {
-                if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
-                    window.MathJax.startup.promise.then(function () {
+                startup: {
+                    typeset: false,
+                    ready: () => {
+                        MathJax.startup.defaultReady();
+                        const roots = window.__hafifAyaklarMathPending || [];
+                        window.__hafifAyaklarMathPending = [];
+                        if (!roots.length) {
+                            window.hafifAyaklarRenderMath(document.body);
+                            return;
+                        }
+                        // Typeset any queued roots + the body once (safe).
                         window.hafifAyaklarRenderMath(document.body);
-                    });
-                }
-            });
+                    },
+                },
+            };
         </script>
-        <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 	    <!-- Navbar küçülme ve transparanlık efekti -->
 	<script>
