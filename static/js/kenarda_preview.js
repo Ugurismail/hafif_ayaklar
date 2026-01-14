@@ -75,6 +75,9 @@
       root.innerHTML = data.html || '';
       root.style.display = root.innerHTML ? 'block' : 'none';
       reinitBootstrapOverlays(root);
+      if (typeof window.hafifAyaklarRenderMath === 'function') {
+        window.hafifAyaklarRenderMath(root);
+      }
     } catch (e) {
       // silent
     }
