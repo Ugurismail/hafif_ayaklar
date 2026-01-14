@@ -550,53 +550,58 @@
 
 	    {% block extra_js %}{% endblock %}
 
-        <script>
-            (function () {
-                const pending = [];
+	        <script>
+	            (function () {
+	                const pending = [];
+                    let mathReady = false;
 
-                window.hafifAyaklarRenderMath = function (root) {
-                    const target = root || document.body;
-                    if (!window.MathJax || typeof window.MathJax.typesetPromise !== 'function') {
-                        pending.push(target);
-                        return;
-                    }
-                    try {
-                        window.MathJax.typesetPromise([target]);
-                    } catch (e) {
-                        // silent
-                    }
-                };
+	                window.hafifAyaklarRenderMath = function (root) {
+	                    const target = root || document.body;
+	                    if (!window.MathJax || typeof window.MathJax.typesetPromise !== 'function' || !mathReady) {
+	                        pending.push(target);
+	                        return;
+	                    }
+	                    try {
+	                        window.MathJax.typesetPromise([target]);
+	                    } catch (e) {
+	                        // silent
+	                    }
+	                };
 
-                window.__hafifAyaklarMathPending = pending;
-            })();
+	                window.__hafifAyaklarMathPending = pending;
+                    window.__hafifAyaklarSetMathReady = function () { mathReady = true; };
+	            })();
 
-            window.MathJax = {
-                loader: { load: ['[tex]/ams', '[tex]/amsfonts'] },
-                tex: {
-                    inlineMath: [['$', '$']],
-                    displayMath: [['$$', '$$']],
-                    processEscapes: true,
-                    packages: { '[+]': ['ams', 'amsfonts'] },
-                },
-                options: {
-                    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-                },
-                startup: {
-                    typeset: false,
-                    ready: () => {
-                        MathJax.startup.defaultReady();
-                        const roots = window.__hafifAyaklarMathPending || [];
-                        window.__hafifAyaklarMathPending = [];
-                        if (!roots.length) {
-                            window.hafifAyaklarRenderMath(document.body);
-                            return;
-                        }
-                        // Typeset any queued roots + the body once (safe).
-                        window.hafifAyaklarRenderMath(document.body);
-                    },
-                },
-            };
-        </script>
+		            window.MathJax = {
+		                loader: { load: ['[tex]/ams'] },
+		                tex: {
+	                    inlineMath: [['$', '$']],
+	                    displayMath: [['$$', '$$']],
+	                    processEscapes: true,
+	                    packages: { '[+]': ['ams'] },
+	                },
+	                options: {
+	                    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+	                },
+	                startup: {
+	                    typeset: false,
+	                    ready: () => {
+	                        MathJax.startup.defaultReady();
+                            if (typeof window.__hafifAyaklarSetMathReady === 'function') {
+                                window.__hafifAyaklarSetMathReady();
+                            }
+	                        const roots = window.__hafifAyaklarMathPending || [];
+	                        window.__hafifAyaklarMathPending = [];
+                            const uniqueRoots = [document.body, ...roots.filter(Boolean)];
+                            try {
+                                MathJax.typesetPromise(uniqueRoots);
+                            } catch (e) {
+                                // silent
+                            }
+	                    },
+	                },
+	            };
+	        </script>
         <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 	    <!-- Navbar küçülme ve transparanlık efekti -->
