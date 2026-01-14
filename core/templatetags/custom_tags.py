@@ -234,6 +234,9 @@ def safe_markdownify(text, arg='default'):
     import uuid
     from markdownify.templatetags.markdownify import markdownify as original_markdownify
 
+    if not text:
+        return ""
+
     # Store hashtags with unique placeholders
     hashtag_map = {}
     # Pattern with explicit Turkish character support
@@ -251,6 +254,28 @@ def safe_markdownify(text, arg='default'):
     # Replace hashtags with placeholders
     text_with_placeholders = re.sub(pattern, replace_with_placeholder, text)
 
+    # Protect TeX blocks so Markdown doesn't eat backslashes like `\\` (align/matrix).
+    # We restore as HTML-escaped text so BLEACH safety is preserved.
+    math_map = {}
+    display_math_re = re.compile(r'\$\$(.+?)\$\$', re.DOTALL)
+    inline_math_re = re.compile(r'(?<!\\)\$(?!\$)(.+?)(?<!\\)\$(?!\$)', re.DOTALL)
+
+    def _store_math_block(raw_block: str) -> str:
+        placeholder = f"MATH_{uuid.uuid4().hex[:10]}_END"
+        math_map[placeholder] = escape(raw_block)
+        return placeholder
+
+    def _replace_display(match):
+        raw = match.group(0)
+        return _store_math_block(raw)
+
+    def _replace_inline(match):
+        raw = match.group(0)
+        return _store_math_block(raw)
+
+    text_with_placeholders = display_math_re.sub(_replace_display, text_with_placeholders)
+    text_with_placeholders = inline_math_re.sub(_replace_inline, text_with_placeholders)
+
     # Apply markdown
     markdown_result = original_markdownify(text_with_placeholders, arg)
 
@@ -265,6 +290,10 @@ def safe_markdownify(text, arg='default'):
     # Restore hashtags (these will override the target="_blank" for internal links)
     for placeholder, hashtag_html in hashtag_map.items():
         markdown_result = markdown_result.replace(placeholder, hashtag_html)
+
+    # Restore math blocks last (still HTML-escaped so it stays safe).
+    for placeholder, math_html in math_map.items():
+        markdown_result = markdown_result.replace(placeholder, math_html)
 
     return mark_safe(markdown_result)
 
