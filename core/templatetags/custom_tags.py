@@ -185,10 +185,18 @@ def highlight(text, keyword):
 @register.filter
 def mention_link(text):
     # @ ile başlayan ve sonrasında max 3 kelime yakala
-    pattern = r'@([A-Za-z0-9_.\-ğüşöçıİĞÜŞÖÇ ]{1,50})'  # 50 karakterlik kullanıcı adı limiti
+    # Use `\w` to support unicode letters like î/û/â etc, and normalize common dash variants.
+    pattern = r'@([\w.\-\u00A0 ]{1,50})'  # 50 karakterlik kullanıcı adı limiti
 
     def replace(match):
-        candidate = match.group(1)
+        import unicodedata
+
+        candidate = unicodedata.normalize('NFKC', match.group(1))
+        candidate = candidate.replace('\u00A0', ' ')  # nbsp -> space
+        for dash in ('‐', '‑', '‒', '–', '—', '−'):
+            candidate = candidate.replace(dash, '-')
+        candidate = ' '.join(candidate.split())
+
         words = candidate.split()
         for i in range(len(words), 0, -1):
             username = ' '.join(words[:i])
@@ -197,11 +205,13 @@ def mention_link(text):
                 url = reverse('user_profile', args=[user.username])
                 # kalan kelimeler ek veya düz metin olur
                 tail = ' '.join(words[i:])
-                return f'<a href="{url}" class="mention">@{username}</a>{(" " + tail) if tail else ""}'
+                safe_username = escape(username)
+                safe_tail = escape(tail) if tail else ""
+                return f'<a href="{url}" class="mention">@{safe_username}</a>{(" " + safe_tail) if safe_tail else ""}'
             except User.DoesNotExist:
                 continue
         # hiçbiri yoksa düz metin döndür
-        return f'@{candidate}'
+        return f'@{escape(candidate)}'
 
     result = re.sub(pattern, replace, text)
     return mark_safe(result)
