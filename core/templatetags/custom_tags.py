@@ -261,6 +261,10 @@ def safe_markdownify(text, arg='default'):
     inline_math_re = re.compile(r'(?<!\\)\$(?!\$)(.+?)(?<!\\)\$(?!\$)', re.DOTALL)
 
     def _store_math_block(raw_block: str) -> str:
+        # Some users naturally end TeX lines with a single "\" before newline.
+        # In TeX environments like align/pmatrix, line breaks require "\\".
+        # Normalize only the "backslash + newline" case to avoid touching valid commands.
+        raw_block = re.sub(r'\\[ \t]*\r?\n', r'\\\\\n', raw_block)
         placeholder = f"MATH_{uuid.uuid4().hex[:10]}_END"
         math_map[placeholder] = escape(raw_block)
         return placeholder
