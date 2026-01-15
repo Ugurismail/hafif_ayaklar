@@ -21,6 +21,19 @@
       </button>
     </li>
     <li class="nav-item" role="presentation">
+      <button
+        class="nav-link"
+        id="matematik-tab"
+        data-bs-toggle="tab"
+        data-bs-target="#matematik"
+        type="button"
+        role="tab"
+        aria-controls="matematik"
+        aria-selected="false">
+        Matematik
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
       <button 
         class="nav-link"
         id="kurallar-tab"
@@ -55,12 +68,40 @@
          id="hakkinda" 
          role="tabpanel"
          aria-labelledby="hakkinda-tab">
+    </div>
 
-         <p>Hoş bir yerdir.</p>
+    <!-- 2) MATEMATİK -->
+    <div class="tab-pane fade p-3"
+         id="matematik"
+         role="tabpanel"
+         aria-labelledby="matematik-tab">
+      <h2>Matematik Modülü</h2>
+      <p>Yanıtların içinde TeX/LaTeX yazıp matematik formüllerini otomatik render edebilirsin.</p>
 
-         <h3 class="mt-4">Bilinen Teknik Sınırlamalar</h3>
-         <p><strong>Çok Uzun Yanıtlarda Buton Sorunu:</strong> 3-4 bin kelimeyi geçen entrylerde "Daha az göster", "Beğen", "Beğenme", "Kaydet" ve "Kaynakları Göster" butonları düzgün çalışmayabilir. Bu durumda yanıtın üstüne tıklayarak yanıtı tek başına göreceğiniz sayfaya geçin ve bu işlemleri oradan yapın.</p>
+      <h3 class="mt-4">Nasıl Kullanılır?</h3>
+      <ul>
+        <li><strong>Inline:</strong> <code>$...$</code> içinde. Örn: <code>$E=mc^2$</code></li>
+        <li><strong>Ayrı satır:</strong> <code>$$...$$</code> içinde. Örn: <code>$$\int_0^\infty e^{-x^2}\,dx=\frac{\sqrt{\pi}}{2}$$</code></li>
+        <li><strong>AMS ortamları:</strong> <code>align</code>, <code>cases</code>, <code>pmatrix</code> vb. desteklenir.</li>
+        <li><strong>Satır kırma:</strong> Ortamların içinde <code>\\</code> kullan; ayrıca satır sonuna tek <code>\</code> koyup yeni satıra geçmek de desteklenir.</li>
+      </ul>
 
+      <h3 class="mt-4">Kısa Örnekler</h3>
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="mb-2"><strong>Inline:</strong> $F = \mathbb{E}_{q(s)}[\ln q(s) - \ln p(o,s)]$</div>
+          <div class="mb-2"><strong>Ayrı satır:</strong> $$\int_0^\infty e^{-x^2}\,dx=\frac{\sqrt{\pi}}{2}$$</div>
+          <div class="mb-2"><strong>Align:</strong>
+            $$\begin{align}
+            \dot{\mu} &= D\mu - \frac{\partial F}{\partial \mu}\\
+            \dot{a} &= -\frac{\partial F}{\partial a}
+            \end{align}$$
+          </div>
+          <div><strong>Matris:</strong> $$A=\begin{pmatrix}1 & 2\\ 3 & 4\end{pmatrix}$$</div>
+        </div>
+      </div>
+
+      <p class="text-muted small mb-0">Not: Eğer bir ifadede kırmızı uyarı görürsen, bu genelde TeX sözdizimi hatasıdır (en sık: satır kırmada <code>\\</code> eksikliği).</p>
     </div>
 
     <!-- 2) KURALLAR -->
