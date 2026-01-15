@@ -9,7 +9,7 @@
       {% if answer.answer_text|length > 500 %}
         <!-- Kısaltılmış Yanıt -->
         <div class="answer-text" id="answer-summary-{{ answer.id }}">
-          {{ answer.answer_text|slice:":500"|highlight:search_keyword|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+          {{ answer.answer_text|truncate_math_safe:500|highlight:search_keyword|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
         </div>
         <!-- Tam Yanıt (başlangıçta gizli) -->
         <div class="answer-text" id="answer-full-{{ answer.id }}" style="display: none;">

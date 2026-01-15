@@ -302,6 +302,58 @@ def safe_markdownify(text, arg='default'):
     return mark_safe(markdown_result)
 
 @register.filter
+def truncate_math_safe(text, length=1000):
+    """
+    Truncate text without cutting inside TeX math blocks ($...$ / $$...$$).
+    This prevents partial math (e.g. an opening $$ without closing $$) from
+    appearing on summary cards (user_homepage, question_detail, etc.).
+    """
+    if not text:
+        return ""
+
+    try:
+        max_len = int(length)
+    except (TypeError, ValueError):
+        return text
+
+    if max_len <= 0 or len(text) <= max_len:
+        return text
+
+    in_display = False
+    in_inline = False
+    last_safe = 0
+    i = 0
+
+    limit = min(max_len, len(text))
+    while i < limit:
+        ch = text[i]
+
+        # Skip escaped characters (e.g. \$)
+        if ch == '\\':
+            i += 2
+            continue
+
+        if ch == '$':
+            # Toggle display math with $$
+            if i + 1 < len(text) and text[i + 1] == '$':
+                in_display = not in_display
+                i += 2
+                continue
+
+            # Toggle inline math with $
+            in_inline = not in_inline
+            i += 1
+            continue
+
+        if not in_display and not in_inline:
+            last_safe = i + 1
+
+        i += 1
+
+    cut_at = last_safe if last_safe > 0 else max_len
+    return text[:cut_at]
+
+@register.filter
 def extract_bibliography(text):
     """
     Extract unique references from text and return them as a list of dicts.
