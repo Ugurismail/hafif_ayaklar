@@ -76,32 +76,191 @@
          role="tabpanel"
          aria-labelledby="matematik-tab">
       <h2>Matematik Modülü</h2>
-      <p>Yanıtların içinde TeX/LaTeX yazıp matematik formüllerini otomatik render edebilirsin.</p>
+      <p class="mb-2">Yanıtların içinde TeX/LaTeX yazarak matematik formüllerini otomatik render edebilirsin.</p>
+      <p class="text-muted small mb-4">Not: Bu sayfa çok detaylıdır. Hızlı başlamak istersen sadece “Hızlı Başlangıç” bölümüne bak.</p>
 
-      <h3 class="mt-4">Nasıl Kullanılır?</h3>
-      <ul>
-        <li><strong>Inline:</strong> <code>$...$</code> içinde. Örn: <code>$E=mc^2$</code></li>
-        <li><strong>Ayrı satır:</strong> <code>$$...$$</code> içinde. Örn: <code>$$\int_0^\infty e^{-x^2}\,dx=\frac{\sqrt{\pi}}{2}$$</code></li>
-        <li><strong>AMS ortamları:</strong> <code>align</code>, <code>cases</code>, <code>pmatrix</code> vb. desteklenir.</li>
-        <li><strong>Satır kırma:</strong> Ortamların içinde <code>\\</code> kullan; ayrıca satır sonuna tek <code>\</code> koyup yeni satıra geçmek de desteklenir.</li>
-      </ul>
-
-      <h3 class="mt-4">Kısa Örnekler</h3>
-      <div class="card mb-3">
-        <div class="card-body">
-          <div class="mb-2"><strong>Inline:</strong> $F = \mathbb{E}_{q(s)}[\ln q(s) - \ln p(o,s)]$</div>
-          <div class="mb-2"><strong>Ayrı satır:</strong> $$\int_0^\infty e^{-x^2}\,dx=\frac{\sqrt{\pi}}{2}$$</div>
-          <div class="mb-2"><strong>Align:</strong>
-            $$\begin{align}
-            \dot{\mu} &= D\mu - \frac{\partial F}{\partial \mu}\\
-            \dot{a} &= -\frac{\partial F}{\partial a}
-            \end{align}$$
+      <div class="accordion" id="mathDocsAccordion">
+        <!-- Hızlı Başlangıç -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="mathDocHeadingQuick">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#mathDocQuick" aria-expanded="true" aria-controls="mathDocQuick">
+              Hızlı Başlangıç
+            </button>
+          </h2>
+          <div id="mathDocQuick" class="accordion-collapse collapse show" aria-labelledby="mathDocHeadingQuick" data-bs-parent="#mathDocsAccordion">
+            <div class="accordion-body">
+              <p class="mb-3">İki kullanım var:</p>
+              <ul class="mb-3">
+                <li><strong>Inline (satır içi):</strong> <code>$...$</code> — Örn: <code>$E=mc^2$</code></li>
+                <li><strong>Ayrı satır (display):</strong> <code>$$...$$</code> — Örn: <code>$$\\int_0^\\infty e^{-x^2}\\,dx=\\frac{\\sqrt{\\pi}}{2}$$</code></li>
+              </ul>
+              <p class="mb-2">Kısa demo:</p>
+              <div class="card">
+                <div class="card-body">
+                  <div class="mb-2"><strong>Inline:</strong> $F = \mathbb{E}_{q(s)}[\ln q(s) - \ln p(o,s)]$</div>
+                  <div class="mb-2"><strong>Display:</strong> $$\int_0^\infty e^{-x^2}\,dx=\frac{\sqrt{\pi}}{2}$$</div>
+                  <div class="mb-0"><strong>Matris:</strong> $$A=\begin{pmatrix}1 & 2\\ 3 & 4\end{pmatrix}$$</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div><strong>Matris:</strong> $$A=\begin{pmatrix}1 & 2\\ 3 & 4\end{pmatrix}$$</div>
+        </div>
+
+        <!-- Sistem Nasıl Çalışıyor -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="mathDocHeadingHow">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mathDocHow" aria-expanded="false" aria-controls="mathDocHow">
+              Sistem Nasıl Çalışıyor?
+            </button>
+          </h2>
+          <div id="mathDocHow" class="accordion-collapse collapse" aria-labelledby="mathDocHeadingHow" data-bs-parent="#mathDocsAccordion">
+            <div class="accordion-body">
+              <ol class="mb-0">
+                <li>Sen metni yazarsın. Metinde normal yazı + işaretlemeler (ör. <code>*italik*</code>, <code>**kalın**</code>) + matematik (ör. <code>$...$</code>) birlikte olabilir.</li>
+                <li>Önce metin “Markdown” kurallarıyla HTML’ye çevrilir (kalın/italik, paragraflar, listeler, linkler).</li>
+                <li>Sonra matematik blokları taranır ve MathJax tarafından render edilir (TeX/LaTeX → düzgün formül görünümü).</li>
+                <li>Özet/kısaltılmış kartlarda formül bloklarının ortasından kesilmemesi için sistem matematiği “güvenli” şekilde kısaltır.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <!-- Temel TeX -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="mathDocHeadingBasics">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mathDocBasics" aria-expanded="false" aria-controls="mathDocBasics">
+              Temel TeX (En Sık Kullanılanlar)
+            </button>
+          </h2>
+          <div id="mathDocBasics" class="accordion-collapse collapse" aria-labelledby="mathDocHeadingBasics" data-bs-parent="#mathDocsAccordion">
+            <div class="accordion-body">
+              <div class="row g-3">
+                <div class="col-lg-6">
+                  <h3 class="h6">Alt/Üst Simge</h3>
+                  <pre class="mb-2"><code>$a_i,\; x^{2},\; e^{-x^2}$</code></pre>
+                  <div>$a_i,\; x^{2},\; e^{-x^2}$</div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="h6">Kesir, Kök, Mutlak Değer</h3>
+                  <pre class="mb-2"><code>$\\frac{a}{b},\\; \\sqrt{x},\\; |x|$</code></pre>
+                  <div>$\frac{a}{b},\; \sqrt{x},\; |x|$</div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="h6">Yunan Harfleri</h3>
+                  <pre class="mb-2"><code>$\\alpha,\\beta,\\gamma,\\theta,\\pi$</code></pre>
+                  <div>$\alpha,\beta,\gamma,\theta,\pi$</div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="h6">Toplam/İntegral/Lim</h3>
+                  <pre class="mb-2"><code>$$\\sum_{n=1}^{\\infty}\\frac{1}{n^2}=\\frac{\\pi^2}{6}$$</code></pre>
+                  <div>$$\sum_{n=1}^{\infty}\frac{1}{n^2}=\frac{\pi^2}{6}$$</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ortamlar, Satır Kırma, Hizalama -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="mathDocHeadingEnvs">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mathDocEnvs" aria-expanded="false" aria-controls="mathDocEnvs">
+              Ortamlar (align/cases/matrix) ve Satır Kırma
+            </button>
+          </h2>
+          <div id="mathDocEnvs" class="accordion-collapse collapse" aria-labelledby="mathDocHeadingEnvs" data-bs-parent="#mathDocsAccordion">
+            <div class="accordion-body">
+              <p class="mb-3"><strong>Önemli:</strong> <code>align</code>, <code>cases</code>, <code>pmatrix</code> gibi ortamlarda satır kırmak için <code>\\</code> kullanılır.</p>
+
+              <h3 class="h6">align (çok satırlı)</h3>
+              <pre class="mb-2"><code>$$
+\\begin{align}
+F(q,\\theta) &= \\mathbb{E}_{q(s)}[\\ln q(s)-\\ln p_\\theta(o,s)]\\\\
+\\dot{\\mu} &= D\\mu - \\frac{\\partial F}{\\partial \\mu}
+\\end{align}
+$$</code></pre>
+              <div class="mb-4">$$
+\begin{align}
+F(q,\theta) &= \mathbb{E}_{q(s)}[\ln q(s)-\ln p_\theta(o,s)]\\
+\dot{\mu} &= D\mu - \frac{\partial F}{\partial \mu}
+\end{align}
+$$</div>
+
+              <h3 class="h6">cases</h3>
+              <pre class="mb-2"><code>$$
+f(x)=
+\\begin{cases}
+x^2, & x\\ge 0\\\\
+-x, & x&lt;0
+\\end{cases}
+$$</code></pre>
+              <div class="mb-4">$$
+f(x)=
+\begin{cases}
+x^2, & x\ge 0\\
+-x, & x<0
+\end{cases}
+$$</div>
+
+              <h3 class="h6">Matris</h3>
+              <p class="text-muted small mb-2">Tek satır yazacaksan araya mutlaka <code>\\</code> koy: <code>1 &amp; 2\\ 3 &amp; 4</code></p>
+              <pre class="mb-2"><code>$$A=\\begin{pmatrix}1 &amp; 2\\\\ 3 &amp; 4\\end{pmatrix}$$</code></pre>
+              <div>$$A=\begin{pmatrix}1 & 2\\ 3 & 4\end{pmatrix}$$</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Markdown + Site Özellikleriyle Birlikte -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="mathDocHeadingMix">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mathDocMix" aria-expanded="false" aria-controls="mathDocMix">
+              Markdown ve Diğer Özelliklerle Birlikte Kullanım
+            </button>
+          </h2>
+          <div id="mathDocMix" class="accordion-collapse collapse" aria-labelledby="mathDocHeadingMix" data-bs-parent="#mathDocsAccordion">
+            <div class="accordion-body">
+              <p class="mb-3">Matematik; kalın/italik/listeler/linkler, spoiler, bkz/ref, tanım ve kaynak referanslarıyla birlikte sorunsuz çalışacak şekilde tasarlanmıştır.</p>
+              <div class="row g-3">
+                <div class="col-lg-6">
+                  <h3 class="h6">Kalın/italik + matematik</h3>
+                  <pre class="mb-2"><code>**Enerji:** $E=mc^2$ ve *Gaussian:* $e^{-x^2}$</code></pre>
+                  <div><strong>Enerji:</strong> $E=mc^2$ ve <em>Gaussian:</em> $e^{-x^2}$</div>
+                </div>
+                <div class="col-lg-6">
+                  <h3 class="h6">Spoiler + matematik</h3>
+                  <pre class="mb-2"><code>-g- $\\int_0^1 x^2\\,dx=\\frac{1}{3}$ -g-</code></pre>
+                  <div class="text-muted small">Spoiler içeriği hover’da görünür; matematik spoiler içinde de render edilir.</div>
+                </div>
+                <div class="col-lg-12">
+                  <h3 class="h6">Kaynak/bkz/ref + matematik aynı metinde</h3>
+                  <pre class="mb-2"><code>(bkz: özgür irade) $D_{\\mathrm{KL}}(q\\|p)\\ge0$ (k:1, s:12-14)</code></pre>
+                  <div>(bkz: özgür irade) $D_{\mathrm{KL}}(q\|p)\ge0$ (k:1, s:12-14)</div>
+                </div>
+              </div>
+              <p class="text-muted small mt-3 mb-0">İpucu: Kod örneklerini göstermek için <code>`...`</code> veya <code>&lt;pre&gt;&lt;code&gt;</code> kullan; bu alanlarda matematik render edilmez, böylece yazdığını birebir gösterebilirsin.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sorun Giderme -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="mathDocHeadingTrouble">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mathDocTrouble" aria-expanded="false" aria-controls="mathDocTrouble">
+              Sorun Giderme (En Sık Hatalar)
+            </button>
+          </h2>
+          <div id="mathDocTrouble" class="accordion-collapse collapse" aria-labelledby="mathDocHeadingTrouble" data-bs-parent="#mathDocsAccordion">
+            <div class="accordion-body">
+              <ul class="mb-3">
+                <li><strong>Kırmızı uyarı / render olmadı:</strong> TeX sözdizimi hatası. En sık sebep: <code>\\</code> satır kırımı unutulması.</li>
+                <li><strong>Özet kartta “raw TeX” görünüyor:</strong> Metin kısaltılırken formül bloğu yarım kalmıştır. Sistem bunu büyük ölçüde engeller; yine de çok büyük bloklarda “Tümünü Göster” ile tam metinde kontrol edebilirsin.</li>
+                <li><strong>Dolar işareti yazmak istiyorum:</strong> <code>\\$</code> şeklinde escape et.</li>
+                <li><strong>Satır sonuna tek <code>\</code> koydum:</strong> Bu bazı ortamlarda satır kırımı niyetiyle kullanılabiliyor; ama en net yöntem her zaman <code>\\</code> kullanmaktır.</li>
+              </ul>
+              <p class="text-muted small mb-0">Hâlâ sorun varsa, “Yanıtı Düzenle” ekranından metni kontrol et: açılan <code>$$</code> mutlaka kapanmalı, <code>\\</code> satır kırımları doğru olmalı.</p>
+            </div>
+          </div>
         </div>
       </div>
-
-      <p class="text-muted small mb-0">Not: Eğer bir ifadede kırmızı uyarı görürsen, bu genelde TeX sözdizimi hatasıdır (en sık: satır kırmada <code>\\</code> eksikliği).</p>
     </div>
 
     <!-- 2) KURALLAR -->
