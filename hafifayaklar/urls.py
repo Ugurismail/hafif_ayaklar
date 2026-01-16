@@ -22,7 +22,8 @@ urlpatterns = [
     path(f'{ADMIN_URL_PATH}/', admin.site.urls),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots_txt'),
-    path('favicon.ico', RedirectView.as_view(url=static_url('imgs/favicon.ico'), permanent=True), name='favicon'),
+    # Google requires at least 48x48 for the Search results icon; serve a 48x48 PNG via /favicon.ico.
+    path('favicon.ico', RedirectView.as_view(url=static_url('imgs/favicon-48.png'), permanent=True), name='favicon'),
     path('', include('core.urls')),
 ]
 
