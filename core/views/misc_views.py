@@ -819,9 +819,14 @@ def collect_user_bibliography(target_user, specific_answers=None):
     reference_ids = set()  # Store unique reference IDs
     reference_pages = {}  # Store page numbers for each reference
 
-    # Daha robust pattern - büyük/küçük harf, boşlukları tolere et
-    pattern = r'\([Kk]aynak\s*:\s*(\d+)(?:\s*,\s*[Ss]ayfa\s*:\s*([^)]+))?\)'
-    matches = re.finditer(pattern, all_text)
+    # Support both long and short forms:
+    # (kaynak:12, sayfa:10-12) / (k:12, s:10-12)
+    # Allow optional comma + flexible spacing.
+    pattern = re.compile(
+        r'\((?:kaynak|k)\s*:\s*(\d+)(?:(?:\s*,?\s*(?:sayfa|s)\s*:\s*([^)]+)))?\)',
+        re.IGNORECASE
+    )
+    matches = pattern.finditer(all_text)
 
     for match in matches:
         ref_id_str = match.group(1)
@@ -1138,6 +1143,33 @@ def insert_toc(paragraph):
     run._r.append(fldChar3)
 
 
+def add_answer_text_to_docx(document, answer_text):
+    """
+    Add answer text as real Word paragraphs.
+    - Double newlines create new paragraphs.
+    - Single newlines are preserved as line breaks inside a paragraph.
+    """
+    if not answer_text:
+        return
+
+    normalized = str(answer_text).replace('\r\n', '\n').replace('\r', '\n').strip()
+    if not normalized:
+        return
+
+    blocks = re.split(r'\n{2,}', normalized)
+    for block in blocks:
+        block = (block or '').strip('\n')
+        if not block.strip():
+            continue
+
+        paragraph = document.add_paragraph()
+        lines = block.split('\n')
+        for idx, line in enumerate(lines):
+            run = paragraph.add_run(line)
+            if idx < len(lines) - 1:
+                run.add_break()
+
+
 def add_question_tree_to_docx(doc, question, target_user, level=1, visited=None):
     if visited is None:
         visited = set()
@@ -1155,7 +1187,7 @@ def add_question_tree_to_docx(doc, question, target_user, level=1, visited=None)
         run.font.size = Pt(9)
         run.font.color.rgb = RGBColor(140, 140, 140)
         run.italic = True
-        p.add_run(answer.answer_text)
+        add_answer_text_to_docx(doc, answer.answer_text)
         doc.add_paragraph("")
 
     # Kullanıcının bu sorunun alt sorularını al (kullanıcı-bazlı)
@@ -1194,7 +1226,7 @@ def download_entries_docx(request, username):
             run.font.size = Pt(9)
             run.font.color.rgb = RGBColor(140, 140, 140)
             run.italic = True
-            p.add_run(ans.answer_text)
+            add_answer_text_to_docx(document, ans.answer_text)
             document.add_paragraph("")
     else:
         # Group answers by question
@@ -1232,7 +1264,7 @@ def download_entries_docx(request, username):
                 run.font.size = Pt(9)
                 run.font.color.rgb = RGBColor(140, 140, 140)
                 run.italic = True
-                p.add_run(answer.answer_text)
+                add_answer_text_to_docx(document, answer.answer_text)
                 document.add_paragraph("")
 
     # Add bibliography section
