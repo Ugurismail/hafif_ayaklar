@@ -403,12 +403,11 @@
                 {% if exclude_words_list %}
                   <div class="d-flex flex-wrap gap-2 mt-3">
                     {% for word in exclude_words_list %}
-                      <span class="badge rounded-pill bg-secondary excluded-word-badge">
+                      <span class="badge rounded-pill excluded-word-badge">
                         {{ word }}
                         <a href="?tab=kelimeler&include_word={{ word }}"
-                           class="text-white text-decoration-none ms-1"
-                           title="Geri Al"
-                           style="opacity: 0.8;">
+                           class="text-decoration-none ms-1"
+                           title="Geri Al">
                           <i class="bi bi-x-circle"></i>
                         </a>
                       </span>
