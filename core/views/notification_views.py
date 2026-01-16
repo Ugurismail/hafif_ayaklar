@@ -112,6 +112,13 @@ def follow_question(request, question_id):
         question=question
     )
 
+    if created and question.user_id and question.user_id != request.user.id:
+        Notification.create_question_follow_notification(
+            recipient=question.user,
+            follower=request.user,
+            question=question
+        )
+
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
             'success': True,
