@@ -270,11 +270,33 @@ def safe_markdownify(text, arg='default'):
     display_math_re = re.compile(r'\$\$(.+?)\$\$', re.DOTALL)
     inline_math_re = re.compile(r'(?<!\\)\$(?!\$)(.+?)(?<!\\)\$(?!\$)', re.DOTALL)
 
+    def _normalize_math_backslashes(raw_block: str) -> str:
+        """
+        Normalize double-escaped TeX commands inside math blocks.
+        Example: $$\\int_0^\\infty$$ -> $$\\int_0^\\infty$$ with single slashes.
+        """
+        if raw_block.startswith('$$') and raw_block.endswith('$$'):
+            delim = '$$'
+            content = raw_block[2:-2]
+        elif raw_block.startswith('$') and raw_block.endswith('$'):
+            delim = '$'
+            content = raw_block[1:-1]
+        else:
+            delim = ''
+            content = raw_block
+
+        # Convert accidental double-escaped commands (\\int -> \int) without touching line breaks.
+        content = re.sub(r'\\\\([A-Za-z])', r'\\\1', content)
+        # Fix accidental single backslash row breaks like "\3" or "\ 3" -> "\\ 3".
+        content = re.sub(r'\\\s*(\d)', lambda m: "\\\\ " + m.group(1), content)
+        return f"{delim}{content}{delim}"
+
     def _store_math_block(raw_block: str) -> str:
         # Some users naturally end TeX lines with a single "\" before newline.
         # In TeX environments like align/pmatrix, line breaks require "\\".
         # Normalize only the "backslash + newline" case to avoid touching valid commands.
         raw_block = re.sub(r'\\[ \t]*\r?\n', r'\\\\\n', raw_block)
+        raw_block = _normalize_math_backslashes(raw_block)
         placeholder = f"MATH_{uuid.uuid4().hex[:10]}_END"
         math_map[placeholder] = escape(raw_block)
         return placeholder
