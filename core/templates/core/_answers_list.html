@@ -6,10 +6,10 @@
     <div class="card-body">
 
       {# Cevap uzun mu? 500 karakter kontrolü #}
-      {% if answer.answer_text|length > 500 %}
+      {% if answer.answer_text|length > 1000 %}
         <!-- Kısaltılmış Yanıt -->
         <div class="answer-text" id="answer-summary-{{ answer.id }}">
-          {{ answer.answer_text|truncate_math_safe:500|highlight:search_keyword|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+          {{ answer.answer_text|truncate_math_safe:1000|highlight:search_keyword|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
         </div>
         <!-- Tam Yanıt (başlangıçta gizli) -->
         <div class="answer-text" id="answer-full-{{ answer.id }}" style="display: none;">

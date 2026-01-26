@@ -83,7 +83,7 @@ MARKDOWNIFY = {
         "NL2BR": True,
         "WHITELIST_TAGS": [
             'a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
-            'em', 'i', 'li', 'ol', 'strong', 'ul', 'p',
+            'em', 'i', 'li', 'ol', 'strong', 'ul', 'p', 'mark',
             'pre', 'img', 'br',
         ],
         "WHITELIST_ATTRS": ['href', 'src', 'alt'],

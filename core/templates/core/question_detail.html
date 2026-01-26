@@ -1131,12 +1131,16 @@
           const filterForm  = document.getElementById('filterForm');
           const answersDiv  = document.getElementById('answersContainer');
           const questionSlug = "{{ question.slug }}";
-        
-          // Filtre formundaki input'lara change/keyup event ekle
+          const expandedAnswers = new Set();
+          let filterTimer = null;
+
+          if (!filterForm || !answersDiv) return;
+
+          // Filtre formundaki input'lara change/keyup event ekle (debounce)
           filterForm.querySelectorAll('input').forEach(function(elem) {
               if (elem.type === 'text') {
                   elem.addEventListener('keyup', function() {
-                      doFilterAjax();
+                      scheduleFilter();
                   });
               } else {
                   elem.addEventListener('change', function() {
@@ -1144,14 +1148,41 @@
                   });
               }
           });
-        
+
           // "Uygula" butonuna basıldığında (form submit)
           filterForm.addEventListener('submit', function(e) {
               e.preventDefault();
               doFilterAjax();
           });
-        
+
+          // Read-more için tek bir delegasyon handler
+          answersDiv.addEventListener('click', function(event) {
+              const link = event.target.closest('.read-more');
+              if (!link) return;
+              event.preventDefault();
+
+              const answerId = link.getAttribute('data-answer-id');
+              const summary = document.getElementById('answer-summary-' + answerId);
+              const fullText = document.getElementById('answer-full-' + answerId);
+              if (!summary || !fullText) return;
+
+              if (summary.style.display === 'none') {
+                  expandedAnswers.delete(answerId);
+              } else {
+                  expandedAnswers.add(answerId);
+              }
+              applyReadMoreState(answerId, summary, fullText, link);
+          });
+
+          function scheduleFilter() {
+              if (filterTimer) {
+                  clearTimeout(filterTimer);
+              }
+              filterTimer = setTimeout(doFilterAjax, 250);
+          }
+
           function doFilterAjax() {
+              syncExpandedFromDom();
               const formData = new FormData(filterForm);
               const queryParams = new URLSearchParams(formData);
               const url = `/${questionSlug}/filter_answers/?` + queryParams.toString();
@@ -1169,10 +1200,33 @@
                   console.error('Filtreleme hatası:', err);
               });
           }
-        
+
           // Sayfa ilk yüklendiğinde read-more işlevini init et
           reinitReadMore();
-        
+
+          function syncExpandedFromDom() {
+              const readMoreLinks = answersDiv.querySelectorAll('.read-more');
+              readMoreLinks.forEach(function(link) {
+                  const answerId = link.getAttribute('data-answer-id');
+                  const summary = document.getElementById('answer-summary-' + answerId);
+                  if (summary && summary.style.display === 'none') {
+                      expandedAnswers.add(answerId);
+                  }
+              });
+          }
+
+          function applyReadMoreState(answerId, summary, fullText, link) {
+              if (expandedAnswers.has(answerId)) {
+                  summary.style.display = 'none';
+                  fullText.style.display = 'block';
+                  link.textContent = 'Daha az göster';
+              } else {
+                  summary.style.display = 'block';
+                  fullText.style.display = 'none';
+                  link.textContent = 'Tümünü Göster';
+              }
+          }
+
           function reinitReadMore() {
               const readMoreLinks = answersDiv.querySelectorAll('.read-more');
 
@@ -1183,25 +1237,7 @@
 
                   if (!summary || !fullText) return;
 
-                  link.addEventListener('click', function(event) {
-                      event.preventDefault();
-                      const answerId = this.getAttribute('data-answer-id');
-                      const summary = document.getElementById('answer-summary-' + answerId);
-                      const fullText = document.getElementById('answer-full-' + answerId);
-                      if (!summary || !fullText) return;
-
-                      if (summary.style.display === 'none') {
-                          // Kapatıyoruz
-                          summary.style.display = 'block';
-                          fullText.style.display = 'none';
-                          this.textContent = 'Tümünü Göster';
-                      } else {
-                          // Açıyoruz
-                          summary.style.display = 'none';
-                          fullText.style.display = 'block';
-                          this.textContent = 'Daha az göster';
-                      }
-                  });
+                  applyReadMoreState(answerId, summary, fullText, link);
               });
           }
       });

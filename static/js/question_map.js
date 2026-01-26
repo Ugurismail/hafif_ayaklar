@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
     var width = chartElement.clientWidth;
-    var height = 800;
+    var height = chartElement.clientHeight || 800;
     var svg, g, zoom, simulation, link, node, label, userLabelGroup, arrows;
     var nodesData = [], linksData = [], selectedUsers = [];
     var focusQuestionId = window.focusQuestionId || null;
@@ -409,8 +409,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function createGraph() {
-        // Update width dynamically based on current chart container size
-        width = document.getElementById('chart').clientWidth;
+        // Update size dynamically based on current chart container size
+        const chartEl = document.getElementById('chart');
+        width = chartEl.clientWidth;
+        height = chartEl.clientHeight || height;
 
         // Get current theme colors from CSS variables
         const rootStyles = getComputedStyle(document.documentElement);
@@ -506,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .force("center", d3.forceCenter(width / 2, height / 2))
             .force("collide", d3.forceCollide().radius(d => d.size * 1.3));
 
-        // Update SVG dimensions when width changes
+        // Update SVG dimensions
         svg.attr("width", width).attr("height", height);
 
         // Sadece bir kez odaklama yapmak için
@@ -778,9 +780,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Wait for CSS transition to complete (300ms) before updating
         resizeTimeout = setTimeout(function() {
-            const newWidth = document.getElementById('chart').clientWidth;
-            if (Math.abs(newWidth - width) > 10) { // Only update if significant change
+            const chartEl = document.getElementById('chart');
+            const newWidth = chartEl.clientWidth;
+            const newHeight = chartEl.clientHeight || height;
+            const widthChanged = Math.abs(newWidth - width) > 10;
+            const heightChanged = Math.abs(newHeight - height) > 10;
+
+            if (widthChanged || heightChanged) {
                 width = newWidth;
+                height = newHeight;
 
                 // Update SVG dimensions
                 if (svg) {
