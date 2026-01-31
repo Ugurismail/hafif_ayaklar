@@ -123,6 +123,7 @@ TEMPLATES = [
                 'core.context_processors.static_asset_version',
                 'core.context_processors.unread_message_count',
                 'core.context_processors.unread_notification_count',
+                'core.context_processors.radio_live_indicator',
             ],
         },
     },

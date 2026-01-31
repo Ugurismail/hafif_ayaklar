@@ -1011,3 +1011,28 @@ class RadioProgram(models.Model):
         """Program süresi (dakika)"""
         delta = self.end_time - self.start_time
         return int(delta.total_seconds() / 60)
+
+
+class RadioChatMessage(models.Model):
+    program = models.ForeignKey(
+        RadioProgram,
+        on_delete=models.CASCADE,
+        related_name='chat_messages'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='radio_chat_messages'
+    )
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['program', 'created_at']),
+            models.Index(fields=['user', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.program.title} - {self.user.username}: {self.body[:24]}"

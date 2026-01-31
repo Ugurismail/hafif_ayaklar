@@ -1937,3 +1937,30 @@ a.hashtag-link:hover {
 .toast .btn-close:hover {
     opacity: 1;
 }
+
+/* Radio live indicator */
+.radio-live-dot {
+    position: absolute;
+    top: 6px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff4d4f;
+    box-shadow: 0 0 0 2px var(--header-background-color, #fff), 0 0 12px rgba(255, 77, 79, 0.7);
+}
+
+.radio-live-icon {
+    color: #ff4d4f;
+}
+
+.radio-live-pill {
+    margin-left: auto;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(255, 77, 79, 0.12);
+    color: #ff4d4f;
+}

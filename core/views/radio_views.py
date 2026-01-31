@@ -13,11 +13,14 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.db.models import Q
+from django.views.decorators.http import require_http_methods
+from django.templatetags.static import static
 from datetime import timedelta
 import uuid
 import os
 
-from ..models import RadioProgram, UserProfile
+from ..models import RadioProgram, UserProfile, RadioChatMessage
+from ..radio_utils import expire_live_programs
 
 
 def radio_home(request):
@@ -25,6 +28,7 @@ def radio_home(request):
     Radyo ana sayfası - tüm programları listeler
     Canlı yayınlar, yaklaşan programlar ve geçmiş programlar
     """
+    expire_live_programs()
     now = timezone.now()
 
     # Canlı yayınlar
@@ -33,12 +37,19 @@ def radio_home(request):
         is_finished=False
     ).select_related('dj', 'dj__userprofile').order_by('-start_time')
 
-    # Yaklaşan programlar (gelecek 7 gün)
+    # Başlamaya hazır programlar (saati geldi ama canlı değil)
+    ready_programs = RadioProgram.objects.filter(
+        start_time__lte=now,
+        end_time__gt=now,
+        is_live=False,
+        is_finished=False
+    ).select_related('dj', 'dj__userprofile').order_by('start_time')
+
+    # Yaklaşan programlar (tüm planlanan yayınlar)
     upcoming_programs = RadioProgram.objects.filter(
         start_time__gt=now,
-        start_time__lte=now + timedelta(days=7),
         is_finished=False
-    ).select_related('dj', 'dj__userprofile').order_by('start_time')[:10]
+    ).select_related('dj', 'dj__userprofile').order_by('start_time')
 
     # Geçmiş programlar (son 7 gün)
     past_programs = RadioProgram.objects.filter(
@@ -48,6 +59,7 @@ def radio_home(request):
 
     context = {
         'live_programs': live_programs,
+        'ready_programs': ready_programs,
         'upcoming_programs': upcoming_programs,
         'past_programs': past_programs,
     }
@@ -59,14 +71,24 @@ def program_detail(request, program_id):
     """
     Program detay sayfası - dinleme sayfası
     """
+    expire_live_programs()
     program = get_object_or_404(
         RadioProgram.objects.select_related('dj', 'dj__userprofile'),
         id=program_id
     )
 
-    # Eğer program canlı değilse sadece bilgi göster
+    chat_messages = list(
+        RadioChatMessage.objects.filter(program=program)
+        .select_related('user', 'user__userprofile')
+        .order_by('-id')[:50]
+    )
+    chat_messages.reverse()
+    last_chat_id = chat_messages[-1].id if chat_messages else 0
+
     context = {
         'program': program,
+        'chat_messages': chat_messages,
+        'chat_last_id': last_chat_id,
     }
 
     return render(request, 'core/radio_program_detail.html', context)
@@ -77,6 +99,7 @@ def dj_dashboard(request):
     """
     DJ kontrol paneli - DJ'nin kendi programlarını gösterir
     """
+    expire_live_programs()
     # DJ kontrolü
     try:
         user_profile = request.user.userprofile
@@ -282,6 +305,7 @@ def start_broadcast(request, program_id):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+    expire_live_programs()
     program = get_object_or_404(RadioProgram, id=program_id)
 
     # Yetki kontrolü
@@ -295,6 +319,13 @@ def start_broadcast(request, program_id):
     # Bitmiş mi kontrol et
     if program.is_finished:
         return JsonResponse({'error': 'Bitmiş program tekrar başlatılamaz.'}, status=400)
+
+    # Program süresi geçtiyse otomatik bitir
+    if program.end_time <= timezone.now():
+        program.is_live = False
+        program.is_finished = True
+        program.save(update_fields=['is_live', 'is_finished'])
+        return JsonResponse({'error': 'Program süresi doldu.'}, status=400)
 
     # Başka canlı yayın var mı kontrol et (conflict check)
     existing_live = RadioProgram.objects.filter(is_live=True, is_finished=False).exists()
@@ -320,6 +351,7 @@ def stop_broadcast(request, program_id):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+    expire_live_programs()
     program = get_object_or_404(RadioProgram, id=program_id)
 
     # Yetki kontrolü
@@ -350,6 +382,7 @@ def get_agora_token(request, program_id):
     if request.method != 'GET':
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+    expire_live_programs()
     program = get_object_or_404(RadioProgram, id=program_id)
 
     # Program canlı mı kontrol et
@@ -401,6 +434,7 @@ def update_listener_count(request, program_id):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+    expire_live_programs()
     program = get_object_or_404(RadioProgram, id=program_id)
 
     # Get listener count from request body
@@ -424,4 +458,77 @@ def update_listener_count(request, program_id):
     return JsonResponse({
         'success': True,
         'listener_count': program.listener_count
+    })
+
+
+@require_http_methods(["GET", "POST"])
+def radio_chat_messages(request, program_id):
+    """
+    Radyo sohbet mesajları - listeleme ve gönderme
+    """
+    expire_live_programs()
+    program = get_object_or_404(RadioProgram, id=program_id)
+
+    def serialize_message(message):
+        profile = getattr(message.user, 'userprofile', None)
+        if profile and profile.photo:
+            avatar_url = profile.photo.url
+        else:
+            avatar_url = static('imgs/default_profile.jpg')
+
+        return {
+            'id': message.id,
+            'body': message.body,
+            'username': message.user.username,
+            'avatar_url': avatar_url,
+            'created_at': timezone.localtime(message.created_at).strftime('%H:%M'),
+            'is_own': request.user.is_authenticated and message.user_id == request.user.id,
+        }
+
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Sohbete yazmak için giriş yapmalısın.'}, status=401)
+
+        if not program.is_live:
+            return JsonResponse({'error': 'Sohbet sadece canlı yayında aktif.'}, status=400)
+
+        body = request.POST.get('body', '').strip()
+        if not body:
+            return JsonResponse({'error': 'Mesaj boş olamaz.'}, status=400)
+        if len(body) > 500:
+            return JsonResponse({'error': 'Mesaj çok uzun (max 500 karakter).'}, status=400)
+
+        recent_messages_count = RadioChatMessage.objects.filter(
+            user=request.user,
+            created_at__gte=timezone.now() - timedelta(minutes=1)
+        ).count()
+
+        if recent_messages_count >= 12:
+            return JsonResponse({'error': 'Çok hızlı mesaj gönderiyorsun. Lütfen biraz bekle.'}, status=429)
+
+        message = RadioChatMessage.objects.create(
+            program=program,
+            user=request.user,
+            body=body
+        )
+
+        return JsonResponse({'message': serialize_message(message)}, status=201)
+
+    after = request.GET.get('after')
+    if after and after.isdigit():
+        messages = (
+            RadioChatMessage.objects.filter(program=program, id__gt=int(after))
+            .select_related('user', 'user__userprofile')
+            .order_by('created_at')
+        )
+    else:
+        messages = list(
+            RadioChatMessage.objects.filter(program=program)
+            .select_related('user', 'user__userprofile')
+            .order_by('-id')[:50]
+        )
+        messages.reverse()
+
+    return JsonResponse({
+        'messages': [serialize_message(message) for message in messages]
     })

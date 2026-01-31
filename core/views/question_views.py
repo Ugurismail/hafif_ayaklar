@@ -619,17 +619,41 @@ def generate_question_nodes(questions, user_filter=None):
     nodes = []
     links = []
 
-    # Prefetch answers and users to avoid N+1 queries
+    # Prefetch answers to avoid N+1 queries
     questions = questions.prefetch_related(
-        'users',
         'answers__user'
     )
 
     question_ids = set(q.id for q in questions)
 
+    # Map: question_id -> set(user_id) who linked this question as child or made it a starting question
+    link_user_ids_by_question = defaultdict(set)
+
+    # Starting questions -> treat the starter as a linker for that node
+    starting_qs = StartingQuestion.objects.filter(question_id__in=question_ids)
+    if user_filter:
+        starting_qs = starting_qs.filter(user_id__in=user_filter)
+    for sq in starting_qs:
+        link_user_ids_by_question[sq.question_id].add(sq.user_id)
+
+    # Query QuestionRelationship with user filter
+    relationship_query = QuestionRelationship.objects.filter(
+        parent_id__in=question_ids,
+        child_id__in=question_ids
+    ).select_related('parent', 'child', 'user')
+
+    # Apply user filter if specified
+    if user_filter:
+        relationship_query = relationship_query.filter(user_id__in=user_filter)
+
+    # Linkers are tracked on the child node
+    for rel in relationship_query:
+        link_user_ids_by_question[rel.child_id].add(rel.user_id)
+
     # Build nodes first
     for question in questions:
         user_entries = []
+        link_user_entries = []
 
         # Build a lookup dict for answers by user_id
         answers_by_user = {}
@@ -641,14 +665,16 @@ def generate_question_nodes(questions, user_filter=None):
                 # Keep the earliest answer
                 answers_by_user[user_id] = answer
 
-        for user in question.users.all():
-            answer = answers_by_user.get(user.id)
-            answer_id = answer.id if answer else None
-            user_entries.append({
-                "id": user.id,
-                "username": user.username,
-                "answer_id": answer_id,
-            })
+        link_user_ids = link_user_ids_by_question.get(question.id, set())
+        for user_id, answer in answers_by_user.items():
+            entry = {
+                "id": user_id,
+                "username": answer.user.username,
+                "answer_id": answer.id,
+            }
+            user_entries.append(entry)
+            if user_id in link_user_ids:
+                link_user_entries.append(entry)
 
         user_ids = [entry["id"] for entry in user_entries]
 
@@ -666,6 +692,7 @@ def generate_question_nodes(questions, user_filter=None):
             "id": f"q{question.id}",
             "label": question.question_text,
             "users": user_entries,
+            "link_users": link_user_entries,
             "user_ids": user_ids,  # Add user_ids for statistics calculation
             "size": 20 + 10 * (len(user_entries) - 1),  # Will be updated based on links
             "color": node_color,
@@ -677,16 +704,6 @@ def generate_question_nodes(questions, user_filter=None):
 
     # Build links from QuestionRelationship model
     link_count = {}  # Track how many links each node has
-
-    # Query QuestionRelationship with user filter
-    relationship_query = QuestionRelationship.objects.filter(
-        parent_id__in=question_ids,
-        child_id__in=question_ids
-    ).select_related('parent', 'child', 'user')
-
-    # Apply user filter if specified
-    if user_filter:
-        relationship_query = relationship_query.filter(user_id__in=user_filter)
 
     # Build links from relationships
     for rel in relationship_query:
@@ -813,6 +830,13 @@ def add_existing_subquestion(request, slug):
         # Kendine bağlama kontrolü
         if current_question.id == parent_question.id:
             return JsonResponse({'success': False, 'error': 'Bir soru kendisine alt soru olarak eklenemez'}, status=400)
+
+        # Kullanıcı bu başlıkta entry yazmadıysa bağlayamasın
+        if not Answer.objects.filter(question=current_question, user=request.user).exists():
+            return JsonResponse(
+                {'success': False, 'error': 'Bu başlığı üst başlığa bağlamak için önce bu başlığa entry girmeniz gerekir.'},
+                status=400
+            )
 
         # Zaten bağlı mı kontrolü (kullanıcı bazlı)
         if QuestionRelationship.objects.filter(

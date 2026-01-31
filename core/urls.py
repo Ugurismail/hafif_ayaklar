@@ -185,6 +185,7 @@ urlpatterns = [
     path('radio/dj/stop/<int:program_id>/', views.stop_broadcast, name='stop_broadcast'),
     path('radio/token/<int:program_id>/', views.get_agora_token, name='get_agora_token'),
     path('radio/listener-count/<int:program_id>/', views.update_listener_count, name='update_listener_count'),
+    path('radio/chat/<int:program_id>/', views.radio_chat_messages, name='radio_chat_messages'),
 
     # SLUG-BASED QUESTION URLS (EN SONDA OLMALI - catch-all)
     # Örnek: /ozgurluk-nedir/ veya /yapılacaklar/ -> question detail

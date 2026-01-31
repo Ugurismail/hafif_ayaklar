@@ -44,18 +44,6 @@ from django.urls import reverse
 from django.utils.timezone import now
 from django.views.decorators.http import require_POST
 
-from openpyxl import Workbook
-from docx import Document
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
-from docx.shared import Pt, RGBColor
-from reportlab.lib.pagesizes import letter, A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
-from reportlab.lib.enums import TA_LEFT, TA_CENTER
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 
 from ..models import (
     Question, Answer, Vote, SavedItem, StartingQuestion,
@@ -1041,6 +1029,8 @@ def download_entries_json(request, username):
 
 @login_required
 def download_entries_xlsx(request, username):
+    from openpyxl import Workbook
+
     target_user = get_object_or_404(User, username=username)
     if request.user != target_user and not request.user.is_superuser:
         return JsonResponse(
@@ -1128,6 +1118,9 @@ def download_entries_xlsx(request, username):
 
 
 def insert_toc(paragraph):
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
     run = paragraph.add_run()
     fldChar1 = OxmlElement('w:fldChar')
     fldChar1.set(qn('w:fldCharType'), 'begin')
@@ -1171,6 +1164,8 @@ def add_answer_text_to_docx(document, answer_text):
 
 
 def add_question_tree_to_docx(doc, question, target_user, level=1, visited=None):
+    from docx.shared import Pt, RGBColor
+
     if visited is None:
         visited = set()
     if question.id in visited:
@@ -1201,6 +1196,9 @@ def add_question_tree_to_docx(doc, question, target_user, level=1, visited=None)
 
 @login_required
 def download_entries_docx(request, username):
+    from docx import Document
+    from docx.shared import Pt, RGBColor
+
     target_user = get_object_or_404(User, username=username)
     if request.user != target_user and not request.user.is_superuser:
         return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
@@ -1312,6 +1310,14 @@ def download_entries_pdf(request, username):
     """
     PDF export for user entries using ReportLab
     """
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+    from reportlab.lib.enums import TA_LEFT, TA_CENTER
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+
     target_user = get_object_or_404(User, username=username)
     if request.user != target_user and not request.user.is_superuser:
         return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)

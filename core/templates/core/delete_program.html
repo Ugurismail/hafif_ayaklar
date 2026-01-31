@@ -3,47 +3,63 @@
 
 {% block title %}Programı Sil{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/radio.css' %}?v={{ STATIC_ASSET_VERSION }}">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card border-danger">
-                <div class="card-header bg-danger text-white">
-                    <h2><i class="bi bi-trash"></i> Programı Sil</h2>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <strong>Uyarı!</strong> Bu işlem geri alınamaz.
-                    </div>
-
-                    <h5>Aşağıdaki programı silmek istediğinize emin misiniz?</h5>
-                    <div class="card mt-3">
-                        <div class="card-body">
-                            <h6 class="card-title">{{ program.title }}</h6>
-                            <p class="text-muted mb-2">
-                                <i class="bi bi-calendar"></i> {{ program.start_time|date:"d F Y, H:i" }}
-                                - {{ program.end_time|date:"H:i" }}
-                            </p>
-                            {% if program.description %}
-                                <p class="card-text">{{ program.description }}</p>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <form method="post" class="mt-4">
-                        {% csrf_token %}
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'dj_dashboard' %}" class="btn btn-theme-secondary">
-                                <i class="bi bi-x-circle"></i> İptal
-                            </a>
-                            <button type="submit" class="btn btn-theme-secondary">
-                                <i class="bi bi-trash"></i> Evet, Sil
-                            </button>
-                        </div>
-                    </form>
+<div class="radio-page">
+    <div class="radio-shell">
+        <header class="radio-hero radio-fade">
+            <div>
+                <span class="hero-eyebrow">Programı Sil</span>
+                <h1 class="hero-title">Bu yayını tamamen kaldırmak üzeresin.</h1>
+                <p class="hero-subtitle">
+                    Silme işlemi geri alınamaz. Emin değilsen programı düzenleyip yeni bir tarih belirle.
+                </p>
+                <div class="hero-actions">
+                    <a href="{% url 'dj_dashboard' %}" class="btn btn-outline-theme-secondary">
+                        <i class="bi bi-arrow-left"></i> DJ Paneline Dön
+                    </a>
+                    <a href="{% url 'program_detail' program.id %}" class="btn btn-outline-theme-secondary">
+                        <i class="bi bi-eye"></i> Programı Gör
+                    </a>
                 </div>
             </div>
+        </header>
+
+        <div class="radio-form-card radio-fade">
+            <div class="radio-banner">
+                <i class="bi bi-exclamation-triangle"></i>
+                Bu işlem geri alınamaz. Yayın geçmişi ve dinleyici istatistikleri silinir.
+            </div>
+
+            <div class="program-panel mt-4">
+                <div class="panel-title">Program Özeti</div>
+                <div class="panel-meta">
+                    <div class="meta-item"><i class="bi bi-card-heading"></i> {{ program.title }}</div>
+                    <div class="meta-item"><i class="bi bi-person"></i> DJ {{ program.dj.username }}</div>
+                    <div class="meta-item"><i class="bi bi-calendar"></i> {{ program.start_time|date:"d F Y, H:i" }} - {{ program.end_time|date:"H:i" }}</div>
+                </div>
+                {% if program.description %}
+                    <div class="panel-note">
+                        <span>Program notu</span>
+                        {{ program.description }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <form method="post" class="mt-4">
+                {% csrf_token %}
+                <div class="radio-actions">
+                    <a href="{% url 'dj_dashboard' %}" class="btn btn-outline-theme-secondary">
+                        <i class="bi bi-x-circle"></i> İptal
+                    </a>
+                    <button type="submit" class="btn btn-theme-secondary">
+                        <i class="bi bi-trash"></i> Evet, Sil
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

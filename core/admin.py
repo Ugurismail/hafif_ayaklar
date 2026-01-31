@@ -16,7 +16,7 @@ from core.models import (
     Poll, PollOption, PollVote, SavedItem, Vote, PinnedEntry,
     Entry, RandomSentence, Message, Definition, Reference,CikisTesti,
     CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy,
-    QuestionFollow, AnswerFollow, Notification, RadioProgram
+    QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage
 )
 
 # =============================================================================
@@ -410,3 +410,16 @@ class RadioProgramAdmin(admin.ModelAdmin):
         queryset.delete()
         self.message_user(request, f"{count} program iptal edildi.")
     cancel_programs.short_description = "Seçili programları iptal et"
+
+
+@admin.register(RadioChatMessage)
+class RadioChatMessageAdmin(admin.ModelAdmin):
+    list_display = ['program', 'user', 'short_body', 'created_at']
+    list_filter = ['program', 'created_at']
+    search_fields = ['program__title', 'user__username', 'body']
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+
+    def short_body(self, obj):
+        return obj.body[:60] + ('...' if len(obj.body) > 60 else '')
+    short_body.short_description = 'Mesaj'

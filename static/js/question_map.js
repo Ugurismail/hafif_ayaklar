@@ -564,17 +564,26 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Kutu ayarları
-        const users = d.users;
-        const maxUsersShown = 12;
-        const maxPerRow = 4;
-        const userBoxWidth = 92, userBoxHeight = 32, userBoxPadding = 10;
-        const rowGap = 10;
-        const minCardWidth = 250;
-        const headerHeight = 35;
-        const btnH = 36;
+        const allUsers = Array.isArray(d.users) ? d.users : [];
+        const linkUsers = Array.isArray(d.link_users) ? d.link_users : [];
+        const displayTitle = linkUsers.length ? 'Bağlayanlar' : 'Girdiler';
+        let displayUsers = linkUsers.length ? linkUsers : allUsers;
+        const displayCount = displayUsers.length;
 
-        let shownUsers = users.slice(0, maxUsersShown);
-        let hiddenCount = users.length - shownUsers.length;
+        const maxUsersShown = 12;
+        const maxPerRow = 3;
+        const userBoxWidth = 120, userBoxHeight = 34, userBoxPadding = 12;
+        const rowGap = 12;
+        const minCardWidth = 280;
+        const headerHeight = 52;
+        const btnH = 38;
+
+        if (displayUsers.length === 0) {
+            displayUsers = [{ username: 'Girdi yok', isPlaceholder: true }];
+        }
+
+        let shownUsers = displayUsers.slice(0, maxUsersShown);
+        let hiddenCount = displayUsers.length - shownUsers.length;
 
         // Satırlara böl
         let userRows = [];
@@ -589,9 +598,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         let rowCount = userRows.length;
-        let rowW = Math.max(minCardWidth, Math.min(maxPerRow, userRows[0].length) * (userBoxWidth + userBoxPadding));
+        let maxRowLen = userRows.reduce((max, row) => Math.max(max, row.length), 1);
+        let rowW = Math.max(
+            minCardWidth,
+            Math.min(maxPerRow, maxRowLen) * (userBoxWidth + userBoxPadding) - userBoxPadding
+        );
         let cardWidth = rowW;
-        let cardHeight = headerHeight + rowCount * (userBoxHeight + rowGap) + btnH + 20;
+        let cardHeight = headerHeight + rowCount * (userBoxHeight + rowGap) + btnH + 24;
 
         // Kartı node'un üstünde ortala
         let nodeX = d.x, nodeY = d.y - d.size - 22;
@@ -606,28 +619,43 @@ document.addEventListener('DOMContentLoaded', function () {
         // Gölge
         card.append("rect")
             .attr("x", 7).attr("y", 7)
-            .attr("rx", 19).attr("ry", 19)
+            .attr("rx", 18).attr("ry", 18)
             .attr("width", cardWidth).attr("height", cardHeight)
             .attr("fill", "#1c2c5820")
-            .attr("opacity", 0.14);
+            .attr("opacity", 0.12);
 
         // Kutu
         card.append("rect")
             .attr("x", 0).attr("y", 0)
-            .attr("rx", 17).attr("ry", 17)
+            .attr("rx", 16).attr("ry", 16)
             .attr("width", cardWidth).attr("height", cardHeight)
             .attr("fill", cardBgColor)
             .attr("stroke", borderColor)
-            .attr("stroke-width", 1.5);
+            .attr("stroke-width", 1.3);
 
-        // Başlık
+        // Baslik
+        const headerText = `${displayTitle} (${displayCount})`;
         card.append("text")
             .attr("x", cardWidth/2)
-            .attr("y", 28)
+            .attr("y", 30)
             .attr("text-anchor", "middle")
-            .attr("font-size", "24px")
-            .attr("font-weight", "bold")
-            .attr("fill", cardTextColor);
+            .attr("font-size", "16px")
+            .attr("font-weight", "700")
+            .attr("fill", cardTextColor)
+            .text(headerText);
+
+        card.append("line")
+            .attr("x1", 18)
+            .attr("x2", cardWidth - 18)
+            .attr("y1", 40)
+            .attr("y2", 40)
+            .attr("stroke", borderColor)
+            .attr("stroke-opacity", 0.35);
+
+        function formatUsername(name, maxLen) {
+            if (name.length <= maxLen) return name;
+            return name.slice(0, maxLen - 3) + '...';
+        }
 
         // Kullanıcı etiketleri
         userRows.forEach((row, rowIdx) => {
@@ -639,14 +667,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 let x = startX + colIdx * (userBoxWidth + userBoxPadding);
                 let y = headerHeight + rowIdx * (userBoxHeight + rowGap);
 
+                let isClickable = !user.isMore && !user.isPlaceholder && user.answer_id;
                 let g = card.append("g")
-                    .style("cursor", "pointer")
+                    .style("cursor", isClickable || user.isMore ? "pointer" : "default")
                     .on("click", function (event) {
+                        if (!isClickable && !user.isMore) return;
                         event.stopPropagation();
                         if (user.isMore) {
                             window.location.href = `/${d.slug}/`;
-                        } else {
+                        } else if (user.answer_id) {
                             window.location.href = `/${d.slug}/answer/${user.answer_id}/`;
+                        } else {
+                            showToast('Bu kullanıcının bu başlıkta entrysi yok.', 'warning');
                         }
                     });
 
@@ -654,26 +686,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 g.append("rect")
                     .attr("x", x)
                     .attr("y", y)
-                    .attr("rx", 8).attr("ry", 8)
+                    .attr("rx", 10).attr("ry", 10)
                     .attr("width", userBoxWidth)
                     .attr("height", userBoxHeight)
-                    .attr("fill", user.isMore ? "#eee" : "#e7edfa")
+                    .attr("fill", user.isMore || user.isPlaceholder ? "#f1f1f1" : "#e7edfa")
                     .attr("stroke", "#4682ea")
                     .attr("stroke-width", 1.1);
 
+                const displayName = user.isMore
+                    ? user.username
+                    : user.isPlaceholder
+                        ? user.username
+                        : ("@" + formatUsername(user.username, 14));
+
                 g.append("text")
                     .attr("x", x + userBoxWidth/2)
-                    .attr("y", y + 21)
+                    .attr("y", y + 22)
                     .attr("text-anchor", "middle")
-                    .attr("fill", user.isMore ? "#7a7a7a" : "#3554ad")
-                    .attr("font-size", "17px")
-                    .attr("font-weight", user.isMore ? "500" : "bold")
-                    .text(user.isMore ? user.username : ("@" + user.username));
+                    .attr("fill", user.isMore || user.isPlaceholder ? "#7a7a7a" : "#3554ad")
+                    .attr("font-size", "15px")
+                    .attr("font-weight", user.isMore || user.isPlaceholder ? "500" : "700")
+                    .text(displayName);
             });
         });
 
         // Başlığa git butonu
-        let btnX = cardWidth/2 - 55, btnY = cardHeight - btnH - 10;
+        let btnX = cardWidth/2 - 60, btnY = cardHeight - btnH - 12;
         let group = card.append("g")
             .attr("class", "to-title-label")
             .style("cursor", "pointer")
@@ -683,15 +721,15 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         group.append("rect")
             .attr("x", btnX).attr("y", btnY)
-            .attr("width", 110).attr("height", btnH)
-            .attr("rx", 11).attr("fill", "#f9fbff")
+            .attr("width", 120).attr("height", btnH)
+            .attr("rx", 12).attr("fill", "#f9fbff")
             .attr("stroke", "#4682ea").attr("stroke-width", 1.4)
             .attr("opacity", 0.99)
             .attr("filter", null);
         group.append("text")
-            .attr("x", btnX + 55).attr("y", btnY + 24)
+            .attr("x", btnX + 60).attr("y", btnY + 24)
             .attr("text-anchor", "middle").attr("fill", "#2554A3")
-            .attr("font-size", "17px").attr("font-weight", "500").text("Başlığa git");
+            .attr("font-size", "15px").attr("font-weight", "600").text("Başlığa git");
     }
 
     function ticked() {

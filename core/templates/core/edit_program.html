@@ -3,60 +3,75 @@
 
 {% block title %}Programı Düzenle{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/radio.css' %}?v={{ STATIC_ASSET_VERSION }}">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h2><i class="bi bi-pencil"></i> Programı Düzenle</h2>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Program Başlığı *</label>
-                            <input type="text" class="form-control" id="title" name="title"
-                                   value="{{ program.title }}" required maxlength="200">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Açıklama</label>
-                            <textarea class="form-control" id="description" name="description"
-                                      rows="4">{{ program.description }}</textarea>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="start_time" class="form-label">Başlangıç Zamanı *</label>
-                                <input type="datetime-local" class="form-control" id="start_time"
-                                       name="start_time" value="{{ program.start_time|date:'Y-m-d\TH:i' }}" required>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="end_time" class="form-label">Bitiş Zamanı *</label>
-                                <input type="datetime-local" class="form-control" id="end_time"
-                                       name="end_time" value="{{ program.end_time|date:'Y-m-d\TH:i' }}" required>
-                            </div>
-                        </div>
-
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i>
-                            <strong>Not:</strong> Program saatiniz başka bir programla çakışmamalıdır.
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'dj_dashboard' %}" class="btn btn-outline-theme-secondary">
-                                <i class="bi bi-x-circle"></i> İptal
-                            </a>
-                            <button type="submit" class="btn btn-theme-primary">
-                                <i class="bi bi-check-circle"></i> Değişiklikleri Kaydet
-                            </button>
-                        </div>
-                    </form>
+<div class="radio-page">
+    <div class="radio-shell">
+        <header class="radio-hero radio-fade">
+            <div>
+                <span class="hero-eyebrow">Program Güncelle</span>
+                <h1 class="hero-title">{{ program.title }}</h1>
+                <p class="hero-subtitle">
+                    Başlığı, açıklamayı ve yayın saatlerini güncelle. Değişiklikler kaydedildiğinde program takviminde görünür.
+                </p>
+                <div class="hero-actions">
+                    <a href="{% url 'dj_dashboard' %}" class="btn btn-outline-theme-secondary">
+                        <i class="bi bi-arrow-left"></i> DJ Paneline Dön
+                    </a>
+                    <a href="{% url 'program_detail' program.id %}" class="btn btn-outline-theme-secondary">
+                        <i class="bi bi-eye"></i> Programı Gör
+                    </a>
                 </div>
             </div>
+        </header>
+
+        <div class="radio-form-card radio-fade">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="title" class="form-label">Program Başlığı *</label>
+                    <input type="text" class="form-control" id="title" name="title"
+                           value="{{ program.title }}" required maxlength="200">
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Açıklama</label>
+                    <textarea class="form-control" id="description" name="description"
+                              rows="4">{{ program.description }}</textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="start_time" class="form-label">Başlangıç Zamanı *</label>
+                        <input type="datetime-local" class="form-control" id="start_time"
+                               name="start_time" value="{{ program.start_time|date:'Y-m-d\TH:i' }}" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="end_time" class="form-label">Bitiş Zamanı *</label>
+                        <input type="datetime-local" class="form-control" id="end_time"
+                               name="end_time" value="{{ program.end_time|date:'Y-m-d\TH:i' }}" required>
+                    </div>
+                </div>
+
+                <div class="radio-banner">
+                    <i class="bi bi-info-circle"></i>
+                    Program saatiniz başka bir programla çakışmamalıdır.
+                </div>
+
+                <div class="radio-actions">
+                    <a href="{% url 'dj_dashboard' %}" class="btn btn-outline-theme-secondary">
+                        <i class="bi bi-x-circle"></i> İptal
+                    </a>
+                    <button type="submit" class="btn btn-theme-primary">
+                        <i class="bi bi-check-circle"></i> Değişiklikleri Kaydet
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
