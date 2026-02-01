@@ -68,12 +68,38 @@
   </div>
   {% endif %}
 
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <h6 class="mb-0" id="file-latest-title">Son yuklenenler</h6>
-    <small class="text-muted" id="file-latest-count"></small>
+  <div class="card border-0 shadow-sm mb-4" id="file-library-list" data-list-url="{% url 'file_library_list' %}" data-delete-url-template="{% url 'file_library_delete' 0 %}">
+    <div class="card-body">
+      <ul class="nav nav-tabs" id="file-library-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="file-tab-all" data-bs-toggle="tab" data-bs-target="#file-pane-all" type="button" role="tab" aria-controls="file-pane-all" aria-selected="true">Tum dosyalar</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="file-tab-mine" data-bs-toggle="tab" data-bs-target="#file-pane-mine" type="button" role="tab" aria-controls="file-pane-mine" aria-selected="false">Benim dosyalarim</button>
+        </li>
+      </ul>
+      <div class="tab-content pt-3" id="file-library-tab-content">
+        <div class="tab-pane fade show active" id="file-pane-all" role="tabpanel" aria-labelledby="file-tab-all">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Tum dosyalar</h6>
+            <small class="text-muted" id="file-all-count"></small>
+          </div>
+          <div id="file-all-results" class="list-group mb-2"></div>
+          <div id="file-all-empty" class="text-muted small mb-2" style="display: none;">Henuz dosya yok.</div>
+          <button type="button" id="file-all-load" class="btn btn-sm btn-outline-theme-secondary" style="display: none;">Daha fazla goster</button>
+        </div>
+        <div class="tab-pane fade" id="file-pane-mine" role="tabpanel" aria-labelledby="file-tab-mine">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">Benim dosyalarim</h6>
+            <small class="text-muted" id="file-mine-count"></small>
+          </div>
+          <div id="file-mine-results" class="list-group mb-2"></div>
+          <div id="file-mine-empty" class="text-muted small mb-2" style="display: none;">Henuz dosya yuklemedin.</div>
+          <button type="button" id="file-mine-load" class="btn btn-sm btn-outline-theme-secondary" style="display: none;">Daha fazla goster</button>
+        </div>
+      </div>
+    </div>
   </div>
-  <div id="file-latest-results" class="list-group mb-2"></div>
-  <div id="file-latest-empty" class="text-muted small mb-4" style="display: none;">Henuz dosya yok.</div>
 
 </div>
 {% endblock %}

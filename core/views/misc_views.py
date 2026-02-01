@@ -361,6 +361,75 @@ def file_library_search(request):
     })
 
 
+@login_required
+def file_library_list(request):
+    limit_param = request.GET.get('limit')
+    offset_param = request.GET.get('offset')
+    mine_param = request.GET.get('mine', '0')
+
+    try:
+        limit = int(limit_param) if limit_param is not None else 20
+    except ValueError:
+        limit = 20
+    try:
+        offset = int(offset_param) if offset_param is not None else 0
+    except ValueError:
+        offset = 0
+
+    limit = max(1, min(limit, 50))
+    offset = max(0, offset)
+    only_mine = mine_param == '1'
+
+    files_qs = LibraryFile.objects.select_related('uploaded_by').order_by('-uploaded_at')
+    if only_mine:
+        files_qs = files_qs.filter(uploaded_by=request.user)
+
+    total_count = files_qs.count()
+    files_qs = files_qs[offset:offset + limit]
+
+    results = []
+    for item in files_qs:
+        results.append({
+            'id': item.id,
+            'title': item.title,
+            'description': item.description,
+            'filename': item.filename(),
+            'size': item.human_size(),
+            'uploaded_by': item.uploaded_by.username,
+            'uploaded_at': item.uploaded_at.strftime("%d.%m.%Y %H:%M"),
+            'file_url': item.file.url,
+            'can_delete': request.user.is_superuser or item.uploaded_by_id == request.user.id,
+        })
+
+    return JsonResponse({
+        'results': results,
+        'count': total_count,
+        'shown': len(results),
+        'offset': offset,
+        'limit': limit,
+        'mine': only_mine,
+        'has_more': offset + len(results) < total_count,
+        'label': 'Benim dosyalarim' if only_mine else 'Tum dosyalar',
+    })
+
+
+@login_required
+@require_POST
+def file_library_delete(request, file_id):
+    file_obj = get_object_or_404(LibraryFile, pk=file_id)
+    if not (request.user.is_superuser or file_obj.uploaded_by_id == request.user.id):
+        raise PermissionDenied("Bu dosyayi silme yetkiniz yok.")
+
+    file_obj.file.delete(save=False)
+    file_obj.delete()
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'ok': True})
+
+    messages.success(request, "Dosya silindi.")
+    return redirect('file_library')
+
+
 def search_suggestions(request):
     query = request.GET.get('q', '')
     offset = int(request.GET.get('offset', 0))
