@@ -119,10 +119,17 @@ def get_root_questions(request):
     # Kullanıcının yanıt verdiği tüm soruları al
     answered_question_ids = Answer.objects.filter(user=user).values_list('question_id', flat=True).distinct()
 
+    # Kullanıcının child olduğu soruları çıkar (kendi zincirine bağladıkları başlangıç sayılmasın)
+    user_child_ids = QuestionRelationship.objects.filter(
+        user=user
+    ).values_list('child_id', flat=True).distinct()
+
     # Kullanıcının starting question'larını al ve yanıt verdiği olanları filtrele
     starting_questions = StartingQuestion.objects.filter(
         user=user,
         question_id__in=answered_question_ids
+    ).exclude(
+        question_id__in=user_child_ids
     ).select_related('question').order_by('question__question_text')
 
     data = {
@@ -195,7 +202,14 @@ def edit_answer(request, answer_id):
     all_questions = get_today_questions_queryset()
     answer = get_object_or_404(Answer, id=answer_id, user=request.user)
     # Başlangıç sorularını al
-    starting_questions = StartingQuestion.objects.filter(user=request.user).annotate(
+    user_child_ids = QuestionRelationship.objects.filter(
+        user=request.user
+    ).values_list('child_id', flat=True).distinct()
+    starting_questions = StartingQuestion.objects.filter(
+        user=request.user
+    ).exclude(
+        question_id__in=user_child_ids
+    ).annotate(
         total_subquestions=Count('question__child_relationships', filter=Q(question__child_relationships__user=request.user)),
         latest_subquestion_date=Max('question__child_relationships__created_at', filter=Q(question__child_relationships__user=request.user))
     ).order_by(F('latest_subquestion_date').desc(nulls_last=True))

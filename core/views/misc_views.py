@@ -31,6 +31,7 @@ from datetime import timedelta
 from io import BytesIO
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
@@ -47,9 +48,10 @@ from django.views.decorators.http import require_POST
 
 from ..models import (
     Question, Answer, Vote, SavedItem, StartingQuestion,
-    Reference, UserProfile, QuestionRelationship
+    Reference, UserProfile, QuestionRelationship, LibraryFile
 )
 from ..utils import paginate_queryset
+from ..forms import LibraryFileForm
 from ..services import VoteSaveService
 from ..querysets import get_today_questions_queryset
 from .answer_views import get_all_descendant_question_ids
@@ -99,7 +101,14 @@ def user_homepage(request):
 
     # 3. Başlangıç Soruları (sadece login olmuş kullanıcılar için) - Using new utility
     if request.user.is_authenticated:
-        starting_questions_qs = StartingQuestion.objects.filter(user=request.user).select_related('question').annotate(
+        user_child_ids = QuestionRelationship.objects.filter(
+            user=request.user
+        ).values_list('child_id', flat=True).distinct()
+        starting_questions_qs = StartingQuestion.objects.filter(
+            user=request.user
+        ).exclude(
+            question_id__in=user_child_ids
+        ).select_related('question').annotate(
             total_subquestions=Count('question__child_relationships', filter=Q(question__child_relationships__user=request.user)),
             latest_subquestion_date=Max('question__child_relationships__created_at', filter=Q(question__child_relationships__user=request.user))
         ).order_by(F('latest_subquestion_date').desc(nulls_last=True)).select_related('question__user')
@@ -277,6 +286,81 @@ def about(request):
     return render(request, 'core/about.html')
 
 
+@login_required
+def file_library(request):
+    query = request.GET.get('q', '').strip()
+    profile = getattr(request.user, 'userprofile', None)
+    can_upload = bool(getattr(profile, 'can_upload_files', False) or request.user.is_superuser)
+
+    form = None
+    if request.method == 'POST':
+        if not can_upload:
+            raise PermissionDenied("Dosya yukleme yetkiniz yok.")
+        form = LibraryFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            new_file = form.save(commit=False)
+            new_file.uploaded_by = request.user
+            new_file.save()
+            messages.success(request, "Dosya yuklendi.")
+            return redirect('file_library')
+    elif can_upload:
+        form = LibraryFileForm()
+
+    return render(request, 'core/file_library.html', {
+        'form': form,
+        'can_upload': can_upload,
+        'query': query,
+    })
+
+
+@login_required
+def file_library_search(request):
+    query = request.GET.get('q', '').strip()
+    limit_param = request.GET.get('limit')
+    if limit_param is None:
+        limit = 10 if not query else 20
+    else:
+        try:
+            limit = int(limit_param)
+        except ValueError:
+            limit = 12 if not query else 20
+
+    limit = max(1, min(limit, 50))
+
+    files_qs = LibraryFile.objects.select_related('uploaded_by').order_by('-uploaded_at')
+    if query:
+        files_qs = files_qs.filter(
+            Q(title__icontains=query) |
+            Q(description__icontains=query) |
+            Q(file__icontains=query) |
+            Q(uploaded_by__username__icontains=query)
+        )
+
+    total_count = files_qs.count()
+    files_qs = files_qs[:limit]
+
+    results = []
+    for item in files_qs:
+        results.append({
+            'id': item.id,
+            'title': item.title,
+            'description': item.description,
+            'filename': item.filename(),
+            'size': item.human_size(),
+            'uploaded_by': item.uploaded_by.username,
+            'uploaded_at': item.uploaded_at.strftime("%d.%m.%Y %H:%M"),
+            'file_url': item.file.url,
+        })
+
+    return JsonResponse({
+        'results': results,
+        'count': total_count,
+        'shown': len(results),
+        'query': query,
+        'label': 'Son yuklenenler' if not query else 'Arama sonuclari',
+    })
+
+
 def search_suggestions(request):
     query = request.GET.get('q', '')
     offset = int(request.GET.get('offset', 0))
@@ -299,8 +383,12 @@ def search_suggestions(request):
         if query.startswith('#'):
             hashtag_query = query.lstrip('#')
             if hashtag_query:  # Boş değilse ara
-                hashtags = Hashtag.objects.filter(name__icontains=hashtag_query).annotate(
+                hashtags = Hashtag.objects.filter(
+                    name__icontains=hashtag_query
+                ).annotate(
                     usage_count=Count('usages')
+                ).filter(
+                    usage_count__gt=0
                 ).order_by('-usage_count')[:5]  # Max 5 hashtag
                 for hashtag in hashtags:
                     suggestions.append({
@@ -384,8 +472,12 @@ def search(request):
             if query.startswith('#'):
                 hashtag_query = query.lstrip('#')
                 if hashtag_query:
-                    hashtags = Hashtag.objects.filter(name__icontains=hashtag_query).annotate(
+                    hashtags = Hashtag.objects.filter(
+                        name__icontains=hashtag_query
+                    ).annotate(
                         usage_count=Count('usages')
+                    ).filter(
+                        usage_count__gt=0
                     ).order_by('-usage_count')[:5]
 
             results += [

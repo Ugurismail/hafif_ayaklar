@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+import os
 import uuid
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -42,6 +43,7 @@ class UserProfile(models.Model):
 
     # Radyo DJ yetkisi
     is_dj = models.BooleanField(default=False, verbose_name='DJ Yetkisi')
+    can_upload_files = models.BooleanField(default=False, verbose_name='Dosya Yukleme Yetkisi')
 
     # Renk ayarları alanları
     background_color = models.CharField(max_length=7, default='#F5F5F5') #genel arka plan
@@ -399,6 +401,28 @@ class Reference(models.Model):
         author_str = '; '.join(authors)
         metin = f", {self.metin_ismi}" if self.metin_ismi else ""
         return f"{author_str} ({self.year}){metin}"
+
+
+class LibraryFile(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Baslik")
+    description = models.TextField(blank=True, verbose_name="Aciklama")
+    file = models.FileField(upload_to='library_files/', verbose_name="Dosya")
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='library_files')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-uploaded_at']
+
+    def filename(self):
+        return os.path.basename(self.file.name)
+
+    def human_size(self):
+        size = getattr(self.file, 'size', 0) or 0
+        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+            if size < 1024 or unit == 'TB':
+                return f"{size:.1f} {unit}"
+            size = size / 1024.0
+        return "0 B"
 
     def get_usage_count(self):
         """

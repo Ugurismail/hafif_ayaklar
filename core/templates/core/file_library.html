@@ -1,0 +1,83 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Dosyalar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h2 class="mb-0"><i class="bi bi-folder2-open"></i> Dosyalar</h2>
+  </div>
+
+  <form method="get" class="mb-4" id="file-search-form" data-search-url="{% url 'file_library_search' %}">
+    <div class="input-group">
+      <input type="text" class="form-control" name="q" id="file-search-input" value="{{ query }}" placeholder="Baslik, aciklama, dosya adi veya kullanici ara" autocomplete="off">
+      <button class="btn btn-theme-secondary" type="submit">
+        <i class="bi bi-search"></i> Ara
+      </button>
+    </div>
+  </form>
+
+  <div id="file-search-section" class="mb-4" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0" id="file-search-title">Arama sonuclari</h6>
+      <small class="text-muted" id="file-search-count"></small>
+    </div>
+    <div id="file-search-results" class="list-group mb-2"></div>
+    <div id="file-search-empty" class="text-muted small" style="display: none;">Sonuc bulunamadi.</div>
+  </div>
+
+  {% if can_upload %}
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <h5 class="card-title mb-3"><i class="bi bi-upload"></i> Dosya Yukle</h5>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Baslik</label>
+            {{ form.title }}
+            {% for error in form.title.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Dosya</label>
+            {{ form.file }}
+            {% for error in form.file.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-12">
+            <label class="form-label">Aciklama (opsiyonel)</label>
+            {{ form.description }}
+            {% for error in form.description.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="mt-3">
+          <button type="submit" class="btn btn-theme-primary">
+            <i class="bi bi-cloud-arrow-up"></i> Yukle
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h6 class="mb-0" id="file-latest-title">Son yuklenenler</h6>
+    <small class="text-muted" id="file-latest-count"></small>
+  </div>
+  <div id="file-latest-results" class="list-group mb-2"></div>
+  <div id="file-latest-empty" class="text-muted small mb-4" style="display: none;">Henuz dosya yok.</div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/file_library.js' %}"></script>
+{% endblock %}

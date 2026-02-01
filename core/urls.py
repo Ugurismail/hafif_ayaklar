@@ -67,6 +67,8 @@ urlpatterns = [
 
     # Diğer İşlemler
     path('about/', views.about, name='about'),
+    path('files/', views.file_library, name='file_library'),
+    path('files/search/', views.file_library_search, name='file_library_search'),
     path('statistics/', views.site_statistics, name='site_statistics'),
     path('map/', views.question_map, name='question_map'),
     path('map-data/', map_data_view, name='map_data'),

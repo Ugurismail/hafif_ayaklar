@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Invitation, UserProfile, Question, Answer, Message, RandomSentence, Definition, Reference,CikisTesti, CikisTestiSoru, CikisTestiSik,DelphoiProphecy
+from .models import Invitation, UserProfile, Question, Answer, Message, RandomSentence, Definition, Reference, LibraryFile, CikisTesti, CikisTestiSoru, CikisTestiSik, DelphoiProphecy
 from django.core.validators import RegexValidator
 from .models import Poll, PollOption
 from django.utils import timezone
@@ -337,3 +337,23 @@ class DelphoiProphecyForm(forms.Form):
             'placeholder': 'Herhangi bir soruya yanıt olabilecek şekilde kehanetinizi yazınız. Ne kadar muğlak olursa o kadar iyi.',
         })
     )
+
+
+class LibraryFileForm(forms.ModelForm):
+    class Meta:
+        model = LibraryFile
+        fields = ['title', 'description', 'file']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Dosya basligi'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Kisa aciklama (opsiyonel)'
+            }),
+            'file': forms.ClearableFileInput(attrs={
+                'class': 'form-control'
+            })
+        }

@@ -124,6 +124,8 @@ def search_hashtags(request):
         name__icontains=query
     ).annotate(
         usage_count=Count('usages')
+    ).filter(
+        usage_count__gt=0
     ).order_by('-usage_count')[:10]
 
     results = [{

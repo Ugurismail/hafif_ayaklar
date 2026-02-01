@@ -677,14 +677,13 @@ def generate_question_nodes(questions, user_filter=None):
                 link_user_entries.append(entry)
 
         user_ids = [entry["id"] for entry in user_entries]
+        linker_ids = list(link_user_ids)
 
-        # Color logic: single user gets their color, multiple users get neutral colors based on activity
-        if len(user_ids) == 1:
-            node_color = get_user_color(user_ids[0])
-        elif len(user_ids) >= 5:
-            node_color = '#ff6b6b'  # Red for very active nodes (5+ users)
-        elif len(user_ids) >= 2:
-            node_color = '#9370db'  # Purple for multi-user nodes (2-4 users)
+        # Color logic: reflect who linked the node into a chain, not who answered
+        if len(linker_ids) == 1:
+            node_color = get_user_color(linker_ids[0])
+        elif len(linker_ids) > 1:
+            node_color = '#CCCCCC'  # Grey for intersections (multiple linkers)
         else:
             node_color = '#87ceeb'  # Sky blue fallback
 
@@ -694,16 +693,14 @@ def generate_question_nodes(questions, user_filter=None):
             "users": user_entries,
             "link_users": link_user_entries,
             "user_ids": user_ids,  # Add user_ids for statistics calculation
-            "size": 20 + 10 * (len(user_entries) - 1),  # Will be updated based on links
+            "link_user_ids": linker_ids,
+            "size": 20 + max(0, len(linker_ids) - 1),  # Grow only with chain count (unique linkers)
             "color": node_color,
             "question_id": question.id,
             "question_ids": [question.id],
             "slug": question.slug,  # Add slug for navigation
         }
         nodes.append(node)
-
-    # Build links from QuestionRelationship model
-    link_count = {}  # Track how many links each node has
 
     # Build links from relationships
     for rel in relationship_query:
@@ -715,18 +712,6 @@ def generate_question_nodes(questions, user_filter=None):
             "target": child_id,
             "user_id": rel.user_id,  # Track which user created this link
         })
-
-        # Increment link count for both nodes
-        link_count[parent_id] = link_count.get(parent_id, 0) + 1
-        link_count[child_id] = link_count.get(child_id, 0) + 1
-
-    # Update node sizes based on link count (each link adds 0.1 to size)
-    for node in nodes:
-        node_id = node["id"]
-        num_links = link_count.get(node_id, 0)
-        # Base size + user-based size + link-based size (0.1 per link)
-        base_size = 20 + 10 * (len(node["users"]) - 1)
-        node["size"] = base_size + (num_links * 0.1)
 
     return {
         "nodes": nodes,
@@ -867,14 +852,23 @@ def add_existing_subquestion(request, slug):
         # Başlangıç sorusu yönetimi:
         # Eğer current_question birilerinin başlangıç sorusuysa,
         # o kullanıcılar için parent_question yeni başlangıç sorusu olur
-        affected_starting_questions = StartingQuestion.objects.filter(question=current_question)
+        affected_starting_questions = StartingQuestion.objects.filter(
+            question=current_question,
+            user=request.user
+        )
         if affected_starting_questions.exists():
-            for sq in affected_starting_questions:
-                user = sq.user
-                # Önce eski başlangıç sorusunu sil
-                sq.delete()
-                # Sonra parent'ı yeni başlangıç sorusu yap (eğer zaten değilse)
-                StartingQuestion.objects.get_or_create(user=user, question=parent_question)
+            # Önce eski başlangıç sorusunu sil (yalnızca bu kullanıcı için)
+            affected_starting_questions.delete()
+            # Parent bu kullanıcı için root ise başlangıç olarak işaretle
+            parent_has_parent = QuestionRelationship.objects.filter(
+                child=parent_question,
+                user=request.user
+            ).exists()
+            if not parent_has_parent:
+                StartingQuestion.objects.get_or_create(
+                    user=request.user,
+                    question=parent_question
+                )
 
         return JsonResponse({
             'success': True,

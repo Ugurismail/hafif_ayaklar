@@ -16,7 +16,8 @@ from core.models import (
     Poll, PollOption, PollVote, SavedItem, Vote, PinnedEntry,
     Entry, RandomSentence, Message, Definition, Reference,CikisTesti,
     CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy,
-    QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage
+    QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage,
+    LibraryFile
 )
 
 # =============================================================================
@@ -25,7 +26,7 @@ from core.models import (
 admin.site.register(Invitation)
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "last_seen", "invitation_quota", "is_dj")
+    list_display = ("user", "last_seen", "invitation_quota", "is_dj", "can_upload_files")
     ordering = ("-last_seen",)
     search_fields = ("user__username", "user__email")
 admin.site.register(SavedItem)
@@ -33,6 +34,7 @@ admin.site.register(Vote)
 admin.site.register(PinnedEntry)
 admin.site.register(Entry)
 admin.site.register(RandomSentence)
+admin.site.register(LibraryFile)
 
 # =============================================================================
 # 2) Kullanıcı Admin – Mesaj Gönderme, Grupların Gösterimi ve Filtrelenmesi

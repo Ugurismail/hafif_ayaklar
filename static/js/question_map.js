@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var height = chartElement.clientHeight || 800;
     var svg, g, zoom, simulation, link, node, label, userLabelGroup, arrows;
     var nodesData = [], linksData = [], selectedUsers = [];
+    const BASE_NODE_SIZE = 20;
+    const LINK_SIZE_STEP = 1;
+    const LABEL_BASE_SIZE = 12;
     var focusQuestionId = window.focusQuestionId || null;
 
     setupButtons();
@@ -20,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
     fetchData('/map-data/', function (data) {
         nodesData = data.nodes;
         linksData = data.links;
+        applyLinkBasedSizing();
         createGraph();
         updateStatistics();
     });
@@ -384,8 +388,25 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateGraphFromData(data) {
         nodesData = data.nodes;
         linksData = data.links;
+        applyLinkBasedSizing();
         updateGraph();
         updateStatistics();
+    }
+
+    function applyLinkBasedSizing() {
+        const linkCounts = {};
+        linksData.forEach(link => {
+            const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+            const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+            if (sourceId) linkCounts[sourceId] = (linkCounts[sourceId] || 0) + 1;
+            if (targetId) linkCounts[targetId] = (linkCounts[targetId] || 0) + 1;
+        });
+        nodesData.forEach(node => {
+            const linkUserIds = Array.isArray(node.link_user_ids) ? node.link_user_ids : [];
+            const linkUsers = Array.isArray(node.link_users) ? node.link_users : [];
+            const linkerCount = linkUserIds.length || linkUsers.length || (linkCounts[node.id] || 0);
+            node.size = BASE_NODE_SIZE + Math.max(0, linkerCount - 1) * LINK_SIZE_STEP;
+        });
     }
 
     function updateStatistics() {
@@ -495,7 +516,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .attr("dy", -10)
             .attr("text-anchor", "middle")
             .text(d => d.label)
-            .style("font-size", d => (12 + d.users.length * 2) + "px")
+            .style("font-size", d => (LABEL_BASE_SIZE + Math.max(0, d.size - BASE_NODE_SIZE) * 0.5) + "px")
             .style("fill", textColor);
 
         // Force simulation
@@ -768,13 +789,14 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateNodeVisibility(zoomLevel) {
         node.each(function (d) {
             let minOpacity = 0.8, maxOpacity = 0.95;
-            let userCountFactor = (d.users.length - 1) / (d3.max(nodesData, d => d.users.length) - 1 || 1);
-            let opacity = minOpacity + (maxOpacity - minOpacity) * userCountFactor;
+            let maxSize = d3.max(nodesData, d => d.size) || BASE_NODE_SIZE;
+            let sizeFactor = (d.size - BASE_NODE_SIZE) / (maxSize - BASE_NODE_SIZE || 1);
+            let opacity = minOpacity + (maxOpacity - minOpacity) * sizeFactor;
             if (zoomLevel < 0.5) opacity = opacity * zoomLevel * 2;
             d3.select(this).style("opacity", opacity);
         });
         label.style("opacity", d => 1);
-        label.style("font-size", d => (12 + d.users.length * 2) * zoomLevel + "px");
+        label.style("font-size", d => (LABEL_BASE_SIZE + Math.max(0, d.size - BASE_NODE_SIZE) * 0.5) * zoomLevel + "px");
     }
 
     function dragstarted(event, d) {

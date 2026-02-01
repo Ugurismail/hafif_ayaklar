@@ -110,12 +110,21 @@ def process_hashtags(answer=None, question=None):
     """
     if answer:
         text = answer.answer_text
+        existing_usages = HashtagUsage.objects.filter(answer=answer).select_related('hashtag')
     elif question:
         text = question.question_text
+        existing_usages = HashtagUsage.objects.filter(question=question).select_related('hashtag')
     else:
         return
 
-    hashtag_names = extract_hashtags(text)
+    hashtag_names = set(extract_hashtags(text))
+    existing_names = {usage.hashtag.name for usage in existing_usages}
+
+    if hashtag_names == existing_names:
+        return
+
+    if existing_usages.exists():
+        existing_usages.delete()
 
     for hashtag_name in hashtag_names:
         # Get or create hashtag
