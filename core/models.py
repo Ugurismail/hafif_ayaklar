@@ -402,6 +402,28 @@ class Reference(models.Model):
         metin = f", {self.metin_ismi}" if self.metin_ismi else ""
         return f"{author_str} ({self.year}){metin}"
 
+    def get_usage_count(self):
+        """
+        Answer modelindeki answer_text alanında,
+        hem (kaynak:REF_ID[, sayfa:NUM]) hem de kısa form (k:REF_ID[ s:NUM])
+        şeklinde geçen ifadeleri sayar.
+        """
+        from .models import Answer  # Lokal import döngüsel importları önlemek için.
+        from django.db.models import Q
+
+        pattern = re.compile(
+            r'\((?:kaynak|k):{}(?:(?:,\s*sayfa:[^)]+)|(?:\s*s:[^)]+))?\)'.format(self.id)
+        )
+        count = 0
+        # İlk filtre, answer_text içerisinde "(kaynak:REF_ID" veya "(k:REF_ID" ifadesi geçiyorsa getiriyor
+        answers = Answer.objects.filter(
+            Q(answer_text__icontains=f"(kaynak:{self.id}") | Q(answer_text__icontains=f"(k:{self.id}")
+        )
+        for answer in answers:
+            matches = pattern.findall(answer.answer_text)
+            count += len(matches)
+        return count
+
 
 class LibraryFile(models.Model):
     title = models.CharField(max_length=200, verbose_name="Baslik")
