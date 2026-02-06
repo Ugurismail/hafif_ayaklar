@@ -1561,6 +1561,113 @@ a.hashtag-link:hover {
     word-wrap: break-word;
 }
 
+/* Compact collapsible images inside answers */
+.answer-image-toggle {
+    display: inline-block;
+    margin: 0.35rem 0;
+    max-width: 340px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: color-mix(in srgb, var(--text-color) 2%, transparent);
+}
+
+.answer-image-summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.3rem 0.55rem;
+    color: var(--link-color);
+    user-select: none;
+}
+
+.answer-image-summary::-webkit-details-marker {
+    display: none;
+}
+
+.answer-image-summary-main {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    gap: 0.35rem;
+}
+
+.answer-image-summary-arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+    opacity: 0.8;
+}
+
+.answer-image-toggle[open] .answer-image-summary-arrow {
+    transform: rotate(90deg);
+}
+
+.answer-image-summary-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    opacity: 0.75;
+}
+
+.answer-image-summary-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: min(190px, 42vw);
+}
+
+.answer-image-summary-thumb {
+    width: 26px;
+    height: 26px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.answer-image-content {
+    padding: 0.2rem 0.55rem 0.55rem;
+}
+
+.answer-image-content img {
+    display: block;
+    max-width: min(320px, 76vw);
+    max-height: 280px;
+    width: auto;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.answer-image-enlargeable {
+    cursor: zoom-in;
+}
+
+/* If a raw markdown image appears inside a sentence, keep layout readable */
+.answer-text p > img:not(.answer-image-summary-thumb) {
+    display: block;
+    clear: both;
+    margin: 0.55rem 0;
+}
+
+/* Modal image preview (full-size view) */
+.answer-image-preview-modal {
+    background-color: var(--content-background-color);
+}
+
+#answerImagePreviewImg {
+    max-width: 100%;
+    max-height: calc(90vh - 120px);
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
 /* Notification hover fixes - subtle hover keeps text readable */
 /* Text colors remain unchanged on hover for better readability */
 

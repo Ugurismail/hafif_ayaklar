@@ -73,12 +73,12 @@
                         {% if answer.answer_text|length > 1000 %}
                         <!-- Kısaltılmış Yanıt -->
                         <div class="answer-text" id="answer-summary-{{ answer.id }}">
-                            {{ answer.answer_text|truncate_math_safe:1000|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+                            {{ answer.answer_text|truncate_math_safe:1000|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }} ...
                         </div>
 
                         <!-- Tam Yanıt (başlangıçta gizli) -->
                         <div class="answer-text" id="answer-full-{{ answer.id }}" style="display: none;">
-                            {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                            {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
                         </div>
 
                         <!-- "Tümünü göster" / "Tamamını oku" linki -->
@@ -86,7 +86,7 @@
                     {% else %}
                         <!-- 500 karakterden kısaysa doğrudan gösteriyoruz -->
                         <div class="answer-text">
-                            {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                            {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
                         </div>
                     {% endif %}
                         <!-- Actions and User Info -->

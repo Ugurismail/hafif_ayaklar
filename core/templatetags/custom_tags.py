@@ -5,7 +5,8 @@ from django.utils.safestring import mark_safe
 from django.utils.html import escape
 from core.models import Question, PollVote, Definition,Reference
 from django.contrib.auth.models import User
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlparse, unquote
+from html import unescape as html_unescape
 
 
 
@@ -215,6 +216,91 @@ def mention_link(text):
 
     result = re.sub(pattern, replace, text)
     return mark_safe(result)
+
+@register.filter
+def collapsible_images(text):
+    """
+    Standalone markdown görüntülerini küçük açılır/kapanır blok olarak gösterir.
+    Kaynaklar gibi collapse davranışı sağlar ama daha kompakt kalır.
+    """
+    if not text:
+        return ""
+
+    def parse_attrs(raw_attrs):
+        attrs = {}
+        for key, value in re.findall(r'([a-zA-Z_:][a-zA-Z0-9_:\-]*)\s*=\s*"([^"]*)"', raw_attrs):
+            attrs[key.lower()] = html_unescape(value)
+        return attrs
+
+    def build_image_name(src_value, alt_value):
+        if alt_value and alt_value.strip():
+            return alt_value.strip()
+        parsed = urlparse(src_value or "")
+        filename = unquote(parsed.path.rsplit('/', 1)[-1]).strip()
+        return filename or "Gorsel"
+
+    def build_details_html(raw_attrs):
+        attrs = parse_attrs(raw_attrs)
+        src = (attrs.get('src') or '').strip()
+        if not src:
+            return None
+
+        alt = (attrs.get('alt') or '').strip()
+        image_name = build_image_name(src, alt)
+
+        safe_src = escape(src)
+        safe_name = escape(image_name)
+        safe_alt = escape(alt if alt else image_name)
+
+        return (
+            '<details class="answer-image-toggle">'
+            '<summary class="answer-image-summary">'
+            '<span class="answer-image-summary-main">'
+            '<span class="answer-image-summary-arrow" aria-hidden="true">&#9656;</span>'
+            '<span class="answer-image-summary-label">Gorsel</span>'
+            f'<span class="answer-image-summary-name">{safe_name}</span>'
+            '</span>'
+            f'<img class="answer-image-summary-thumb" src="{safe_src}" alt="{safe_alt}" loading="lazy" decoding="async">'
+            '</summary>'
+            '<div class="answer-image-content">'
+            f'<img class="answer-image-enlargeable" src="{safe_src}" alt="{safe_alt}" loading="lazy" decoding="async">'
+            '</div>'
+            '</details>'
+        )
+
+    paragraph_with_image_pattern = re.compile(
+        r'<p>\s*(.*?)\s*<img\s+([^>]*?)\s*/?>\s*(.*?)\s*</p>',
+        flags=re.IGNORECASE | re.DOTALL
+    )
+
+    def replace_paragraph(match):
+        before_html = (match.group(1) or '').strip()
+        attrs_raw = match.group(2)
+        after_html = (match.group(3) or '').strip()
+
+        details_html = build_details_html(attrs_raw)
+        if not details_html:
+            return match.group(0)
+
+        parts = []
+        if before_html:
+            parts.append(f'<p>{before_html}</p>')
+        parts.append(details_html)
+        if after_html:
+            parts.append(f'<p>{after_html}</p>')
+
+        return ''.join(parts)
+
+    # Bir paragrafta birden fazla görsel varsa hepsini dönüştürebilmek için
+    # aynı regex'i değişim bitene kadar tekrar çalıştırıyoruz.
+    transformed = text
+    while True:
+        updated = paragraph_with_image_pattern.sub(replace_paragraph, transformed)
+        if updated == transformed:
+            break
+        transformed = updated
+
+    return mark_safe(transformed)
 
 @register.filter
 def hashtag_link(text):
@@ -465,7 +551,17 @@ def spoiler_link(text):
         # HTML encode to prevent XSS
         from html import escape
         escaped_text = escape(hidden_text)
-        return f'<span class="spoiler-text" data-bs-toggle="tooltip" data-bs-html="true" title="{escaped_text}">*</span>'
+
+        # Bu filter'dan sonra bkz/reference/mention filtreleri çalıştığı için,
+        # tooltip içeriğindeki özel işaretleri entity'e çevirip ikinci parse'ı engelliyoruz.
+        escaped_text = (
+            escaped_text
+            .replace('(', '&#40;')
+            .replace(')', '&#41;')
+            .replace('@', '&#64;')
+        )
+
+        return f'<span class="spoiler-text" data-bs-toggle="tooltip" data-bs-html="false" title="{escaped_text}">*</span>'
 
     # Yeni kısa format: -g- text -g-
     pattern_new = r'-g-\s+(.*?)\s+-g-'

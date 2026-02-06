@@ -875,7 +875,22 @@
         <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Kapat"></button>
       </div>
     </div>
-  </div>
+ </div>
+
+ <!-- Answer Image Preview Modal -->
+ <div class="modal fade" id="answerImagePreviewModal" tabindex="-1" aria-labelledby="answerImagePreviewLabel" aria-hidden="true">
+   <div class="modal-dialog modal-dialog-centered modal-xl">
+     <div class="modal-content answer-image-preview-modal">
+       <div class="modal-header py-2">
+         <h5 class="modal-title" id="answerImagePreviewLabel">Gorsel Onizleme</h5>
+         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+       </div>
+       <div class="modal-body text-center">
+         <img id="answerImagePreviewImg" src="" alt="" loading="lazy" decoding="async">
+       </div>
+     </div>
+   </div>
+ </div>
 
   <!-- Global Toast & Confirm Functions -->
   <script>

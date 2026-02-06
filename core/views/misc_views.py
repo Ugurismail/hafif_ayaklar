@@ -24,17 +24,21 @@ Miscellaneous views
 """
 
 import json
+import os
 import random
 import re
 from collections import Counter
 from datetime import timedelta
 from io import BytesIO
+from itertools import chain
+from uuid import uuid4
 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.files.storage import default_storage
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count, Max, F
 from django.db.models.functions import Coalesce
@@ -44,17 +48,23 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.timezone import now
 from django.views.decorators.http import require_POST
+from PIL import Image, UnidentifiedImageError
 
 
 from ..models import (
     Question, Answer, Vote, SavedItem, StartingQuestion,
     Reference, UserProfile, QuestionRelationship, LibraryFile
 )
-from ..utils import paginate_queryset
+from ..utils import paginate_queryset, build_reference_usage_counts
 from ..forms import LibraryFileForm
 from ..services import VoteSaveService
 from ..querysets import get_today_questions_queryset
 from .answer_views import get_all_descendant_question_ids
+
+WORD_PATTERN = re.compile(r'\b\w+\b', re.UNICODE)
+ALLOWED_EDITOR_IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+ALLOWED_EDITOR_IMAGE_MIME_TYPES = {'image/jpeg', 'image/png', 'image/gif', 'image/webp'}
+MAX_EDITOR_IMAGE_SIZE = 5 * 1024 * 1024
 
 
 def get_today_questions_page(request, per_page=25):
@@ -138,6 +148,8 @@ def user_homepage(request):
 
 @login_required
 def site_statistics(request):
+    active_tab = request.GET.get('tab', 'word-analysis')  # Varsayılan olarak "Kelime Analizi" sekmesi
+
     # Kullanıcı sayısı (en az bir soru veya yanıt yazmış olanlar)
     user_count = User.objects.filter(
         Q(questions__isnull=False) | Q(answers__isnull=False)
@@ -181,18 +193,27 @@ def site_statistics(request):
         save_count=Count('saveditem')
     ).order_by('-save_count')[:5]
 
-    active_tab = request.GET.get('tab', 'word-analysis')  # Varsayılan olarak "Kelime Analizi" sekmesi
-
     # --- KELİME ANALİZİ ve KELİME ARAMA ---
-    question_texts = Question.objects.values_list('question_text', flat=True)
-    answer_texts = Answer.objects.values_list('answer_text', flat=True)
-    all_texts = list(question_texts) + list(answer_texts)
+    question_texts = list(Question.objects.values_list('question_text', flat=True))
+    answer_texts = list(Answer.objects.values_list('answer_text', flat=True))
 
-    # Küçük harfe çevir, birleştir (tüm kelimeleri görmek için)
-    all_words = []
-    for text in all_texts:
-        if text:
-            all_words.extend(re.findall(r'\b\w+\b', text.lower()))
+    all_texts = []
+    word_counts = Counter()
+    total_words = 0
+    total_characters = 0
+
+    # Metin istatistiklerini tek geçişte çıkar
+    for text in chain(question_texts, answer_texts):
+        all_texts.append(text)
+        if not text:
+            continue
+        total_characters += len(text)
+        words = WORD_PATTERN.findall(text.lower())
+        total_words += len(words)
+        word_counts.update(words)
+
+    # Kaynak kullanım sayılarını tek geçişte çıkar (N+1'i önler)
+    reference_usage_counts = build_reference_usage_counts(answer_texts=answer_texts, use_cache=False)
 
     # Hariç tutulan kelimeleri işle
     exclude_words_input = request.GET.get('exclude_words', '')
@@ -202,12 +223,10 @@ def site_statistics(request):
     else:
         exclude_words = set()
 
-    # Hariç tutulanları çıkar
-    filtered_words = [word for word in all_words if word not in exclude_words]
-
-    # En çok geçen kelimeler
-    word_counts = Counter(filtered_words)
-    top_words = word_counts.most_common(10)
+    filtered_word_counts = Counter(
+        {word: count for word, count in word_counts.items() if word not in exclude_words}
+    )
+    top_words = filtered_word_counts.most_common(10)
 
     # --- Anahtar kelime arama: tüm başlık ve yanıtlarda toplam kaç kere geçiyor? ---
     search_word = request.GET.get('search_word', '').strip().lower()
@@ -219,18 +238,27 @@ def site_statistics(request):
         else:
             # Tek tek başlık ve yanıtların hepsini say (her satırda birden fazla geçiş varsa onlar da dahil)
             search_word_pattern = re.compile(r'\b{}\b'.format(re.escape(search_word)), re.IGNORECASE)
+            exclude_pattern = None
+            if exclude_words:
+                exclude_pattern = re.compile(
+                    r'\b(?:' + '|'.join(re.escape(exw) for exw in sorted(exclude_words, key=len, reverse=True)) + r')\b',
+                    re.IGNORECASE,
+                )
             search_word_count = 0
             for text in all_texts:
-                # Hariç tutulan kelimelerden biri bu text'te geçiyorsa, burayı tamamen atla
-                if any(re.search(r'\b{}\b'.format(re.escape(exw)), text, re.IGNORECASE) for exw in exclude_words):
+                if not text:
                     continue
-                if text:
-                    search_word_count += len(search_word_pattern.findall(text))
+                # Hariç tutulan kelimelerden biri bu text'te geçiyorsa, burayı tamamen atla
+                if exclude_pattern and exclude_pattern.search(text):
+                    continue
+                search_word_count += len(search_word_pattern.findall(text))
 
     # --- En çok kullanılan kaynaklar ---
-
     all_references = list(Reference.objects.all())
-    all_references.sort(key=lambda ref: ref.get_usage_count(), reverse=True)
+    for ref in all_references:
+        ref.usage_count = reference_usage_counts.get(ref.id, 0)
+
+    all_references.sort(key=lambda ref: (ref.usage_count, ref.id), reverse=True)
     paginator_references = Paginator(all_references, 20)  # Sayfa başına 20 kaynak
     reference_page_number = request.GET.get('reference_page', 1)
     top_references = paginator_references.get_page(reference_page_number)
@@ -238,10 +266,6 @@ def site_statistics(request):
 
     # Toplam girdi sayısı (soru + yanıt)
     total_entries = len(all_texts)
-
-    # Toplam kelime ve karakter sayısı
-    total_words = sum(len(re.findall(r'\b\w+\b', text)) for text in all_texts if text)
-    total_characters = sum(len(text) for text in all_texts if text)
 
     # Ortalama girdi başına kelime ve karakter
     avg_words_per_entry = round(total_words / total_entries, 2) if total_entries else 0
@@ -310,6 +334,42 @@ def file_library(request):
         'form': form,
         'can_upload': can_upload,
         'query': query,
+    })
+
+
+@login_required
+@require_POST
+def upload_editor_image(request):
+    image_file = request.FILES.get('image')
+    if not image_file:
+        return JsonResponse({'error': 'Gorsel dosyasi bulunamadi.'}, status=400)
+
+    if image_file.size > MAX_EDITOR_IMAGE_SIZE:
+        return JsonResponse({'error': 'Dosya boyutu 5 MB sinirini asiyor.'}, status=400)
+
+    extension = os.path.splitext(image_file.name or '')[1].lower()
+    if extension not in ALLOWED_EDITOR_IMAGE_EXTENSIONS:
+        return JsonResponse({'error': 'Sadece PNG, JPG, GIF veya WEBP desteklenir.'}, status=400)
+
+    content_type = (getattr(image_file, 'content_type', '') or '').lower()
+    if content_type and content_type not in ALLOWED_EDITOR_IMAGE_MIME_TYPES:
+        return JsonResponse({'error': 'Desteklenmeyen dosya turu.'}, status=400)
+
+    try:
+        image_file.seek(0)
+        with Image.open(image_file) as img:
+            img.verify()
+        image_file.seek(0)
+    except (UnidentifiedImageError, OSError):
+        return JsonResponse({'error': 'Gecersiz gorsel dosyasi.'}, status=400)
+
+    subdir = now().strftime('editor_images/%Y/%m')
+    filename = f'{uuid4().hex}{extension}'
+    saved_path = default_storage.save(f'{subdir}/{filename}', image_file)
+
+    return JsonResponse({
+        'ok': True,
+        'file_url': default_storage.url(saved_path),
     })
 
 

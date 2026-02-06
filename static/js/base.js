@@ -439,3 +439,60 @@ document.addEventListener('DOMContentLoaded', function() {
         backdrop.addEventListener('click', closePanels);
     }
 });
+
+// Answer images: click to open larger preview modal
+document.addEventListener('DOMContentLoaded', function() {
+    var previewModalEl = document.getElementById('answerImagePreviewModal');
+    var previewImgEl = document.getElementById('answerImagePreviewImg');
+    var previewTitleEl = document.getElementById('answerImagePreviewLabel');
+
+    if (!previewModalEl || !previewImgEl) {
+        return;
+    }
+
+    var previewModal = new bootstrap.Modal(previewModalEl);
+
+    function openPreviewFromImage(imgEl) {
+        var src = imgEl.getAttribute('src');
+        if (!src) {
+            return;
+        }
+
+        var alt = (imgEl.getAttribute('alt') || '').trim();
+        previewImgEl.setAttribute('src', src);
+        previewImgEl.setAttribute('alt', alt || 'Gorsel');
+        if (previewTitleEl) {
+            previewTitleEl.textContent = alt || 'Gorsel Onizleme';
+        }
+
+        previewModal.show();
+    }
+
+    document.addEventListener('click', function(event) {
+        var imgEl = event.target.closest('img');
+        if (!imgEl) {
+            return;
+        }
+
+        // Summary thumbnail should only toggle details, not open modal
+        if (imgEl.classList.contains('answer-image-summary-thumb') || imgEl.closest('.answer-image-summary')) {
+            return;
+        }
+
+        // Only answer content images are previewable
+        if (!imgEl.closest('.answer-text')) {
+            return;
+        }
+
+        event.preventDefault();
+        openPreviewFromImage(imgEl);
+    });
+
+    previewModalEl.addEventListener('hidden.bs.modal', function() {
+        previewImgEl.setAttribute('src', '');
+        previewImgEl.setAttribute('alt', '');
+        if (previewTitleEl) {
+            previewTitleEl.textContent = 'Gorsel Onizleme';
+        }
+    });
+});

@@ -28,6 +28,7 @@ from django.views.decorators.http import require_POST
 
 from ..models import Question, Answer, Definition, Reference
 from ..forms import DefinitionForm, ReferenceForm
+from ..utils import build_reference_usage_counts
 
 
 @login_required
@@ -317,8 +318,9 @@ def get_references(request):
         ref_items = None
     elif reference_sort == 'usage':
         ref_items = list(references)
+        usage_counts = build_reference_usage_counts(reference_ids=[ref.id for ref in ref_items])
         for ref in ref_items:
-            ref.usage_count = ref.get_usage_count()
+            ref.usage_count = usage_counts.get(ref.id, 0)
         ref_items.sort(
             key=lambda r: (r.usage_count, r.id),
             reverse=(reference_order != 'asc'),
@@ -330,6 +332,12 @@ def get_references(request):
     paginator = Paginator(ref_items if ref_items is not None else references, page_size)
     page_obj = paginator.get_page(page)
 
+    page_usage_counts = {}
+    if ref_items is None:
+        page_reference_ids = [ref.id for ref in page_obj.object_list]
+        if page_reference_ids:
+            page_usage_counts = build_reference_usage_counts(reference_ids=page_reference_ids)
+
     data = []
     for ref in page_obj.object_list:
         data.append({
@@ -340,7 +348,7 @@ def get_references(request):
             'metin_ismi': ref.metin_ismi or '',
             'rest': ref.rest,
             'abbreviation': ref.abbreviation or '',
-            'usage_count': getattr(ref, 'usage_count', None) if hasattr(ref, 'usage_count') else ref.get_usage_count(),
+            'usage_count': getattr(ref, 'usage_count', page_usage_counts.get(ref.id, 0)),
             'display': str(ref),
         })
 

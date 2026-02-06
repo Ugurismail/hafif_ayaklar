@@ -31,12 +31,12 @@
                             <div>
                                 {% if item.object.answer_text|length > 500 %}
                                     <div class="answer-text">
-                                        {{ item.object.answer_text|truncate_math_safe:500|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+                                        {{ item.object.answer_text|truncate_math_safe:500|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }} ...
                                     </div>
                                     <a href="{% url 'single_answer' item.question.slug item.object.id %}" class="btn btn-sm btn-link" onclick="event.stopPropagation();">Devamını oku</a>
                                 {% else %}
                                     <div class="answer-text">
-                                        {{ item.object.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                                        {{ item.object.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
                                     </div>
                                 {% endif %}
                                 <div class="mt-2 text-muted small">

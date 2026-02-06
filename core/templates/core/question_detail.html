@@ -321,10 +321,10 @@
                   <div class="card-body">
                     {% if answer.answer_text|length > 1000 %}
 	                      <div class="answer-text" id="answer-summary-{{ answer.id }}">
-	                        {{ answer.answer_text|truncate_math_safe:1000|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+	                        {{ answer.answer_text|truncate_math_safe:1000|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }} ...
 	                      </div>
                       <div class="answer-text" id="answer-full-{{ answer.id }}" style="display: none;">
-                        {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                        {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
 
                         {# Kaynakça Bölümü #}
                         {% with bibliography=answer.answer_text|extract_bibliography %}
@@ -356,7 +356,7 @@
                       <a href="#" class="read-more" data-answer-id="{{ answer.id }}">Tümünü Göster</a>
                     {% else %}
                       <div class="answer-text">
-                        {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                        {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
 
                         {# Kaynakça Bölümü #}
                         {% with bibliography=answer.answer_text|extract_bibliography %}
@@ -509,6 +509,10 @@
                     <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-link-btn me-2"
                             title="Harici WEB Linki Ekleyin">
                       <i class="bi bi-link-45deg"></i> Link Ekle
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-image-btn me-2"
+                            title="Görsel Ekle">
+                      <i class="bi bi-image"></i> Görsel
                     </button>
                     <!-- (bkz:soru) -->
                     <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-reference-btn me-2"

@@ -1,6 +1,29 @@
 // answer_form.js
 
 document.addEventListener('DOMContentLoaded', function() {
+  function getCsrfToken() {
+    var metaToken = document.querySelector('meta[name="csrf-token"]');
+    if (metaToken && metaToken.content) {
+      return metaToken.content;
+    }
+
+    var csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    if (csrfInput && csrfInput.value) {
+      return csrfInput.value;
+    }
+
+    var cookieMatch = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    return cookieMatch ? decodeURIComponent(cookieMatch[1]) : '';
+  }
+
+  function notify(message, level) {
+    if (typeof showToast === 'function') {
+      showToast(message, level || 'info');
+      return;
+    }
+    alert(message);
+  }
+
   //==================================================================
   // A) METİN BİÇİMLENDİRME BUTONLARI (BOLD, ITALIC)
   //==================================================================
@@ -103,6 +126,130 @@ document.addEventListener('DOMContentLoaded', function() {
             textarea.focus({ preventScroll: true });
             linkModal.hide();
         }
+      });
+    }
+  }
+
+
+  //==================================================================
+  // B.1) GÖRSEL EKLEME (MODAL)
+  //==================================================================
+  var imageModalElem = document.getElementById('imageModal');
+  if (imageModalElem) {
+    var imageModal = new bootstrap.Modal(imageModalElem);
+    var imageForm = document.getElementById('image-form');
+    var imageFileInput = document.getElementById('image-file');
+    var imageAltInput = document.getElementById('image-alt');
+    var imageSubmitBtn = document.getElementById('image-submit-btn');
+    var insertImageButtons = document.querySelectorAll('.insert-image-btn');
+
+    insertImageButtons.forEach(function(button) {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (imageForm) imageForm.reset();
+        if (imageSubmitBtn) {
+          imageSubmitBtn.disabled = false;
+          imageSubmitBtn.textContent = 'Yukle ve Ekle';
+        }
+        imageModal.show();
+        if (imageFileInput) {
+          setTimeout(function() {
+            imageFileInput.focus();
+          }, 120);
+        }
+      });
+    });
+
+    if (imageForm) {
+      imageForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        var textarea = document.getElementById('id_answer_text') ||
+                      document.querySelector('textarea[name="answer_text"]');
+        if (!textarea) {
+          notify('Yanit alani bulunamadi.', 'error');
+          return;
+        }
+
+        var selectedFile = imageFileInput && imageFileInput.files ? imageFileInput.files[0] : null;
+        var altValue = imageAltInput ? imageAltInput.value.trim() : '';
+        var uploadUrl = imageForm.getAttribute('data-upload-url') || '/upload-editor-image/';
+
+        if (!selectedFile) {
+          notify('Lutfen yuklenecek gorseli secin.', 'warning');
+          return;
+        }
+
+        var formData = new FormData();
+        formData.append('image', selectedFile);
+
+        if (imageSubmitBtn) {
+          imageSubmitBtn.disabled = true;
+          imageSubmitBtn.textContent = 'Yukleniyor...';
+        }
+
+        var response;
+        try {
+          response = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCsrfToken(),
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+          });
+        } catch (err) {
+          if (imageSubmitBtn) {
+            imageSubmitBtn.disabled = false;
+            imageSubmitBtn.textContent = 'Yukle ve Ekle';
+          }
+          notify('Gorsel yuklenemedi. Baglantiyi kontrol edip tekrar deneyin.', 'error');
+          return;
+        }
+
+        var result = {};
+        try {
+          result = await response.json();
+        } catch (err) {
+          result = {};
+        }
+
+        if (!response.ok || !result.file_url) {
+          if (imageSubmitBtn) {
+            imageSubmitBtn.disabled = false;
+            imageSubmitBtn.textContent = 'Yukle ve Ekle';
+          }
+          notify(result.error || 'Gorsel yukleme basarisiz.', 'error');
+          return;
+        }
+
+        var normalizedUrl = new URL(result.file_url, window.location.origin).href;
+        var safeAlt = altValue.replace(/\]/g, '\\]');
+        var imageMarkdown = '![' + safeAlt + '](' + normalizedUrl + ')';
+        var imageBlock = imageMarkdown;
+
+        var start = textarea.selectionStart;
+        var end = textarea.selectionEnd;
+        var before = textarea.value.substring(0, start);
+        var after = textarea.value.substring(end);
+        var hasTextBefore = before.trim().length > 0;
+        var hasTextAfter = after.trim().length > 0;
+
+        if (hasTextBefore || hasTextAfter) {
+          imageBlock = (hasTextBefore ? '\n\n' : '') + imageMarkdown + (hasTextAfter ? '\n\n' : '');
+        }
+
+        textarea.value = before + imageBlock + after;
+        textarea.selectionStart = start + imageBlock.length;
+        textarea.selectionEnd = start + imageBlock.length;
+        textarea.focus({ preventScroll: true });
+
+        if (imageSubmitBtn) {
+          imageSubmitBtn.disabled = false;
+          imageSubmitBtn.textContent = 'Yukle ve Ekle';
+        }
+        imageModal.hide();
+        notify('Gorsel eklendi.', 'success');
       });
     }
   }

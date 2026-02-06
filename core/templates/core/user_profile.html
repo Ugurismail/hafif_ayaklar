@@ -116,15 +116,15 @@
         <div class="card-body">
           {% if pinned_entry.answer.answer_text|length > 500 %}
             <div id="answer-summary-{{ pinned_entry.answer.id }}" class="mb-2">
-              {{ pinned_entry.answer.answer_text|truncate_math_safe:500|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}...
+              {{ pinned_entry.answer.answer_text|truncate_math_safe:500|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}...
             </div>
             <div id="answer-full-{{ pinned_entry.answer.id }}" class="mb-2" style="display: none;">
-              {{ pinned_entry.answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+              {{ pinned_entry.answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
             </div>
             <a href="#" class="read-more" data-answer-id="{{ pinned_entry.answer.id }}">Tümünü Göster</a>
           {% else %}
             <div>
-              {{ pinned_entry.answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+              {{ pinned_entry.answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
             </div>
           {% endif %}
         </div>
@@ -289,14 +289,14 @@
                     <div class="mt-2 answer-text">
                       {% if answer.answer_text|length > 1000 %}
                         <div id="answer-summary-profile-{{ answer.id }}">
-                          {{ answer.answer_text|truncate_math_safe:1000|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+                          {{ answer.answer_text|truncate_math_safe:1000|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }} ...
                         </div>
                         <div id="answer-full-profile-{{ answer.id }}" style="display: none;">
-                          {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                          {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
                         </div>
                         <a href="#" class="read-more" data-answer-id="profile-{{ answer.id }}">Tümünü Göster</a>
                       {% else %}
-                        {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                        {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
                       {% endif %}
                     </div>
                   </div>
@@ -667,14 +667,14 @@
                       <div class="mt-2">
                         {% if saved.object.answer_text|length > 1000 %}
                           <div id="answer-summary-saved-{{ saved.object.id }}">
-                            {{ saved.object.answer_text|truncate_math_safe:1000|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }} ...
+                            {{ saved.object.answer_text|truncate_math_safe:1000|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }} ...
                           </div>
                           <div id="answer-full-saved-{{ saved.object.id }}" style="display: none;">
-                            {{ saved.object.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                            {{ saved.object.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
                           </div>
                           <a href="#" class="read-more" data-answer-id="saved-{{ saved.object.id }}">Tümünü Göster</a>
                         {% else %}
-                          {{ saved.object.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+                          {{ saved.object.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
                         {% endif %}
                       </div>
                       <div class="position-absolute top-0 end-0 me-2 mt-2">

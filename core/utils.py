@@ -2,9 +2,18 @@
 Utility functions for mention, hashtag processing and pagination
 """
 import re
+from collections import Counter
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Notification, Hashtag, HashtagUsage
+from .models import Notification, Hashtag, HashtagUsage, Answer
+
+REFERENCE_CITATION_PATTERN = re.compile(
+    r'\((?:kaynak|k)\s*:\s*(\d+)(?:(?:\s*,?\s*(?:sayfa|s)\s*:[^)]+))?\)',
+    re.IGNORECASE,
+)
+REFERENCE_USAGE_CACHE_KEY = 'reference_usage_counts_all'
+REFERENCE_USAGE_CACHE_TTL = 300
 
 
 def paginate_queryset(queryset, request, page_param='page', per_page=20):
@@ -169,3 +178,45 @@ def link_hashtags_in_text(text):
         return f'{prefix}<a href="/hashtag/{hashtag.lower()}/" class="hashtag-link">#{hashtag}</a>'
 
     return re.sub(pattern, replace_full, text)
+
+
+def build_reference_usage_counts(answer_texts=None, reference_ids=None, use_cache=True):
+    """
+    Build usage counts for references by scanning citation markers in answer texts.
+
+    Notes:
+    - If answer_texts is None, counts are calculated from all answers.
+    - Optional `reference_ids` limits the returned counter to those IDs.
+    - Uses cache for global counts to avoid re-scanning all answers on each request.
+    """
+    requested_ids = set(reference_ids) if reference_ids is not None else None
+
+    # Global mode: use/cache full counts from DB answers
+    if answer_texts is None:
+        cached_counts = cache.get(REFERENCE_USAGE_CACHE_KEY) if use_cache else None
+        if cached_counts is None:
+            counts = Counter()
+            for text in Answer.objects.values_list('answer_text', flat=True).iterator():
+                if not text:
+                    continue
+                for match in REFERENCE_CITATION_PATTERN.finditer(text):
+                    counts[int(match.group(1))] += 1
+            if use_cache:
+                cache.set(REFERENCE_USAGE_CACHE_KEY, dict(counts), REFERENCE_USAGE_CACHE_TTL)
+        else:
+            counts = Counter(cached_counts)
+
+        if requested_ids is None:
+            return counts
+        return Counter({rid: counts.get(rid, 0) for rid in requested_ids})
+
+    # Custom iterable mode: no global cache
+    counts = Counter()
+    for text in answer_texts:
+        if not text:
+            continue
+        for match in REFERENCE_CITATION_PATTERN.finditer(text):
+            ref_id = int(match.group(1))
+            if requested_ids is None or ref_id in requested_ids:
+                counts[ref_id] += 1
+    return counts
