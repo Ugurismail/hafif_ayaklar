@@ -156,10 +156,37 @@ document.addEventListener('DOMContentLoaded', function() {
     var imageAltInput = document.getElementById('image-alt');
     var imageSubmitBtn = document.getElementById('image-submit-btn');
     var insertImageButtons = document.querySelectorAll('.insert-image-btn');
+    var imageModalRestoreTarget = null;
+
+    imageModalElem.addEventListener('hide.bs.modal', function() {
+      var activeEl = document.activeElement;
+      if (activeEl && imageModalElem.contains(activeEl) && typeof activeEl.blur === 'function') {
+        activeEl.blur();
+      }
+    });
+
+    imageModalElem.addEventListener('hidden.bs.modal', function() {
+      var target = imageModalRestoreTarget ||
+        document.getElementById('id_answer_text') ||
+        document.querySelector('textarea[name="answer_text"]');
+
+      if (target && typeof target.focus === 'function') {
+        setTimeout(function() {
+          try {
+            target.focus({ preventScroll: true });
+          } catch (err) {
+            target.focus();
+          }
+        }, 0);
+      }
+
+      imageModalRestoreTarget = null;
+    });
 
     insertImageButtons.forEach(function(button) {
       button.addEventListener('click', function(e) {
         e.preventDefault();
+        imageModalRestoreTarget = button;
         if (imageForm) imageForm.reset();
         if (imageSubmitBtn) {
           imageSubmitBtn.disabled = false;
@@ -261,6 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         textarea.selectionStart = start + imageBlock.length;
         textarea.selectionEnd = start + imageBlock.length;
         textarea.focus({ preventScroll: true });
+        imageModalRestoreTarget = textarea;
 
         if (imageSubmitBtn) {
           imageSubmitBtn.disabled = false;
