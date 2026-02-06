@@ -71,6 +71,7 @@ urlpatterns = [
     path('files/search/', views.file_library_search, name='file_library_search'),
     path('files/list/', views.file_library_list, name='file_library_list'),
     path('files/<int:file_id>/delete/', views.file_library_delete, name='file_library_delete'),
+    path('upload-editor-image/', views.upload_editor_image, name='upload_editor_image'),
     path('statistics/', views.site_statistics, name='site_statistics'),
     path('map/', views.question_map, name='question_map'),
     path('map-data/', map_data_view, name='map_data'),

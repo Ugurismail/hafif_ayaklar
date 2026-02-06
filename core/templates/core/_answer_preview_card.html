@@ -21,7 +21,7 @@
     {% endif %}
 
     <div class="answer-text">
-      {{ preview_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link }}
+      {{ preview_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
     </div>
 
     {% with bibliography=preview_text|extract_bibliography %}

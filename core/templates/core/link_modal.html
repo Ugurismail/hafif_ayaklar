@@ -26,3 +26,31 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="image-form" data-upload-url="{% url 'upload_editor_image' %}" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title" id="imageModalLabel">Görsel Ekle</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="image-file" class="form-label">Bilgisayardan Görsel Seç:</label>
+            <input type="file" class="form-control" id="image-file" accept="image/png,image/jpeg,image/gif,image/webp" required>
+            <div class="form-text">PNG, JPG, GIF veya WEBP. Maksimum 5 MB.</div>
+          </div>
+          <div class="mb-3">
+            <label for="image-alt" class="form-label">Açıklama (opsiyonel):</label>
+            <input type="text" class="form-control" id="image-alt" placeholder="Görsel açıklaması">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-theme-primary" id="image-submit-btn">Yükle ve Ekle</button>
+          <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">İptal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
