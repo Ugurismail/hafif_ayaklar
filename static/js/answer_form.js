@@ -1,19 +1,33 @@
 // answer_form.js
 
 document.addEventListener('DOMContentLoaded', function() {
+  function isUsableCsrfToken(token) {
+    if (!token) return false;
+    var normalized = String(token).trim();
+    if (!normalized) return false;
+    return normalized !== 'NOTPROVIDED' &&
+           normalized !== 'undefined' &&
+           normalized !== 'null' &&
+           normalized !== 'csrf_token' &&
+           normalized !== 'csrftoken';
+  }
+
   function getCsrfToken() {
     var metaToken = document.querySelector('meta[name="csrf-token"]');
-    if (metaToken && metaToken.content) {
-      return metaToken.content;
+    var metaValue = metaToken && metaToken.content ? metaToken.content : '';
+    if (isUsableCsrfToken(metaValue)) {
+      return metaValue.trim();
     }
 
     var csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
-    if (csrfInput && csrfInput.value) {
-      return csrfInput.value;
+    var inputValue = csrfInput && csrfInput.value ? csrfInput.value : '';
+    if (isUsableCsrfToken(inputValue)) {
+      return inputValue.trim();
     }
 
     var cookieMatch = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
-    return cookieMatch ? decodeURIComponent(cookieMatch[1]) : '';
+    var cookieValue = cookieMatch ? decodeURIComponent(cookieMatch[1]) : '';
+    return isUsableCsrfToken(cookieValue) ? cookieValue.trim() : '';
   }
 
   function notify(message, level) {
@@ -182,6 +196,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var formData = new FormData();
         formData.append('image', selectedFile);
+        var csrfTokenValue = getCsrfToken();
+        if (csrfTokenValue) {
+          formData.append('csrfmiddlewaretoken', csrfTokenValue);
+        }
 
         if (imageSubmitBtn) {
           imageSubmitBtn.disabled = true;
@@ -193,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
           response = await fetch(uploadUrl, {
             method: 'POST',
             headers: {
-              'X-CSRFToken': getCsrfToken(),
+              'X-CSRFToken': csrfTokenValue,
               'X-Requested-With': 'XMLHttpRequest'
             },
             body: formData
