@@ -44,6 +44,7 @@ from ..models import (
     QuestionRelationship,
     Definition,
     HashtagUsage,
+    Notification,
 )
 from ..forms import AnswerForm, QuestionForm, StartingQuestionForm
 from ..querysets import get_today_questions_queryset
@@ -1116,8 +1117,10 @@ def admin_merge_question(request, slug):
             .filter(question=source)
             .order_by('created_at', 'id')
         )
+        moved_entry_count_by_user = defaultdict(int)
         for i, ans in enumerate(source_answers, start=1):
             shifted = base_time + timedelta(seconds=i)
+            moved_entry_count_by_user[ans.user_id] += 1
             ans.question = target
             ans.created_at = shifted
             ans.updated_at = shifted
@@ -1175,6 +1178,31 @@ def admin_merge_question(request, slug):
         SavedItem.objects.filter(content_type=content_type_question, object_id=source.id).delete()
         Vote.objects.filter(content_type=content_type_question, object_id=source.id).delete()
         QuestionFollow.objects.filter(question=source).delete()
+
+        # 6.1) Notify users whose entries were moved
+        notifications_to_create = []
+        for recipient_id, moved_count in moved_entry_count_by_user.items():
+            if moved_count == 1:
+                message = (
+                    f'"{source_title}" başlığındaki girdiniz '
+                    f'"{target_title}" başlığına taşınmıştır.'
+                )
+            else:
+                message = (
+                    f'"{source_title}" başlığındaki {moved_count} girdiniz '
+                    f'"{target_title}" başlığına taşınmıştır.'
+                )
+            notifications_to_create.append(
+                Notification(
+                    recipient_id=recipient_id,
+                    sender=request.user,
+                    notification_type='system',
+                    message=message,
+                    related_question=target,
+                )
+            )
+        if notifications_to_create:
+            Notification.objects.bulk_create(notifications_to_create)
 
         # 7) Finally delete the source question
         source.delete()

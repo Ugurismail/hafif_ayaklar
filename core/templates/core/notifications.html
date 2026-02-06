@@ -27,6 +27,7 @@
                                 <option value="question_update" {% if current_type == 'question_update' %}selected{% endif %}>Başlık Güncellemeleri</option>
                                 <option value="new_subquestion" {% if current_type == 'new_subquestion' %}selected{% endif %}>Yeni Alt Sorular</option>
                                 <option value="question_follow" {% if current_type == 'question_follow' %}selected{% endif %}>Başlığını Takip Edenler</option>
+                                <option value="system" {% if current_type == 'system' %}selected{% endif %}>Sistem</option>
                             </select>
                         </div>
                         <div class="col-md-4">
@@ -68,6 +69,8 @@
                                         <i class="bi bi-diagram-3 text-secondary"></i>
                                     {% elif notification.notification_type == 'question_follow' %}
                                         <i class="bi bi-bell text-info"></i>
+                                    {% elif notification.notification_type == 'system' %}
+                                        <i class="bi bi-info-circle text-info"></i>
                                     {% endif %}
                                 </span>
 
