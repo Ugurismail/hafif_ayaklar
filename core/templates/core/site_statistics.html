@@ -269,7 +269,7 @@
 
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="{% static 'js/answer_form.js' %}"></script>
+<script src="{% static 'js/answer_form.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>
 <script src="{% static 'js/vote_save.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
