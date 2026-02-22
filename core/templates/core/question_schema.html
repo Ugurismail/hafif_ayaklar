@@ -325,9 +325,17 @@
   .schema-tree {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 20px;
     min-width: max-content;
     padding-right: 34px;
+  }
+
+  .schema-tree > .schema-node:nth-child(2n) {
+    margin-left: 120px;
+  }
+
+  .schema-tree > .schema-node:nth-child(3n) {
+    margin-left: 46px;
   }
 
   .schema-node {
@@ -842,6 +850,11 @@
   }
 
   @media (max-width: 900px) {
+    .schema-tree > .schema-node:nth-child(2n),
+    .schema-tree > .schema-node:nth-child(3n) {
+      margin-left: 0;
+    }
+
     .schema-sidebar {
       width: 286px;
       padding: 14px 12px;

@@ -15,6 +15,52 @@ document.addEventListener('DOMContentLoaded', function () {
     const LABEL_BASE_SIZE = 12;
     var focusQuestionId = window.focusQuestionId || null;
 
+    function parseColorToRgb(color) {
+        if (!color) return null;
+        var normalized = String(color).trim().toLowerCase();
+        if (!normalized) return null;
+
+        if (normalized[0] === '#') {
+            var hex = normalized.slice(1);
+            if (hex.length === 3) {
+                hex = hex.split('').map(function (ch) { return ch + ch; }).join('');
+            }
+            if (!/^[0-9a-f]{6}$/.test(hex)) return null;
+            return {
+                r: parseInt(hex.slice(0, 2), 16),
+                g: parseInt(hex.slice(2, 4), 16),
+                b: parseInt(hex.slice(4, 6), 16)
+            };
+        }
+
+        var rgbMatch = normalized.match(/^rgba?\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})(?:\s*,\s*[\d.]+)?\s*\)$/);
+        if (rgbMatch) {
+            return {
+                r: Math.min(255, parseInt(rgbMatch[1], 10)),
+                g: Math.min(255, parseInt(rgbMatch[2], 10)),
+                b: Math.min(255, parseInt(rgbMatch[3], 10))
+            };
+        }
+
+        return null;
+    }
+
+    function isLightColor(color) {
+        var rgb = parseColorToRgb(color);
+        if (!rgb) return true;
+        var brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+        return brightness > 155;
+    }
+
+    function firstValidColor(candidates, fallback) {
+        for (var i = 0; i < candidates.length; i += 1) {
+            if (parseColorToRgb(candidates[i])) {
+                return candidates[i];
+            }
+        }
+        return fallback;
+    }
+
     setupButtons();
     setupUserSearch();
     setupQuestionSearch();
@@ -437,26 +483,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Get current theme colors from CSS variables
         const rootStyles = getComputedStyle(document.documentElement);
-        let backgroundColor = rootStyles.getPropertyValue('--content-background-color').trim() || '#fafafa';
+        let backgroundColor = rootStyles.getPropertyValue('--content-background-color').trim();
         const bgColor = rootStyles.getPropertyValue('--background-color').trim();
-
-        // Smart fallback: Eğer content-background beyazsa ama background-color koyuysa, background-color'ı kullan
-        // Bu, eski profil ayarlarıyla uyumluluk için
-        if (isLightColor(backgroundColor) && !isLightColor(bgColor)) {
-            backgroundColor = bgColor;
-        }
-
-        function isLightColor(color) {
-            // Hex rengi RGB'ye çevir ve parlaklığı hesapla
-            if (!color || color === '') return true;
-            const hex = color.replace('#', '');
-            const r = parseInt(hex.substr(0, 2), 16);
-            const g = parseInt(hex.substr(2, 2), 16);
-            const b = parseInt(hex.substr(4, 2), 16);
-            // Relative luminance formula
-            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-            return brightness > 155; // 155+ açık renk sayılır
-        }
+        backgroundColor = firstValidColor([backgroundColor, bgColor], '#f5f6f4');
 
         d3.select("#chart").selectAll("*").remove();
         svg = d3.select("#chart").append("svg")
@@ -476,16 +505,17 @@ document.addEventListener('DOMContentLoaded', function () {
         svg.call(zoom);
 
         // Çizgiler
+        const edgeColor = isLightColor(backgroundColor) ? '#6f757b' : '#a3acb5';
         link = g.append("g").attr("class", "links")
             .selectAll("line").data(linksData).enter().append("line")
-            .attr("stroke-width", 2).attr("stroke", "#999");
+            .attr("stroke-width", 2).attr("stroke", edgeColor);
 
         // Ortada oklar için paths
         arrows = g.append("g").attr("class", "mid-arrows")
             .selectAll("path")
             .data(linksData)
             .enter().append("path")
-            .attr("fill", "#999")
+            .attr("fill", edgeColor)
             .attr("stroke", "none");
 
         // Düğümler
@@ -502,13 +532,14 @@ document.addEventListener('DOMContentLoaded', function () {
             );
 
         // Başlık etiketleri - fallback ile
-        let textColor = rootStyles.getPropertyValue('--text-color').trim() || '#222';
-        // Eğer background koyu ama text açıksa, text color'ı kullan
-        if (!isLightColor(backgroundColor) && isLightColor(textColor)) {
-            // Koyu arka plan, açık metin - doğru kombinasyon, değiştirme
+        let textColor = rootStyles.getPropertyValue('--text-color').trim();
+        if (!parseColorToRgb(textColor)) {
+            textColor = isLightColor(backgroundColor) ? '#24312d' : '#e5ece9';
+        }
+        if (isLightColor(backgroundColor) && isLightColor(textColor)) {
+            textColor = '#24312d';
         } else if (!isLightColor(backgroundColor) && !isLightColor(textColor)) {
-            // Koyu arka plan, koyu metin - yanlış! Açık renge çevir
-            textColor = '#e5e5e5';
+            textColor = '#e5ece9';
         }
 
         label = g.append("g").attr("class", "labels")
@@ -558,30 +589,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Get theme colors with smart fallback
         const rootStyles = getComputedStyle(document.documentElement);
-        let cardBgColor = rootStyles.getPropertyValue('--content-background-color').trim() || '#fff';
-        let cardTextColor = rootStyles.getPropertyValue('--text-color').trim() || '#24264b';
-        const borderColor = rootStyles.getPropertyValue('--header-background-color').trim() || '#4682ea';
+        let cardBgColor = firstValidColor(
+            [
+                rootStyles.getPropertyValue('--content-background-color').trim(),
+                rootStyles.getPropertyValue('--background-color').trim()
+            ],
+            '#ffffff'
+        );
+        let cardTextColor = rootStyles.getPropertyValue('--text-color').trim();
+        let borderColor = rootStyles.getPropertyValue('--header-background-color').trim();
         const bgColor = rootStyles.getPropertyValue('--background-color').trim();
-
-        // Helper function
-        function isLightColor(color) {
-            if (!color || color === '') return true;
-            const hex = color.replace('#', '');
-            const r = parseInt(hex.substr(0, 2), 16);
-            const g = parseInt(hex.substr(2, 2), 16);
-            const b = parseInt(hex.substr(4, 2), 16);
-            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-            return brightness > 155;
-        }
 
         // Fallback: Eğer content-background beyazsa ama background-color koyuysa
         if (isLightColor(cardBgColor) && !isLightColor(bgColor)) {
             cardBgColor = bgColor;
         }
 
-        // Text color fallback: Koyu arka plan + koyu metin = yanlış!
+        if (!parseColorToRgb(cardTextColor)) {
+            cardTextColor = isLightColor(cardBgColor) ? '#24312d' : '#e5ece9';
+        }
         if (!isLightColor(cardBgColor) && !isLightColor(cardTextColor)) {
             cardTextColor = '#e5e5e5';
+        }
+        if (isLightColor(cardBgColor) && isLightColor(cardTextColor)) {
+            cardTextColor = '#24312d';
+        }
+
+        if (!parseColorToRgb(borderColor)) {
+            borderColor = isLightColor(cardBgColor) ? '#5b7f8b' : '#9cc3d1';
         }
 
         // Kutu ayarları
