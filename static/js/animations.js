@@ -316,9 +316,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                // Don't navigate if clicking on links or other interactive elements within the text
+                // Don't navigate when interacting with clickable/expandable UI inside answer text.
                 const clickedElement = e.target;
-                if (clickedElement.closest('a, button, .read-more, .bibliography-section')) {
+                if (clickedElement.closest(
+                    'a, button, input, textarea, select, label, [role="button"], [data-bs-toggle], ' +
+                    '.read-more, .bibliography-section, .answer-image-toggle, details, summary, img, ' +
+                    '.tanim-popover, .reference-tooltip'
+                )) {
                     return;
                 }
 

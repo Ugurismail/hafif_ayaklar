@@ -53,7 +53,7 @@ from PIL import Image, UnidentifiedImageError
 
 from ..models import (
     Question, Answer, Vote, SavedItem, StartingQuestion,
-    Reference, UserProfile, QuestionRelationship, LibraryFile
+    Reference, UserProfile, QuestionRelationship, LibraryFile, DailyVisitor
 )
 from ..utils import paginate_queryset, build_reference_usage_counts
 from ..forms import LibraryFileForm
@@ -150,6 +150,8 @@ def user_homepage(request):
 def site_statistics(request):
     active_tab = request.GET.get('tab', 'word-analysis')  # Varsayılan olarak "Kelime Analizi" sekmesi
 
+    today_unique_visitors = DailyVisitor.objects.filter(date=now().date()).count()
+
     # Kullanıcı sayısı (en az bir soru veya yanıt yazmış olanlar)
     user_count = User.objects.filter(
         Q(questions__isnull=False) | Q(answers__isnull=False)
@@ -236,22 +238,9 @@ def site_statistics(request):
         if search_word in exclude_words:
             search_word_count = 0
         else:
-            # Tek tek başlık ve yanıtların hepsini say (her satırda birden fazla geçiş varsa onlar da dahil)
-            search_word_pattern = re.compile(r'\b{}\b'.format(re.escape(search_word)), re.IGNORECASE)
-            exclude_pattern = None
-            if exclude_words:
-                exclude_pattern = re.compile(
-                    r'\b(?:' + '|'.join(re.escape(exw) for exw in sorted(exclude_words, key=len, reverse=True)) + r')\b',
-                    re.IGNORECASE,
-                )
-            search_word_count = 0
-            for text in all_texts:
-                if not text:
-                    continue
-                # Hariç tutulan kelimelerden biri bu text'te geçiyorsa, burayı tamamen atla
-                if exclude_pattern and exclude_pattern.search(text):
-                    continue
-                search_word_count += len(search_word_pattern.findall(text))
+            # Arama sonucunu kelime analizinde kullandığımız aynı token sayacından üret.
+            # Böylece "En Sık Geçen Kelimeler" listesi ile arama sonucu tutarlı kalır.
+            search_word_count = word_counts.get(search_word, 0)
 
     # --- En çok kullanılan kaynaklar ---
     all_references = list(Reference.objects.all())
@@ -279,6 +268,7 @@ def site_statistics(request):
 
     context = {
         'active_tab': active_tab,
+        'today_unique_visitors': today_unique_visitors,
         'user_count': user_count,
         'total_questions': total_questions,
         'total_answers': total_answers,

@@ -195,6 +195,12 @@
                             <span class="ms-1 d-lg-none">Harita</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'question_schema' %}" title="Adim Sema">
+                            <i class="bi bi-layout-sidebar-inset"></i>
+                            <span class="ms-1 d-lg-none">Sema</span>
+                        </a>
+                    </li>
                     <!-- Bildirimler -->
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="{% url 'notification_list' %}" title="Bildirimler">
@@ -559,7 +565,7 @@
     {% if user.is_authenticated %}
     <script src="{% static 'js/message_notifications.js' %}"></script>
     {% endif %}
-    <script src="{% static 'js/animations.js' %}"></script>
+    <script src="{% static 'js/animations.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>
     <script src="{% static 'js/dropdown_zindex.js' %}"></script>
     <script src="{% static 'js/homepage.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>
 	    <script src="{% static 'js/kenarda_preview.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>

@@ -73,6 +73,10 @@ def tanim_link(text):
     #  Grup 1 => kelime
     #  Grup 2 => id
     pattern = re.compile(r'\((?:tanim|t):([^:]+):(\d+)\)')
+    # Tanım içinde geçen kaynak notlarını popover'da göstermeyelim.
+    source_pattern = re.compile(
+        r'\((?:kaynak|k):\d+(?:(?:,\s*sayfa:[^)]+)|(?:\s*s:[^)]+))?\)'
+    )
 
     def replacer(match):
         question_word = match.group(1).strip()  # "Özgürlük"
@@ -82,7 +86,9 @@ def tanim_link(text):
         try:
             definition = Definition.objects.get(id=def_id_str)
             # Tanım metni
-            def_text   = definition.definition_text
+            def_text = definition.definition_text
+            clean_def_text = source_pattern.sub('', def_text)
+            clean_def_text = re.sub(r'\s{2,}', ' ', clean_def_text).strip()
             # (İstersen "definition.user.username" vs. de popover’a ekleyebilirsin.)
             user_name = definition.user.username
 
@@ -96,7 +102,7 @@ def tanim_link(text):
                           data-bs-placement="top" 
                           data-bs-trigger="hover focus"
                           data-bs-title="{escape(user_name)}"
-                          data-bs-content="{escape(def_text)}">
+                          data-bs-content="{escape(clean_def_text)}">
                           {escape(question_word)}
                        </span>'''
         except Definition.DoesNotExist:
@@ -163,7 +169,15 @@ def reference_link(text):
         html = f'<sup class="reference-tooltip" data-bs-toggle="tooltip" title="{escape(full_citation)}">[{ref_num}]</sup>'
         return html
 
-    new_text = pattern.sub(replace_reference, text)
+    # HTML etiketlerinin/attribute'larının içini değiştirmeyelim.
+    # Aksi halde data-bs-content gibi attribute'larda HTML kırılabilir.
+    chunks = re.split(r'(<[^>]+>)', text)
+    for i, chunk in enumerate(chunks):
+        if chunk.startswith('<') and chunk.endswith('>'):
+            continue
+        chunks[i] = pattern.sub(replace_reference, chunk)
+
+    new_text = ''.join(chunks)
     return mark_safe(new_text)
 
 @register.filter
@@ -291,15 +305,9 @@ def collapsible_images(text):
 
         return ''.join(parts)
 
-    # Bir paragrafta birden fazla görsel varsa hepsini dönüştürebilmek için
-    # aynı regex'i değişim bitene kadar tekrar çalıştırıyoruz.
-    transformed = text
-    while True:
-        updated = paragraph_with_image_pattern.sub(replace_paragraph, transformed)
-        if updated == transformed:
-            break
-        transformed = updated
-
+    # Tek geçiş uygula. Döngüsel tekrar, bazı içeriklerde üretilen HTML'i
+    # tekrar eşleştirip metni sonsuz büyütebiliyor.
+    transformed = paragraph_with_image_pattern.sub(replace_paragraph, text)
     return mark_safe(transformed)
 
 @register.filter

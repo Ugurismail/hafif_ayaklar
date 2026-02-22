@@ -98,6 +98,30 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username}'s profile"
 
+
+class DailyVisitor(models.Model):
+    """
+    Stores one anonymized visitor fingerprint per day.
+
+    Fingerprints are generated from anonymized IP + user-agent and hashed in middleware.
+    """
+
+    date = models.DateField(db_index=True)
+    visitor_hash = models.CharField(max_length=64)
+    first_seen_at = models.DateTimeField(auto_now_add=True)
+    last_seen_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("date", "visitor_hash")
+        ordering = ["-date", "-last_seen_at"]
+        indexes = [
+            models.Index(fields=["date", "visitor_hash"]),
+        ]
+
+    def __str__(self):
+        return f"{self.date} - {self.visitor_hash[:10]}"
+
+
 class Question(models.Model):
     question_text = models.CharField(max_length=255)
     slug = models.SlugField(max_length=300, unique=True, blank=True)  # SEO-friendly URL

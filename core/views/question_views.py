@@ -15,10 +15,11 @@ Question-related views
 """
 
 import json
-from collections import defaultdict
+from collections import defaultdict, deque
 from datetime import timedelta
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
@@ -607,6 +608,423 @@ def map_data_view(request):
 
     data = generate_question_nodes(queryset, user_filter=filter_user_ids)
     return JsonResponse(data, safe=False)
+
+
+def _build_answer_preview(raw_text, limit=320):
+    normalized = " ".join((raw_text or "").split())
+    if not normalized:
+        return "(Bos icerik)", False
+    if len(normalized) <= limit:
+        return normalized, False
+    return normalized[:limit].rstrip() + "...", True
+
+
+def _render_schema_answer_html(raw_text):
+    # Keep schema entry rendering aligned with normal answer rendering pipeline.
+    from ..templatetags.custom_tags import (
+        safe_markdownify,
+        spoiler_link,
+        bkz_link,
+        tanim_link,
+        reference_link,
+        ref_link,
+        mention_link,
+        collapsible_images,
+    )
+
+    text = raw_text or ""
+    rendered = safe_markdownify(text, "default")
+    rendered = spoiler_link(rendered)
+    rendered = bkz_link(rendered)
+    rendered = tanim_link(rendered)
+    rendered = reference_link(rendered)
+    rendered = ref_link(rendered)
+    rendered = mention_link(rendered)
+    rendered = collapsible_images(rendered)
+    return str(rendered)
+
+
+def _to_roman(number):
+    if number <= 0:
+        return str(number)
+    values = [
+        (1000, "M"), (900, "CM"), (500, "D"), (400, "CD"),
+        (100, "C"), (90, "XC"), (50, "L"), (40, "XL"),
+        (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I"),
+    ]
+    result = []
+    remaining = number
+    for value, symbol in values:
+        while remaining >= value:
+            result.append(symbol)
+            remaining -= value
+    return "".join(result)
+
+
+def _get_schema_users():
+    User = get_user_model()
+    relationship_user_ids = set(
+        QuestionRelationship.objects.values_list('user_id', flat=True).distinct()
+    )
+    starting_user_ids = set(
+        StartingQuestion.objects.values_list('user_id', flat=True).distinct()
+    )
+    schema_user_ids = sorted(relationship_user_ids | starting_user_ids)
+    if not schema_user_ids:
+        return []
+    return list(
+        User.objects.filter(id__in=schema_user_ids)
+        .order_by('username')
+        .values('id', 'username')
+    )
+
+
+def _resolve_schema_user_id(request, schema_users):
+    if not schema_users:
+        return None
+
+    allowed_ids = {row['id'] for row in schema_users}
+    requested_user_id = request.GET.get('user_id')
+    if requested_user_id:
+        try:
+            requested_user_id = int(requested_user_id)
+        except (TypeError, ValueError):
+            requested_user_id = None
+        if requested_user_id in allowed_ids:
+            return requested_user_id
+
+    if request.user.is_authenticated and request.user.id in allowed_ids:
+        return request.user.id
+
+    return schema_users[0]['id']
+
+
+def _get_user_schema_root_ids(user_id):
+    if not user_id:
+        return []
+
+    starting_ids = list(
+        StartingQuestion.objects.filter(user_id=user_id)
+        .order_by('question__question_text')
+        .values_list('question_id', flat=True)
+    )
+
+    relationships = QuestionRelationship.objects.filter(user_id=user_id).values_list('parent_id', 'child_id')
+    parent_ids = set()
+    child_ids = set()
+    for parent_id, child_id in relationships:
+        parent_ids.add(parent_id)
+        child_ids.add(child_id)
+
+    inferred_root_ids = sorted(parent_ids - child_ids)
+
+    seen = set()
+    root_ids = []
+    for question_id in starting_ids + inferred_root_ids:
+        if question_id in seen:
+            continue
+        seen.add(question_id)
+        root_ids.append(question_id)
+    return root_ids
+
+
+def _build_user_schema_graph(user_id):
+    root_ids = _get_user_schema_root_ids(user_id)
+    relationships = list(
+        QuestionRelationship.objects
+        .filter(user_id=user_id)
+        .values_list('parent_id', 'child_id')
+    )
+
+    children_by_parent = defaultdict(list)
+    all_ids = set(root_ids)
+    parent_ids = set()
+    child_ids = set()
+
+    for parent_id, child_id in relationships:
+        children_by_parent[parent_id].append(child_id)
+        all_ids.add(parent_id)
+        all_ids.add(child_id)
+        parent_ids.add(parent_id)
+        child_ids.add(child_id)
+
+    for parent_id, child_list in children_by_parent.items():
+        children_by_parent[parent_id] = sorted(set(child_list))
+
+    if not root_ids and all_ids:
+        inferred_roots = sorted(parent_ids - child_ids)
+        root_ids = inferred_roots if inferred_roots else sorted(all_ids)
+
+    depth_by_id = {}
+    parent_by_id = {}
+    queue = deque()
+
+    for root_id in root_ids:
+        if root_id in depth_by_id:
+            continue
+        depth_by_id[root_id] = 0
+        parent_by_id[root_id] = None
+        queue.append(root_id)
+
+        while queue:
+            current_id = queue.popleft()
+            for child_id in children_by_parent.get(current_id, []):
+                if child_id in depth_by_id:
+                    continue
+                depth_by_id[child_id] = depth_by_id[current_id] + 1
+                parent_by_id[child_id] = current_id
+                queue.append(child_id)
+
+    # If there are disconnected/cyclic nodes, keep them searchable as standalone.
+    for question_id in sorted(all_ids):
+        if question_id not in depth_by_id:
+            depth_by_id[question_id] = 0
+            parent_by_id[question_id] = None
+
+    return {
+        'root_ids': root_ids,
+        'all_ids': sorted(all_ids),
+        'children_by_parent': dict(children_by_parent),
+        'depth_by_id': depth_by_id,
+        'parent_by_id': parent_by_id,
+    }
+
+
+def _build_schema_path_ids(node_id, parent_by_id, max_hops=300):
+    path = []
+    current = node_id
+    seen = set()
+
+    while current is not None and current not in seen and len(path) < max_hops:
+        path.append(current)
+        seen.add(current)
+        current = parent_by_id.get(current)
+
+    path.reverse()
+    return path
+
+
+def question_schema(request):
+    schema_users = _get_schema_users()
+    selected_user_id = _resolve_schema_user_id(request, schema_users)
+    root_ids = _get_user_schema_root_ids(selected_user_id)
+
+    if not root_ids:
+        return render(request, 'core/question_schema.html', {
+            'root_nodes': [],
+            'schema_users': schema_users,
+            'selected_schema_user_id': selected_user_id,
+        })
+
+    child_count_rows = (
+        QuestionRelationship.objects
+        .filter(user_id=selected_user_id, parent_id__in=root_ids)
+        .values('parent_id')
+        .annotate(child_count=Count('child_id', distinct=True))
+    )
+    child_count_by_parent = {row['parent_id']: row['child_count'] for row in child_count_rows}
+
+    answer_count_rows = (
+        Answer.objects
+        .filter(question_id__in=root_ids, user_id=selected_user_id)
+        .values('question_id')
+        .annotate(answer_count=Count('id'))
+    )
+    answer_count_by_question = {row['question_id']: row['answer_count'] for row in answer_count_rows}
+
+    root_questions = Question.objects.filter(id__in=root_ids)
+    question_by_id = {q.id: q for q in root_questions}
+
+    root_nodes = []
+    for question_id in root_ids:
+        question = question_by_id.get(question_id)
+        if not question:
+            continue
+        root_nodes.append({
+            'id': question.id,
+            'text': question.question_text,
+            'slug': question.slug,
+            'detail_url': reverse('question_detail', args=[question.slug]),
+            'child_count': child_count_by_parent.get(question.id, 0),
+            'answer_count': answer_count_by_question.get(question.id, 0),
+        })
+
+    return render(request, 'core/question_schema.html', {
+        'root_nodes': root_nodes,
+        'schema_users': schema_users,
+        'selected_schema_user_id': selected_user_id,
+    })
+
+
+def question_schema_children(request, question_id):
+    schema_users = _get_schema_users()
+    selected_user_id = _resolve_schema_user_id(request, schema_users)
+    if not selected_user_id:
+        return JsonResponse({'children': []})
+
+    relationships = (
+        QuestionRelationship.objects
+        .filter(user_id=selected_user_id, parent_id=question_id)
+        .select_related('child')
+        .order_by('child__question_text')
+    )
+
+    child_ids = [rel.child_id for rel in relationships]
+    if not child_ids:
+        return JsonResponse({'children': []})
+
+    child_count_rows = (
+        QuestionRelationship.objects
+        .filter(user_id=selected_user_id, parent_id__in=child_ids)
+        .values('parent_id')
+        .annotate(child_count=Count('child_id', distinct=True))
+    )
+    child_count_by_parent = {row['parent_id']: row['child_count'] for row in child_count_rows}
+
+    answer_count_rows = (
+        Answer.objects
+        .filter(question_id__in=child_ids, user_id=selected_user_id)
+        .values('question_id')
+        .annotate(answer_count=Count('id'))
+    )
+    answer_count_by_question = {row['question_id']: row['answer_count'] for row in answer_count_rows}
+
+    children = []
+    for rel in relationships:
+        child = rel.child
+        children.append({
+            'id': child.id,
+            'text': child.question_text,
+            'slug': child.slug,
+            'detail_url': reverse('question_detail', args=[child.slug]),
+            'child_count': child_count_by_parent.get(child.id, 0),
+            'answer_count': answer_count_by_question.get(child.id, 0),
+        })
+
+    return JsonResponse({'children': children})
+
+
+def question_schema_content(request, question_id):
+    schema_users = _get_schema_users()
+    selected_user_id = _resolve_schema_user_id(request, schema_users)
+    if not selected_user_id:
+        return JsonResponse({'question': {}, 'total_answers': 0, 'shown_answers': 0, 'has_more': False, 'answers': []})
+
+    question = get_object_or_404(Question, id=question_id)
+    limit = request.GET.get('limit', '12')
+    try:
+        limit = int(limit)
+    except (TypeError, ValueError):
+        limit = 12
+    limit = max(1, min(limit, 25))
+
+    answers_qs = (
+        Answer.objects
+        .filter(question_id=question.id, user_id=selected_user_id)
+        .select_related('user')
+        .order_by('created_at')
+    )
+    total_answers = answers_qs.count()
+
+    answers = []
+    for index, answer in enumerate(answers_qs[:limit], start=1):
+        preview, is_truncated = _build_answer_preview(answer.answer_text, limit=340)
+        answers.append({
+            'id': answer.id,
+            'user': answer.user.username,
+            'created_at': timezone.localtime(answer.created_at).strftime('%Y-%m-%d %H:%M'),
+            'roman': _to_roman(index),
+            'rendered_html': _render_schema_answer_html(answer.answer_text),
+            'preview': preview,
+            'is_truncated': is_truncated,
+            'answer_url': reverse('single_answer', args=[question.slug, answer.id]),
+        })
+
+    return JsonResponse({
+        'question': {
+            'id': question.id,
+            'text': question.question_text,
+            'slug': question.slug,
+            'detail_url': reverse('question_detail', args=[question.slug]),
+        },
+        'total_answers': total_answers,
+        'shown_answers': len(answers),
+        'has_more': total_answers > len(answers),
+        'answers': answers,
+    })
+
+
+def question_schema_search(request):
+    schema_users = _get_schema_users()
+    selected_user_id = _resolve_schema_user_id(request, schema_users)
+    if not selected_user_id:
+        return JsonResponse({'results': []})
+
+    query = (request.GET.get('q') or '').strip()
+    if not query:
+        return JsonResponse({'results': []})
+
+    limit_raw = request.GET.get('limit', '10')
+    try:
+        limit = int(limit_raw)
+    except (TypeError, ValueError):
+        limit = 10
+    limit = max(1, min(limit, 30))
+
+    graph = _build_user_schema_graph(selected_user_id)
+    node_ids = graph['all_ids']
+    if not node_ids:
+        return JsonResponse({'results': []})
+
+    question_rows = list(
+        Question.objects
+        .filter(id__in=node_ids)
+        .values('id', 'question_text', 'slug')
+    )
+    question_by_id = {row['id']: row for row in question_rows}
+    root_set = set(graph['root_ids'])
+    normalized_query = query.casefold()
+
+    matches = []
+    for row in question_rows:
+        text = (row.get('question_text') or '').strip()
+        if not text:
+            continue
+        if normalized_query not in text.casefold():
+            continue
+
+        node_id = row['id']
+        depth = graph['depth_by_id'].get(node_id, 0)
+        path_ids = _build_schema_path_ids(node_id, graph['parent_by_id'])
+        path_titles = [
+            question_by_id[path_id]['question_text']
+            for path_id in path_ids
+            if path_id in question_by_id and question_by_id[path_id].get('question_text')
+        ]
+
+        if len(path_titles) > 4:
+            path_label = '... > ' + ' > '.join(path_titles[-4:])
+        else:
+            path_label = ' > '.join(path_titles)
+
+        matches.append({
+            'id': node_id,
+            'text': text,
+            'slug': row['slug'],
+            'detail_url': reverse('question_detail', args=[row['slug']]),
+            'kind': 'root' if node_id in root_set else 'child',
+            'depth': depth,
+            'path_ids': path_ids,
+            'path_label': path_label,
+        })
+
+    matches.sort(key=lambda item: (
+        0 if item['text'].casefold().startswith(normalized_query) else 1,
+        item['depth'],
+        item['text'].casefold(),
+    ))
+
+    return JsonResponse({'results': matches[:limit]})
 
 
 def generate_question_nodes(questions, user_filter=None):
