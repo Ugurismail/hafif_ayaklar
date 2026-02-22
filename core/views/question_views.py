@@ -473,7 +473,6 @@ def add_question_from_search(request):
     })
 
 
-@login_required
 def question_map(request):
     question_id = request.GET.get('question_id', None)
     # Başlangıç soruları
@@ -557,7 +556,6 @@ def question_map(request):
     })
 
 
-@login_required
 def map_data_view(request):
     user_ids = request.GET.getlist('user_id')
     filter_param = request.GET.get('filter')
@@ -581,7 +579,7 @@ def map_data_view(request):
     queryset = Question.objects.filter(id__in=question_ids)
 
     # Filtre uygula
-    if filter_param == 'me':
+    if filter_param == 'me' and request.user.is_authenticated:
         queryset = queryset.filter(users=request.user)
     elif user_ids:
         queryset = queryset.filter(users__id__in=user_ids).distinct()

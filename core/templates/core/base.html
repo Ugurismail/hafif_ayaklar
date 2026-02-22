@@ -334,6 +334,18 @@
                     
                     {% else %}
                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'question_map' %}" title="Harita">
+                            <i class="bi bi-diagram-3"></i>
+                            <span class="ms-1 d-lg-none">Harita</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'question_schema' %}" title="Adim Sema">
+                            <i class="bi bi-layout-sidebar-inset"></i>
+                            <span class="ms-1 d-lg-none">Sema</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">Giriş Yap</a>
                     </li>
                     <li class="nav-item">

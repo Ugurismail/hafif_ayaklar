@@ -165,9 +165,11 @@
     <!-- Quick Filters -->
     <div class="filter-section">
         <h5><i class="bi bi-funnel"></i> Hızlı Filtreler</h5>
+        {% if user.is_authenticated %}
         <button class="btn btn-theme-primary btn-filter" id="btn-me">
             <i class="bi bi-person-fill"></i> Sadece Benim Sorularım
         </button>
+        {% endif %}
         <button class="btn btn-outline-theme-primary btn-filter" id="btn-all">
             <i class="bi bi-grid-3x3"></i> Tüm Sorular
         </button>
