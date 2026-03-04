@@ -8,6 +8,7 @@ Kenarda (draft) views
 """
 
 import json
+import re
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -17,6 +18,22 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from ..models import Kenarda, Question, Answer
+
+UNICODE_ESCAPE_RE = re.compile(r'\\u([0-9a-fA-F]{4})')
+HEX_ESCAPE_RE = re.compile(r'\\x([0-9a-fA-F]{2})')
+
+
+def _decode_legacy_js_escapes(value: str) -> str:
+    """
+    Decode legacy JS escape sequences that may have been stored in old drafts
+    (e.g. "\\u0027" instead of apostrophe).
+    """
+    if not isinstance(value, str) or '\\' not in value:
+        return value
+
+    value = UNICODE_ESCAPE_RE.sub(lambda m: chr(int(m.group(1), 16)), value)
+    value = HEX_ESCAPE_RE.sub(lambda m: chr(int(m.group(1), 16)), value)
+    return value
 
 
 @login_required
@@ -30,7 +47,7 @@ def kenarda_save(request):
         question_id = data.get("question_id")
         answer_id = data.get("answer_id")  # Var olan yanıt düzenleme taslağı için
         content = (data.get("content") or "")
-        title = (data.get("title") or "").strip()  # Yeni başlıklar için başlık metni
+        title = _decode_legacy_js_escapes((data.get("title") or "").strip())  # Yeni başlıklar için başlık metni
         draft_source = data.get("draft_source")  # Taslağın kaynağı
 
         # Maksimum uzunluk kontrolü (50,000 karakter)
@@ -127,7 +144,7 @@ def kenarda_preview(request):
     question_id = data.get("question_id")
     answer_id = data.get("answer_id")
     content = (data.get("content") or "")
-    title = (data.get("title") or "").strip()
+    title = _decode_legacy_js_escapes((data.get("title") or "").strip())
 
     if len(content) > 50000:
         return JsonResponse({"status": "fail", "error": "İçerik çok uzun (max 50000 karakter)"}, status=400)
@@ -170,6 +187,14 @@ def kenarda_preview(request):
 @login_required
 def kenarda_list(request):
     taslaklar = Kenarda.objects.filter(user=request.user, is_sent=False).order_by('-updated_at')
+    for taslak in taslaklar:
+        if taslak.title:
+            decoded_title = _decode_legacy_js_escapes(taslak.title)
+            if decoded_title != taslak.title:
+                taslak.title = decoded_title
+                taslak.save(update_fields=["title", "updated_at"])
+            else:
+                taslak.title = decoded_title
     return render(request, 'core/kenarda_list.html', {'taslaklar': taslaklar})
 
 

@@ -104,6 +104,8 @@ let currentSearchOffset = 0;
 let hasMoreResults = false;
 let isLoadingMore = false;
 let searchTimeout = null; // Debounce için
+let activeSearchRequestToken = 0;
+let seenSearchKeys = new Set();
 
 document.addEventListener('DOMContentLoaded', function() {
     var searchInput = document.getElementById('search-input');
@@ -120,10 +122,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadSearchResults(isLoadMore = false) {
         const q = currentSearchQuery;
         const offset = isLoadMore ? currentSearchOffset : 0;
+        const requestToken = ++activeSearchRequestToken;
 
         if (!isLoadMore) {
             currentSearchOffset = 0;
             lastSearchResults = [];
+            seenSearchKeys.clear();
         }
 
         isLoadingMore = true;
@@ -135,10 +139,26 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
+            // Ignore stale responses from previous queries/requests.
+            if (requestToken !== activeSearchRequestToken) {
+                return;
+            }
+
             isLoadingMore = false;
 
             // Gelen sonuçları ekle
             data.suggestions.forEach(function(item) {
+                let itemKey = '';
+                if (item && item.type === 'question') {
+                    itemKey = 'question|' + String(item.label || '').trim().toLocaleLowerCase('tr-TR');
+                } else {
+                    itemKey = String(item.type || '') + '|' + String(item.url || item.label || '');
+                }
+                if (seenSearchKeys.has(itemKey)) {
+                    return;
+                }
+                seenSearchKeys.add(itemKey);
+
                 lastSearchResults.push(item);
 
                 var div = document.createElement('div');
@@ -216,6 +236,9 @@ document.addEventListener('DOMContentLoaded', function() {
             currentFocus = -1;
         })
         .catch(error => {
+            if (requestToken !== activeSearchRequestToken) {
+                return;
+            }
             console.error('Arama hatası:', error);
             isLoadingMore = false;
         });
@@ -244,6 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
             searchResults.style.display = 'none';
             lastSearchResults = [];
             currentSearchOffset = 0;
+            seenSearchKeys.clear();
         }
     });
 

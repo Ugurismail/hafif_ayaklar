@@ -61,9 +61,23 @@ class LastSeenMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        visitor_cookie_value = self._track_daily_unique_visitor(request)
         response = self.get_response(request)
         self._update_last_seen(request)
-        self._track_daily_unique_visitor(request, response)
+
+        if visitor_cookie_value:
+            try:
+                response.set_cookie(
+                    self.VISITOR_COOKIE_KEY,
+                    visitor_cookie_value,
+                    max_age=60 * 60 * 24 * 2,
+                    secure=getattr(settings, "SESSION_COOKIE_SECURE", False),
+                    httponly=True,
+                    samesite="Lax",
+                )
+            except Exception:
+                pass
+
         return response
 
     def _update_last_seen(self, request):
@@ -103,34 +117,24 @@ class LastSeenMiddleware:
         except Exception:
             pass
 
-    def _track_daily_unique_visitor(self, request, response):
+    def _track_daily_unique_visitor(self, request):
         if not self._should_track_unique_visitor(request):
-            return
+            return None
 
         today = timezone.localdate()
         today_marker = today.isoformat()
-
-        if request.COOKIES.get(self.VISITOR_COOKIE_KEY) == today_marker:
-            return
 
         visitor_hash = self._build_daily_visitor_hash(request, today)
         if visitor_hash:
             try:
                 DailyVisitor.objects.get_or_create(date=today, visitor_hash=visitor_hash)
             except DatabaseError:
-                return
+                return None
 
-        try:
-            response.set_cookie(
-                self.VISITOR_COOKIE_KEY,
-                today_marker,
-                max_age=60 * 60 * 24 * 2,
-                secure=getattr(settings, "SESSION_COOKIE_SECURE", False),
-                httponly=True,
-                samesite="Lax",
-            )
-        except Exception:
-            return
+        if request.COOKIES.get(self.VISITOR_COOKIE_KEY) == today_marker:
+            return None
+
+        return today_marker
 
     @staticmethod
     def _should_track_unique_visitor(request):

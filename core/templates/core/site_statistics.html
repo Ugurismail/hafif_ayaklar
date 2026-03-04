@@ -4,6 +4,20 @@
 {% load instance_of %}
 {% load markdownify %}
 
+{% block extra_css %}
+<style>
+    .visitor-filter-select {
+        color: #1f1f1f !important;
+        background-color: #f9f9f9 !important;
+    }
+
+    .visitor-filter-select option {
+        color: #1f1f1f;
+        background-color: #ffffff;
+    }
+</style>
+{% endblock extra_css %}
+
 {% block content %}
 <div class="container mt-5">
     <h1>Site İstatistikleri</h1>
@@ -15,6 +29,9 @@
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link {% if active_tab == 'general' %}active{% endif %}" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="{% if active_tab == 'general' %}true{% else %}false{% endif %}">Genel</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {% if active_tab == 'visitor-trend' %}active{% endif %}" id="visitor-trend-tab" data-bs-toggle="tab" href="#visitor-trend" role="tab" aria-controls="visitor-trend" aria-selected="{% if active_tab == 'visitor-trend' %}true{% else %}false{% endif %}">Ziyaretçi Trendi</a>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link {% if active_tab == 'users' %}active{% endif %}" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="{% if active_tab == 'users' %}true{% else %}false{% endif %}">Kullanıcılar</button>
@@ -132,6 +149,75 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Ziyaretçi Trendi Tab -->
+        <div class="tab-pane fade {% if active_tab == 'visitor-trend' %}show active{% endif %}" id="visitor-trend" role="tabpanel" aria-labelledby="visitor-trend-tab">
+            <h3 class="mt-3">Ziyaretçi Trendi</h3>
+            <form method="get" action="{% url 'site_statistics' %}" class="row g-3 align-items-end mb-3">
+                <input type="hidden" name="tab" value="visitor-trend">
+                <div class="col-md-4">
+                    <label for="visitorRange">Zaman Aralığı</label>
+                    <select id="visitorRange" name="visitor_range" class="form-select visitor-filter-select">
+                        <option value="7d" {% if selected_visitor_range|default:'30d' == '7d' %}selected{% endif %}>Son 7 Gün</option>
+                        <option value="30d" {% if selected_visitor_range|default:'30d' == '30d' %}selected{% endif %}>Son 30 Gün</option>
+                        <option value="90d" {% if selected_visitor_range|default:'30d' == '90d' %}selected{% endif %}>Son 90 Gün</option>
+                        <option value="365d" {% if selected_visitor_range|default:'30d' == '365d' %}selected{% endif %}>Son 365 Gün</option>
+                        <option value="all" {% if selected_visitor_range|default:'30d' == 'all' %}selected{% endif %}>Tüm Zamanlar</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="visitorGroup">Gösterim Tipi</label>
+                    <select id="visitorGroup" name="visitor_group" class="form-select visitor-filter-select">
+                        <option value="day" {% if selected_visitor_group|default:'day' == 'day' %}selected{% endif %}>Günlük</option>
+                        <option value="week" {% if selected_visitor_group|default:'day' == 'week' %}selected{% endif %}>Haftalık</option>
+                        <option value="month" {% if selected_visitor_group|default:'day' == 'month' %}selected{% endif %}>Aylık</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-theme-primary w-100">Grafiği Güncelle</button>
+                </div>
+            </form>
+
+            <div class="row mb-3">
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Toplam (Seçili Dönem)</h5>
+                            <p class="display-6 mb-0">{{ visitor_total_unique }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Tepe Değer</h5>
+                            <p class="display-6 mb-0">{{ visitor_peak_unique }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Veri Noktası</h5>
+                            <p class="display-6 mb-0">{{ visitor_data_points }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if visitor_data_points %}
+                <div class="card">
+                    <div class="card-body">
+                        <div style="height: 360px;">
+                            <canvas id="visitorTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info mb-0">Bu filtrelerde ziyaretçi verisi bulunamadı.</div>
+            {% endif %}
+            {{ visitor_chart_data|json_script:"visitorChartData" }}
         </div>
 
         <!-- Kullanıcılar Tab -->
@@ -278,27 +364,99 @@
 
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static 'js/answer_form.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>
 <script src="{% static 'js/vote_save.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Sekme seçim ve URL güncelleme
+    function getTabTarget(element) {
+        return element.getAttribute('data-bs-target') || element.getAttribute('href') || '';
+    }
+
     var params = new URLSearchParams(window.location.search);
     var initialTab = params.get('tab') || 'word-analysis';
-    var tabTriggerEl = document.querySelector('.nav-link[href="#' + initialTab + '"]');
+    var tabTriggerEl = null;
+    document.querySelectorAll('#statisticsTab .nav-link').forEach(function(link) {
+        if (getTabTarget(link) === '#' + initialTab) {
+            tabTriggerEl = link;
+        }
+    });
     if (tabTriggerEl) {
-        var tab = new bootstrap.Tab(tabTriggerEl);
+        var tab = bootstrap.Tab.getOrCreateInstance(tabTriggerEl);
         tab.show();
     }
+
     var tabLinks = document.querySelectorAll('#statisticsTab .nav-link');
     tabLinks.forEach(function(link) {
         link.addEventListener('shown.bs.tab', function(e) {
-            var href = e.target.getAttribute('href');
-            var newTab = href.replace('#', '');
-            var newUrl = window.location.pathname + '?tab=' + newTab;
-            history.pushState({}, '', newUrl);
+            var target = getTabTarget(e.target);
+            if (!target) return;
+            var newTab = target.replace('#', '');
+            var newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('tab', newTab);
+            history.pushState({}, '', newUrl.pathname + '?' + newUrl.searchParams.toString());
         });
     });
+
+    var visitorChartCanvas = document.getElementById('visitorTrendChart');
+    var visitorChartDataNode = document.getElementById('visitorChartData');
+    if (visitorChartCanvas && visitorChartDataNode && typeof Chart !== 'undefined') {
+        var visitorChartData = {};
+        try {
+            visitorChartData = JSON.parse(visitorChartDataNode.textContent || '{}');
+        } catch (error) {
+            visitorChartData = {};
+        }
+
+        var labels = visitorChartData.labels || [];
+        var values = visitorChartData.values || [];
+        if (labels.length && values.length) {
+            new Chart(visitorChartCanvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tekil ziyaretçi',
+                        data: values,
+                        borderColor: '#2f7f68',
+                        backgroundColor: 'rgba(47, 127, 104, 0.14)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        tension: 0.25,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            },
+                            title: {
+                                display: true,
+                                text: 'Ziyaretçi sayısı'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Dönem'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
 
     // Profil fotoğrafı önizleme
     var fileInput = document.getElementById('id_photo');

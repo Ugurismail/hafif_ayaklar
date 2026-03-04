@@ -15,6 +15,7 @@ Question-related views
 """
 
 import json
+import re
 from collections import defaultdict, deque
 from datetime import timedelta
 
@@ -52,6 +53,17 @@ from ..querysets import get_today_questions_queryset
 from ..utils import paginate_queryset
 from ..services import VoteSaveService
 from .user_views import get_user_color
+
+UNICODE_ESCAPE_RE = re.compile(r'\\u([0-9a-fA-F]{4})')
+HEX_ESCAPE_RE = re.compile(r'\\x([0-9a-fA-F]{2})')
+
+
+def _decode_legacy_js_escapes(value: str) -> str:
+    if not isinstance(value, str) or '\\' not in value:
+        return value
+    value = UNICODE_ESCAPE_RE.sub(lambda m: chr(int(m.group(1), 16)), value)
+    value = HEX_ESCAPE_RE.sub(lambda m: chr(int(m.group(1), 16)), value)
+    return value
 
 
 def question_detail(request, slug):
@@ -407,7 +419,7 @@ def delete_question_and_subquestions(question):
 @login_required
 def add_question_from_search(request):
     all_questions = get_today_questions_queryset()
-    query = request.GET.get('q', '').strip()
+    query = _decode_legacy_js_escapes(request.GET.get('q', '').strip())
 
     # Taslak yükleme (draft_id parametresi varsa)
     draft_content = None
@@ -418,7 +430,7 @@ def add_question_from_search(request):
             draft_content = taslak.content
             # Query yoksa, taslak başlığından al
             if not query and taslak.title:
-                query = taslak.title
+                query = _decode_legacy_js_escapes(taslak.title)
         except Kenarda.DoesNotExist:
             pass
 

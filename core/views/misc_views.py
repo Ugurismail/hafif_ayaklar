@@ -40,8 +40,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db import DatabaseError
 from django.db.models import Q, Count, Max, F
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, TruncWeek, TruncMonth
 from django.http import JsonResponse, HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
@@ -50,6 +51,7 @@ from django.utils.timezone import now
 from django.views.decorators.http import require_POST
 from PIL import Image, UnidentifiedImageError
 
+from ..middleware import LastSeenMiddleware
 
 from ..models import (
     Question, Answer, Vote, SavedItem, StartingQuestion,
@@ -148,9 +150,88 @@ def user_homepage(request):
 
 @login_required
 def site_statistics(request):
+    today = now().date()
     active_tab = request.GET.get('tab', 'word-analysis')  # Varsayılan olarak "Kelime Analizi" sekmesi
 
-    today_unique_visitors = DailyVisitor.objects.filter(date=now().date()).count()
+    # Defensive tracking: if middleware was not reloaded yet, ensure this page view is still counted.
+    if LastSeenMiddleware._should_track_unique_visitor(request):
+        visitor_hash = LastSeenMiddleware._build_daily_visitor_hash(request, today)
+        if visitor_hash:
+            try:
+                DailyVisitor.objects.get_or_create(date=today, visitor_hash=visitor_hash)
+            except DatabaseError:
+                pass
+
+    today_unique_visitors = DailyVisitor.objects.filter(date=today).count()
+
+    visitor_range_options = [
+        ('7d', 'Son 7 Gün'),
+        ('30d', 'Son 30 Gün'),
+        ('90d', 'Son 90 Gün'),
+        ('365d', 'Son 365 Gün'),
+        ('all', 'Tüm Zamanlar'),
+    ]
+    visitor_group_options = [
+        ('day', 'Günlük'),
+        ('week', 'Haftalık'),
+        ('month', 'Aylık'),
+    ]
+
+    visitor_range_days = {
+        '7d': 7,
+        '30d': 30,
+        '90d': 90,
+        '365d': 365,
+        'all': None,
+    }
+
+    selected_visitor_range = request.GET.get('visitor_range', '30d')
+    if selected_visitor_range not in visitor_range_days:
+        selected_visitor_range = '30d'
+
+    selected_visitor_group = request.GET.get('visitor_group', 'day')
+    if selected_visitor_group not in {'day', 'week', 'month'}:
+        selected_visitor_group = 'day'
+
+    visitor_qs = DailyVisitor.objects.all()
+    selected_days = visitor_range_days[selected_visitor_range]
+    if selected_days:
+        start_date = today - timedelta(days=selected_days - 1)
+        visitor_qs = visitor_qs.filter(date__gte=start_date)
+
+    visitor_labels = []
+    visitor_values = []
+    if selected_visitor_group == 'day':
+        visitor_rows = visitor_qs.values('date').annotate(unique_visitors=Count('visitor_hash')).order_by('date')
+        for row in visitor_rows:
+            visitor_labels.append(row['date'].strftime('%d.%m.%Y'))
+            visitor_values.append(row['unique_visitors'])
+    elif selected_visitor_group == 'week':
+        visitor_rows = visitor_qs.annotate(period=TruncWeek('date')).values('period').annotate(
+            unique_visitors=Count('visitor_hash')
+        ).order_by('period')
+        for row in visitor_rows:
+            period = row['period']
+            period_date = period.date() if hasattr(period, 'date') else period
+            iso = period_date.isocalendar()
+            visitor_labels.append(f"{iso.year}-W{iso.week:02d}")
+            visitor_values.append(row['unique_visitors'])
+    else:
+        visitor_rows = visitor_qs.annotate(period=TruncMonth('date')).values('period').annotate(
+            unique_visitors=Count('visitor_hash')
+        ).order_by('period')
+        for row in visitor_rows:
+            period = row['period']
+            period_date = period.date() if hasattr(period, 'date') else period
+            visitor_labels.append(period_date.strftime('%Y-%m'))
+            visitor_values.append(row['unique_visitors'])
+
+    visitor_chart_data = {
+        'labels': visitor_labels,
+        'values': visitor_values,
+    }
+    visitor_total_unique = sum(visitor_values)
+    visitor_peak_unique = max(visitor_values) if visitor_values else 0
 
     # Kullanıcı sayısı (en az bir soru veya yanıt yazmış olanlar)
     user_count = User.objects.filter(
@@ -269,6 +350,14 @@ def site_statistics(request):
     context = {
         'active_tab': active_tab,
         'today_unique_visitors': today_unique_visitors,
+        'visitor_range_options': visitor_range_options,
+        'visitor_group_options': visitor_group_options,
+        'selected_visitor_range': selected_visitor_range,
+        'selected_visitor_group': selected_visitor_group,
+        'visitor_chart_data': visitor_chart_data,
+        'visitor_total_unique': visitor_total_unique,
+        'visitor_peak_unique': visitor_peak_unique,
+        'visitor_data_points': len(visitor_values),
         'user_count': user_count,
         'total_questions': total_questions,
         'total_answers': total_answers,
@@ -517,19 +606,30 @@ def search_suggestions(request):
                     })
 
     # Soruları ara (sayfalama ile)
+    # Soru önerilerinde aynı başlık metnini bir kez göster.
+    # (Aynı metinden birden fazla kayıt varsa dropdown'da tekrar etmesin.)
     questions = Question.objects.filter(
         question_text__icontains=query
-    ).order_by('-created_at')[offset:offset + limit]
+    ).order_by('-created_at')[offset:offset + (limit * 3)]
 
+    seen_question_labels = set()
+    appended_question_count = 0
     for question in questions:
+        normalized_label = (question.question_text or '').strip().casefold()
+        if not normalized_label or normalized_label in seen_question_labels:
+            continue
+        seen_question_labels.add(normalized_label)
         suggestions.append({
             'type': 'question',
             'label': question.question_text,
             'url': reverse('question_detail', args=[question.slug])
         })
+        appended_question_count += 1
+        if appended_question_count >= limit:
+            break
 
     # Toplam soru sayısını hesapla
-    total_questions = Question.objects.filter(question_text__icontains=query).count()
+    total_questions = Question.objects.filter(question_text__icontains=query).values('question_text').distinct().count()
     has_more = (offset + limit) < total_questions
 
     return JsonResponse({
