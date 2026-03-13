@@ -15,9 +15,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const LABEL_BASE_SIZE = 12;
     var focusQuestionId = window.focusQuestionId || null;
 
-    function parseColorToRgb(color) {
-        if (!color) return null;
-        var normalized = String(color).trim().toLowerCase();
+    function parseRgbColor(value) {
+        var normalized = String(value || '').trim().toLowerCase();
         if (!normalized) return null;
 
         if (normalized[0] === '#') {
@@ -34,15 +33,36 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         var rgbMatch = normalized.match(/^rgba?\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})(?:\s*,\s*[\d.]+)?\s*\)$/);
-        if (rgbMatch) {
-            return {
-                r: Math.min(255, parseInt(rgbMatch[1], 10)),
-                g: Math.min(255, parseInt(rgbMatch[2], 10)),
-                b: Math.min(255, parseInt(rgbMatch[3], 10))
-            };
-        }
+        if (!rgbMatch) return null;
 
-        return null;
+        return {
+            r: Math.min(255, parseInt(rgbMatch[1], 10)),
+            g: Math.min(255, parseInt(rgbMatch[2], 10)),
+            b: Math.min(255, parseInt(rgbMatch[3], 10))
+        };
+    }
+
+    function resolveCssColor(color) {
+        if (!color) return null;
+        var probe = document.createElement('span');
+        probe.style.color = '';
+        probe.style.position = 'absolute';
+        probe.style.left = '-9999px';
+        probe.style.top = '-9999px';
+        probe.style.visibility = 'hidden';
+        probe.style.color = String(color).trim();
+        document.body.appendChild(probe);
+        var resolved = getComputedStyle(probe).color;
+        document.body.removeChild(probe);
+        return resolved || null;
+    }
+
+    function parseColorToRgb(color) {
+        if (!color) return null;
+        var direct = parseRgbColor(color);
+        if (direct) return direct;
+        var resolved = resolveCssColor(color);
+        return parseRgbColor(resolved);
     }
 
     function isLightColor(color) {
@@ -542,13 +562,23 @@ document.addEventListener('DOMContentLoaded', function () {
             textColor = '#e5ece9';
         }
 
+        const labelHaloColor = isLightColor(textColor)
+            ? 'rgba(9, 14, 12, 0.82)'
+            : 'rgba(247, 250, 248, 0.92)';
+
         label = g.append("g").attr("class", "labels")
             .selectAll("text").data(nodesData).enter().append("text")
             .attr("dy", -10)
             .attr("text-anchor", "middle")
             .text(d => d.label)
             .style("font-size", d => (LABEL_BASE_SIZE + Math.max(0, d.size - BASE_NODE_SIZE) * 0.5) + "px")
-            .style("fill", textColor);
+            .style("fill", textColor)
+            .style("font-weight", "600")
+            .style("paint-order", "stroke")
+            .style("stroke", labelHaloColor)
+            .style("stroke-width", "3px")
+            .style("stroke-linejoin", "round")
+            .style("pointer-events", "none");
 
         // Force simulation
         simulation = d3.forceSimulation(nodesData)

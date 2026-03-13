@@ -32,6 +32,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from ..models import (
     Question,
@@ -64,6 +65,18 @@ def _decode_legacy_js_escapes(value: str) -> str:
     value = UNICODE_ESCAPE_RE.sub(lambda m: chr(int(m.group(1), 16)), value)
     value = HEX_ESCAPE_RE.sub(lambda m: chr(int(m.group(1), 16)), value)
     return value
+
+
+def _redirect_back_with_writer_warning(request):
+    messages.warning(request, "Bu başlığı açmak için yazar olmalısınız.")
+    referer = request.META.get("HTTP_REFERER", "")
+    if referer and url_has_allowed_host_and_scheme(
+        referer,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return redirect(referer)
+    return redirect("user_homepage")
 
 
 def question_detail(request, slug):
@@ -416,10 +429,12 @@ def delete_question_and_subquestions(question):
     question.delete()
 
 
-@login_required
 def add_question_from_search(request):
     all_questions = get_today_questions_queryset()
     query = _decode_legacy_js_escapes(request.GET.get('q', '').strip())
+
+    if not request.user.is_authenticated:
+        return _redirect_back_with_writer_warning(request)
 
     # Taslak yükleme (draft_id parametresi varsa)
     draft_content = None
@@ -1154,6 +1169,8 @@ def bkz_view(request, query):
     if question:
         return redirect('question_detail', slug=question.slug)
     else:
+        if not request.user.is_authenticated:
+            return _redirect_back_with_writer_warning(request)
         # Soru bulunamazsa, add_question_from_search sayfasına yönlendirin
         from urllib.parse import urlencode
         return redirect(f'{reverse("add_question_from_search")}?{urlencode({"q": query})}')
