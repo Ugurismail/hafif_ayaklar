@@ -1,0 +1,393 @@
+{% extends 'core/base.html' %}
+{% load custom_tags %}
+{% load markdownify %}
+{% block title %}Yanıt Geçmişi | Hafif Ayaklar{% endblock %}
+
+{% block extra_css %}
+<style>
+  .answer-git-shell { max-width: 1460px; margin: 2rem auto; }
+  .answer-git-card { border-radius: 20px; border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent); background: color-mix(in srgb, var(--content-background-color) 92%, white 8%); box-shadow: 0 12px 32px color-mix(in srgb, var(--text-color) 8%, transparent); }
+  .answer-git-card + .answer-git-card { margin-top: 1rem; }
+  .answer-git-header { padding: 1.2rem 1.3rem; border-bottom: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent); }
+  .answer-git-body { padding: 1.2rem 1.3rem; }
+  .answer-git-meta { color: color-mix(in srgb, var(--text-color) 66%, transparent); font-size: 0.95rem; }
+  .answer-git-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .answer-git-preview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .answer-git-preview-card { border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent); border-radius: 16px; background: color-mix(in srgb, var(--content-background-color) 95%, white 5%); }
+  .answer-git-preview-head { padding: 0.8rem 0.95rem; border-bottom: 1px solid color-mix(in srgb, var(--header-background-color) 8%, transparent); font-weight: 600; }
+  .answer-git-preview-body { padding: 0.95rem; max-height: 320px; overflow: auto; }
+  .answer-history-map-shell { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 1.25rem; align-items: start; }
+  .answer-history-map-board { position: relative; overflow: auto; min-height: 620px; border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent); border-radius: 18px; background:
+      radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--text-color) 10%, transparent) 1px, transparent 0) 0 0 / 22px 22px,
+      color-mix(in srgb, var(--content-background-color) 97%, white 3%); }
+  .answer-history-map-canvas { position: relative; min-height: 100%; }
+  .answer-history-map-svg { position: absolute; inset: 0; pointer-events: none; }
+  .answer-history-map-svg path { fill: none; stroke-width: 3; opacity: 0.95; stroke-linejoin: round; stroke-linecap: round; }
+  .answer-history-map-svg path.is-focused { stroke-width: 4.5; opacity: 1; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--text-color) 18%, transparent)); }
+  .answer-history-map-svg path.kind-main { stroke: color-mix(in srgb, var(--text-color) 58%, transparent); }
+  .answer-history-map-svg path.kind-open { stroke: #cf9d24; stroke-dasharray: 8 5; }
+  .answer-history-map-svg path.kind-accepted,
+  .answer-history-map-svg path.kind-merge { stroke: #2b8a5a; }
+  .answer-history-map-svg path.kind-rejected { stroke: #b65454; }
+  .answer-history-map-svg path.kind-outdated { stroke: #8a6d3b; stroke-dasharray: 4 6; }
+  .answer-history-lane { position: absolute; top: 0; bottom: 0; width: 1px; border-left: 1px dashed color-mix(in srgb, var(--text-color) 18%, transparent); pointer-events: none; }
+  .answer-history-lane-label { position: absolute; top: 16px; transform: translateX(-50%); padding: 0.24rem 0.6rem; border-radius: 999px; background: color-mix(in srgb, var(--content-background-color) 94%, white 6%); border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent); font-size: 0.74rem; letter-spacing: 0.04em; text-transform: uppercase; color: color-mix(in srgb, var(--text-color) 75%, transparent); }
+  .answer-history-node { position: absolute; min-height: 86px; border-radius: 16px; padding: 0.85rem 0.95rem; border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent); background: color-mix(in srgb, var(--content-background-color) 92%, white 8%); box-shadow: 0 10px 24px color-mix(in srgb, var(--text-color) 10%, transparent); cursor: pointer; transition: transform 0.18s ease, box-shadow 0.18s ease; text-align: left; }
+  .answer-history-node:hover,
+  .answer-history-node.is-active { transform: translateY(-2px); box-shadow: 0 14px 28px color-mix(in srgb, var(--text-color) 16%, transparent); }
+  .answer-history-node.is-branch-focus { box-shadow: 0 18px 34px color-mix(in srgb, var(--button-background-color) 20%, transparent); }
+  .answer-history-node.revision.current { border-color: #2b8a5a; box-shadow: 0 14px 28px color-mix(in srgb, #2b8a5a 22%, transparent); }
+  .answer-history-node.revision { background: color-mix(in srgb, var(--content-background-color) 96%, white 4%); }
+  .answer-history-node.suggestion.open { border-color: #cf9d24; }
+  .answer-history-node.suggestion.accepted { border-color: #2b8a5a; }
+  .answer-history-node.suggestion.rejected { border-color: #b65454; opacity: 0.92; }
+  .answer-history-node.suggestion.outdated { border-color: #8a6d3b; }
+  .answer-history-node.suggestion { background: color-mix(in srgb, var(--button-background-color) 8%, white 92%); }
+  .answer-history-node-title { font-weight: 700; }
+  .answer-history-node-meta { font-size: 0.82rem; color: color-mix(in srgb, var(--text-color) 65%, transparent); margin-top: 0.25rem; line-height: 1.3; }
+  .answer-history-node-kind { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: color-mix(in srgb, var(--text-color) 75%, transparent); }
+  .answer-history-preview { border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent); border-radius: 18px; background: color-mix(in srgb, var(--content-background-color) 95%, white 5%); position: sticky; top: 1rem; height: fit-content; }
+  .answer-history-preview-head { padding: 1rem 1.1rem; border-bottom: 1px solid color-mix(in srgb, var(--header-background-color) 8%, transparent); }
+  .answer-history-preview-body { padding: 1rem 1.1rem; max-height: 460px; overflow: auto; }
+  .answer-history-map-controls { display: flex; justify-content: flex-end; gap: 0.6rem; margin-bottom: 0.8rem; }
+  .answer-history-map-controls .btn { min-width: 46px; }
+  .answer-git-diff { overflow-x: auto; }
+  .answer-git-diff table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .answer-git-diff td, .answer-git-diff th { padding: 0.4rem 0.5rem; border: 1px solid color-mix(in srgb, var(--header-background-color) 8%, transparent); vertical-align: top; }
+  .answer-git-diff-wrap { max-height: 420px; overflow: auto; }
+  .answer-git-diff .diff_add { background: color-mix(in srgb, #2b8a5a 16%, var(--content-background-color) 84%); color: color-mix(in srgb, #1f5c3d 82%, var(--text-color) 18%); }
+  .answer-git-diff .diff_sub { background: color-mix(in srgb, #b65454 16%, var(--content-background-color) 84%); color: color-mix(in srgb, #7c2d2d 82%, var(--text-color) 18%); }
+  .answer-git-diff .diff_chg { background: color-mix(in srgb, #cf9d24 16%, var(--content-background-color) 84%); color: color-mix(in srgb, #795b10 82%, var(--text-color) 18%); }
+  .answer-git-inline-diff-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+  .answer-git-inline-diff-card { border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent); border-radius: 16px; background: color-mix(in srgb, var(--content-background-color) 95%, white 5%); }
+  .answer-git-inline-diff-head { padding: 0.8rem 0.95rem; border-bottom: 1px solid color-mix(in srgb, var(--header-background-color) 8%, transparent); font-weight: 600; }
+  .answer-git-inline-diff-body { padding: 0.95rem; min-height: 180px; max-height: 320px; overflow: auto; white-space: pre-wrap; word-break: break-word; line-height: 1.75; }
+  .inline-diff-context { color: inherit; }
+  .inline-diff-added { background: color-mix(in srgb, #2b8a5a 18%, var(--content-background-color) 82%); color: color-mix(in srgb, #1f5c3d 84%, var(--text-color) 16%); border-radius: 0.35rem; padding: 0.08rem 0.12rem; box-shadow: inset 0 0 0 1px color-mix(in srgb, #2b8a5a 26%, transparent); }
+  .inline-diff-removed { background: color-mix(in srgb, #b65454 18%, var(--content-background-color) 82%); color: color-mix(in srgb, #7c2d2d 84%, var(--text-color) 16%); border-radius: 0.35rem; padding: 0.08rem 0.12rem; box-shadow: inset 0 0 0 1px color-mix(in srgb, #b65454 26%, transparent); }
+  .answer-git-badge { display: inline-flex; padding: 0.25rem 0.55rem; border-radius: 999px; background: color-mix(in srgb, var(--button-background-color) 10%, white 90%); font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; }
+  .answer-git-contributors a { text-decoration: none; }
+  @media (max-width: 768px) {
+    .answer-git-preview-grid { grid-template-columns: 1fr; }
+    .answer-git-inline-diff-grid { grid-template-columns: 1fr; }
+    .answer-history-map-shell { grid-template-columns: 1fr; }
+    .answer-history-preview { position: static; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container answer-git-shell">
+  <div class="answer-git-card">
+    <div class="answer-git-header">
+      <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+        <div>
+          <span class="answer-git-badge">Yanıt geçmişi</span>
+          <h1 class="h3 mt-3 mb-2">{{ question.question_text }}</h1>
+          <div class="answer-git-meta">
+            Yanıt sahibi:
+            <a href="{% url 'user_profile' answer.user.username %}" class="text-decoration-none">{{ answer.user.username }}</a>
+            · Güncel sürüm: r{{ current_revision.revision_no }}
+            · Toplam sürüm: {{ revisions|length }}
+            · Açık öneri: {{ answer.get_open_suggestion_count }}
+          </div>
+          <div class="answer-git-meta answer-git-contributors mt-2">
+            Katkı verenler:
+            {% for contributor in contributors %}
+              <a href="{% url 'user_profile' contributor.username %}">{{ contributor.username }}</a>{% if not forloop.last %}, {% endif %}
+            {% empty %}
+              sadece {{ answer.user.username }}
+            {% endfor %}
+          </div>
+          {% if current_approval_summary.pending_users %}
+            <div class="answer-git-meta mt-2">
+              Onayı beklenen katkıcılar:
+              {% for contributor in current_approval_summary.pending_users %}
+                <a href="{% url 'user_profile' contributor.username %}" class="text-decoration-none">{{ contributor.username }}</a>{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% if current_approval_summary.rejected_users %}
+            <div class="answer-git-meta mt-1">
+              Onaylamayan katkıcılar:
+              {% for contributor in current_approval_summary.rejected_users %}
+                <a href="{% url 'user_profile' contributor.username %}" class="text-decoration-none">{{ contributor.username }}</a>{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <div class="answer-git-actions">
+          <a href="{% url 'single_answer' question.slug answer.id %}" class="btn btn-outline-theme-secondary btn-sm">Yanıta dön</a>
+          {% if can_suggest %}
+            <a href="{% url 'answer_suggest_edit' answer.id %}" class="btn btn-theme-primary btn-sm">Düzeltme öner</a>
+          {% endif %}
+          {% if current_approval_summary.current_user_approval and current_approval_summary.current_user_approval.status == 'pending' %}
+            <form method="post" action="{% url 'answer_revision_approve' current_revision.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-theme-primary btn-sm">Yeni sürümü onayla</button>
+            </form>
+            <form method="post" action="{% url 'answer_revision_reject' current_revision.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-theme-secondary btn-sm">Onaylamıyorum</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="answer-git-card">
+    <div class="answer-git-header">
+      <h2 class="h5 mb-0">Açık ve kapanmış öneriler</h2>
+    </div>
+    <div class="answer-git-body">
+      {% for suggestion in suggestions %}
+        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap py-2 {% if not forloop.last %}border-bottom{% endif %}">
+          <div>
+            <div class="fw-semibold">
+              <a href="{% url 'answer_suggestion_detail' suggestion.id %}" class="text-decoration-none">Öneri #{{ suggestion.id }}</a>
+            </div>
+            <div class="answer-git-meta">
+              {{ suggestion.proposed_by.username }} · {{ suggestion.created_at|date:"d M Y H:i" }} · Durum: {{ suggestion.get_status_display }}
+              {% if suggestion.reviewed_by %} · İnceleyen: {{ suggestion.reviewed_by.username }}{% endif %}
+            </div>
+            {% if suggestion.change_summary %}
+              <div class="mt-1">{{ suggestion.change_summary }}</div>
+            {% endif %}
+          </div>
+          <a href="{% url 'answer_suggestion_detail' suggestion.id %}" class="btn btn-sm btn-outline-theme-secondary">Aç</a>
+        </div>
+      {% empty %}
+        <p class="mb-0">Henüz öneri yok.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="answer-git-card">
+    <div class="answer-git-header">
+      <h2 class="h5 mb-0">Sürüm ağacı</h2>
+    </div>
+    <div class="answer-git-body">
+      <div class="answer-history-map-controls">
+        <button type="button" class="btn btn-sm btn-outline-theme-secondary" data-history-zoom-out>-</button>
+        <button type="button" class="btn btn-sm btn-outline-theme-secondary" data-history-zoom-reset>100%</button>
+        <button type="button" class="btn btn-sm btn-outline-theme-secondary" data-history-zoom-in>+</button>
+      </div>
+      <div class="answer-history-map-shell">
+        <div class="answer-history-map-board">
+          <div class="answer-history-map-canvas" style="width: {{ history_graph.width }}px; height: {{ history_graph.height }}px;">
+            {% for lane in history_graph.lanes %}
+              <div class="answer-history-lane" style="left: {{ lane.x }}px;">
+                <span class="answer-history-lane-label">{{ lane.label }}</span>
+              </div>
+            {% endfor %}
+            <svg class="answer-history-map-svg" width="{{ history_graph.width }}" height="{{ history_graph.height }}" viewBox="0 0 {{ history_graph.width }} {{ history_graph.height }}" preserveAspectRatio="xMinYMin meet">
+              {% for edge in history_graph.edges %}
+                {% if edge.path %}
+                  <path d="{{ edge.path }}" class="kind-{{ edge.kind }}" data-edge-from="{{ edge.from_id }}" data-edge-to="{{ edge.to_id }}"></path>
+                {% endif %}
+              {% endfor %}
+            </svg>
+            {% for node in history_graph.nodes %}
+              <button
+                type="button"
+                class="answer-history-node {{ node.kind }} {{ node.status }}{% if node.status == 'current' %} is-active{% endif %}"
+                style="left: {{ node.x }}px; top: {{ node.y }}px; width: {{ node.width }}px; min-height: {{ node.height }}px;"
+                data-history-node
+                data-node-id="{{ node.id }}"
+                data-node-title="{{ node.title }}"
+                data-node-meta="{{ node.meta }}"
+                data-node-preview-target="history-node-preview-{{ node.id }}"
+              >
+                <div class="answer-history-node-kind">
+                  {% if node.kind == 'revision' %}
+                    <i class="bi bi-file-earmark-text"></i> sürüm
+                  {% else %}
+                    <i class="bi bi-git"></i> öneri
+                  {% endif %}
+                </div>
+                <div class="answer-history-node-title mt-1">{{ node.label }}</div>
+                <div class="answer-history-node-meta">{{ node.meta }}</div>
+              </button>
+              <template id="history-node-preview-{{ node.id }}">{{ node.preview_html|safe }}</template>
+            {% endfor %}
+          </div>
+        </div>
+        <aside class="answer-history-preview">
+          <div class="answer-history-preview-head">
+            <div class="fw-semibold" id="historyPreviewTitle">Sürüm r{{ current_revision.revision_no }}</div>
+            <div class="answer-git-meta mt-1" id="historyPreviewMeta">{{ current_revision.created_by.username }} · {{ current_revision.get_source_display }}</div>
+          </div>
+          <div class="answer-history-preview-body answer-text" id="historyPreviewBody">
+            {{ current_revision.content|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  {% for revision in revisions %}
+    <div class="answer-git-card">
+      <div class="answer-git-header">
+        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+          <div>
+            <h2 class="h5 mb-1">Sürüm r{{ revision.revision_no }}</h2>
+            <div class="answer-git-meta">
+              {{ revision.created_by.username }} · {{ revision.created_at|date:"d M Y H:i" }} · {{ revision.get_source_display }}
+              {% if revision.is_current %} · Güncel sürüm{% endif %}
+            </div>
+            <div class="answer-git-meta mt-2">
+              Onaylayanlar:
+              {% for contributor in revision.approval_summary.approved_users %}
+                <a href="{% url 'user_profile' contributor.username %}" class="text-decoration-none">{{ contributor.username }}</a>{% if not forloop.last %}, {% endif %}
+              {% empty %}
+                yok
+              {% endfor %}
+            </div>
+            {% if revision.approval_summary.pending_users %}
+              <div class="answer-git-meta mt-1">
+                Bekleyenler:
+                {% for contributor in revision.approval_summary.pending_users %}
+                  <a href="{% url 'user_profile' contributor.username %}" class="text-decoration-none">{{ contributor.username }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% if revision.approval_summary.rejected_users %}
+              <div class="answer-git-meta mt-1">
+                Onaylamayanlar:
+                {% for contributor in revision.approval_summary.rejected_users %}
+                  <a href="{% url 'user_profile' contributor.username %}" class="text-decoration-none">{{ contributor.username }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% if revision.change_summary %}
+              <div class="mt-2">{{ revision.change_summary }}</div>
+            {% endif %}
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            {% if revision.accepted_suggestion %}
+              <a href="{% url 'answer_suggestion_detail' revision.accepted_suggestion.id %}" class="btn btn-sm btn-outline-theme-secondary">İlgili öneri</a>
+            {% endif %}
+            {% if revision.current_user_can_review %}
+              <form method="post" action="{% url 'answer_revision_approve' revision.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-theme-primary btn-sm">Onayla</button>
+              </form>
+              <form method="post" action="{% url 'answer_revision_reject' revision.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-theme-secondary btn-sm">Onaylamıyorum</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="answer-git-body">
+        {% if revision.previous_revision %}
+          <div class="answer-git-inline-diff-grid">
+            <div class="answer-git-inline-diff-card">
+              <div class="answer-git-inline-diff-head">Önceki metin · değişen bölümler</div>
+              <div class="answer-git-inline-diff-body">{{ revision.inline_diff.before_html }}</div>
+            </div>
+            <div class="answer-git-inline-diff-card">
+              <div class="answer-git-inline-diff-head">Yeni metin · değişen bölümler</div>
+              <div class="answer-git-inline-diff-body">{{ revision.inline_diff.after_html }}</div>
+            </div>
+          </div>
+        {% endif %}
+        <div class="answer-git-preview-grid mb-3">
+          {% if revision.previous_revision %}
+            <div class="answer-git-preview-card">
+              <div class="answer-git-preview-head">Önceki sürüm · r{{ revision.previous_revision.revision_no }}</div>
+              <div class="answer-git-preview-body answer-text">{{ revision.previous_rendered_html|safe }}</div>
+            </div>
+          {% endif %}
+          <div class="answer-git-preview-card">
+            <div class="answer-git-preview-head">{% if revision.previous_revision %}Yeni sürüm{% else %}İlk sürüm{% endif %} · r{{ revision.revision_no }}</div>
+            <div class="answer-git-preview-body answer-text">{{ revision.rendered_html|safe }}</div>
+          </div>
+        </div>
+        <details>
+          <summary>Ham diff görünümü</summary>
+          <div class="answer-git-diff-wrap mt-3">
+            <div class="answer-git-diff">{{ revision.diff_html }}</div>
+          </div>
+        </details>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const previewTitle = document.getElementById('historyPreviewTitle');
+  const previewMeta = document.getElementById('historyPreviewMeta');
+  const previewBody = document.getElementById('historyPreviewBody');
+  const nodes = document.querySelectorAll('[data-history-node]');
+  const edges = document.querySelectorAll('[data-edge-from]');
+  const canvas = document.querySelector('.answer-history-map-canvas');
+  const board = document.querySelector('.answer-history-map-board');
+  const zoomIn = document.querySelector('[data-history-zoom-in]');
+  const zoomOut = document.querySelector('[data-history-zoom-out]');
+  const zoomReset = document.querySelector('[data-history-zoom-reset]');
+  let scale = 1;
+
+  const baseWidth = {{ history_graph.width }};
+  const baseHeight = {{ history_graph.height }};
+  const setScale = (nextScale) => {
+    if (!canvas) return;
+    scale = Math.max(0.75, Math.min(1.8, nextScale));
+    canvas.style.zoom = String(scale);
+    canvas.style.transform = '';
+    canvas.style.width = `${baseWidth}px`;
+    canvas.style.height = `${baseHeight}px`;
+    if (zoomReset) {
+      zoomReset.textContent = `${Math.round(scale * 100)}%`;
+    }
+  };
+
+  const focusBranch = (nodeId) => {
+    edges.forEach((edge) => {
+      const isFocused = edge.dataset.edgeFrom === nodeId || edge.dataset.edgeTo === nodeId;
+      edge.classList.toggle('is-focused', isFocused);
+    });
+    nodes.forEach((item) => {
+      const isLinked = Array.from(edges).some((edge) => edge.classList.contains('is-focused') && (edge.dataset.edgeFrom === item.dataset.nodeId || edge.dataset.edgeTo === item.dataset.nodeId));
+      item.classList.toggle('is-branch-focus', isLinked || item.dataset.nodeId === nodeId);
+    });
+  };
+
+  nodes.forEach((node) => {
+    const updatePreview = () => {
+      nodes.forEach((item) => item.classList.remove('is-active'));
+      node.classList.add('is-active');
+      focusBranch(node.dataset.nodeId);
+      previewTitle.textContent = node.dataset.nodeTitle || '';
+      previewMeta.textContent = node.dataset.nodeMeta || '';
+      const template = document.getElementById(node.dataset.nodePreviewTarget);
+      previewBody.innerHTML = template ? template.innerHTML : '';
+    };
+
+    node.addEventListener('mouseenter', updatePreview);
+    node.addEventListener('focus', updatePreview);
+    node.addEventListener('click', updatePreview);
+  });
+
+  if (zoomIn) {
+    zoomIn.addEventListener('click', () => setScale(scale + 0.1));
+  }
+  if (zoomOut) {
+    zoomOut.addEventListener('click', () => setScale(scale - 0.1));
+  }
+  if (zoomReset) {
+    zoomReset.addEventListener('click', () => setScale(1));
+  }
+  if (board) {
+    board.addEventListener('wheel', (event) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      setScale(scale + (event.deltaY < 0 ? 0.08 : -0.08));
+    }, { passive: false });
+  }
+  setScale(1);
+});
+</script>
+{% endblock %}

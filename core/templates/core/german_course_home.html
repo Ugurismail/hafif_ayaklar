@@ -1,0 +1,536 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Almanca Okulu | Hafif Ayaklar{% endblock %}
+
+{% block extra_css %}
+<style>
+  .german-shell {
+    padding: 2rem 0 3.5rem;
+  }
+
+  .german-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 30px;
+    padding: 2.1rem;
+    background:
+      radial-gradient(circle at top left, rgba(123, 183, 156, 0.22), transparent 34%),
+      radial-gradient(circle at top right, rgba(201, 164, 102, 0.20), transparent 36%),
+      linear-gradient(135deg, color-mix(in srgb, var(--content-background-color) 92%, white 8%), color-mix(in srgb, var(--background-color) 88%, white 12%));
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 22%, transparent);
+    box-shadow: 0 28px 60px color-mix(in srgb, var(--text-color) 12%, transparent);
+  }
+
+  .german-hero::after {
+    content: "";
+    position: absolute;
+    inset: auto -6% -40% auto;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(52, 113, 89, 0.16), transparent 70%);
+    pointer-events: none;
+  }
+
+  .german-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--button-background-color) 12%, white 88%);
+    color: color-mix(in srgb, var(--text-color) 85%, var(--button-background-color) 15%);
+    font-size: 0.92rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .german-hero h1 {
+    margin: 1rem 0 0.75rem;
+    font-size: clamp(2.4rem, 4vw, 4.4rem);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+  }
+
+  .german-hero p {
+    max-width: 780px;
+    font-size: 1.05rem;
+    color: color-mix(in srgb, var(--text-color) 72%, transparent);
+  }
+
+  .german-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .german-metric {
+    padding: 1rem 1.1rem;
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--content-background-color) 88%, white 12%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 16%, transparent);
+  }
+
+  .german-metric-label {
+    font-size: 0.84rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--text-color) 55%, transparent);
+  }
+
+  .german-metric-value {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 2rem;
+    line-height: 1;
+    font-weight: 700;
+  }
+
+  .german-section-title {
+    margin: 2.4rem 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .german-section-title h2 {
+    margin: 0;
+    font-size: clamp(1.5rem, 2vw, 2.2rem);
+    letter-spacing: -0.03em;
+  }
+
+  .german-section-title p {
+    margin: 0;
+    color: color-mix(in srgb, var(--text-color) 65%, transparent);
+  }
+
+  .german-level-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  .german-level-card {
+    position: relative;
+    overflow: hidden;
+    padding: 1.45rem;
+    border-radius: 24px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 16%, transparent);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--content-background-color) 95%, white 5%), color-mix(in srgb, var(--background-color) 92%, white 8%));
+    box-shadow: 0 18px 38px color-mix(in srgb, var(--text-color) 9%, transparent);
+  }
+
+  .german-level-card.active {
+    border-color: color-mix(in srgb, var(--button-background-color) 40%, transparent);
+  }
+
+  .german-level-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .german-level-badge {
+    display: inline-flex;
+    padding: 0.42rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: color-mix(in srgb, var(--button-background-color) 12%, white 88%);
+    color: color-mix(in srgb, var(--button-background-color) 70%, var(--text-color) 30%);
+  }
+
+  .german-level-badge.planned {
+    background: color-mix(in srgb, var(--header-background-color) 10%, white 90%);
+    color: color-mix(in srgb, var(--text-color) 66%, transparent);
+  }
+
+  .german-level-card h3 {
+    margin: 1rem 0 0.25rem;
+    font-size: 2rem;
+    letter-spacing: -0.05em;
+  }
+
+  .german-level-subtitle {
+    margin: 0;
+    color: color-mix(in srgb, var(--text-color) 64%, transparent);
+  }
+
+  .german-level-theme {
+    margin: 1rem 0 1.2rem;
+    min-height: 72px;
+    color: color-mix(in srgb, var(--text-color) 78%, transparent);
+  }
+
+  .german-level-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .german-level-meta {
+    display: flex;
+    gap: 1rem;
+    color: color-mix(in srgb, var(--text-color) 62%, transparent);
+    font-size: 0.94rem;
+  }
+
+  .german-level-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.72rem 1rem;
+    border-radius: 16px;
+    text-decoration: none;
+    color: var(--button-text-color);
+    background: var(--button-background-color);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  }
+
+  .german-level-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px color-mix(in srgb, var(--button-background-color) 32%, transparent);
+    color: var(--button-text-color);
+    background: var(--button-hover-background-color);
+  }
+
+  .german-level-locked {
+    color: color-mix(in srgb, var(--text-color) 56%, transparent);
+    font-size: 0.95rem;
+  }
+
+  .german-curriculum {
+    margin-top: 1.4rem;
+    padding: 1.3rem 1.4rem;
+    border-radius: 24px;
+    border: 1px dashed color-mix(in srgb, var(--header-background-color) 24%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 72%, white 28%);
+  }
+
+  .german-curriculum ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    columns: 2;
+    column-gap: 2rem;
+  }
+
+  .german-curriculum li {
+    margin-bottom: 0.65rem;
+  }
+
+  .german-scope-matrix {
+    margin-top: 1.4rem;
+    padding: 1.3rem 1.4rem;
+    border-radius: 24px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 16%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 82%, white 18%);
+  }
+
+  .german-scope-grid {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .german-scope-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 0.85rem;
+    align-items: start;
+    padding: 0.9rem 1rem;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--background-color) 84%, white 16%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
+  }
+
+  .german-scope-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--text-color) 56%, transparent);
+  }
+
+  .german-scope-value {
+    display: block;
+    margin-top: 0.18rem;
+  }
+
+  .german-scope-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.38rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: color-mix(in srgb, var(--button-background-color) 12%, white 88%);
+    color: color-mix(in srgb, var(--button-background-color) 68%, var(--text-color) 32%);
+  }
+
+  .german-assessment {
+    margin-top: 1.4rem;
+    padding: 1.4rem;
+    border-radius: 24px;
+    border: 1px solid color-mix(in srgb, var(--button-background-color) 18%, transparent);
+    background:
+      radial-gradient(circle at left top, rgba(117, 174, 149, 0.16), transparent 30%),
+      linear-gradient(135deg, color-mix(in srgb, var(--content-background-color) 88%, white 12%), color-mix(in srgb, var(--background-color) 86%, white 14%));
+  }
+
+  .german-assessment-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .german-assessment h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.6rem;
+    letter-spacing: -0.03em;
+  }
+
+  .german-assessment p {
+    margin: 0;
+    color: color-mix(in srgb, var(--text-color) 72%, transparent);
+  }
+
+  .german-assessment-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .german-assessment-stat {
+    padding: 0.95rem 1rem;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--content-background-color) 88%, white 12%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
+  }
+
+  .german-assessment-stat span {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--text-color) 58%, transparent);
+  }
+
+  .german-assessment-stat strong {
+    display: block;
+    margin-top: 0.22rem;
+    font-size: 1.2rem;
+  }
+
+  .german-assessment-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1rem;
+    padding: 0.78rem 1rem;
+    border-radius: 16px;
+    text-decoration: none;
+    color: var(--button-text-color);
+    background: var(--button-background-color);
+    transition: transform 0.18s ease, background 0.18s ease;
+  }
+
+  .german-assessment-action:hover {
+    color: var(--button-text-color);
+    background: var(--button-hover-background-color);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 991px) {
+    .german-metrics,
+    .german-level-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .german-curriculum ul {
+      columns: 1;
+    }
+
+    .german-scope-row {
+      grid-template-columns: 1fr;
+    }
+
+    .german-assessment-grid,
+    .german-assessment-meta {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .german-shell {
+      padding-top: 1.2rem;
+    }
+
+    .german-hero,
+    .german-level-card,
+    .german-curriculum {
+      border-radius: 22px;
+      padding: 1.25rem;
+    }
+
+    .german-level-footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid german-shell">
+  <section class="german-hero">
+    <span class="german-kicker"><i class="bi bi-translate"></i> Alman dili icin adim adim kurs</span>
+    <h1>Almanca okulunu sifirdan kuruyoruz.</h1>
+    <p>
+      Bu modul soru-cevap yapisindan ayri calisacak ama ayni sitede yasayacak.
+      A1'in ilk {{ a1_live_lessons }} dersi canli. Geri kalan seviye iskeleti hazir; dersleri kontrollu sekilde ekleyip
+      ogretmen akisiyla uyumlu bir kurs omurgasi kuruyoruz.
+    </p>
+
+    <div class="german-metrics">
+      <article class="german-metric">
+        <span class="german-metric-label">Planlanan seviye</span>
+        <strong class="german-metric-value">{{ course_totals.planned_levels }}</strong>
+      </article>
+      <article class="german-metric">
+        <span class="german-metric-label">Toplam ders iskeleti</span>
+        <strong class="german-metric-value">{{ course_totals.planned_lessons }}</strong>
+      </article>
+      <article class="german-metric">
+        <span class="german-metric-label">Su an acik ders</span>
+        <strong class="german-metric-value">{{ course_totals.live_lessons }}</strong>
+      </article>
+    </div>
+  </section>
+
+  <div class="german-section-title">
+    <div>
+      <h2>Seviye haritasi</h2>
+      <p>Baslangicta A1 canli, diger seviyeler sirali sekilde acilacak.</p>
+    </div>
+  </div>
+
+  <section class="german-level-grid">
+    {% for level in course_levels %}
+    <article class="german-level-card {% if level.status == 'active' %}active{% endif %}">
+      <div class="german-level-top">
+        <div>
+          <span class="german-level-badge {% if level.status != 'active' %}planned{% endif %}">
+            {% if level.status == 'active' %}su an acik{% else %}sirada{% endif %}
+          </span>
+          <h3>{{ level.title }}</h3>
+          <p class="german-level-subtitle">{{ level.subtitle }}</p>
+        </div>
+        <i class="bi bi-mortarboard-fill fs-3" aria-hidden="true"></i>
+      </div>
+
+      <p class="german-level-theme">{{ level.theme }}</p>
+
+      <div class="german-level-footer">
+        <div class="german-level-meta">
+          <span><strong>{{ level.lesson_count }}</strong> ders</span>
+          <span><strong>{{ level.available_lessons }}</strong> yayinlandi</span>
+        </div>
+
+        {% if level.next_open_lesson %}
+        <a class="german-level-action" href="{% url 'german_lesson_detail' level.slug level.next_open_lesson.slug %}">
+          <span>Derse gir</span>
+          <i class="bi bi-arrow-right-circle"></i>
+        </a>
+        {% else %}
+        <span class="german-level-locked">Bu seviye henuz hazir degil</span>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+
+  <section class="german-curriculum">
+    <div class="german-section-title">
+      <div>
+        <h2>Bu demo neyi kanitliyor?</h2>
+        <p>Tek bir ders degil, buyutulebilir bir kurs motoru kuruyoruz.</p>
+      </div>
+    </div>
+    <ul>
+      <li>Her ders icin anlatim, kelime ve test akisi ayri tutulabiliyor.</li>
+      <li>Bir kelimenin birden fazla Turkce anlami ayri ayri listelenebiliyor.</li>
+      <li>Artikel, anlam ve gramer testleri ayni sayfada birlikte calisiyor.</li>
+      <li>Dersler A1'den C2'ye kadar tek bir yol haritasi icinde organize ediliyor.</li>
+      <li>Bugun migration olmadan basliyoruz; ileride veritabani modeline gecis kolay olacak.</li>
+    </ul>
+  </section>
+
+  <section class="german-scope-matrix">
+    <div class="german-section-title">
+      <div>
+        <h2>A1 kapsam matrisi</h2>
+        <p>Ogretmen akisindaki temel konulari platform dersleriyle eslestiriyoruz.</p>
+      </div>
+    </div>
+
+    <div class="german-scope-grid">
+      {% for row in a1_scope_matrix %}
+      <article class="german-scope-row">
+        <div>
+          <span class="german-scope-label">Konu</span>
+          <strong class="german-scope-value">{{ row.topic }}</strong>
+        </div>
+        <div>
+          <span class="german-scope-label">Ogretmen akisi</span>
+          <span class="german-scope-value">{{ row.teacher_flow }}</span>
+        </div>
+        <div>
+          <span class="german-scope-label">Platform dersi</span>
+          <span class="german-scope-value">{{ row.platform_flow }}</span>
+        </div>
+        <div>
+          <span class="german-scope-status">
+            {% if row.status == 'covered' %}kapsandi{% else %}sirada{% endif %}
+          </span>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="german-assessment">
+    <div class="german-assessment-grid">
+      <div>
+        <span class="german-kicker"><i class="bi bi-clipboard-check"></i> A1 kapanis modulu</span>
+        <h3>A1 seviye bitirme testi hazir</h3>
+        <p>
+          Ders 1-10 bittiginde sabit bir test degil, soru bankasindan rastgele secilen yeni bir karisim cozeceksin.
+          Boylece ezber degil, gercek pekistirme olculuyor.
+        </p>
+        <a class="german-assessment-action" href="{% url 'german_level_test' 'a1' %}">
+          <span>Seviye testine git</span>
+          <i class="bi bi-arrow-right-circle"></i>
+        </a>
+      </div>
+      <div class="german-assessment-meta">
+        <article class="german-assessment-stat">
+          <span>Baslangic bankasi</span>
+          <strong>{{ a1_test_bank_size }} soru</strong>
+        </article>
+        <article class="german-assessment-stat">
+          <span>Oturum basina</span>
+          <strong>50 soru</strong>
+        </article>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

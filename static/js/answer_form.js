@@ -38,6 +38,122 @@ document.addEventListener('DOMContentLoaded', function() {
     alert(message);
   }
 
+  function dispatchAnswerTextChanged(textarea) {
+    if (!textarea) return;
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  window.hafifAyaklarAnswerTextChanged = dispatchAnswerTextChanged;
+
+  function reinitPreviewOverlays(root) {
+    if (!root || typeof bootstrap === 'undefined') return;
+
+    root.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el) {
+      var inst = bootstrap.Tooltip.getInstance(el);
+      if (inst) inst.dispose();
+      var wantsHtml = (el.getAttribute('data-bs-html') || '').toLowerCase() === 'true';
+      new bootstrap.Tooltip(el, {
+        container: 'body',
+        trigger: 'hover focus',
+        html: wantsHtml,
+        delay: { show: 500, hide: 100 }
+      });
+    });
+
+    root.querySelectorAll('[data-bs-toggle="popover"]').forEach(function(el) {
+      var inst = bootstrap.Popover.getInstance(el);
+      if (inst) inst.dispose();
+      new bootstrap.Popover(el, {
+        container: 'body',
+        html: true,
+        trigger: el.getAttribute('data-bs-trigger') || 'hover focus',
+      });
+    });
+  }
+
+  function preventPreviewNavigation(root) {
+    if (!root || root.dataset.previewNavBound === '1') return;
+    root.dataset.previewNavBound = '1';
+    root.addEventListener('click', function(e) {
+      var anchor = e.target && e.target.closest ? e.target.closest('a') : null;
+      if (!anchor) return;
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  }
+
+  function initAnswerLivePreview() {
+    var root = document.getElementById('answer-live-preview-root');
+    var textarea = document.getElementById('id_answer_text') || document.querySelector('textarea[name="answer_text"]');
+    if (!root || !textarea) return;
+
+    var previewEndpoint = '/answer/preview/';
+    var lastRenderedContent = null;
+    var debounceTimer = null;
+
+    preventPreviewNavigation(root);
+
+    function clearPreview() {
+      root.innerHTML = '';
+      root.style.display = 'none';
+      lastRenderedContent = '';
+    }
+
+    function renderPreviewNow() {
+      var content = textarea.value || '';
+      if (!content.trim()) {
+        clearPreview();
+        return;
+      }
+      if (content === lastRenderedContent) {
+        return;
+      }
+
+      fetch(previewEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({
+          content: content,
+          question_text: root.dataset.previewQuestionText || '',
+          question_slug: root.dataset.previewQuestionSlug || '',
+        }),
+      })
+        .then(function(response) { return response.json().then(function(data) { return { ok: response.ok, data: data }; }); })
+        .then(function(result) {
+          if (!result.ok || !result.data || result.data.status !== 'ok') {
+            return;
+          }
+          lastRenderedContent = content;
+          root.innerHTML = result.data.html || '';
+          root.style.display = root.innerHTML ? 'block' : 'none';
+          reinitPreviewOverlays(root);
+          if (typeof window.hafifAyaklarRenderMath === 'function') {
+            window.hafifAyaklarRenderMath(root);
+          }
+        })
+        .catch(function() {
+          // silent
+        });
+    }
+
+    function schedulePreview() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(renderPreviewNow, 320);
+    }
+
+    textarea.addEventListener('input', schedulePreview);
+    textarea.addEventListener('change', schedulePreview);
+
+    if ((textarea.value || '').trim()) {
+      schedulePreview();
+    }
+  }
+
+  initAnswerLivePreview();
+
   //==================================================================
   // A) METİN BİÇİMLENDİRME BUTONLARI (BOLD, ITALIC)
   //==================================================================
@@ -70,6 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
       textarea.selectionStart = start;
       textarea.selectionEnd   = start + formattedText.length;
       textarea.focus({ preventScroll: true });
+      dispatchAnswerTextChanged(textarea);
   }
 
   //==================================================================
@@ -103,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
           textarea.selectionStart = start;
           textarea.selectionEnd = start + spoilerText.length;
           textarea.focus({ preventScroll: true });
+          dispatchAnswerTextChanged(textarea);
       });
   });
 
@@ -138,6 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
             textarea.selectionStart = start;
             textarea.selectionEnd   = start + linkMarkdown.length;
             textarea.focus({ preventScroll: true });
+            dispatchAnswerTextChanged(textarea);
             linkModal.hide();
         }
       });
@@ -288,6 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
         textarea.selectionStart = start + imageBlock.length;
         textarea.selectionEnd = start + imageBlock.length;
         textarea.focus({ preventScroll: true });
+        dispatchAnswerTextChanged(textarea);
         imageModalRestoreTarget = textarea;
 
         if (imageSubmitBtn) {
@@ -484,6 +604,7 @@ var referenceModalElem = document.getElementById('referenceModal');
     textarea.selectionStart = start;
     textarea.selectionEnd = start + referenceText.length;
     textarea.focus({ preventScroll: true });
+    dispatchAnswerTextChanged(textarea);
   }
 
 
@@ -522,6 +643,7 @@ var referenceModalElem = document.getElementById('referenceModal');
     textarea.value = before + text + after;
     textarea.selectionStart = textarea.selectionEnd = start + text.length;
     textarea.focus({ preventScroll: true });
+    dispatchAnswerTextChanged(textarea);
   }
 
 
@@ -581,6 +703,7 @@ var referenceModalElem = document.getElementById('referenceModal');
         answerTextarea.value = before + definitionText + after;
         answerTextarea.selectionStart = answerTextarea.selectionEnd = insertPos + definitionText.length;
         answerTextarea.focus({ preventScroll: true });
+        dispatchAnswerTextChanged(answerTextarea);
 
         // Hidden input'a da ekle - backend'de Definition kaydı oluşturmak için
         var hiddenDefInput = document.getElementById('hiddenDefinitionText');
@@ -622,6 +745,7 @@ var referenceModalElem = document.getElementById('referenceModal');
            answerTextarea.value = before + definitionText + after;
            answerTextarea.selectionStart = answerTextarea.selectionEnd = insertPos + definitionText.length;
            answerTextarea.focus({ preventScroll: true });
+           dispatchAnswerTextChanged(answerTextarea);
 
            // Modal'ı kapat
            let modalInstance = bootstrap.Modal.getInstance(definitionModalElem);
@@ -794,6 +918,7 @@ var referenceModalElem = document.getElementById('referenceModal');
       answerTextarea.value = before + insertStr + after;
       answerTextarea.selectionStart = answerTextarea.selectionEnd = start + insertStr.length;
       answerTextarea.focus({ preventScroll: true });
+      dispatchAnswerTextChanged(answerTextarea);
 
       // Modal kapat
       let defModalInstance = bootstrap.Modal.getInstance(definitionModalElem);
@@ -957,6 +1082,7 @@ var referenceModalElem = document.getElementById('referenceModal');
       answerTextarea.value = before + insertStr + after;
       answerTextarea.selectionStart = answerTextarea.selectionEnd = start + insertStr.length;
       answerTextarea.focus({ preventScroll: true });
+      dispatchAnswerTextChanged(answerTextarea);
 
       let defModalInstance = bootstrap.Modal.getInstance(definitionModalElem);
       if (defModalInstance) {

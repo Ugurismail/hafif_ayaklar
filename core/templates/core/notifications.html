@@ -27,6 +27,9 @@
                                 <option value="question_update" {% if current_type == 'question_update' %}selected{% endif %}>Başlık Güncellemeleri</option>
                                 <option value="new_subquestion" {% if current_type == 'new_subquestion' %}selected{% endif %}>Yeni Alt Sorular</option>
                                 <option value="question_follow" {% if current_type == 'question_follow' %}selected{% endif %}>Başlığını Takip Edenler</option>
+                                <option value="answer_suggestion" {% if current_type == 'answer_suggestion' %}selected{% endif %}>Düzeltme Önerileri</option>
+                                <option value="suggestion_result" {% if current_type == 'suggestion_result' %}selected{% endif %}>Öneri Sonuçları</option>
+                                <option value="revision_review" {% if current_type == 'revision_review' %}selected{% endif %}>Katkı Onayları</option>
                                 <option value="system" {% if current_type == 'system' %}selected{% endif %}>Sistem</option>
                             </select>
                         </div>
@@ -69,6 +72,12 @@
                                         <i class="bi bi-diagram-3 text-secondary"></i>
                                     {% elif notification.notification_type == 'question_follow' %}
                                         <i class="bi bi-bell text-info"></i>
+                                    {% elif notification.notification_type == 'answer_suggestion' %}
+                                        <i class="bi bi-git text-theme-warning"></i>
+                                    {% elif notification.notification_type == 'suggestion_result' %}
+                                        <i class="bi bi-check2-square text-theme-success"></i>
+                                    {% elif notification.notification_type == 'revision_review' %}
+                                        <i class="bi bi-person-check text-theme-warning"></i>
                                     {% elif notification.notification_type == 'system' %}
                                         <i class="bi bi-info-circle text-info"></i>
                                     {% endif %}
@@ -98,7 +107,7 @@
                             <!-- Bağlantılar -->
                             <div class="ms-3">
                                 {% if notification.related_answer %}
-                                    <a href="{% url 'question_detail' notification.related_question.slug %}#answer-{{ notification.related_answer.id }}" class="btn btn-sm btn-outline-theme-primary">
+                                    <a href="{% if notification.notification_type == 'answer_suggestion' or notification.notification_type == 'suggestion_result' or notification.notification_type == 'revision_review' %}{% url 'answer_git_history' notification.related_answer.id %}{% else %}{% url 'question_detail' notification.related_question.slug %}#answer-{{ notification.related_answer.id }}{% endif %}" class="btn btn-sm btn-outline-theme-primary">
                                         <i class="bi bi-box-arrow-up-right"></i> Git
                                     </a>
                                 {% elif notification.related_question %}

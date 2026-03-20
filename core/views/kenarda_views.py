@@ -17,6 +17,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from ..answer_git import create_answer_revision
 from ..models import Kenarda, Question, Answer
 
 UNICODE_ESCAPE_RE = re.compile(r'\\u([0-9a-fA-F]{4})')
@@ -223,8 +224,13 @@ def kenarda_gonder(request, pk):
         if taslak.answer:
             # Var olan yanıtı güncelle
             answer = taslak.answer
-            answer.answer_text = taslak.content
-            answer.save()
+            create_answer_revision(
+                answer,
+                content=taslak.content,
+                created_by=request.user,
+                source='author_edit',
+                change_summary='Kenarda taslağından düzenleme',
+            )
         else:
             # Yeni yanıt oluştur
             answer = Answer.objects.create(

@@ -168,6 +168,56 @@
                 <div class="card-body">
                     <div class="answer-text" id="answerTextContent">{{ focused_answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}</div>
 
+                    <div class="mt-3 p-3 rounded border">
+                      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                        <div>
+                          <div class="small text-muted">
+                            Sürüm: r{{ focused_current_revision.revision_no }} · Toplam sürüm: {{ focused_answer.revision_count }} · Açık öneri: {{ focused_answer.open_suggestion_count }}
+                          </div>
+                          {% if focused_contributors %}
+                          <div class="small text-muted mt-1">
+                            Katkı verenler:
+                            {% for contributor in focused_contributors %}
+                              <a href="{% url 'user_profile' contributor.username %}" class="text-decoration-none">{{ contributor.username }}</a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                          </div>
+                          {% endif %}
+                          {% if focused_pending_contributors %}
+                          <div class="small text-muted mt-1">
+                            Onayı beklenen katkıcılar:
+                            {% for contributor in focused_pending_contributors %}
+                              <a href="{% url 'user_profile' contributor.username %}" class="text-decoration-none">{{ contributor.username }}</a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                          </div>
+                          {% endif %}
+                          {% if focused_rejected_contributors %}
+                          <div class="small text-muted mt-1">
+                            Onaylamayan katkıcılar:
+                            {% for contributor in focused_rejected_contributors %}
+                              <a href="{% url 'user_profile' contributor.username %}" class="text-decoration-none">{{ contributor.username }}</a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                          </div>
+                          {% endif %}
+                        </div>
+                        <div class="d-flex gap-2">
+                          <a href="{% url 'answer_git_history' focused_answer.id %}" class="btn btn-sm btn-outline-theme-secondary">Geçmiş</a>
+                          {% if request.user.is_authenticated and request.user != focused_answer.user %}
+                            <a href="{% url 'answer_suggest_edit' focused_answer.id %}" class="btn btn-sm btn-theme-primary">Düzeltme Öner</a>
+                          {% endif %}
+                        </div>
+                      </div>
+                      {% if focused_open_suggestions %}
+                      <div class="mt-2 small text-muted">
+                        Son öneriler:
+                        {% for suggestion in focused_open_suggestions %}
+                          <a href="{% url 'answer_suggestion_detail' suggestion.id %}" class="text-decoration-none">{{ suggestion.proposed_by.username }}</a>{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                      </div>
+                      {% endif %}
+                    </div>
+
+                    {% include 'core/_answer_revision_meta.html' with answer=focused_answer %}
+
                     {# Kaynakça Bölümü #}
                     {% with bibliography=focused_answer.answer_text|extract_bibliography %}
                       {% if bibliography %}
@@ -239,6 +289,18 @@
                                     &#8226;&#8226;&#8226;
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu{{ focused_answer.id }}">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'answer_git_history' focused_answer.id %}">
+                                            <i class="bi bi-clock-history"></i> Sürüm Geçmişi
+                                        </a>
+                                    </li>
+                                    {% if request.user.is_authenticated and request.user != focused_answer.user %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'answer_suggest_edit' focused_answer.id %}">
+                                            <i class="bi bi-git"></i> Düzeltme Öner
+                                        </a>
+                                    </li>
+                                    {% endif %}
                                     <li>
                                         <button class="dropdown-item copy-link-btn" data-url="{% url 'single_answer' question.slug focused_answer.id %}">
                                             <i class="bi bi-link-45deg"></i> Linki Kopyala
@@ -349,6 +411,7 @@
                                             {% endif %}
                                         {% endif %}
                                     </small>
+                                    {% include 'core/_answer_revision_meta.html' with answer=answer %}
 
                                     <div class="dropdown d-inline">
                                         <a href="#" class="text-decoration-none dropdown-toggle-dots" id="dropdownMenu{{ answer.id }}" data-bs-toggle="dropdown" aria-expanded="false"
@@ -357,13 +420,25 @@
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu{{ answer.id }}">
                                             <li>
-                                                <button class="dropdown-item copy-link-btn" data-url="{% url 'single_answer' question.slug answer.id %}">
-                                                    <i class="bi bi-link-45deg"></i> Linki Kopyala
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item share-link" href="#" data-answer-id="{{ answer.id }}"><i class="bi bi-share"></i> Paylaş</a>
-                                            </li>
+                                        <button class="dropdown-item copy-link-btn" data-url="{% url 'single_answer' question.slug answer.id %}">
+                                            <i class="bi bi-link-45deg"></i> Linki Kopyala
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'answer_git_history' answer.id %}">
+                                            <i class="bi bi-clock-history"></i> Sürüm Geçmişi
+                                        </a>
+                                    </li>
+                                    {% if request.user.is_authenticated and request.user != answer.user %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'answer_suggest_edit' answer.id %}">
+                                            <i class="bi bi-git"></i> Düzeltme Öner
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                    <li>
+                                        <a class="dropdown-item share-link" href="#" data-answer-id="{{ answer.id }}"><i class="bi bi-share"></i> Paylaş</a>
+                                    </li>
                                             <li>
                                                 <form action="{% url 'pin_entry' answer_id=answer.id %}" method="post">
                                                     {% csrf_token %}
@@ -433,6 +508,13 @@
 	                            </button>
 	                        </div>
 	                        {{ form.answer_text }}
+                          <div
+                            id="answer-live-preview-root"
+                            class="mt-3"
+                            style="display:none;"
+                            data-preview-question-text="{{ question.question_text }}"
+                            data-preview-question-slug="{{ question.slug }}"
+                          ></div>
 	                        <button type="submit" class="btn btn-theme-primary mt-2">Yanıtla</button>
 	                        <button type="button" class="btn btn-theme-secondary mt-2 ms-2" id="sabaha-birak-btn">Kenarda Dursun</button>
 	                        <span id="sabahabirak-feedback" style="display:none;" class="text-theme-success ms-2">Taslak kaydedildi!</span>

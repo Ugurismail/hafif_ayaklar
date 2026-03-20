@@ -1,0 +1,222 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Düzeltme Öner | Hafif Ayaklar{% endblock %}
+
+{% block extra_css %}
+<style>
+  .suggestion-shell {
+    max-width: 1280px;
+    margin: 2rem auto 3rem;
+  }
+  .suggestion-current-card .answer-text,
+  .suggestion-editor-card .answer-text {
+    font-size: 1.04rem;
+    line-height: 1.72;
+  }
+  .suggestion-current-card .answer-text {
+    max-height: 360px;
+    overflow: auto;
+    padding-right: 0.5rem;
+  }
+  .suggestion-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+  .suggestion-toolbar .btn {
+    min-height: 44px;
+  }
+  .suggestion-editor-card textarea[name="answer_text"] {
+    min-height: 360px;
+    font-size: 1.08rem;
+    line-height: 1.65;
+    padding: 1rem 1.1rem;
+  }
+  .suggestion-meta-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    color: var(--text-color);
+    opacity: 0.72;
+    font-size: 0.96rem;
+  }
+  .suggestion-summary-input {
+    font-size: 1.02rem;
+    min-height: 56px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="suggestion-shell px-3">
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <span class="badge rounded-pill text-bg-light">Düzeltme önerisi</span>
+      <h1 class="h3 mt-3 mb-2">{{ question.question_text }}</h1>
+      <p class="text-muted mb-0">
+        Bu öneri, yanıtın güncel sürümü r{{ base_revision.revision_no }} üstüne açılacak.
+        Kabul edilirse yeni bir sürüm oluşur; mevcut metin doğrudan ezilmez.
+      </p>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4 suggestion-current-card">
+    <div class="card-header bg-transparent py-3">
+      <div class="d-flex flex-column gap-2">
+        <strong>Güncel sürüm</strong>
+        <div class="suggestion-meta-line">
+          <span>r{{ base_revision.revision_no }}</span>
+          <span>{{ answer.user.username }}</span>
+          <span>{{ base_revision.created_at|date:"d M Y H:i" }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="answer-text">{{ base_rendered_html|safe }}</div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 suggestion-editor-card">
+    <div class="card-header bg-transparent py-3">
+      <strong>Önerilen metin</strong>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-4">
+          <label class="form-label" for="change_summary">Kısa değişiklik özeti</label>
+          <input
+            type="text"
+            class="form-control suggestion-summary-input"
+            id="change_summary"
+            name="change_summary"
+            maxlength="255"
+            placeholder="Örn: yazım düzeltmesi + daha net örnek"
+          >
+        </div>
+
+        <div class="mb-3">
+          <div class="suggestion-toolbar mb-3" role="toolbar" aria-label="Düzenleme araçları">
+            <button type="button" class="btn btn-sm btn-outline-theme-secondary format-btn" data-format="bold">
+              <i class="bi bi-type-bold"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-theme-secondary format-btn" data-format="italic">
+              <i class="bi bi-type-italic"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-link-btn">
+              <i class="bi bi-link-45deg"></i> Link Ekle
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-image-btn" title="Görsel Ekle">
+              <i class="bi bi-image"></i> Görsel
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-reference-btn">
+              (bkz:soru)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-theme-secondary insert-ref-link-btn">
+              <i class="bi bi-box-arrow-in-up-right"></i> hede
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-theme-secondary" id="showDefinitionModalBtn" title="Tanım">
+              <i class="bi bi-book"></i> Tanım
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-theme-secondary"
+              id="gosterKaynakModalButonu"
+              title="Kaynak"
+              data-bs-toggle="modal"
+              data-bs-target="#kaynakRefModal"
+            >
+              <i class="bi bi-journal"></i> Kaynak
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-theme-secondary spoiler-btn" title="gizle">
+              *
+            </button>
+          </div>
+          {{ form.answer_text.errors }}
+          {{ form.answer_text }}
+        </div>
+        <div
+          id="answer-live-preview-root"
+          class="mb-4"
+          style="display:none;"
+          data-preview-question-text="{{ question.question_text }}"
+          data-preview-question-slug="{{ question.slug }}"
+        ></div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <button type="submit" class="btn btn-theme-primary">Öneriyi gönder</button>
+          <a href="{% url 'single_answer' question.slug answer.id %}" class="btn btn-outline-theme-secondary">Vazgeç</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% include 'core/link_modal.html' %}
+{% include 'core/reference_modal.html' %}
+{% include 'core/kaynak_ref.html' %}
+
+<div class="modal fade" id="definitionModal" tabindex="-1" aria-labelledby="definitionModalLabel" aria-hidden="true" data-question-slug="{{ question.slug }}">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="definitionModalLabel">Tanım</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="nav nav-tabs" id="definitionTab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tanim-yap-tab" data-bs-toggle="tab" data-bs-target="#tanim-yap" type="button" role="tab" aria-controls="tanim-yap" aria-selected="true">
+              Tanım Yap
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tanim-bul-tab" data-bs-toggle="tab" data-bs-target="#tanim-bul" type="button" role="tab" aria-controls="tanim-bul" aria-selected="false">
+              Tanımlarım
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="genel-tanim-tab" data-bs-toggle="tab" data-bs-target="#genel-tanim" type="button" role="tab" aria-controls="genel-tanim" aria-selected="false">
+              Genel Tanımlar
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content mt-3" id="definitionTabContent">
+          <div class="tab-pane fade show active" id="tanim-yap" role="tabpanel" aria-labelledby="tanim-yap-tab">
+            <form id="createDefinitionForm">
+              <div class="mb-3">
+                <label for="definitionText" class="form-label">Tanım (max 1000 karakter):</label>
+                <textarea class="form-control" id="definitionText" name="definition_text" rows="4" maxlength="1000" placeholder="Tanımınızı girin..."></textarea>
+              </div>
+              <button type="submit" class="btn btn-theme-primary">Kaydet</button>
+            </form>
+          </div>
+
+          <div class="tab-pane fade" id="tanim-bul" role="tabpanel" aria-labelledby="tanim-bul-tab">
+            <input type="text" class="form-control mb-2" id="userDefSearchInput" placeholder="Tanımlarımda ara..." />
+            <ul class="list-group" id="userDefinitionsList"></ul>
+            <div id="userDefPagination" class="mt-2"></div>
+            <button type="button" class="btn btn-theme-primary mt-2" id="insertUserDefinitionBtn">Seçili Tanımı Ekle</button>
+          </div>
+
+          <div class="tab-pane fade" id="genel-tanim" role="tabpanel" aria-labelledby="genel-tanim-tab">
+            <input type="text" class="form-control mb-2" id="allDefSearchInput" placeholder="Tüm tanımlarda ara..." />
+            <ul class="list-group" id="allDefinitionsList"></ul>
+            <div id="allDefPagination" class="mt-2"></div>
+            <button type="button" class="btn btn-theme-primary mt-2" id="insertGlobalDefinitionBtn">Seçili Tanımı Ekle</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/answer_form.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>
+{% endblock %}

@@ -436,6 +436,7 @@
                             {% endif %}
                           {% endif %}
                         </small>
+                        {% include 'core/_answer_revision_meta.html' with answer=answer %}
                         <!-- Dropdown menü (Link Kopyala, Paylaş vb.) -->
                         <div class="dropdown d-inline">
                           <a href="#" class="text-decoration-none dropdown-toggle-dots" id="dropdownMenu{{ answer.id }}"
@@ -451,10 +452,22 @@
                               </button>
                             </li>
                             <li>
+                              <a class="dropdown-item" href="{% url 'answer_git_history' answer.id %}">
+                                <i class="bi bi-clock-history"></i> Sürüm Geçmişi
+                              </a>
+                            </li>
+                            <li>
                               <a class="dropdown-item share-link" href="#" data-answer-id="{{ answer.id }}">
                                 <i class="bi bi-share"></i> Paylaş
                               </a>
                             </li>
+                            {% if request.user.is_authenticated and request.user != answer.user %}
+                            <li>
+                              <a class="dropdown-item" href="{% url 'answer_suggest_edit' answer.id %}">
+                                <i class="bi bi-git"></i> Düzeltme Öner
+                              </a>
+                            </li>
+                            {% endif %}
                             <li>
                               <form action="{% url 'pin_entry' answer_id=answer.id %}" method="post">
                                 {% csrf_token %}
@@ -543,6 +556,13 @@
 	                    </button>
 	                  </div>
 	                  {{ form.answer_text }}
+                    <div
+                      id="answer-live-preview-root"
+                      class="mt-3"
+                      style="display:none;"
+                      data-preview-question-text="{{ question.question_text }}"
+                      data-preview-question-slug="{{ question.slug }}"
+                    ></div>
 	                  <button type="submit" class="btn btn-theme-primary mt-2">Yanıtla</button>
 	                  <button type="button" class="btn btn-theme-secondary mt-2 ms-2" id="sabaha-birak-btn">Kenarda Dursun</button>
 	                  <span id="sabahabirak-feedback" style="display:none;" class="text-theme-success ms-2">Taslak kaydedildi!</span>

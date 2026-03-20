@@ -36,15 +36,20 @@ def bkz_link(text):
 @register.filter
 def ref_link(text):
     pattern = r'\((?:ref|r):([^\)]+)\)'
+    question_cache = {}
+
     def replace_ref(match):
         ref_text = match.group(1).strip()
-        try:
-            q = Question.objects.get(question_text__iexact=ref_text)
+        cache_key = ref_text.casefold()
+        q = question_cache.get(cache_key)
+        if q is None and cache_key not in question_cache:
+            q = Question.objects.only('slug').filter(question_text__iexact=ref_text).first()
+            question_cache[cache_key] = q
+        if q is not None:
             url = reverse('question_detail', args=[q.slug])
             return f'<a href="{url}" target="_blank" style="text-decoration: none;">{escape(ref_text)}</a>'
-        except Question.DoesNotExist:
-            create_url = reverse('add_question_from_search') + f'?q={quote_plus(ref_text)}'
-            return f'<a href="{create_url}" target="_blank" style="text-decoration: none;">{escape(ref_text)}</a>'
+        create_url = reverse('add_question_from_search') + f'?q={quote_plus(ref_text)}'
+        return f'<a href="{create_url}" target="_blank" style="text-decoration: none;">{escape(ref_text)}</a>'
 
     # Sonucu mark_safe() ile işaretleyerek HTML'nin render edilmesini sağlıyoruz.
     return mark_safe(re.sub(pattern, replace_ref, text))
@@ -77,14 +82,21 @@ def tanim_link(text):
     source_pattern = re.compile(
         r'\((?:kaynak|k):\d+(?:(?:,\s*sayfa:[^)]+)|(?:\s*s:[^)]+))?\)'
     )
+    definition_cache = {}
 
     def replacer(match):
         question_word = match.group(1).strip()  # "Özgürlük"
         def_id_str    = match.group(2).strip()  # "42"
-       
-
-        try:
-            definition = Definition.objects.get(id=def_id_str)
+        definition = definition_cache.get(def_id_str)
+        if definition is None and def_id_str not in definition_cache:
+            definition = (
+                Definition.objects.select_related('user')
+                .only('id', 'definition_text', 'user__username')
+                .filter(id=def_id_str)
+                .first()
+            )
+            definition_cache[def_id_str] = definition
+        if definition is not None:
             # Tanım metni
             def_text = definition.definition_text
             clean_def_text = source_pattern.sub('', def_text)
@@ -105,10 +117,9 @@ def tanim_link(text):
                           data-bs-content="{escape(clean_def_text)}">
                           {escape(question_word)}
                        </span>'''
-        except Definition.DoesNotExist:
-            # ID bulunamadıysa => orijinal metni döndürmek yerine 
-            # plain text olarak "kelime" döndürebiliriz veya "Tanım yok" diyen bir span.
-            return escape(question_word)
+        # ID bulunamadıysa => orijinal metni döndürmek yerine 
+        # plain text olarak "kelime" döndürebiliriz veya "Tanım yok" diyen bir span.
+        return escape(question_word)
 
     # text içinde tüm (tanim:word:id) kalıplarını replacer ile değiştir.
     new_text = pattern.sub(replacer, text)
@@ -127,6 +138,7 @@ def reference_link(text):
 
     reference_map = {}
     current_index = 1
+    reference_cache = {}
 
     pattern = re.compile(r'\((?:kaynak|k):(\d+)(?:(?:,\s*sayfa:([^)]+))|(?:\s*s:([^)]+)))?\)')
 
@@ -142,9 +154,19 @@ def reference_link(text):
 
         ref_num = reference_map[ref_id]
 
-        try:
-            ref_obj = Reference.objects.get(id=ref_id)
+        ref_obj = reference_cache.get(ref_id)
+        if ref_obj is None and ref_id not in reference_cache:
+            ref_obj = (
+                Reference.objects.only(
+                    'id', 'author_surname', 'author_name', 'year',
+                    'metin_ismi', 'rest', 'abbreviation'
+                )
+                .filter(id=ref_id)
+                .first()
+            )
+            reference_cache[ref_id] = ref_obj
 
+        if ref_obj is not None:
             # Çoklu yazarları düzgün formatla
             surnames = [s.strip() for s in ref_obj.author_surname.split(';') if s.strip()]
             names = [n.strip() for n in ref_obj.author_name.split(';') if n.strip()]
@@ -163,7 +185,7 @@ def reference_link(text):
                 full_citation += f" [{ref_obj.abbreviation}]"
             if sayfa:
                 full_citation += f", s. {sayfa.strip()}"
-        except Reference.DoesNotExist:
+        else:
             full_citation = f"Kaynak bulunamadı (ID: {ref_id})"
 
         html = f'<sup class="reference-tooltip" data-bs-toggle="tooltip" title="{escape(full_citation)}">[{ref_num}]</sup>'
@@ -202,6 +224,7 @@ def mention_link(text):
     # @ ile başlayan ve sonrasında max 3 kelime yakala
     # Use `\w` to support unicode letters like î/û/â etc, and normalize common dash variants.
     pattern = r'@([\w.\-\u00A0 ]{1,50})'  # 50 karakterlik kullanıcı adı limiti
+    user_cache = {}
 
     def replace(match):
         import unicodedata
@@ -215,16 +238,19 @@ def mention_link(text):
         words = candidate.split()
         for i in range(len(words), 0, -1):
             username = ' '.join(words[:i])
-            try:
-                user = User.objects.get(username__iexact=username)
+            cache_key = username.casefold()
+            user = user_cache.get(cache_key)
+            if user is None and cache_key not in user_cache:
+                user = User.objects.only('username').filter(username__iexact=username).first()
+                user_cache[cache_key] = user
+            if user is not None:
                 url = reverse('user_profile', args=[user.username])
                 # kalan kelimeler ek veya düz metin olur
                 tail = ' '.join(words[i:])
                 safe_username = escape(username)
                 safe_tail = escape(tail) if tail else ""
                 return f'<a href="{url}" class="mention">@{safe_username}</a>{(" " + safe_tail) if safe_tail else ""}'
-            except User.DoesNotExist:
-                continue
+            continue
         # hiçbiri yoksa düz metin döndür
         return f'@{escape(candidate)}'
 

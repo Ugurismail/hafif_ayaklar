@@ -149,6 +149,12 @@
             Girdiler
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link {% if active_tab == 'revizyonlar' %}active{% endif %}" 
+             href="?tab=revizyonlar">
+            Revizyonlar
+          </a>
+        </li>
         {% if is_own_profile %}
         <li class="nav-item">
           <a class="nav-link {% if active_tab == 'davetler' %}active{% endif %}" 
@@ -337,6 +343,100 @@
                   window.location.href = "?answer_page=" + selectedPage + "&tab=girdiler";
                 });
               </script>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="tab-pane fade {% if active_tab == 'revizyonlar' %}show active{% endif %}" id="revizyonlar" role="tabpanel" aria-labelledby="revizyonlar-tab">
+          <div class="mt-3">
+            <h5 class="mb-3">Yanıt sürüm geçmişi</h5>
+            {% for revision in revision_activity %}
+              <div class="card mb-3 shadow-subtle border-0">
+                <div class="card-body">
+                  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                    <div>
+                      <a href="{% url 'single_answer' revision.answer.question.slug revision.answer.id %}" class="fw-bold text-decoration-none question-title">
+                        {{ revision.answer.question.question_text }}
+                      </a>
+                      <div class="small text-muted mt-1">
+                        r{{ revision.revision_no }} · {{ revision.get_source_display }} · {{ revision.created_by.username }} · {{ revision.created_at|date:"d M Y H:i" }}
+                        {% if revision.is_current %}· Güncel{% endif %}
+                      </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <a href="{% url 'answer_git_history' revision.answer.id %}" class="btn btn-sm btn-outline-theme-secondary">Geçmiş</a>
+                      {% if request.user.is_authenticated and request.user != revision.answer.user %}
+                        <a href="{% url 'answer_suggest_edit' revision.answer.id %}" class="btn btn-sm btn-theme-primary">Düzeltme Öner</a>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% if revision.change_summary %}
+                    <div class="mt-2 small text-muted">{{ revision.change_summary }}</div>
+                  {% endif %}
+                  <div class="mt-2 answer-text">
+                    {{ revision.content|truncate_math_safe:500|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
+                  </div>
+                </div>
+              </div>
+            {% empty %}
+              <p>Henüz görünür revizyon kaydı yok.</p>
+            {% endfor %}
+            {% if revision_activity %}
+              {% include 'core/pagination.html' with page_obj=revision_activity page_param='rev_page' active_tab='revizyonlar' %}
+            {% endif %}
+
+            <h5 class="mb-3 mt-4">Bu yanıtlara gelen düzeltme önerileri</h5>
+            {% for suggestion in suggestion_activity %}
+              <div class="card mb-3 shadow-subtle border-0">
+                <div class="card-body">
+                  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                    <div>
+                      <a href="{% url 'answer_suggestion_detail' suggestion.id %}" class="fw-bold text-decoration-none question-title">
+                        {{ suggestion.answer.question.question_text }}
+                      </a>
+                      <div class="small text-muted mt-1">
+                        {{ suggestion.proposed_by.username }} önerdi · {{ suggestion.created_at|date:"d M Y H:i" }} · Durum: {{ suggestion.get_status_display }}
+                      </div>
+                    </div>
+                    <a href="{% url 'answer_suggestion_detail' suggestion.id %}" class="btn btn-sm btn-outline-theme-secondary">Öneriyi Aç</a>
+                  </div>
+                  {% if suggestion.change_summary %}
+                    <div class="mt-2 small text-muted">{{ suggestion.change_summary }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            {% empty %}
+              <p>Henüz gelen düzeltme önerisi yok.</p>
+            {% endfor %}
+            {% if suggestion_activity %}
+              {% include 'core/pagination.html' with page_obj=suggestion_activity page_param='sug_page' active_tab='revizyonlar' %}
+            {% endif %}
+
+            <h5 class="mb-3 mt-4">Bu kullanıcının yaptığı öneriler</h5>
+            {% for suggestion in suggestions_made %}
+              <div class="card mb-3 shadow-subtle border-0">
+                <div class="card-body">
+                  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                    <div>
+                      <a href="{% url 'answer_suggestion_detail' suggestion.id %}" class="fw-bold text-decoration-none question-title">
+                        {{ suggestion.answer.question.question_text }}
+                      </a>
+                      <div class="small text-muted mt-1">
+                        {{ suggestion.created_at|date:"d M Y H:i" }} · Durum: {{ suggestion.get_status_display }}
+                      </div>
+                    </div>
+                    <a href="{% url 'answer_suggestion_detail' suggestion.id %}" class="btn btn-sm btn-outline-theme-secondary">Öneriyi Aç</a>
+                  </div>
+                  {% if suggestion.change_summary %}
+                    <div class="mt-2 small text-muted">{{ suggestion.change_summary }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            {% empty %}
+              <p>Bu kullanıcı henüz düzeltme önerisi yapmadı.</p>
+            {% endfor %}
+            {% if suggestions_made %}
+              {% include 'core/pagination.html' with page_obj=suggestions_made page_param='made_page' active_tab='revizyonlar' %}
             {% endif %}
           </div>
         </div>

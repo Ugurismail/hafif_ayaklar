@@ -53,6 +53,7 @@ from ..forms import AnswerForm, QuestionForm, StartingQuestionForm
 from ..querysets import get_today_questions_queryset
 from ..utils import paginate_queryset
 from ..services import VoteSaveService
+from ..answer_git import attach_answer_revision_metadata
 from .user_views import get_user_color
 
 UNICODE_ESCAPE_RE = re.compile(r'\\u([0-9a-fA-F]{4})')
@@ -108,7 +109,7 @@ def question_detail(request, slug):
     all_questions_page = q_paginator.get_page(q_page_number)
 
     # Soru nesnesini al (slug ile)
-    question = get_object_or_404(Question, slug=slug)
+    question = get_object_or_404(Question.objects.select_related('user'), slug=slug)
 
     # Filtre parametreleri
     my_answers = request.GET.get('my_answers')
@@ -135,6 +136,7 @@ def question_detail(request, slug):
     a_page_number = request.GET.get('a_page', 1)
     a_paginator = Paginator(all_answers, 10)
     answers_page = a_paginator.get_page(a_page_number)
+    answers_page.object_list = attach_answer_revision_metadata(list(answers_page.object_list), current_user=request.user)
 
     if request.method == 'POST':
         form = AnswerForm(request.POST)
@@ -189,8 +191,6 @@ def question_detail(request, slug):
     ).values('object_id').annotate(count=Count('id'))
     answer_save_dict = {item['object_id']: item['count'] for item in answer_save_counts}
 
-    starting_question_ids = set(StartingQuestion.objects.values_list('question_id', flat=True))
-
     # Kullanıcı-bazlı parent kontrolü
     if request.user.is_authenticated:
         has_parent = QuestionRelationship.objects.filter(
@@ -199,7 +199,8 @@ def question_detail(request, slug):
         ).exists()
     else:
         has_parent = False
-    is_on_map = (question.id in starting_question_ids) or has_parent
+    is_starting_question = StartingQuestion.objects.filter(question=question).exists()
+    is_on_map = is_starting_question or has_parent
 
     # Bu sorunun TÜM alt sorularını al (kim eklerse eklesin)
     # Her bir unique child için, onu ekleyen kullanıcıları da bilmemiz gerekiyor

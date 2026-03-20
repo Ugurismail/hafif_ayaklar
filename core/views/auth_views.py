@@ -27,23 +27,37 @@ def signup(request):
                 # Kodun geçerli bir UUID olup olmadığını kontrol et
                 from django.core.exceptions import ValidationError
                 code_uuid = uuid.UUID(str(invitation_code))
-                invitation = Invitation.objects.get(code=code_uuid, is_used=False)
-            except (ValueError, ValidationError, Invitation.DoesNotExist):
+            except ValueError:
+                messages.error(request, 'Geçersiz veya kullanılmış davetiye kodu.')
+                return render(request, 'core/signup.html', {'form': form})
+            except ValidationError:
                 messages.error(request, 'Geçersiz veya kullanılmış davetiye kodu.')
                 return render(request, 'core/signup.html', {'form': form})
 
-            user = form.save()
-            # Kullanıcıya profil oluştur
-            user_profile, created = UserProfile.objects.get_or_create(user=user)
-            if user.is_superuser:
-                user_profile.invitation_quota = 999999999
-            user_profile.invitation_quota += invitation.quota_granted
-            user_profile.save()
+            try:
+                with transaction.atomic():
+                    invitation = (
+                        Invitation.objects
+                        .select_for_update()
+                        .get(code=code_uuid, is_used=False)
+                    )
 
-            # Davetiyeyi kullanılmış yap
-            invitation.is_used = True
-            invitation.used_by = user
-            invitation.save()
+                    user = form.save()
+
+                    # Kullanıcıya profil oluştur
+                    user_profile, created = UserProfile.objects.get_or_create(user=user)
+                    if user.is_superuser:
+                        user_profile.invitation_quota = 999999999
+                    user_profile.invitation_quota += invitation.quota_granted
+                    user_profile.save()
+
+                    # Davetiyeyi kullanılmış yap
+                    invitation.is_used = True
+                    invitation.used_by = user
+                    invitation.save(update_fields=['is_used', 'used_by'])
+            except Invitation.DoesNotExist:
+                messages.error(request, 'Bu davetiye kodu bu sırada kullanıldı. Lütfen farklı bir davetiye kodu deneyin.')
+                return render(request, 'core/signup.html', {'form': form})
 
             login(request, user)
             return redirect('user_homepage')

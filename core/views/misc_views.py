@@ -62,6 +62,7 @@ from ..forms import LibraryFileForm
 from ..services import VoteSaveService
 from ..querysets import get_today_questions_queryset
 from .answer_views import get_all_descendant_question_ids
+from ..answer_git import attach_answer_revision_metadata
 
 WORD_PATTERN = re.compile(r'\b\w+\b', re.UNICODE)
 ALLOWED_EDITOR_IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
@@ -110,6 +111,7 @@ def user_homepage(request):
         'user',
         'user__userprofile'
     ).order_by('?')[:20])
+    attach_answer_revision_metadata(random_items, current_user=request.user)
 
     # 3. Başlangıç Soruları (sadece login olmuş kullanıcılar için) - Using new utility
     if request.user.is_authenticated:
@@ -1975,6 +1977,8 @@ def filter_answers(request, slug):
     user_vote_dict = {v['object_id']: v['value'] for v in user_votes}
 
     # up/down hesaplama
+    answers = list(answers.select_related('user', 'question'))
+    attach_answer_revision_metadata(answers, current_user=request.user)
     for ans in answers:
         ans.user_vote_value = user_vote_dict.get(ans.id, 0)
         ans.upvotes = Vote.objects.filter(object_id=ans.id, value=1).count()

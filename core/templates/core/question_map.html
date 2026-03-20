@@ -50,10 +50,98 @@
         margin-left: 320px;
         transition: margin-left 0.3s ease;
         padding: 20px;
+        position: relative;
+    }
+
+    .map-container.with-detail-panel {
+        margin-right: 380px;
     }
 
     .map-container.expanded {
         margin-left: 0;
+    }
+
+    .map-detail-panel {
+        position: fixed;
+        top: 86px;
+        right: 20px;
+        width: 360px;
+        max-height: calc(100vh - 120px);
+        overflow: auto;
+        z-index: 1100;
+        display: none;
+        border: 1px solid var(--header-background-color, #ccc);
+        border-radius: 18px;
+        background: var(--content-background-color, #fff);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.14);
+    }
+
+    .map-detail-panel.visible {
+        display: block;
+    }
+
+    .map-detail-header {
+        padding: 16px 18px;
+        border-bottom: 1px solid color-mix(in srgb, var(--header-background-color, #ccc) 15%, transparent);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .map-detail-body {
+        padding: 16px 18px 18px;
+    }
+
+    .map-detail-subtitle {
+        color: var(--text-color, #666);
+        opacity: 0.72;
+        font-size: 0.92rem;
+    }
+
+    .map-detail-group + .map-detail-group {
+        margin-top: 16px;
+    }
+
+    .map-detail-user-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .map-detail-user-link {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid color-mix(in srgb, var(--header-background-color, #ccc) 14%, transparent);
+        background: color-mix(in srgb, var(--content-background-color, #fff) 94%, white 6%);
+        color: var(--text-color, #222);
+    }
+
+    .map-detail-user-link:hover {
+        background: color-mix(in srgb, var(--button-background-color, #2b6cb0) 8%, white 92%);
+    }
+
+    .map-detail-user-meta {
+        font-size: 0.82rem;
+        opacity: 0.72;
+    }
+
+    .map-detail-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+    }
+
+    .selected-node {
+        stroke: var(--button-background-color, #2b6cb0);
+        stroke-width: 4px;
     }
 
     /* Filter Section Styles */
@@ -130,6 +218,20 @@
 
         .map-container {
             margin-left: 0;
+        }
+
+        .map-container.with-detail-panel {
+            margin-right: 0;
+        }
+
+        .map-detail-panel {
+            left: 12px;
+            right: 12px;
+            top: auto;
+            bottom: 12px;
+            width: auto;
+            max-height: 52vh;
+            border-radius: 20px;
         }
     }
 
@@ -236,6 +338,21 @@
     <div id="chart" style="width: 100%; height: calc(100vh - 100px); border: 1px solid var(--header-background-color, #ccc); border-radius: 8px;"></div>
 </div>
 
+<aside class="map-detail-panel" id="map-detail-panel" aria-live="polite">
+    <div class="map-detail-header">
+        <div>
+            <div class="map-detail-subtitle" id="map-detail-type">Detay paneli</div>
+            <h5 class="mb-0" id="map-detail-title">Bir düğüm seç</h5>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-theme-secondary" id="map-detail-close" aria-label="Kapat">
+            <i class="bi bi-x"></i>
+        </button>
+    </div>
+    <div class="map-detail-body" id="map-detail-body">
+        Bir düğüme tıklayınca burada bağlayanlar veya girdiler listelenir.
+    </div>
+</aside>
+
 <!-- D3.js library -->
 <script src="https://d3js.org/d3.v6.min.js"></script>
 
@@ -248,7 +365,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/question_map.js' %}?v={{ STATIC_ASSET_VERSION }}-map3"></script>
+<script src="{% static 'js/question_map.js' %}?v={{ STATIC_ASSET_VERSION }}-map4"></script>
 <script>
 // Sidebar toggle functionality
 document.addEventListener('DOMContentLoaded', function() {

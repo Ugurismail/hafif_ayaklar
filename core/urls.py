@@ -43,6 +43,14 @@ urlpatterns = [
     # Yanıt İşlemleri
     path('answer/<int:answer_id>/edit/', views.edit_answer, name='edit_answer'),
     path('answer/<int:answer_id>/delete/', views.delete_answer, name='delete_answer'),
+    path('answer/<int:answer_id>/history/', views.answer_git_history, name='answer_git_history'),
+    path('answer/<int:answer_id>/suggest/', views.answer_suggest_edit, name='answer_suggest_edit'),
+    path('answer/preview/', views.answer_live_preview, name='answer_live_preview'),
+    path('answer/revision/<int:revision_id>/approve/', views.answer_revision_approve, name='answer_revision_approve'),
+    path('answer/revision/<int:revision_id>/reject/', views.answer_revision_reject, name='answer_revision_reject'),
+    path('answer/suggestion/<int:suggestion_id>/', views.answer_suggestion_detail, name='answer_suggestion_detail'),
+    path('answer/suggestion/<int:suggestion_id>/accept/', views.answer_suggestion_accept, name='answer_suggestion_accept'),
+    path('answer/suggestion/<int:suggestion_id>/reject/', views.answer_suggestion_reject, name='answer_suggestion_reject'),
 
     # Mesajlaşma URL'leri
     path('messages/', views.message_list, name='message_list'),
@@ -73,6 +81,9 @@ urlpatterns = [
     path('files/<int:file_id>/delete/', views.file_library_delete, name='file_library_delete'),
     path('upload-editor-image/', views.upload_editor_image, name='upload_editor_image'),
     path('statistics/', views.site_statistics, name='site_statistics'),
+    path('almanca/', views.german_course_home, name='german_course_home'),
+    path('almanca/<slug:level_slug>/seviye-bitirme-testi/', views.german_level_test, name='german_level_test'),
+    path('almanca/<slug:level_slug>/<slug:lesson_slug>/', views.german_lesson_detail, name='german_lesson_detail'),
     path('map/', views.question_map, name='question_map'),
     path('map-data/', map_data_view, name='map_data'),
     path('map/schema/', views.question_schema, name='question_schema'),

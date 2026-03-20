@@ -240,6 +240,108 @@ class Answer(models.Model):
     def __str__(self):
         return f"Answer to {self.question.question_text} by {self.user.username}"
 
+    def get_current_revision(self):
+        return self.revisions.filter(is_current=True).select_related('created_by').first()
+
+    def get_revision_count(self):
+        return self.revisions.count()
+
+    def get_open_suggestion_count(self):
+        return self.git_suggestions.filter(status='open').count()
+
+
+class AnswerSuggestion(models.Model):
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('outdated', 'Outdated'),
+    ]
+
+    answer = models.ForeignKey('Answer', on_delete=models.CASCADE, related_name='git_suggestions')
+    base_revision = models.ForeignKey('AnswerRevision', on_delete=models.CASCADE, related_name='incoming_suggestions')
+    proposed_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answer_suggestions')
+    proposed_text = models.TextField()
+    change_summary = models.CharField(max_length=255, blank=True, default='')
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='open', db_index=True)
+    review_note = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_answer_suggestions')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['answer', 'status']),
+            models.Index(fields=['proposed_by', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"Suggestion #{self.id} for answer #{self.answer_id}"
+
+    def is_outdated_against_current(self):
+        current = self.answer.get_current_revision()
+        return bool(current and current.id != self.base_revision_id and self.status == 'open')
+
+
+class AnswerRevision(models.Model):
+    SOURCE_CHOICES = [
+        ('initial', 'Initial'),
+        ('author_edit', 'Author Edit'),
+        ('suggestion_merge', 'Suggestion Merge'),
+    ]
+
+    answer = models.ForeignKey('Answer', on_delete=models.CASCADE, related_name='revisions')
+    parent_revision = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='child_revisions')
+    base_revision = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='based_revisions')
+    accepted_suggestion = models.ForeignKey('AnswerSuggestion', on_delete=models.SET_NULL, null=True, blank=True, related_name='accepted_into_revisions')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answer_revisions')
+    content = models.TextField()
+    revision_no = models.PositiveIntegerField()
+    source = models.CharField(max_length=24, choices=SOURCE_CHOICES, default='author_edit')
+    change_summary = models.CharField(max_length=255, blank=True, default='')
+    is_current = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-revision_no', '-created_at']
+        unique_together = ('answer', 'revision_no')
+        indexes = [
+            models.Index(fields=['answer', 'is_current']),
+            models.Index(fields=['answer', '-created_at']),
+            models.Index(fields=['created_by', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"Answer #{self.answer_id} r{self.revision_no}"
+
+
+class AnswerRevisionApproval(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
+    revision = models.ForeignKey('AnswerRevision', on_delete=models.CASCADE, related_name='approvals')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answer_revision_approvals')
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='pending', db_index=True)
+    note = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['created_at', 'user__username']
+        unique_together = ('revision', 'user')
+        indexes = [
+            models.Index(fields=['revision', 'status']),
+            models.Index(fields=['user', 'status']),
+        ]
+
+    def __str__(self):
+        return f"r{self.revision.revision_no} · {self.user.username} · {self.status}"
+
 class Message(models.Model):
     MESSAGE_TYPES = (
         ('normal', 'Normal'),
@@ -733,6 +835,9 @@ class Notification(models.Model):
         ('question_follow', 'Question Follow'),    # Someone followed your question
         ('answer_vote', 'Answer Vote'),            # Someone voted on your answer
         ('answer_save', 'Answer Save'),            # Someone saved your answer
+        ('answer_suggestion', 'Answer Suggestion'),# Someone suggested an edit to your answer
+        ('suggestion_result', 'Suggestion Result'),# Your suggestion was accepted/rejected
+        ('revision_review', 'Revision Review'),    # Contributor review request for a new revision
         ('system', 'System'),                      # System notifications
     )
 
@@ -902,6 +1007,49 @@ class Notification(models.Model):
             recipient=recipient,
             sender=sender,
             notification_type='answer_save',
+            message=message,
+            related_answer=answer,
+            related_question=answer.question
+        )
+
+    @classmethod
+    def create_answer_suggestion_notification(cls, recipient, sender, answer):
+        """Create notification when someone suggests an edit for your answer"""
+        message = f"{sender.username} yanıtın için bir düzeltme önerisi gönderdi: {answer.question.question_text}"
+        return cls.objects.create(
+            recipient=recipient,
+            sender=sender,
+            notification_type='answer_suggestion',
+            message=message,
+            related_answer=answer,
+            related_question=answer.question
+        )
+
+    @classmethod
+    def create_suggestion_result_notification(cls, recipient, sender, answer, accepted):
+        """Create notification when your suggestion is accepted or rejected"""
+        verb = "kabul edildi" if accepted else "reddedildi"
+        message = f"{sender.username}, önerdiğin düzeltmeyi {verb}: {answer.question.question_text}"
+        return cls.objects.create(
+            recipient=recipient,
+            sender=sender,
+            notification_type='suggestion_result',
+            message=message,
+            related_answer=answer,
+            related_question=answer.question
+        )
+
+    @classmethod
+    def create_revision_review_notification(cls, recipient, sender, answer, revision):
+        """Create notification when a contributor needs to review a new published revision"""
+        message = (
+            f"{sender.username}, katkı verdiğin yanıtta yeni bir sürüm yayınladı: "
+            f"{answer.question.question_text} (r{revision.revision_no})"
+        )
+        return cls.objects.create(
+            recipient=recipient,
+            sender=sender,
+            notification_type='revision_review',
             message=message,
             related_answer=answer,
             related_question=answer.question
@@ -1106,3 +1254,12 @@ class RadioChatMessage(models.Model):
 
     def __str__(self):
         return f"{self.program.title} - {self.user.username}: {self.body[:24]}"
+
+
+@receiver(post_save, sender=Answer)
+def ensure_answer_revision_on_create(sender, instance, created, **kwargs):
+    if not created:
+        return
+    from .answer_git import ensure_initial_revision
+
+    ensure_initial_revision(instance)

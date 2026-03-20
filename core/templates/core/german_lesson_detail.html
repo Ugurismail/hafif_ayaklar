@@ -1,0 +1,1688 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ level.title }} | {{ lesson.title }} | Hafif Ayaklar{% endblock %}
+
+{% block extra_css %}
+<style>
+  .lesson-shell {
+    padding: 1.4rem 0 3rem;
+  }
+
+  .lesson-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.4rem;
+  }
+
+  .lesson-panel {
+    border-radius: 28px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 16%, transparent);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--content-background-color) 95%, white 5%), color-mix(in srgb, var(--background-color) 92%, white 8%));
+    box-shadow: 0 22px 52px color-mix(in srgb, var(--text-color) 9%, transparent);
+  }
+
+  .lesson-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 1.8rem;
+    background:
+      radial-gradient(circle at top left, rgba(117, 174, 149, 0.22), transparent 28%),
+      radial-gradient(circle at right, rgba(195, 159, 101, 0.18), transparent 34%);
+  }
+
+  .lesson-hero::after {
+    content: "";
+    position: absolute;
+    inset: auto -60px -70px auto;
+    width: 180px;
+    height: 180px;
+    border-radius: 999px;
+    background: rgba(47, 98, 78, 0.10);
+    filter: blur(10px);
+  }
+
+  .lesson-path {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--button-background-color) 10%, white 90%);
+    color: color-mix(in srgb, var(--text-color) 78%, transparent);
+    font-size: 0.9rem;
+  }
+
+  .lesson-hero h1 {
+    margin: 1rem 0 0.7rem;
+    font-size: clamp(2rem, 3.6vw, 3.8rem);
+    line-height: 0.96;
+    letter-spacing: -0.05em;
+  }
+
+  .lesson-hero p {
+    max-width: 760px;
+    color: color-mix(in srgb, var(--text-color) 74%, transparent);
+    font-size: 1.04rem;
+  }
+
+  .lesson-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .lesson-stat {
+    padding: 0.58rem 0.75rem;
+    min-width: 104px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--content-background-color) 82%, white 18%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 15%, transparent);
+  }
+
+  .lesson-stat-label {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--text-color) 58%, transparent);
+  }
+
+  .lesson-stat-value {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .lesson-main {
+    display: grid;
+    gap: 1.2rem;
+  }
+
+  .lesson-navigator {
+    padding: 0.95rem 1rem 1rem;
+  }
+
+  .lesson-nav-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.8rem;
+  }
+
+  .lesson-nav-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    letter-spacing: -0.03em;
+  }
+
+  .lesson-nav-header p {
+    margin: 0.35rem 0 0;
+    color: color-mix(in srgb, var(--text-color) 66%, transparent);
+  }
+
+  .lesson-nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+  }
+
+  .lesson-nav-control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.58rem 0.8rem;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 88%, white 12%);
+    color: var(--text-color);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.18s ease, transform 0.18s ease;
+  }
+
+  .lesson-nav-control:hover {
+    color: var(--text-color);
+    background: color-mix(in srgb, var(--button-background-color) 9%, white 91%);
+    transform: translateY(-1px);
+  }
+
+  .lesson-nav-control.accent {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--button-background-color) 92%, white 8%), color-mix(in srgb, var(--button-hover-background-color) 92%, white 8%));
+    color: var(--button-text-color);
+    border-color: transparent;
+  }
+
+  .lesson-nav-control.accent:hover {
+    color: var(--button-text-color);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--button-hover-background-color) 94%, white 6%), color-mix(in srgb, var(--button-background-color) 90%, white 10%));
+  }
+
+  .lesson-nav-scroller {
+    display: flex;
+    gap: 0.65rem;
+    overflow-x: auto;
+    padding-bottom: 0.3rem;
+    scrollbar-width: thin;
+    scroll-snap-type: x proximity;
+  }
+
+  .lesson-nav-chip {
+    min-width: 180px;
+    max-width: 220px;
+    padding: 0.78rem 0.85rem;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 86%, white 14%);
+    color: var(--text-color);
+    text-decoration: none;
+    scroll-snap-align: start;
+    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  }
+
+  .lesson-nav-chip:hover {
+    color: var(--text-color);
+    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--button-background-color) 8%, white 92%);
+  }
+
+  .lesson-nav-chip.is-current {
+    border-color: color-mix(in srgb, var(--button-background-color) 34%, transparent);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--button-background-color) 12%, white 88%), color-mix(in srgb, var(--content-background-color) 90%, white 10%));
+    box-shadow: 0 16px 26px color-mix(in srgb, var(--button-background-color) 12%, transparent);
+  }
+
+  .lesson-nav-chip.accent {
+    min-width: 176px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--button-background-color) 92%, white 8%), color-mix(in srgb, var(--button-hover-background-color) 92%, white 8%));
+    color: var(--button-text-color);
+    border-color: transparent;
+  }
+
+  .lesson-nav-chip.accent:hover {
+    color: var(--button-text-color);
+  }
+
+  .lesson-nav-chip-index {
+    display: inline-flex;
+    margin-bottom: 0.35rem;
+    padding: 0.22rem 0.46rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--header-background-color) 8%, white 92%);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .lesson-nav-chip.is-current .lesson-nav-chip-index {
+    background: color-mix(in srgb, var(--button-background-color) 18%, white 82%);
+  }
+
+  .lesson-nav-chip.accent .lesson-nav-chip-index {
+    background: color-mix(in srgb, white 18%, transparent);
+  }
+
+  .lesson-nav-chip-title {
+    display: block;
+    font-size: 0.94rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .lesson-nav-chip-subtitle {
+    display: block;
+    margin-top: 0.25rem;
+    color: color-mix(in srgb, currentColor 72%, transparent);
+    font-size: 0.78rem;
+    line-height: 1.3;
+  }
+
+  .lesson-section {
+    padding: 1.4rem;
+  }
+
+  .lesson-section h2 {
+    margin: 0 0 0.9rem;
+    font-size: 1.55rem;
+    letter-spacing: -0.03em;
+  }
+
+  .lesson-section-intro {
+    margin: 0 0 1.1rem;
+    color: color-mix(in srgb, var(--text-color) 68%, transparent);
+  }
+
+  .objectives-list,
+  .tips-list,
+  .grammar-items {
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+
+  .objectives-list li,
+  .tips-list li,
+  .grammar-items li {
+    margin-bottom: 0.6rem;
+  }
+
+  .lesson-blocks {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .lesson-block {
+    padding: 1rem;
+    border-radius: 22px;
+    background: color-mix(in srgb, var(--content-background-color) 80%, white 20%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent);
+  }
+
+  .lesson-block-eyebrow {
+    display: inline-flex;
+    margin-bottom: 0.7rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--button-background-color) 10%, white 90%);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .lesson-block h3,
+  .grammar-card h3,
+  .vocab-card h3,
+  .exercise-card h3 {
+    margin: 0 0 0.55rem;
+    font-size: 1.18rem;
+  }
+
+  .grammar-grid,
+  .vocab-grid,
+  .phrase-grid,
+  .mistake-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .vocab-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .grammar-card,
+  .vocab-card,
+  .reading-card,
+  .phrase-card,
+  .mistake-card,
+  .dialogue-card,
+  .homework-card,
+  .exercise-card {
+    padding: 1rem;
+    border-radius: 22px;
+    background: color-mix(in srgb, var(--content-background-color) 84%, white 16%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent);
+  }
+
+  .vocab-card {
+    padding: 0.9rem;
+    border-radius: 18px;
+    align-self: start;
+  }
+
+  .grammar-summary,
+  .vocab-note,
+  .reading-intro,
+  .reading-note,
+  .exercise-description,
+  .question-feedback,
+  .lesson-next p,
+  .phrase-note,
+  .mistake-reason,
+  .dialogue-translation,
+  .homework-card p {
+    color: color-mix(in srgb, var(--text-color) 68%, transparent);
+  }
+
+  .grammar-example {
+    margin-top: 0.8rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--button-background-color) 7%, white 93%);
+  }
+
+  .grammar-note-block {
+    margin-top: 0.85rem;
+    padding: 0.9rem 1rem;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
+    background: color-mix(in srgb, var(--header-background-color) 4%, white 96%);
+  }
+
+  .grammar-note-block strong {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.92rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--text-color) 72%, transparent);
+  }
+
+  .grammar-note-block p {
+    margin: 0;
+    color: color-mix(in srgb, var(--text-color) 78%, transparent);
+    line-height: 1.65;
+  }
+
+  .grammar-note-block.is-watchout {
+    background: color-mix(in srgb, var(--button-background-color) 8%, white 92%);
+  }
+
+  .grammar-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-top: 0.85rem;
+  }
+
+  .grammar-meta-card {
+    padding: 0.9rem 1rem;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--button-background-color) 6%, white 94%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
+  }
+
+  .grammar-meta-card strong {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.92rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--text-color) 72%, transparent);
+  }
+
+  .grammar-meta-card p,
+  .grammar-meta-card code {
+    margin: 0;
+    color: color-mix(in srgb, var(--text-color) 82%, transparent);
+    line-height: 1.65;
+  }
+
+  .grammar-meta-card code {
+    display: inline-flex;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--header-background-color) 7%, white 93%);
+    font-size: 0.9rem;
+  }
+
+  .grammar-example strong {
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  .grammar-example-item + .grammar-example-item {
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
+  }
+
+  .grammar-example-item p {
+    margin: 0.35rem 0 0;
+    color: color-mix(in srgb, var(--text-color) 76%, transparent);
+    line-height: 1.6;
+  }
+
+  .grammar-contrast {
+    margin-top: 0.85rem;
+    padding: 0.95rem 1rem;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--header-background-color) 5%, white 95%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
+  }
+
+  .grammar-contrast strong {
+    display: block;
+    margin-bottom: 0.55rem;
+    font-size: 0.92rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--text-color) 72%, transparent);
+  }
+
+  .grammar-contrast-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .grammar-contrast-box {
+    padding: 0.8rem 0.9rem;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 88%, white 12%);
+  }
+
+  .grammar-contrast-box span {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--text-color) 70%, transparent);
+  }
+
+  .grammar-contrast-box.is-correct {
+    border-color: color-mix(in srgb, #1d7f53 30%, transparent);
+    background: color-mix(in srgb, #1d7f53 8%, white 92%);
+  }
+
+  .grammar-contrast-box.is-wrong {
+    border-color: color-mix(in srgb, #b14b4b 28%, transparent);
+    background: color-mix(in srgb, #b14b4b 7%, white 93%);
+  }
+
+  .grammar-contrast-reason {
+    margin: 0;
+    color: color-mix(in srgb, var(--text-color) 78%, transparent);
+    line-height: 1.6;
+  }
+
+  .vocab-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.65rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .vocab-word {
+    font-size: 1.16rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+  }
+
+  .vocab-article {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.24rem 0.48rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--button-background-color) 12%, white 88%);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .vocab-meanings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.38rem;
+    margin: 0.55rem 0 0.65rem;
+  }
+
+  .vocab-meaning {
+    display: inline-flex;
+    padding: 0.28rem 0.52rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--header-background-color) 8%, white 92%);
+    font-size: 0.8rem;
+  }
+
+  .vocab-example {
+    margin: 0;
+    padding: 0.72rem 0.78rem;
+    border-left: 3px solid color-mix(in srgb, var(--button-background-color) 42%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 72%, white 28%);
+    border-radius: 0 14px 14px 0;
+    line-height: 1.5;
+  }
+
+  .vocab-note {
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .phrase-original {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+  }
+
+  .phrase-translation {
+    display: block;
+    font-size: 0.97rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .reading-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .reading-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .reading-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.38rem 0.7rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--button-background-color) 10%, white 90%);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .reading-paragraph {
+    margin: 0 0 1rem;
+    font-size: 1.04rem;
+    line-height: 1.85;
+    color: color-mix(in srgb, var(--text-color) 92%, transparent);
+  }
+
+  .reading-paragraph:last-child {
+    margin-bottom: 0;
+  }
+
+  .reading-gloss-term {
+    display: inline;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: color-mix(in srgb, var(--link-color) 82%, var(--text-color) 18%);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-underline-offset: 0.22em;
+    cursor: help;
+  }
+
+  .reading-gloss-term:hover,
+  .reading-gloss-term:focus-visible {
+    color: var(--link-hover-color);
+    outline: none;
+  }
+
+  .mistake-label {
+    display: inline-flex;
+    margin-bottom: 0.55rem;
+    padding: 0.32rem 0.58rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .mistake-label.wrong {
+    background: rgba(173, 82, 82, 0.12);
+    color: #8b4040;
+  }
+
+  .mistake-label.right {
+    background: rgba(73, 143, 98, 0.12);
+    color: #2f6f49;
+  }
+
+  .mistake-card strong {
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  .dialogue-line {
+    padding: 0.85rem 0;
+    border-top: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
+  }
+
+  .dialogue-line:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .dialogue-speaker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    margin-right: 0.65rem;
+    background: color-mix(in srgb, var(--button-background-color) 12%, white 88%);
+    font-weight: 700;
+  }
+
+  .dialogue-original {
+    font-weight: 600;
+  }
+
+  .exercise-stack {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .exercise-question {
+    padding: 0.95rem;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--background-color) 84%, white 16%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
+  }
+
+  .exercise-question-title {
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .exercise-options {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .exercise-option {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.75rem 0.8rem;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 90%, white 10%);
+  }
+
+  .exercise-option.correct {
+    border-color: rgba(55, 126, 91, 0.45);
+    background: rgba(101, 170, 131, 0.12);
+  }
+
+  .exercise-option.wrong {
+    border-color: rgba(173, 82, 82, 0.42);
+    background: rgba(173, 82, 82, 0.10);
+  }
+
+  .exercise-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .exercise-action {
+    padding: 0.72rem 1.05rem;
+    border: none;
+    border-radius: 16px;
+    color: var(--button-text-color);
+    background: var(--button-background-color);
+  }
+
+  .exercise-action:hover {
+    background: var(--button-hover-background-color);
+  }
+
+  .summary-panel {
+    padding: 1.35rem;
+  }
+
+  .summary-badge {
+    display: inline-flex;
+    padding: 0.4rem 0.68rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--button-background-color) 10%, white 90%);
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+  }
+
+  .summary-panel h2 {
+    margin: 0.9rem 0 0.7rem;
+    font-size: 1.9rem;
+    letter-spacing: -0.04em;
+  }
+
+  .summary-progress {
+    margin: 1rem 0 1.2rem;
+    height: 14px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--header-background-color) 12%, transparent);
+  }
+
+  .summary-progress-bar {
+    width: 0%;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #5aa17e, #d0a86a);
+    transition: width 0.25s ease;
+  }
+
+  .summary-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .summary-stat {
+    padding: 0.9rem;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--content-background-color) 82%, white 18%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
+  }
+
+  .summary-stat-label {
+    display: block;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--text-color) 56%, transparent);
+  }
+
+  .summary-stat-value {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .summary-cta,
+  .lesson-next {
+    margin-top: 1.2rem;
+    padding: 1rem;
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--content-background-color) 84%, white 16%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent);
+  }
+
+  .summary-disclosure {
+    margin-top: 1rem;
+    border-radius: 20px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 84%, white 16%);
+    overflow: hidden;
+  }
+
+  .summary-disclosure summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.95rem 1rem;
+    cursor: pointer;
+    list-style: none;
+    font-weight: 700;
+  }
+
+  .summary-disclosure summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .summary-disclosure summary::after {
+    content: "+";
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--button-background-color) 10%, white 90%);
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .summary-disclosure[open] summary::after {
+    content: "-";
+  }
+
+  .summary-disclosure-body {
+    padding: 0 1rem 1rem;
+  }
+
+  .summary-disclosure-body p,
+  .summary-disclosure-body ul {
+    margin-bottom: 0;
+  }
+
+  .summary-reset {
+    margin-top: 1rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 18%, transparent);
+    background: transparent;
+    color: var(--text-color);
+  }
+
+  .summary-reset:hover {
+    background: color-mix(in srgb, var(--hover-background-color) 76%, transparent);
+  }
+
+  .practice-launch {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .practice-launch-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .practice-launch-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .practice-launch-metric {
+    min-width: 120px;
+    padding: 0.9rem 1rem;
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 88%, white 12%);
+  }
+
+  .practice-launch-metric strong {
+    display: block;
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  .practice-launch-metric span {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--text-color) 58%, transparent);
+  }
+
+  .practice-launch-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .practice-launch-secondary {
+    padding: 0.72rem 1rem;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 18%, transparent);
+    background: transparent;
+    color: var(--text-color);
+  }
+
+  .lesson-action-dock {
+    position: fixed;
+    right: 20px;
+    bottom: 88px;
+    z-index: 1040;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .lesson-dock-button {
+    min-width: 172px;
+    padding: 0.85rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 18%, transparent);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--content-background-color) 92%, white 8%);
+    box-shadow: 0 18px 34px color-mix(in srgb, var(--text-color) 10%, transparent);
+    text-align: left;
+  }
+
+  .lesson-dock-button.primary {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--button-background-color) 94%, white 6%), color-mix(in srgb, var(--button-hover-background-color) 94%, white 6%));
+    color: var(--button-text-color);
+    border-color: transparent;
+  }
+
+  .lesson-dock-label {
+    display: block;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, currentColor 68%, transparent);
+  }
+
+  .lesson-dock-value {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  .lesson-dashboard {
+    width: min(420px, 92vw);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--content-background-color) 96%, white 4%), color-mix(in srgb, var(--background-color) 93%, white 7%));
+  }
+
+  .lesson-dashboard .offcanvas-header,
+  .lesson-exercise-modal .modal-header {
+    border-bottom: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
+  }
+
+  .lesson-dashboard .offcanvas-body {
+    padding: 1.35rem;
+  }
+
+  .lesson-exercise-modal .modal-dialog {
+    max-width: min(1120px, 96vw);
+  }
+
+  .lesson-exercise-modal .modal-content {
+    border-radius: 28px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--content-background-color) 95%, white 5%), color-mix(in srgb, var(--background-color) 92%, white 8%));
+    box-shadow: 0 24px 54px color-mix(in srgb, var(--text-color) 12%, transparent);
+  }
+
+  .exercise-modal-top {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .exercise-modal-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .exercise-modal-stat {
+    padding: 0.9rem;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--content-background-color) 82%, white 18%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
+  }
+
+  .exercise-modal-stat span {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--text-color) 56%, transparent);
+  }
+
+  .exercise-modal-stat strong {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 1.25rem;
+  }
+
+  .lesson-exercise-accordion .accordion-item {
+    margin-bottom: 0.8rem;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 88%, white 12%);
+  }
+
+  .lesson-exercise-accordion .accordion-button {
+    gap: 1rem;
+    background: color-mix(in srgb, var(--content-background-color) 92%, white 8%);
+    color: var(--text-color);
+    box-shadow: none;
+    font-weight: 700;
+  }
+
+  .lesson-exercise-accordion .accordion-button:not(.collapsed) {
+    background: color-mix(in srgb, var(--button-background-color) 10%, white 90%);
+    color: var(--text-color);
+  }
+
+  .exercise-module-meta {
+    margin-left: auto;
+    padding: 0.28rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: color-mix(in srgb, var(--header-background-color) 8%, white 92%);
+    color: color-mix(in srgb, var(--text-color) 70%, transparent);
+  }
+
+  .lesson-next-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.9rem;
+    padding: 0.72rem 1rem;
+    border-radius: 14px;
+    text-decoration: none;
+    color: var(--button-text-color);
+    background: var(--button-background-color);
+    transition: background 0.18s ease, transform 0.18s ease;
+  }
+
+  .lesson-next-action:hover {
+    color: var(--button-text-color);
+    background: var(--button-hover-background-color);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 900px) {
+    .lesson-blocks,
+    .grammar-grid,
+    .phrase-grid,
+    .mistake-grid,
+    .exercise-modal-stats {
+      grid-template-columns: 1fr;
+    }
+
+    .vocab-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grammar-meta-grid,
+    .grammar-contrast-row {
+      grid-template-columns: 1fr;
+    }
+
+    .lesson-nav-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .lesson-shell {
+      padding-top: 0.8rem;
+    }
+
+    .lesson-hero,
+    .lesson-navigator,
+    .lesson-section,
+    .summary-panel {
+      padding: 1.15rem;
+    }
+
+    .summary-stats {
+      grid-template-columns: 1fr;
+    }
+
+    .lesson-action-dock {
+      right: 14px;
+      bottom: 82px;
+      left: 14px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .lesson-dock-button {
+      min-width: 0;
+    }
+
+    .exercise-footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .lesson-nav-chip {
+      min-width: 84vw;
+      max-width: none;
+    }
+
+    .vocab-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .lesson-nav-control {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid lesson-shell">
+  <div class="lesson-grid">
+    <div class="lesson-main">
+      <section class="lesson-panel lesson-hero">
+        <span class="lesson-path">
+          <i class="bi bi-book-half"></i>
+          Almanca / {{ level.title }} / Ders {{ lesson.index }}
+        </span>
+        <h1>{{ lesson.title }}</h1>
+        <p>{{ lesson.teaser }}</p>
+
+        <div class="lesson-stats">
+          <div class="lesson-stat">
+            <span class="lesson-stat-label">Sure</span>
+            <strong class="lesson-stat-value">{{ lesson.duration }}</strong>
+          </div>
+          <div class="lesson-stat">
+            <span class="lesson-stat-label">Zorluk</span>
+            <strong class="lesson-stat-value">{{ lesson.difficulty }}</strong>
+          </div>
+          {% for stat in lesson.hero_stats %}
+          <div class="lesson-stat">
+            <span class="lesson-stat-label">{{ stat.label }}</span>
+            <strong class="lesson-stat-value">{{ stat.value }}</strong>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="lesson-panel lesson-navigator">
+        <div class="lesson-nav-header">
+          <div>
+            <h2>Dersler arasında gez</h2>
+            <p>{{ level.title }} içindeki tüm dersler burada. İstediğin derse doğrudan atlayabilir, önceki/sonraki adıma tek tıkla geçebilirsin.</p>
+          </div>
+          <div class="lesson-nav-controls">
+            {% if previous_lesson %}
+            <a href="{% url 'german_lesson_detail' level.slug previous_lesson.slug %}" class="lesson-nav-control">
+              <i class="bi bi-arrow-left"></i>
+              Önceki ders
+            </a>
+            {% endif %}
+            {% if next_level_lesson %}
+            <a href="{% url 'german_lesson_detail' level.slug next_level_lesson.slug %}" class="lesson-nav-control">
+              Sonraki ders
+              <i class="bi bi-arrow-right"></i>
+            </a>
+            {% endif %}
+            {% if level_test_available %}
+            <a href="{% url 'german_level_test' level.slug %}" class="lesson-nav-control accent">
+              <i class="bi bi-patch-check"></i>
+              Bitirme testi
+            </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="lesson-nav-scroller">
+          {% for nav_lesson in level_lessons %}
+          <a
+            href="{% url 'german_lesson_detail' level.slug nav_lesson.slug %}"
+            class="lesson-nav-chip{% if nav_lesson.is_current %} is-current{% endif %}"
+            aria-current="{% if nav_lesson.is_current %}page{% else %}false{% endif %}"
+          >
+            <span class="lesson-nav-chip-index">Ders {{ nav_lesson.index }}</span>
+            <span class="lesson-nav-chip-title">{{ nav_lesson.title }}</span>
+            <span class="lesson-nav-chip-subtitle">
+              {% if nav_lesson.is_current %}
+              Aktif ders
+              {% elif nav_lesson.index < lesson.index %}
+              Geri dön
+              {% else %}
+              Doğrudan aç
+              {% endif %}
+            </span>
+          </a>
+          {% endfor %}
+          {% if level_test_available %}
+          <a href="{% url 'german_level_test' level.slug %}" class="lesson-nav-chip accent">
+            <span class="lesson-nav-chip-index">Seviye testi</span>
+            <span class="lesson-nav-chip-title">{{ level.title }} bitirme testi</span>
+            <span class="lesson-nav-chip-subtitle">Kapanış kontrolü</span>
+          </a>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="lesson-panel lesson-section">
+        <h2>Bu derste ne öğreneceksin?</h2>
+        <p class="lesson-section-intro">Dersin sonunda tam akıcılık değil, doğru temel refleks hedefleniyor.</p>
+        <ul class="objectives-list">
+          {% for objective in lesson.objectives %}
+          <li>{{ objective }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      <section class="lesson-panel lesson-section">
+        <h2>Konu anlatımı</h2>
+        <div class="lesson-blocks">
+          {% for block in lesson.lesson_blocks %}
+          <article class="lesson-block">
+            <span class="lesson-block-eyebrow">{{ block.eyebrow }}</span>
+            <h3>{{ block.title }}</h3>
+            <p>{{ block.body }}</p>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="lesson-panel lesson-section">
+        <h2>Gramer notları</h2>
+        <div class="grammar-grid">
+          {% for section in lesson.grammar_sections %}
+          <article class="grammar-card">
+            <h3>{{ section.title }}</h3>
+            <p class="grammar-summary">{{ section.summary }}</p>
+            <div class="grammar-meta-grid">
+              <div class="grammar-meta-card">
+                <strong>Ne zaman kullanılır?</strong>
+                <p>{{ section.when_to_use }}</p>
+              </div>
+              <div class="grammar-meta-card">
+                <strong>Kısa formül</strong>
+                <code>{{ section.formula }}</code>
+              </div>
+            </div>
+            {% if section.teaching_note %}
+            <div class="grammar-note-block">
+              <strong>Mantık</strong>
+              <p>{{ section.teaching_note }}</p>
+            </div>
+            {% endif %}
+            <ul class="grammar-items">
+              {% for item in section.items %}
+              <li>{{ item }}</li>
+              {% endfor %}
+            </ul>
+            {% if section.watch_out %}
+            <div class="grammar-note-block is-watchout">
+              <strong>Sık karışan nokta</strong>
+              <p>{{ section.watch_out }}</p>
+            </div>
+            {% endif %}
+            {% if section.contrast %}
+            <div class="grammar-contrast">
+              <strong>Kontrast örnek: doğru / yanlış</strong>
+              <div class="grammar-contrast-row">
+                <div class="grammar-contrast-box is-correct">
+                  <span>Doğru</span>
+                  <div>{{ section.contrast.correct }}</div>
+                </div>
+                <div class="grammar-contrast-box is-wrong">
+                  <span>Yanlış</span>
+                  <div>{{ section.contrast.wrong }}</div>
+                </div>
+              </div>
+              <p class="grammar-contrast-reason">{{ section.contrast.reason }}</p>
+            </div>
+            {% endif %}
+            <div class="grammar-example">
+              <strong>Örnekler</strong>
+              {% for example in section.annotated_examples %}
+              <div class="grammar-example-item">
+                <div>{{ example.text }}</div>
+                <p>{{ example.note }}</p>
+              </div>
+              {% endfor %}
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      {% if lesson.phrase_bank %}
+      <section class="lesson-panel lesson-section">
+        <h2>Kalıp bankası</h2>
+        <p class="lesson-section-intro">Bu ifadeleri tek tek çeviri yerine hazır kalıp olarak duymaya alış.</p>
+        <div class="phrase-grid">
+          {% for item in lesson.phrase_bank %}
+          <article class="phrase-card">
+            <span class="phrase-original">{{ item.de }}</span>
+            <span class="phrase-translation">{{ item.tr }}</span>
+            <p class="phrase-note mb-0">{{ item.note }}</p>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <section class="lesson-panel lesson-section">
+        <h2>Kelime seti</h2>
+        <p class="lesson-section-intro">Her kelimeyi artikeliyle, çoğu zaman da birden fazla anlamıyla çalış.</p>
+        <div class="vocab-grid">
+          {% for item in lesson.vocabulary %}
+          <article class="vocab-card">
+            <div class="vocab-head">
+              <div>
+                <div class="vocab-word">{{ item.word }}</div>
+                <div class="vocab-note">Çoğul: {{ item.plural }}</div>
+              </div>
+              <span class="vocab-article">{{ item.article }}</span>
+            </div>
+
+            <div class="vocab-meanings">
+              {% for meaning in item.meanings %}
+              <span class="vocab-meaning">{{ meaning }}</span>
+              {% endfor %}
+            </div>
+
+            <p class="vocab-example">
+              <strong>{{ item.example_de }}</strong><br>
+              <span>{{ item.example_tr }}</span>
+            </p>
+
+            <p class="vocab-note mt-3 mb-0">{{ item.note }}</p>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      {% if lesson.common_mistakes %}
+      <section class="lesson-panel lesson-section">
+        <h2>Sık hatalar</h2>
+        <div class="mistake-grid">
+          {% for item in lesson.common_mistakes %}
+          <article class="mistake-card">
+            <span class="mistake-label wrong">Yanlış refleks</span>
+            <strong>{{ item.wrong }}</strong>
+            <span class="mistake-label right">Doğru yaklaşım</span>
+            <strong>{{ item.right }}</strong>
+            <p class="mistake-reason mb-0">{{ item.reason }}</p>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      {% if lesson.mini_dialogue %}
+      <section class="lesson-panel lesson-section">
+        <h2>{{ lesson.mini_dialogue.title }}</h2>
+        <article class="dialogue-card">
+          {% for line in lesson.mini_dialogue.lines %}
+          <div class="dialogue-line">
+            <div class="d-flex align-items-start">
+              <span class="dialogue-speaker">{{ line.speaker }}</span>
+              <div>
+                <div class="dialogue-original">{{ line.text_de }}</div>
+                <div class="dialogue-translation">{{ line.text_tr }}</div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </article>
+      </section>
+      {% endif %}
+
+      {% if lesson.reading_passages %}
+      <section class="lesson-panel lesson-section">
+        <h2>Bağlamlı okuma</h2>
+        <p class="lesson-section-intro">Kelimenin üzerine gel veya dokun. Kısa açıklama doğrudan görünür; böylece yeni kelimeyi metin içinde öğrenirsin.</p>
+        <div class="reading-grid">
+          {% for passage in lesson.reading_passages %}
+          <article class="reading-card">
+            <div class="reading-card-head">
+              <div>
+                <span class="reading-badge">okuma</span>
+                <h3 class="mt-3 mb-2">{{ passage.title }}</h3>
+              </div>
+              {% if passage.word_focus %}
+              <p class="reading-note mb-0">{{ passage.word_focus }}</p>
+              {% endif %}
+            </div>
+            {% if passage.intro %}
+            <p class="reading-intro">{{ passage.intro }}</p>
+            {% endif %}
+            {% for paragraph in passage.paragraphs %}
+            <p class="reading-paragraph">
+              {% for segment in paragraph.segments %}
+                {% if segment.tooltip %}
+                <button
+                  type="button"
+                  class="reading-gloss-term"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover focus click"
+                  data-bs-placement="top"
+                  title="{{ segment.tooltip }}"
+                >{{ segment.text }}</button>
+                {% else %}
+                {{ segment.text }}
+                {% endif %}
+              {% endfor %}
+            </p>
+            {% endfor %}
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <section class="lesson-panel lesson-section practice-launch">
+        <div class="practice-launch-head">
+          <div>
+            <span class="lesson-block-eyebrow">Pekistirme modu</span>
+        <h2>Alıştırmalar artık ayrı çalışıyor</h2>
+            <p class="lesson-section-intro mb-0">
+              Sayfa ders anlatımına odaklı kalsın diye tüm testleri ayrı bir modal içine aldım.
+              Hazır olduğunda aç, parça parça çözmeye devam et.
+            </p>
+          </div>
+          <div class="practice-launch-metrics">
+            <div class="practice-launch-metric">
+              <strong>{{ lesson.exercise_module_count }}</strong>
+              <span>Modül</span>
+            </div>
+            <div class="practice-launch-metric">
+              <strong>{{ lesson.exercise_question_count }}</strong>
+              <span>Soru</span>
+            </div>
+          </div>
+        </div>
+        <div class="practice-launch-actions">
+          <button type="button" class="exercise-action" data-bs-toggle="modal" data-bs-target="#lessonExercisesModal">
+            Alıştırmaları aç
+          </button>
+          <button type="button" class="practice-launch-secondary" data-bs-toggle="offcanvas" data-bs-target="#lessonStatusDrawer" aria-controls="lessonStatusDrawer">
+            Ders panelini aç
+          </button>
+        </div>
+      </section>
+
+      {% if lesson.homework %}
+      <section class="lesson-panel lesson-section">
+        <h2>Ders sonu ödev</h2>
+        <article class="homework-card">
+          <p>Bu bölüm zorunlu test değil; dersi hafızaya daha sağlam geçirmek için tekrar rotası.</p>
+          <ul class="tips-list mb-0">
+            {% for item in lesson.homework %}
+            <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </article>
+      </section>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="lesson-action-dock">
+  <button type="button" class="lesson-dock-button" data-bs-toggle="offcanvas" data-bs-target="#lessonStatusDrawer" aria-controls="lessonStatusDrawer">
+    <span class="lesson-dock-label">Ders paneli</span>
+    <span class="lesson-dock-value" data-german-summary="success">%0</span>
+  </button>
+  <button type="button" class="lesson-dock-button primary" data-bs-toggle="modal" data-bs-target="#lessonExercisesModal">
+    <span class="lesson-dock-label">Alıştırmalar</span>
+    <span class="lesson-dock-value">
+      <span data-german-summary="correct">0</span>/<span data-german-summary="total">{{ lesson.exercise_question_count }}</span>
+    </span>
+  </button>
+</div>
+
+<div class="offcanvas offcanvas-end lesson-dashboard" tabindex="-1" id="lessonStatusDrawer" aria-labelledby="lessonStatusDrawerLabel">
+  <div class="offcanvas-header">
+    <div>
+      <span class="summary-badge">ders özeti</span>
+      <h2 class="h3 mb-0 mt-2" id="lessonStatusDrawerLabel">Ders paneli</h2>
+    </div>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Kapat"></button>
+  </div>
+  <div class="offcanvas-body summary-panel">
+    <div class="summary-progress" aria-hidden="true">
+      <div class="summary-progress-bar" data-german-progress-bar></div>
+    </div>
+
+    <div class="summary-stats">
+      <div class="summary-stat">
+        <span class="summary-stat-label">Doğru cevap</span>
+        <strong class="summary-stat-value" data-german-summary="correct">0</strong>
+      </div>
+      <div class="summary-stat">
+        <span class="summary-stat-label">Toplam soru</span>
+        <strong class="summary-stat-value" data-german-summary="total">{{ lesson.exercise_question_count }}</strong>
+      </div>
+      <div class="summary-stat">
+        <span class="summary-stat-label">Tamamlanan modül</span>
+        <strong class="summary-stat-value" data-german-summary="completed">0</strong>
+      </div>
+      <div class="summary-stat">
+        <span class="summary-stat-label">Başarı</span>
+        <strong class="summary-stat-value" data-german-summary="success">%0</strong>
+      </div>
+    </div>
+
+    <details class="summary-disclosure">
+      <summary>Bugünkü hedef</summary>
+      <div class="summary-disclosure-body">
+        <p>{{ lesson.completion_note }}</p>
+      </div>
+    </details>
+
+    <details class="summary-disclosure">
+      <summary>Çalışma taktikleri</summary>
+      <div class="summary-disclosure-body">
+        <ul class="tips-list">
+        {% for tip in lesson.tips %}
+        <li>{{ tip }}</li>
+        {% endfor %}
+        </ul>
+      </div>
+    </details>
+
+    <div class="lesson-next">
+      <h3 class="mb-2">Sonraki adım</h3>
+      {% if lesson.next_lesson.kind == 'level_test' %}
+      <p class="mb-0">{{ lesson.next_lesson.title }} hazır. Bu dersi kapattıktan sonra seviyeyi ölçebilirsin.</p>
+      <a
+        href="{% url 'german_level_test' level.slug %}"
+        class="lesson-next-action"
+      >
+        Seviye testine git
+      </a>
+      {% elif lesson.next_lesson.status == 'active' and lesson.next_lesson.slug %}
+      <p class="mb-0">{{ lesson.next_lesson.title }} hazır. Bu dersten sonra doğrudan devam edebilirsin.</p>
+      <a
+        href="{% url 'german_lesson_detail' level.slug lesson.next_lesson.slug %}"
+        class="lesson-next-action"
+      >
+        Sonraki derse geç
+      </a>
+      {% else %}
+      <p class="mb-0">{{ lesson.next_lesson.title }} yakında eklenecek. Bu ilk demoda önce bu temeli oturtuyoruz.</p>
+      {% endif %}
+    </div>
+
+    <button type="button" class="summary-reset" data-role="reset-lesson">Dersi sıfırla</button>
+  </div>
+</div>
+
+<div class="modal fade lesson-exercise-modal" id="lessonExercisesModal" tabindex="-1" aria-labelledby="lessonExercisesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <span class="summary-badge">pekiştirme</span>
+          <h2 class="modal-title h3 mt-2 mb-1" id="lessonExercisesModalLabel">{{ lesson.title }} alıştırmaları</h2>
+          <p class="mb-0 lesson-section-intro">{{ lesson.exercise_module_count }} modül ve {{ lesson.exercise_question_count }} soru tek yerde.</p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <div class="exercise-modal-top">
+          <div class="summary-progress" aria-hidden="true">
+            <div class="summary-progress-bar" data-german-progress-bar></div>
+          </div>
+          <div class="exercise-modal-stats">
+            <div class="exercise-modal-stat">
+              <span>Doğru cevap</span>
+              <strong data-german-summary="correct">0</strong>
+            </div>
+            <div class="exercise-modal-stat">
+              <span>Toplam soru</span>
+              <strong data-german-summary="total">{{ lesson.exercise_question_count }}</strong>
+            </div>
+            <div class="exercise-modal-stat">
+              <span>Tamamlanan modül</span>
+              <strong data-german-summary="completed">0</strong>
+            </div>
+            <div class="exercise-modal-stat">
+              <span>Başarı</span>
+              <strong data-german-summary="success">%0</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion lesson-exercise-accordion" id="germanExerciseAccordion">
+          {% for exercise in lesson.exercises %}
+          <article class="accordion-item exercise-card" data-exercise-id="{{ exercise.id }}">
+            <h3 class="accordion-header" id="exerciseHeading{{ forloop.counter }}">
+              <button
+                class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#exerciseCollapse{{ forloop.counter }}"
+                aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                aria-controls="exerciseCollapse{{ forloop.counter }}"
+              >
+                <span>{{ exercise.title }}</span>
+                <span class="exercise-module-meta">{{ exercise.questions|length }} soru</span>
+              </button>
+            </h3>
+            <div
+              id="exerciseCollapse{{ forloop.counter }}"
+              class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+              aria-labelledby="exerciseHeading{{ forloop.counter }}"
+              data-bs-parent="#germanExerciseAccordion"
+            >
+              <div class="accordion-body">
+                <p class="exercise-description">{{ exercise.description }}</p>
+
+                {% for question in exercise.questions %}
+                <div class="exercise-question" data-question-index="{{ forloop.counter0 }}" data-correct-index="{{ question.correct_index }}">
+                  <div class="exercise-question-title">{{ forloop.counter }}. {{ question.prompt }}</div>
+                  <div class="exercise-options">
+                    {% for option in question.options %}
+                    <label class="exercise-option">
+                      <input type="radio" name="question-{{ exercise.id }}-{{ forloop.parentloop.counter0 }}" value="{{ forloop.counter0 }}">
+                      <span>{{ option }}</span>
+                    </label>
+                    {% endfor %}
+                  </div>
+                  <div class="question-feedback mt-2" data-explanation="{{ question.explanation }}"></div>
+                </div>
+                {% endfor %}
+
+                <div class="exercise-footer">
+                  <button type="button" class="exercise-action" data-role="check-exercise">Kontrol et</button>
+                  <div class="question-feedback" data-role="exercise-summary"></div>
+                </div>
+              </div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="practice-launch-secondary" data-bs-dismiss="modal">Derse geri dön</button>
+        <button type="button" class="summary-reset mt-0" data-role="reset-lesson">Dersi sıfırla</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/german_course.js' %}?v={{ STATIC_ASSET_VERSION }}-de4"></script>
+{% endblock %}

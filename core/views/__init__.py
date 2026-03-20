@@ -20,3 +20,4 @@ from .hashtag_views import *
 from .notification_views import *
 from .misc_views import *
 from .radio_views import *
+from .german_views import *

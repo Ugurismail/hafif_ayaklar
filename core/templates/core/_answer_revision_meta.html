@@ -1,0 +1,39 @@
+{% if answer.current_revision %}
+  <div class="small text-muted mt-1">
+    <span>Sürüm r{{ answer.current_revision.revision_no }}</span>
+    {% if answer.revision_count %}
+      <span> · {{ answer.revision_count }} sürüm</span>
+    {% endif %}
+    {% if answer.additional_contributors %}
+      <span> · Katkı: {{ answer.additional_contributors|join:", " }}</span>
+    {% endif %}
+    {% if answer.last_revision_actor and answer.last_revision_actor != answer.user.username %}
+      <span> · Son dokunuş: {{ answer.last_revision_actor }}</span>
+    {% endif %}
+    {% if answer.open_suggestion_count %}
+      <span> · Açık öneri: {{ answer.open_suggestion_count }}</span>
+    {% endif %}
+  </div>
+  {% if answer.pending_contributor_usernames %}
+    <div class="small text-muted mt-1">
+      <span>Bekleyen katkıcılar: {{ answer.pending_contributor_usernames|join:", " }}</span>
+    </div>
+  {% endif %}
+  {% if answer.rejected_contributor_usernames %}
+    <div class="small text-muted mt-1">
+      <span>Onaylamayan katkıcılar: {{ answer.rejected_contributor_usernames|join:", " }}</span>
+    </div>
+  {% endif %}
+  {% if answer.current_user_can_review_revision %}
+    <div class="d-flex gap-2 flex-wrap mt-2">
+      <form method="post" action="{% url 'answer_revision_approve' answer.current_revision.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-theme-primary">Yeni sürümü onayla</button>
+      </form>
+      <form method="post" action="{% url 'answer_revision_reject' answer.current_revision.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-theme-secondary">Onaylamıyorum</button>
+      </form>
+    </div>
+  {% endif %}
+{% endif %}

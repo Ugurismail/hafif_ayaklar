@@ -2,8 +2,8 @@
 {% load markdownify %}
 
 <div class="d-flex align-items-center justify-content-between mb-2">
-  <small class="text-muted">Taslak önizleme (sadece sen)</small>
-  <span class="badge bg-light text-muted border">Kenarda</span>
+  <small class="text-muted">{{ preview_header|default:"Taslak önizleme (sadece sen)" }}</small>
+  <span class="badge bg-light text-muted border">{{ preview_badge|default:"Kenarda" }}</span>
 </div>
 
 <div class="card mb-3 answer kenarda-preview-card">
@@ -54,21 +54,23 @@
       {% endif %}
     {% endwith %}
 
-    <div class="action d-flex justify-content-between align-items-center mt-2">
-      <div class="text-muted">
-        <span class="me-1"><i class="bi-chevron-up"></i></span>
-        <span>0</span>
-        <span class="ms-2 me-1"><i class="bi-chevron-down"></i></span>
-        <span>0</span>
-        <span class="ms-3"><i class="bi bi-bookmark"></i></span>
-        <span class="save-count">0</span>
+    {% if preview_show_meta|default:True %}
+      <div class="action d-flex justify-content-between align-items-center mt-2">
+        <div class="text-muted">
+          <span class="me-1"><i class="bi-chevron-up"></i></span>
+          <span>0</span>
+          <span class="ms-2 me-1"><i class="bi-chevron-down"></i></span>
+          <span>0</span>
+          <span class="ms-3"><i class="bi bi-bookmark"></i></span>
+          <span class="save-count">0</span>
+        </div>
+        <div class="text-end">
+          <small class="text-muted me-2">
+            <a href="{% url 'user_profile' preview_user.username %}">{{ preview_user.username }}</a>
+            {% if preview_created_at %}| {{ preview_created_at|date:"Y-m-d H:i" }}{% endif %}
+          </small>
+        </div>
       </div>
-      <div class="text-end">
-        <small class="text-muted me-2">
-          <a href="{% url 'user_profile' preview_user.username %}">{{ preview_user.username }}</a>
-          | {{ preview_created_at|date:"Y-m-d H:i" }}
-        </small>
-      </div>
-    </div>
+    {% endif %}
   </div>
 </div>

@@ -509,6 +509,10 @@
             } else {
                 answerTextArea.value += ekMetin;
             }
+            answerTextArea.focus({ preventScroll: true });
+            if (typeof window.hafifAyaklarAnswerTextChanged === 'function') {
+                window.hafifAyaklarAnswerTextChanged(answerTextArea);
+            }
 
             // Kısa bir gecikme sonra modalı kapat ve flag'i resetle
             setTimeout(() => {

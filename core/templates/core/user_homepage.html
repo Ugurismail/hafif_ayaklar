@@ -139,6 +139,7 @@
                                         {% endif %}
                                     {% endif %}
                                 </small>
+                                {% include 'core/_answer_revision_meta.html' with answer=answer %}
                                 <!-- Three Dots Menu -->
                                 <div class="dropdown d-inline">
                                     <a href="#" class="text-decoration-none" id="dropdownMenu{{ answer.id }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -167,7 +168,12 @@
                                             </form>
                                             
                                         </li>
-                                        {% if request.user != answer.user %}
+                                        {% if request.user.is_authenticated and request.user != answer.user %}
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'answer_suggest_edit' answer.id %}">
+                                                <i class="bi bi-git"></i> Düzeltme Öner
+                                            </a>
+                                        </li>
                                         <li><a class="dropdown-item" href="{% url 'send_message_from_answer' answer.id %}">
                                             <i class="bi bi-envelope"></i> Mesaj Gönder
                                             </a>
