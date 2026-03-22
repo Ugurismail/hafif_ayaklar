@@ -358,7 +358,8 @@ def hashtag_link(text):
 def safe_markdownify(text, arg='default'):
     """
     Markdownify with hashtag protection
-    Converts hashtags to placeholders before markdown, then restores them
+    Converts hashtags after markdown only on text nodes, so URL fragments
+    like https://example.com/page#section are not corrupted.
     Supports Turkish characters: ç, ğ, ı, ö, ş, ü and their uppercase versions
     """
     import uuid
@@ -367,22 +368,7 @@ def safe_markdownify(text, arg='default'):
     if not text:
         return ""
 
-    # Store hashtags with unique placeholders
-    hashtag_map = {}
-    # Pattern with explicit Turkish character support
-    pattern = r'(?:^|[^A-Za-z0-9_ğüşöçıİĞÜŞÖÇ])(#([A-Za-z0-9_ğüşöçıİĞÜŞÖÇ]+))'
-
-    def replace_with_placeholder(match):
-        hashtag_name = match.group(2)
-        placeholder = f"HASHTAG_{uuid.uuid4().hex[:8]}_{hashtag_name}"
-        url = reverse('hashtag_view', args=[hashtag_name.lower()])
-        hashtag_map[placeholder] = f'<a href="{url}" class="hashtag-link">#{hashtag_name}</a>'
-        # Return placeholder with prefix to prevent markdown interpretation
-        prefix = match.group(0)[0] if len(match.group(0)) > 1 and match.group(0)[0] != '#' else ''
-        return f'{prefix}{placeholder}'
-
-    # Replace hashtags with placeholders
-    text_with_placeholders = re.sub(pattern, replace_with_placeholder, text)
+    text_with_placeholders = text
 
     # Protect TeX blocks so Markdown doesn't eat backslashes like `\\` (align/matrix).
     # We restore as HTML-escaped text so BLEACH safety is preserved.
@@ -443,9 +429,45 @@ def safe_markdownify(text, arg='default'):
         markdown_result
     )
 
-    # Restore hashtags (these will override the target="_blank" for internal links)
-    for placeholder, hashtag_html in hashtag_map.items():
-        markdown_result = markdown_result.replace(placeholder, hashtag_html)
+    # Convert hashtags only on text nodes so we never touch href/src attribute
+    # fragments such as https://example.com/page#section.
+    hashtag_pattern = r'(?:^|[^A-Za-z0-9_ğüşöçıİĞÜŞÖÇ])(#([A-Za-z0-9_ğüşöçıİĞÜŞÖÇ]+))'
+    skip_tags = {'a', 'code', 'pre', 'script', 'style'}
+    open_tag_counts = {tag: 0 for tag in skip_tags}
+
+    def replace_hashtag(match):
+        prefix = match.group(0)[0] if len(match.group(0)) > 1 and match.group(0)[0] != '#' else ''
+        hashtag_name = match.group(2)
+        url = reverse('hashtag_view', args=[hashtag_name.lower()])
+        return f'{prefix}<a href="{url}" class="hashtag-link">#{hashtag_name}</a>'
+
+    def update_tag_state(tag_html):
+        tag_match = re.match(r'<\s*(/)?\s*([A-Za-z0-9]+)', tag_html)
+        if not tag_match:
+            return
+        is_closing = bool(tag_match.group(1))
+        tag_name = tag_match.group(2).lower()
+        if tag_name not in open_tag_counts:
+            return
+        if is_closing:
+            open_tag_counts[tag_name] = max(0, open_tag_counts[tag_name] - 1)
+        elif not tag_html.rstrip().endswith('/>'):
+            open_tag_counts[tag_name] += 1
+
+    processed_parts = []
+    for part in re.split(r'(<[^>]+>)', markdown_result):
+        if not part:
+            continue
+        if part.startswith('<') and part.endswith('>'):
+            update_tag_state(part)
+            processed_parts.append(part)
+            continue
+        if any(open_tag_counts.values()):
+            processed_parts.append(part)
+            continue
+        processed_parts.append(re.sub(hashtag_pattern, replace_hashtag, part))
+
+    markdown_result = ''.join(processed_parts)
 
     # Restore math blocks last (still HTML-escaped so it stays safe).
     for placeholder, math_html in math_map.items():

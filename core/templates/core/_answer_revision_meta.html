@@ -1,9 +1,6 @@
 {% if answer.current_revision %}
   <div class="small text-muted mt-1">
-    <span>Sürüm r{{ answer.current_revision.revision_no }}</span>
-    {% if answer.revision_count %}
-      <span> · {{ answer.revision_count }} sürüm</span>
-    {% endif %}
+    <span>{{ answer.current_revision.revision_no }}. sürüm</span>
     {% if answer.additional_contributors %}
       <span> · Katkı: {{ answer.additional_contributors|join:", " }}</span>
     {% endif %}

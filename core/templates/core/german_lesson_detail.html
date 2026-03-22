@@ -1227,13 +1227,13 @@
             </span>
           </a>
           {% endfor %}
-          {% if level_test_available %}
-          <a href="{% url 'german_level_test' level.slug %}" class="lesson-nav-chip accent">
-            <span class="lesson-nav-chip-index">Seviye testi</span>
-            <span class="lesson-nav-chip-title">{{ level.title }} bitirme testi</span>
-            <span class="lesson-nav-chip-subtitle">Kapanış kontrolü</span>
-          </a>
-          {% endif %}
+      {% if level_test_available %}
+      <a href="{% url 'german_level_test' level.slug %}" class="lesson-nav-chip accent">
+        <span class="lesson-nav-chip-index">Seviye testi</span>
+        <span class="lesson-nav-chip-title">{{ level.title }} seviye testi</span>
+        <span class="lesson-nav-chip-subtitle">Kapanış kontrolü</span>
+      </a>
+      {% endif %}
         </div>
       </section>
 
@@ -1472,12 +1472,8 @@
       <section class="lesson-panel lesson-section practice-launch">
         <div class="practice-launch-head">
           <div>
-            <span class="lesson-block-eyebrow">Pekistirme modu</span>
-        <h2>Alıştırmalar artık ayrı çalışıyor</h2>
-            <p class="lesson-section-intro mb-0">
-              Sayfa ders anlatımına odaklı kalsın diye tüm testleri ayrı bir modal içine aldım.
-              Hazır olduğunda aç, parça parça çözmeye devam et.
-            </p>
+            <span class="lesson-block-eyebrow">Alıştırmalar</span>
+        <h2>Alıştırmalar</h2>
           </div>
           <div class="practice-launch-metrics">
             <div class="practice-launch-metric">
@@ -1583,7 +1579,7 @@
     <div class="lesson-next">
       <h3 class="mb-2">Sonraki adım</h3>
       {% if lesson.next_lesson.kind == 'level_test' %}
-      <p class="mb-0">{{ lesson.next_lesson.title }} hazır. Bu dersi kapattıktan sonra seviyeyi ölçebilirsin.</p>
+      <p class="mb-0">{{ lesson.next_lesson.title }}</p>
       <a
         href="{% url 'german_level_test' level.slug %}"
         class="lesson-next-action"
@@ -1591,7 +1587,7 @@
         Seviye testine git
       </a>
       {% elif lesson.next_lesson.status == 'active' and lesson.next_lesson.slug %}
-      <p class="mb-0">{{ lesson.next_lesson.title }} hazır. Bu dersten sonra doğrudan devam edebilirsin.</p>
+      <p class="mb-0">{{ lesson.next_lesson.title }}</p>
       <a
         href="{% url 'german_lesson_detail' level.slug lesson.next_lesson.slug %}"
         class="lesson-next-action"
@@ -1599,7 +1595,7 @@
         Sonraki derse geç
       </a>
       {% else %}
-      <p class="mb-0">{{ lesson.next_lesson.title }} yakında eklenecek. Bu ilk demoda önce bu temeli oturtuyoruz.</p>
+      <p class="mb-0">{{ lesson.next_lesson.title }} yakında eklenecek.</p>
       {% endif %}
     </div>
 

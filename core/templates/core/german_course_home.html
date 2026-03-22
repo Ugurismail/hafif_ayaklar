@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}Almanca Okulu | Hafif Ayaklar{% endblock %}
+{% block title %}Almanca | Hafif Ayaklar{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -391,13 +391,11 @@
 {% block content %}
 <div class="container-fluid german-shell">
   <section class="german-hero">
-    <span class="german-kicker"><i class="bi bi-translate"></i> Alman dili icin adim adim kurs</span>
-    <h1>Almanca okulunu sifirdan kuruyoruz.</h1>
+    <span class="german-kicker"><i class="bi bi-translate"></i> Almanca</span>
+    <h1>Almanca</h1>
     <p>
-      Bu modul soru-cevap yapisindan ayri calisacak ama ayni sitede yasayacak.
       Su an {{ live_level_summary }} acik.
-      A1'de {{ a1_live_lessons }} ders, A2'de {{ a2_live_lessons }} ders canli.
-      Geri kalan seviyeler icin de ayni kurs motoru ustunde kontrollu ve tutarli bir omurga kuruyoruz.
+      A1'de {{ a1_live_lessons }} ders, A2'de {{ a2_live_lessons }} ders aktif.
     </p>
 
     <div class="german-metrics">
@@ -451,27 +449,11 @@
           <i class="bi bi-arrow-right-circle"></i>
         </a>
         {% else %}
-        <span class="german-level-locked">Bu seviye henuz hazir degil</span>
+        <span class="german-level-locked">Bu seviye henuz acik degil</span>
         {% endif %}
       </div>
     </article>
     {% endfor %}
-  </section>
-
-  <section class="german-curriculum">
-    <div class="german-section-title">
-      <div>
-        <h2>Bu demo neyi kanitliyor?</h2>
-        <p>Tek bir ders degil, buyutulebilir bir kurs motoru kuruyoruz.</p>
-      </div>
-    </div>
-    <ul>
-      <li>Her ders icin anlatim, kelime ve test akisi ayri tutulabiliyor.</li>
-      <li>Bir kelimenin birden fazla Turkce anlami ayri ayri listelenebiliyor.</li>
-      <li>Artikel, anlam ve gramer testleri ayni sayfada birlikte calisiyor.</li>
-      <li>Dersler A1'den C2'ye kadar tek bir yol haritasi icinde organize ediliyor.</li>
-      <li>Bugun migration olmadan basliyoruz; ileride veritabani modeline gecis kolay olacak.</li>
-    </ul>
   </section>
 
   <section class="german-scope-matrix">
@@ -511,7 +493,7 @@
     <div class="german-section-title">
       <div>
         <h2>A2 kapsam matrisi</h2>
-        <p>Bu tablo birebir ders kopyasi degil; disaridaki kaynaklardan gelen konu basliklarini, platform icin kurdugumuz kendi A2 yol haritasi ile eslestiriyor.</p>
+        <p>A2 konularinin derslere dagilimini gosterir.</p>
       </div>
     </div>
 
@@ -543,11 +525,10 @@
   <section class="german-assessment">
     <div class="german-assessment-grid">
       <div>
-        <span class="german-kicker"><i class="bi bi-clipboard-check"></i> A1 kapanis modulu</span>
-        <h3>A1 seviye bitirme testi hazir</h3>
+        <span class="german-kicker"><i class="bi bi-clipboard-check"></i> A1</span>
+        <h3>A1 seviye testi</h3>
         <p>
-          Ders 1-10 bittiginde sabit bir test degil, soru bankasindan rastgele secilen yeni bir karisim cozeceksin.
-          Boylece ezber degil, gercek pekistirme olculuyor.
+          A1 derslerini tamamladiktan sonra seviyeni bu testle olcebilirsin.
         </p>
         <a class="german-assessment-action" href="{% url 'german_level_test' 'a1' %}">
           <span>Seviye testine git</span>
@@ -570,11 +551,10 @@
   <section class="german-assessment">
     <div class="german-assessment-grid">
       <div>
-        <span class="german-kicker"><i class="bi bi-clipboard-check"></i> A2 kapanis modulu</span>
-        <h3>A2 seviye bitirme testi hazir</h3>
+        <span class="german-kicker"><i class="bi bi-clipboard-check"></i> A2</span>
+        <h3>A2 seviye testi</h3>
         <p>
-          A2 derslerini bitirdiginde bu test; Perfekt, yolculuk dili, hizmet kaliplari, baglaclar ve gelecek planini
-          birlikte olcer. Hedef yalniz kurali bilmek degil, dogru yapilari baglama gore secmektir.
+          A2 derslerini tamamladiktan sonra seviyeni bu testle olcebilirsin.
         </p>
         <a class="german-assessment-action" href="{% url 'german_level_test' 'a2' %}">
           <span>A2 testine git</span>

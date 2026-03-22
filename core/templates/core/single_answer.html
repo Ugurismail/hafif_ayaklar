@@ -172,7 +172,7 @@
                       <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
                         <div>
                           <div class="small text-muted">
-                            Sürüm: r{{ focused_current_revision.revision_no }} · Toplam sürüm: {{ focused_answer.revision_count }} · Açık öneri: {{ focused_answer.open_suggestion_count }}
+                            {{ focused_current_revision.revision_no }}. sürüm{% if focused_answer.open_suggestion_count %} · Açık öneri: {{ focused_answer.open_suggestion_count }}{% endif %}
                           </div>
                           {% if focused_contributors %}
                           <div class="small text-muted mt-1">
