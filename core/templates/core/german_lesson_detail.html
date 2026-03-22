@@ -1283,11 +1283,6 @@
               <p>{{ section.teaching_note }}</p>
             </div>
             {% endif %}
-            <ul class="grammar-items">
-              {% for item in section.items %}
-              <li>{{ item }}</li>
-              {% endfor %}
-            </ul>
             {% if section.watch_out %}
             <div class="grammar-note-block is-watchout">
               <strong>Sık karışan nokta</strong>
@@ -1341,17 +1336,41 @@
       {% endif %}
 
       <section class="lesson-panel lesson-section">
-        <h2>Kelime seti</h2>
-        <p class="lesson-section-intro">Her kelimeyi artikeliyle, çoğu zaman da birden fazla anlamıyla çalış.</p>
+        <h2>Aktif sözlük</h2>
+        <p class="lesson-section-intro">Her derste 30 aktif öğe gör: yeni kelimeler, önceki derslerden tekrar kelimeleri ve ders içindeki kritik kalıplar aynı yerde toplansın.</p>
         <div class="vocab-grid">
           {% for item in lesson.vocabulary %}
           <article class="vocab-card">
             <div class="vocab-head">
               <div>
                 <div class="vocab-word">{{ item.word }}</div>
-                <div class="vocab-note">Çoğul: {{ item.plural }}</div>
+                <div class="vocab-note">
+                  {% if item.entry_type == "phrase" %}
+                  Tür: kalıp tekrarı
+                  {% elif item.entry_type == "reading" %}
+                  Tür: okuma odağı
+                  {% elif item.entry_type == "review" %}
+                  Tür: önceki dersten tekrar
+                  {% elif item.plural and item.plural != "-" %}
+                  Çoğul: {{ item.plural }}
+                  {% else %}
+                  Tür: destek kelime
+                  {% endif %}
+                </div>
               </div>
-              <span class="vocab-article">{{ item.article }}</span>
+              <span class="vocab-article">
+                {% if item.entry_type == "phrase" %}
+                KALIP
+                {% elif item.entry_type == "reading" %}
+                ODAK
+                {% elif item.entry_type == "review" %}
+                TEKRAR
+                {% elif item.article %}
+                {{ item.article }}
+                {% else %}
+                EK
+                {% endif %}
+              </span>
             </div>
 
             <div class="vocab-meanings">

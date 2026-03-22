@@ -395,8 +395,9 @@
     <h1>Almanca okulunu sifirdan kuruyoruz.</h1>
     <p>
       Bu modul soru-cevap yapisindan ayri calisacak ama ayni sitede yasayacak.
-      A1'in ilk {{ a1_live_lessons }} dersi canli. Geri kalan seviye iskeleti hazir; dersleri kontrollu sekilde ekleyip
-      ogretmen akisiyla uyumlu bir kurs omurgasi kuruyoruz.
+      Su an {{ live_level_summary }} acik.
+      A1'de {{ a1_live_lessons }} ders, A2'de {{ a2_live_lessons }} ders canli.
+      Geri kalan seviyeler icin de ayni kurs motoru ustunde kontrollu ve tutarli bir omurga kuruyoruz.
     </p>
 
     <div class="german-metrics">
@@ -418,7 +419,7 @@
   <div class="german-section-title">
     <div>
       <h2>Seviye haritasi</h2>
-      <p>Baslangicta A1 canli, diger seviyeler sirali sekilde acilacak.</p>
+      <p>Su an A1 ve A2 acik; diger seviyeler ayni iskelet ustunden sirali sekilde acilacak.</p>
     </div>
   </div>
 
@@ -506,6 +507,39 @@
     </div>
   </section>
 
+  <section class="german-scope-matrix">
+    <div class="german-section-title">
+      <div>
+        <h2>A2 kapsam matrisi</h2>
+        <p>Bu tablo birebir ders kopyasi degil; disaridaki kaynaklardan gelen konu basliklarini, platform icin kurdugumuz kendi A2 yol haritasi ile eslestiriyor.</p>
+      </div>
+    </div>
+
+    <div class="german-scope-grid">
+      {% for row in a2_scope_matrix %}
+      <article class="german-scope-row">
+        <div>
+          <span class="german-scope-label">Konu</span>
+          <strong class="german-scope-value">{{ row.topic }}</strong>
+        </div>
+        <div>
+          <span class="german-scope-label">Ilham notu</span>
+          <span class="german-scope-value">{{ row.teacher_flow }}</span>
+        </div>
+        <div>
+          <span class="german-scope-label">Platform dersi</span>
+          <span class="german-scope-value">{{ row.platform_flow }}</span>
+        </div>
+        <div>
+          <span class="german-scope-status">
+            {% if row.status == 'covered' %}kapsandi{% else %}sirada{% endif %}
+          </span>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
   <section class="german-assessment">
     <div class="german-assessment-grid">
       <div>
@@ -524,6 +558,33 @@
         <article class="german-assessment-stat">
           <span>Baslangic bankasi</span>
           <strong>{{ a1_test_bank_size }} soru</strong>
+        </article>
+        <article class="german-assessment-stat">
+          <span>Oturum basina</span>
+          <strong>50 soru</strong>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="german-assessment">
+    <div class="german-assessment-grid">
+      <div>
+        <span class="german-kicker"><i class="bi bi-clipboard-check"></i> A2 kapanis modulu</span>
+        <h3>A2 seviye bitirme testi hazir</h3>
+        <p>
+          A2 derslerini bitirdiginde bu test; Perfekt, yolculuk dili, hizmet kaliplari, baglaclar ve gelecek planini
+          birlikte olcer. Hedef yalniz kurali bilmek degil, dogru yapilari baglama gore secmektir.
+        </p>
+        <a class="german-assessment-action" href="{% url 'german_level_test' 'a2' %}">
+          <span>A2 testine git</span>
+          <i class="bi bi-arrow-right-circle"></i>
+        </a>
+      </div>
+      <div class="german-assessment-meta">
+        <article class="german-assessment-stat">
+          <span>Baslangic bankasi</span>
+          <strong>{{ a2_test_bank_size }} soru</strong>
         </article>
         <article class="german-assessment-stat">
           <span>Oturum basina</span>

@@ -2,6 +2,8 @@ from copy import deepcopy
 from random import SystemRandom
 import re
 
+from .german_a2_data import A2_LESSONS, A2_SCOPE_MATRIX
+
 
 GERMAN_COURSE_LEVELS = [
     {
@@ -16,9 +18,9 @@ GERMAN_COURSE_LEVELS = [
         "slug": "a2",
         "title": "A2",
         "subtitle": "Temel iletişim",
-        "lesson_count": 10,
-        "theme": "Rutinlerden ihtiyaç anlatımına ve kısa geçmiş anlatılarına geçiş.",
-        "status": "planned",
+        "lesson_count": 14,
+        "theme": "Geçmiş zaman, yer-hareket, bağlaçlar, karşılaştırma ve işlevsel gündelik iletişim.",
+        "status": "active",
     },
     {
         "slug": "b1",
@@ -695,6 +697,18 @@ GRAMMAR_FORMULAS = {
 
 
 GLOSS_PATTERN = re.compile(r"\[\[(?P<term>.+?)::(?P<tooltip>.+?)\]\]")
+ACTIVE_VOCAB_TARGET = 30
+SUPPLEMENTAL_ARTICLE_PREFIXES = {
+    "der", "die", "das", "den", "dem", "des",
+    "ein", "eine", "einen", "einem", "einer",
+    "zum", "zur", "im", "ins", "am", "ans", "vom",
+}
+SUPPLEMENTAL_BLACKLIST = {
+    "mert", "deniz", "aylin", "mila", "selin", "lara", "mina", "leyla", "murat",
+    "elif", "can", "emir", "ece", "ankara", "berlin", "hamburg", "köln", "izmir",
+    "deutschland", "österreich",
+}
+SUPPLEMENTAL_TOOLTIP_SKIP_MARKERS = ("adı", "şehir", "ülke")
 
 
 def _build_gloss_segments(text):
@@ -737,6 +751,153 @@ def _prepare_reading_passages(lesson):
         passages.append(prepared_passage)
 
     lesson["reading_passages"] = passages
+    return lesson
+
+
+def _vocab_entry_key(item):
+    return f"{(item.get('article') or '').strip().lower()}::{(item.get('word') or '').strip().lower()}"
+
+
+def _normalize_support_term(text):
+    cleaned = re.sub(r"\s+", " ", (text or "").strip(" \n\t.,!?;:\"“”()[]"))
+    if not cleaned:
+        return ""
+
+    tokens = cleaned.split()
+    while len(tokens) > 1 and tokens[0].lower() in SUPPLEMENTAL_ARTICLE_PREFIXES:
+        tokens = tokens[1:]
+    return " ".join(tokens).strip()
+
+
+def _should_skip_support_candidate(word, tooltip):
+    word_lower = (word or "").strip().lower()
+    tooltip_lower = (tooltip or "").strip().lower()
+    if not word_lower or not tooltip_lower:
+        return True
+    if word_lower in SUPPLEMENTAL_BLACKLIST:
+        return True
+    if any(marker in tooltip_lower for marker in SUPPLEMENTAL_TOOLTIP_SKIP_MARKERS):
+        return True
+    return False
+
+
+def _collect_reading_support_entries(lesson, seen_keys):
+    entries = []
+
+    for passage in lesson.get("reading_passages", []):
+        for paragraph in passage.get("paragraphs", []):
+            for segment in paragraph.get("segments", []):
+                word = _normalize_support_term(segment.get("text"))
+                tooltip = (segment.get("tooltip") or "").strip()
+                if _should_skip_support_candidate(word, tooltip):
+                    continue
+
+                key = f"::{word.lower()}"
+                if key in seen_keys:
+                    continue
+
+                entries.append(
+                    {
+                        "word": word,
+                        "article": "",
+                        "plural": "-",
+                        "meanings": [tooltip],
+                        "example_de": word,
+                        "example_tr": tooltip,
+                        "note": "Okuma parçasında geçen destek kelime / odak ifadesi.",
+                        "entry_type": "reading",
+                    }
+                )
+                seen_keys.add(key)
+
+    return entries
+
+
+def _collect_review_entries(level_slug, lesson_index, seen_keys):
+    entries = []
+
+    for lesson in reversed(GERMAN_LESSONS.get(level_slug, [])):
+        if lesson["index"] >= lesson_index:
+            continue
+
+        for item in reversed(lesson.get("vocabulary", [])):
+            copied = deepcopy(item)
+            copied["entry_type"] = "review"
+            copied["note"] = f"Önceki dersten bilinçli tekrar. {copied.get('note', '')}".strip()
+            key = _vocab_entry_key(copied)
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            entries.append(copied)
+
+    return entries
+
+
+def _collect_phrase_support_entries(lesson, seen_keys):
+    entries = []
+
+    for item in lesson.get("phrase_bank", []):
+        phrase = (item.get("de") or "").strip()
+        if not phrase or len(phrase) > 42:
+            continue
+
+        key = f"::phrase::{phrase.lower()}"
+        if key in seen_keys:
+            continue
+
+        entries.append(
+            {
+                "word": phrase,
+                "article": "",
+                "plural": "-",
+                "meanings": [item.get("tr", "").strip()],
+                "example_de": item.get("de", "").strip(),
+                "example_tr": item.get("tr", "").strip(),
+                "note": "Bu ders içinde sık tekrar edilen kısa kalıp.",
+                "entry_type": "phrase",
+            }
+        )
+        seen_keys.add(key)
+
+    return entries
+
+
+def _ensure_minimum_vocabulary(level_slug, lesson, target=ACTIVE_VOCAB_TARGET):
+    vocabulary = []
+    seen_keys = set()
+
+    for item in lesson.get("vocabulary", []):
+        copied = deepcopy(item)
+        copied.setdefault("entry_type", "core")
+        key = _vocab_entry_key(copied)
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        vocabulary.append(copied)
+
+    if len(vocabulary) >= target:
+        lesson["vocabulary"] = vocabulary[:target]
+        return lesson
+
+    for entry in _collect_reading_support_entries(lesson, seen_keys):
+        vocabulary.append(entry)
+        if len(vocabulary) >= target:
+            lesson["vocabulary"] = vocabulary[:target]
+            return lesson
+
+    for entry in _collect_review_entries(level_slug, lesson["index"], seen_keys):
+        vocabulary.append(entry)
+        if len(vocabulary) >= target:
+            lesson["vocabulary"] = vocabulary[:target]
+            return lesson
+
+    for entry in _collect_phrase_support_entries(lesson, seen_keys):
+        vocabulary.append(entry)
+        if len(vocabulary) >= target:
+            lesson["vocabulary"] = vocabulary[:target]
+            return lesson
+
+    lesson["vocabulary"] = vocabulary[:target]
     return lesson
 
 
@@ -1164,7 +1325,9 @@ def _prepare_grammar_sections(lesson):
         guidance = GRAMMAR_GUIDANCE.get(section.get("title"), {})
         title = section.get("title")
 
-        if guidance.get("teaching_note"):
+        if section.get("teaching_note"):
+            prepared_section["teaching_note"] = section["teaching_note"]
+        elif guidance.get("teaching_note"):
             prepared_section["teaching_note"] = guidance["teaching_note"]
         else:
             prepared_section["teaching_note"] = (
@@ -1172,7 +1335,9 @@ def _prepare_grammar_sections(lesson):
                 "Bu başlıkta amaç, listedeki kalıbı örnek cümle içinde görüp aynı mantığı kendi cümlelerinde tekrar edebilmektir."
             ).strip()
 
-        if guidance.get("watch_out"):
+        if section.get("watch_out"):
+            prepared_section["watch_out"] = section["watch_out"]
+        elif guidance.get("watch_out"):
             prepared_section["watch_out"] = guidance["watch_out"]
         else:
             prepared_section["watch_out"] = (
@@ -1180,18 +1345,29 @@ def _prepare_grammar_sections(lesson):
                 "Türkçedeki söz dizimini doğrudan kopyalamamaya dikkat et."
             )
 
-        prepared_section["when_to_use"] = GRAMMAR_USAGE.get(
+        prepared_section["when_to_use"] = section.get("when_to_use") or GRAMMAR_USAGE.get(
             title,
             "Bu başlık, dersteki örnek cümleleri gerçek kullanım bağlamına bağlamak ve kuralın nerede devreye girdiğini görmek için kullanılır.",
         )
-        prepared_section["formula"] = GRAMMAR_FORMULAS.get(
+        prepared_section["formula"] = section.get("formula") or GRAMMAR_FORMULAS.get(
             title,
             "özne + çekimli yapı + bilgi",
         )
-        prepared_section["contrast"] = _build_grammar_contrast(title)
+        prepared_section["contrast"] = section.get("contrast") or _build_grammar_contrast(title)
 
         annotated_examples = []
         for example in section.get("examples", []):
+            if isinstance(example, dict):
+                example_text = example.get("text", "")
+                example_note = example.get("note") or _build_grammar_example_note(title, example_text)
+                annotated_examples.append(
+                    {
+                        "text": example_text,
+                        "note": example_note,
+                    }
+                )
+                continue
+
             annotated_examples.append(
                 {
                     "text": example,
@@ -6446,7 +6622,8 @@ GERMAN_LESSONS = {
                 "kind": "level_test",
             },
         },
-    ]
+    ],
+    "a2": A2_LESSONS,
 }
 SEIN_PRONOUN_DRILLS = [
     {"pronoun": "ich", "pronoun_tr": "ben", "verb": "bin"},
@@ -6749,7 +6926,7 @@ def _generate_sein_conjugation_module(rng):
 
 def _build_generated_exercises(lesson, rng):
     generated = []
-    vocabulary = lesson.get("vocabulary", [])
+    vocabulary = [item for item in lesson.get("vocabulary", []) if item.get("entry_type") != "phrase"]
     nouns = [
         item for item in vocabulary
         if item.get("article") in {"der", "die", "das"} and item.get("plural") not in {"", "-", None}
@@ -6785,6 +6962,9 @@ def _enrich_lesson_meta(lesson):
     hero_stats = []
     for stat in lesson.get("hero_stats", []):
         updated_stat = dict(stat)
+        if updated_stat.get("label", "").lower() == "kelime":
+            updated_stat["label"] = "Aktif sözlük"
+            updated_stat["value"] = str(len(lesson.get("vocabulary", [])))
         if updated_stat.get("label", "").lower() in {"alistirma", "alıştırma"}:
             updated_stat["value"] = f"{total_modules} modül"
         hero_stats.append(updated_stat)
@@ -6840,6 +7020,7 @@ def get_german_lesson(level_slug, lesson_slug):
             prepared_lesson = deepcopy(lesson)
             prepared_lesson = _prepare_reading_passages(prepared_lesson)
             prepared_lesson = _prepare_grammar_sections(prepared_lesson)
+            prepared_lesson = _ensure_minimum_vocabulary(level_slug, prepared_lesson)
             prepared_lesson["exercises"] = prepared_lesson.get("exercises", []) + _build_generated_exercises(prepared_lesson, rng)
             prepared_lesson = _enrich_lesson_meta(prepared_lesson)
             return _shuffle_lesson_exercises(prepared_lesson, rng)

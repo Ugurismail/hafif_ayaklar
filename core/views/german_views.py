@@ -3,6 +3,7 @@ from django.shortcuts import render
 
 from ..german_course_data import (
     A1_SCOPE_MATRIX,
+    A2_SCOPE_MATRIX,
     GERMAN_COURSE_LEVELS,
     GERMAN_LESSONS,
     get_german_course_overview,
@@ -16,7 +17,11 @@ def german_course_home(request):
     total_lessons = sum(level["lesson_count"] for level in GERMAN_COURSE_LEVELS)
     live_lessons = sum(level["available_lessons"] for level in levels)
     a1_live_lessons = next((level["available_lessons"] for level in levels if level["slug"] == "a1"), 0)
+    a2_live_lessons = next((level["available_lessons"] for level in levels if level["slug"] == "a2"), 0)
     a1_test_bank_size = get_level_test_bank_size("a1")
+    a2_test_bank_size = get_level_test_bank_size("a2")
+    live_level_titles = [level["title"] for level in levels if level["available_lessons"]]
+    live_level_summary = " + ".join(live_level_titles) if live_level_titles else "Henüz açık seviye yok"
 
     return render(
         request,
@@ -29,8 +34,12 @@ def german_course_home(request):
                 "live_lessons": live_lessons,
             },
             "a1_live_lessons": a1_live_lessons,
+            "a2_live_lessons": a2_live_lessons,
             "a1_scope_matrix": A1_SCOPE_MATRIX,
+            "a2_scope_matrix": A2_SCOPE_MATRIX,
             "a1_test_bank_size": a1_test_bank_size,
+            "a2_test_bank_size": a2_test_bank_size,
+            "live_level_summary": live_level_summary,
         },
     )
 

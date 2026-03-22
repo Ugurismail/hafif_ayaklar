@@ -1,6 +1,8 @@
 from copy import deepcopy
 from random import SystemRandom
 
+from .german_course_data import GERMAN_LESSONS, get_german_lesson
+
 
 A1_LEVEL_TEST_MODULES = [
     {
@@ -31,6 +33,40 @@ A1_LEVEL_TEST_MODULES = [
         "id": "objects_orders",
         "title": "Nesneler, sipariş ve Akkusativ",
         "description": "Maskulin nesne değişimi, yiyecek-içecek ve sipariş kalıpları.",
+        "sample_size": 10,
+    },
+]
+
+
+A2_LEVEL_TEST_MODULES = [
+    {
+        "id": "perfect_past",
+        "title": "Perfekt ve geçmiş anlatı",
+        "description": "Perfekt, deneyim soruları ve modal geçmiş ayrımları.",
+        "sample_size": 10,
+    },
+    {
+        "id": "travel_space",
+        "title": "Yolculuk, konum ve hareket",
+        "description": "Wechselpräpositionen, otel dili ve nach/zu/in/auf ayrımı.",
+        "sample_size": 10,
+    },
+    {
+        "id": "service_requests",
+        "title": "Hizmet dili ve nazik istekler",
+        "description": "Restoran, alışveriş, ricâ ve hizmet kalıpları.",
+        "sample_size": 10,
+    },
+    {
+        "id": "connectors_comparison",
+        "title": "Bağlaçlar, da-yapıları ve karşılaştırma",
+        "description": "deshalb/trotzdem, weil/dass/wenn, da- yapıları ve komparativ.",
+        "sample_size": 10,
+    },
+    {
+        "id": "future_review",
+        "title": "Pasif, gelecek ve A2 toparlama",
+        "description": "werden, süreç-sonuç ayrımı ve sınav odaklı kapanış.",
         "sample_size": 10,
     },
 ]
@@ -2040,8 +2076,2132 @@ A1_LEVEL_TEST_BANK = [
 ]
 
 
+A2_LEVEL_TEST_BANK = [
+    {
+        "id": "a2-001",
+        "module_id": "perfect_past",
+        "prompt": '"Daha önce hiç Hamburg\'a gittin mi?" sorusunun en doğal karşılığı hangisidir?',
+        "options": [
+            "Hast du schon einmal nach Hamburg gefahren?",
+            "Bist du schon einmal nach Hamburg gefahren?",
+            "Bist du schon einmal in Hamburg gefahren?",
+        ],
+        "correct": "Bist du schon einmal nach Hamburg gefahren?",
+        "explanation": "fahren hareket fiili olduğu için Perfekt sorusunda sein ile kurulur.",
+    },
+    {
+        "id": "a2-002",
+        "module_id": "perfect_past",
+        "prompt": '"Henüz öğretmeni aramadım." cümlesi hangisidir?',
+        "options": [
+            "Ich habe meinen Lehrer noch nicht angerufen.",
+            "Ich bin meinen Lehrer noch nicht angerufen.",
+            "Ich habe noch nicht meinen Lehrer anrufen.",
+        ],
+        "correct": "Ich habe meinen Lehrer noch nicht angerufen.",
+        "explanation": "anrufen Perfekt'te haben + Partizip II ile kurulur; noch nicht doğal eksiklik bildirir.",
+    },
+    {
+        "id": "a2-003",
+        "module_id": "perfect_past",
+        "prompt": '"Biz dün geç geldik çünkü tren gecikti." cümlesine en yakın doğru seçenek hangisi?',
+        "options": [
+            "Wir sind gestern spät gekommen, weil der Zug Verspätung hatte.",
+            "Wir haben gestern spät gekommen, weil der Zug Verspätung hatte.",
+            "Wir sind gestern spät gekommen, weil der Zug hat Verspätung.",
+        ],
+        "correct": "Wir sind gestern spät gekommen, weil der Zug Verspätung hatte.",
+        "explanation": "kommen sein ile kurulur; weil yan cümlesinde çekimli fiil sona gider.",
+    },
+    {
+        "id": "a2-004",
+        "module_id": "perfect_past",
+        "prompt": '"Dün gelebildin mi?" sorusunun doğru karşılığı hangisidir?',
+        "options": [
+            "Konntest du gestern kommen?",
+            "Hast du gestern kommen gekonnt?",
+            "Bist du gestern kommen können?",
+        ],
+        "correct": "Konntest du gestern kommen?",
+        "explanation": "Günlük Almancada modal fiillerin geçmişte kısa soru biçimi çoğu zaman Präteritum ile kurulur.",
+    },
+    {
+        "id": "a2-005",
+        "module_id": "perfect_past",
+        "prompt": '"Gelemedim çünkü ofisten erken çıkmama izin verilmedi." cümlesinin en doğal omurgası hangisidir?',
+        "options": [
+            "Ich konnte nicht kommen, weil ich das Büro nicht früher verlassen durfte.",
+            "Ich konnte nicht kommen, weil ich das Büro nicht früher verlassen musste.",
+            "Ich bin nicht gekommen, weil ich das Büro nicht früher verlassen habe dürfen.",
+        ],
+        "correct": "Ich konnte nicht kommen, weil ich das Büro nicht früher verlassen durfte.",
+        "explanation": "İzin verilmediğinde dürfen'in geçmiş biçimi gerekir; musste değil.",
+    },
+    {
+        "id": "a2-006",
+        "module_id": "perfect_past",
+        "prompt": '"Aşağıdakilerden hangisi geçmiş deneyim sormaya uygundur?',
+        "options": [
+            "Bist du schon einmal allein geflogen?",
+            "Hast du schon allein fliegen?",
+            "Fliegst du schon einmal allein?",
+        ],
+        "correct": "Bist du schon einmal allein geflogen?",
+        "explanation": "schon einmal deneyim sorar; fliegen hareket fiili olarak sein ile kurulur.",
+    },
+    {
+        "id": "a2-007",
+        "module_id": "perfect_past",
+        "prompt": '"Hafta sonu çok fotoğraf çektim." cümlesi hangisidir?',
+        "options": [
+            "Ich habe am Wochenende viele Fotos gemacht.",
+            "Ich bin am Wochenende viele Fotos gemacht.",
+            "Ich habe am Wochenende viele Fotos machen.",
+        ],
+        "correct": "Ich habe am Wochenende viele Fotos gemacht.",
+        "explanation": "Fotoğraf çekmek machen ile kurulur; haben + gemacht gerekir.",
+    },
+    {
+        "id": "a2-008",
+        "module_id": "perfect_past",
+        "prompt": '"İstasyondan otele ne zaman geldin?" sorusunun doğru karşılığı hangisidir?',
+        "options": [
+            "Wann bist du vom Bahnhof im Hotel angekommen?",
+            "Wann hast du vom Bahnhof ins Hotel angekommen?",
+            "Wann bist du vom Bahnhof im Hotel ankommen?",
+        ],
+        "correct": "Wann bist du vom Bahnhof im Hotel angekommen?",
+        "explanation": "ankommen hareket fiili olduğu için sein ile kurulur; soru kelimesi başta, fiil ikinci sıradadır.",
+    },
+    {
+        "id": "a2-009",
+        "module_id": "perfect_past",
+        "prompt": '"Doğru cümle hangisidir?"',
+        "options": [
+            "Ich habe gestern lange gearbeitet.",
+            "Ich habe gestern lange arbeiten.",
+            "Ich bin gestern lange gearbeitet.",
+        ],
+        "correct": "Ich habe gestern lange gearbeitet.",
+        "explanation": "arbeiten Perfekt'te haben + gearbeitet ile kurulur.",
+    },
+    {
+        "id": "a2-010",
+        "module_id": "perfect_past",
+        "prompt": '"Aşağıdakilerden hangisi modal anlamı doğru verir?"',
+        "options": [
+            "Ich durfte nicht kommen. = Gelmeme izin verilmedi.",
+            "Ich musste nicht kommen. = Gelmeme izin verilmedi.",
+            "Ich wollte nicht kommen. = Gelmeme izin verilmedi.",
+        ],
+        "correct": "Ich durfte nicht kommen. = Gelmeme izin verilmedi.",
+        "explanation": "İzin yasağı durftenin olumsuz geçmişiyle verilir.",
+    },
+    {
+        "id": "a2-011",
+        "module_id": "travel_space",
+        "prompt": '"Laptop masanın üstünde duruyor." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Der Laptop liegt auf dem Tisch.",
+            "Der Laptop liegt auf den Tisch.",
+            "Der Laptop geht auf dem Tisch.",
+        ],
+        "correct": "Der Laptop liegt auf dem Tisch.",
+        "explanation": "Konum anlatıldığı için dativ gerekir; yatık nesnede liegen kullanılır.",
+    },
+    {
+        "id": "a2-012",
+        "module_id": "travel_space",
+        "prompt": '"Eve gidiyorum ama şu an evde değilim." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Ich gehe nach Hause, aber ich bin jetzt nicht zu Hause.",
+            "Ich gehe zu Hause, aber ich bin jetzt nicht nach Hause.",
+            "Ich gehe im Haus, aber ich bin nicht im Hause.",
+        ],
+        "correct": "Ich gehe nach Hause, aber ich bin jetzt nicht zu Hause.",
+        "explanation": "nach Hause hareketi, zu Hause sabit konumu anlatır.",
+    },
+    {
+        "id": "a2-013",
+        "module_id": "travel_space",
+        "prompt": '"Otel istasyonun yanında." cümlesinin en doğal karşılığı hangisidir?',
+        "options": [
+            "Das Hotel ist am Bahnhof.",
+            "Das Hotel ist in dem Bahnhof.",
+            "Das Hotel ist zum Bahnhof.",
+        ],
+        "correct": "Das Hotel ist am Bahnhof.",
+        "explanation": "an dem kısalır ve doğal kullanımda am Bahnhof olur.",
+    },
+    {
+        "id": "a2-014",
+        "module_id": "travel_space",
+        "prompt": '"Bankaya gidiyorum, sonra eczanenin içine geçiyorum." cümlesi hangisidir?',
+        "options": [
+            "Ich gehe zur Bank und dann in die Apotheke.",
+            "Ich gehe nach der Bank und dann zur Apotheke.",
+            "Ich gehe in der Bank und dann nach Apotheke.",
+        ],
+        "correct": "Ich gehe zur Bank und dann in die Apotheke.",
+        "explanation": "Kurum yöneliminde zu, kapalı mekâna girişte in + Akkusativ kullanılır.",
+    },
+    {
+        "id": "a2-015",
+        "module_id": "travel_space",
+        "prompt": '"Bana sessiz bir oda verebilir misiniz?" cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Könnten Sie mir bitte ein ruhiges Zimmer geben?",
+            "Ich will ein ruhiges Zimmer geben?",
+            "Geben Sie mir ruhig Zimmer?",
+        ],
+        "correct": "Könnten Sie mir bitte ein ruhiges Zimmer geben?",
+        "explanation": "Hizmet dilinde yumuşak rica kalıbı en doğal seçenektir.",
+    },
+    {
+        "id": "a2-016",
+        "module_id": "travel_space",
+        "prompt": '"Havaalanından geliyorum." cümlesi hangisidir?',
+        "options": [
+            "Ich komme vom Flughafen.",
+            "Ich komme aus dem Flughafen.",
+            "Ich komme zum Flughafen.",
+        ],
+        "correct": "Ich komme vom Flughafen.",
+        "explanation": "Noktasal/hizmet yeri gibi çıkışlarda vom çok doğal bir seçimdir.",
+    },
+    {
+        "id": "a2-017",
+        "module_id": "travel_space",
+        "prompt": '"Aşağıdakilerden hangisi doğru yön tarifidir?',
+        "options": [
+            "Gehen Sie zuerst geradeaus und biegen Sie dann rechts ab.",
+            "Gehen Sie zuerst geradeaus und dann Sie rechts abbiegen.",
+            "Sie gehen zuerst geradeaus und dann rechts biegen ab.",
+        ],
+        "correct": "Gehen Sie zuerst geradeaus und biegen Sie dann rechts ab.",
+        "explanation": "Kısa ve temiz komut cümleleri yön tarifinde doğal çalışır.",
+    },
+    {
+        "id": "a2-018",
+        "module_id": "travel_space",
+        "prompt": '"Şehre gidiyoruz." cümlesinde hangi yapı tipik olarak doğrudur?',
+        "options": [
+            "Wir fahren nach Berlin.",
+            "Wir fahren zu Berlin.",
+            "Wir fahren in Berlin.",
+        ],
+        "correct": "Wir fahren nach Berlin.",
+        "explanation": "Şehir adlarına yönelirken çoğu zaman nach kullanılır.",
+    },
+    {
+        "id": "a2-019",
+        "module_id": "travel_space",
+        "prompt": '"Resim duvarda asılı." cümlesi hangisidir?',
+        "options": [
+            "Das Bild hängt an der Wand.",
+            "Das Bild hängt an die Wand.",
+            "Das Bild liegt an der Wand.",
+        ],
+        "correct": "Das Bild hängt an der Wand.",
+        "explanation": "Asılı nesnede hängen; sabit konumda an der Wand kullanılır.",
+    },
+    {
+        "id": "a2-020",
+        "module_id": "travel_space",
+        "prompt": '"Kahvaltı saat yediden itibaren." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Das Frühstück ist ab sieben Uhr.",
+            "Das Frühstück ist um sieben ab.",
+            "Das Frühstück ist seit sieben Uhr anfangen.",
+        ],
+        "correct": "Das Frühstück ist ab sieben Uhr.",
+        "explanation": "Hizmet bilgisinde ab + saat başlangıç noktasını doğal verir.",
+    },
+    {
+        "id": "a2-021",
+        "module_id": "service_requests",
+        "prompt": '"Bir domates çorbası ve bir çay isterim." cümlesinin en doğal karşılığı hangisidir?',
+        "options": [
+            "Ich hätte gern eine Tomatensuppe und einen Tee.",
+            "Ich bin gern eine Tomatensuppe und einen Tee.",
+            "Ich möchte eine Tomatensuppe und der Tee.",
+        ],
+        "correct": "Ich hätte gern eine Tomatensuppe und einen Tee.",
+        "explanation": "Siparişte hätte gern çok doğal bir nazik istek kalıbıdır.",
+    },
+    {
+        "id": "a2-022",
+        "module_id": "service_requests",
+        "prompt": '"Hayır teşekkürler, elma suyu istemiyorum." cümlesi hangisidir?',
+        "options": [
+            "Nein danke, ich möchte keinen Apfelsaft.",
+            "Nein danke, ich möchte nicht Apfelsaft.",
+            "Nein danke, ich möchte kein Apfelsaft.",
+        ],
+        "correct": "Nein danke, ich möchte keinen Apfelsaft.",
+        "explanation": "Apfelsaft maskulindir; isim olumsuzluğunda keinen gerekir.",
+    },
+    {
+        "id": "a2-023",
+        "module_id": "service_requests",
+        "prompt": '"Bunu bana tekrar açıklayabilir misiniz?" cümlesi hangisidir?',
+        "options": [
+            "Könnten Sie mir das bitte noch einmal erklären?",
+            "Könnten Sie das mir bitte erklären noch einmal?",
+            "Sie könnten mir das noch einmal bitte erklärt?",
+        ],
+        "correct": "Könnten Sie mir das bitte noch einmal erklären?",
+        "explanation": "Kibar ricada könnten Sie ... erklären yapısı güvenli ve düzgündür.",
+    },
+    {
+        "id": "a2-024",
+        "module_id": "service_requests",
+        "prompt": '"Ceketin rengi hoşuma gidiyor ama bana olmuyor." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Die Farbe der Jacke gefällt mir, aber sie passt mir nicht.",
+            "Die Farbe der Jacke gefällt mich, aber sie passt nicht mich.",
+            "Die Farbe der Jacke mag ich, aber sie gefällt nicht.",
+        ],
+        "correct": "Die Farbe der Jacke gefällt mir, aber sie passt mir nicht.",
+        "explanation": "gefällt mir ile estetik beğeni, passt mir ile bedensel uyum ayrılır.",
+    },
+    {
+        "id": "a2-025",
+        "module_id": "service_requests",
+        "prompt": '"Biraz daha ucuz modeli tercih ederim." cümlesi hangisidir?',
+        "options": [
+            "Ich nehme lieber das günstigere Modell.",
+            "Ich nehme gerner das günstiger Modell.",
+            "Ich lieber nehme das günstig Modell.",
+        ],
+        "correct": "Ich nehme lieber das günstigere Modell.",
+        "explanation": "lieber tercih bildirir; komparativde günstigere doğru biçimdir.",
+    },
+    {
+        "id": "a2-026",
+        "module_id": "service_requests",
+        "prompt": '"Menüde soğan olmasın." isteği için en doğal yapı hangisidir?',
+        "options": [
+            "Ich möchte die Suppe ohne Zwiebeln.",
+            "Ich möchte die Suppe ohne.",
+            "Ich möchte nicht Zwiebeln in der Suppe.",
+        ],
+        "correct": "Ich möchte die Suppe ohne Zwiebeln.",
+        "explanation": "ohne mutlaka nesneyle birlikte tamamlanmalıdır.",
+    },
+    {
+        "id": "a2-027",
+        "module_id": "service_requests",
+        "prompt": '"Hesabı birlikte mi ayrı mı ödeyelim?" sorusunun doğru karşılığı hangisidir?',
+        "options": [
+            "Zahlen wir zusammen oder getrennt?",
+            "Wir zahlen zusammen oder getrennt?",
+            "Zahlen zusammen oder getrennt wir?",
+        ],
+        "correct": "Zahlen wir zusammen oder getrennt?",
+        "explanation": "Evet-hayır/alternatif soru olduğunda fiil başa geçer.",
+    },
+    {
+        "id": "a2-028",
+        "module_id": "service_requests",
+        "prompt": '"Bana yazılı bir teyit gönderebilir misiniz?" cümlesi hangisidir?',
+        "options": [
+            "Könnten Sie mir bitte eine schriftliche Bestätigung schicken?",
+            "Könnten Sie mir bitte schriftliche Bestätigung schicken?",
+            "Sie könnten bitte mir eine schriftliche Bestätigung geschickt?",
+        ],
+        "correct": "Könnten Sie mir bitte eine schriftliche Bestätigung schicken?",
+        "explanation": "Artikel ve sıfatla kurulu isim grubu ricada eksiksiz verilmelidir.",
+    },
+    {
+        "id": "a2-029",
+        "module_id": "service_requests",
+        "prompt": '"Aşağıdakilerden hangisi daha naziktir?"',
+        "options": [
+            "Geben Sie mir ein anderes Zimmer.",
+            "Könnten Sie mir bitte ein anderes Zimmer geben?",
+            "Ich will sofort ein anderes Zimmer.",
+        ],
+        "correct": "Könnten Sie mir bitte ein anderes Zimmer geben?",
+        "explanation": "Hizmet alanında yumuşak rica doğrudan emirden daha uygundur.",
+    },
+    {
+        "id": "a2-030",
+        "module_id": "service_requests",
+        "prompt": '"Aşağıdakilerden hangisi doğru hizmet dili örneğidir?"',
+        "options": [
+            "Ich brauche ein ruhiges Zimmer.",
+            "Ich brauche ruhig Zimmer.",
+            "Ich brauche ein ruhiges Zimmer geben.",
+        ],
+        "correct": "Ich brauche ein ruhiges Zimmer.",
+        "explanation": "İsim grubu artikel ve sıfatla tam kurulmalıdır.",
+    },
+    {
+        "id": "a2-031",
+        "module_id": "connectors_comparison",
+        "prompt": '"Çok yorgunum. Yine de derse geliyorum." cümlesinin en doğru karşılığı hangisidir?',
+        "options": [
+            "Ich bin sehr müde. Trotzdem komme ich zum Kurs.",
+            "Ich bin sehr müde. Deshalb komme ich zum Kurs.",
+            "Ich bin sehr müde. Trotzdem ich komme zum Kurs.",
+        ],
+        "correct": "Ich bin sehr müde. Trotzdem komme ich zum Kurs.",
+        "explanation": "Engel bilgisine rağmen gerçekleşen eylem trotzdem ile verilir; fiil ikinci sırada kalır.",
+    },
+    {
+        "id": "a2-032",
+        "module_id": "connectors_comparison",
+        "prompt": '"Otobüs geç kaldı. Bu yüzden geç geliyorum." cümlesi hangisidir?',
+        "options": [
+            "Der Bus ist spät. Deshalb komme ich später.",
+            "Der Bus ist spät. Trotzdem komme ich später.",
+            "Der Bus ist spät. Deshalb ich komme später.",
+        ],
+        "correct": "Der Bus ist spät. Deshalb komme ich später.",
+        "explanation": "Sebep-sonuç çizgisinde deshalb uygundur ve ana cümle düzeni korunur.",
+    },
+    {
+        "id": "a2-033",
+        "module_id": "connectors_comparison",
+        "prompt": '"Mesajı bekliyorum. Uzun zamandır onu bekliyorum." ikinci cümlede mesaj yerine hangi yapı gelebilir?',
+        "options": ["darauf", "mit ihm", "zu ihr"],
+        "correct": "darauf",
+        "explanation": "Şey/konu için da- yapısı kullanılır; kişi olsaydı mit ihm gibi bir yapı gerekirdi.",
+    },
+    {
+        "id": "a2-034",
+        "module_id": "connectors_comparison",
+        "prompt": '"Kardeşimle konuşuyorum. Sonra ___ konuşacağım." boşluğuna ne gelmelidir?',
+        "options": ["damit", "mit ihm", "darüber"],
+        "correct": "mit ihm",
+        "explanation": "Kişiye dönüşte da- yapısı değil, edat + zamir gerekir.",
+    },
+    {
+        "id": "a2-035",
+        "module_id": "connectors_comparison",
+        "prompt": '"Planın iyi olduğunu düşünüyorum." cümlesi hangisidir?',
+        "options": [
+            "Ich denke, dass der Plan gut ist.",
+            "Ich denke, weil der Plan gut ist.",
+            "Ich denke, dass ist der Plan gut.",
+        ],
+        "correct": "Ich denke, dass der Plan gut ist.",
+        "explanation": "Fikir içeriği dass ile aktarılır; fiil yan cümlede sona gider.",
+    },
+    {
+        "id": "a2-036",
+        "module_id": "connectors_comparison",
+        "prompt": '"Vaktim olursa annemi ararım." cümlesi hangisidir?',
+        "options": [
+            "Wenn ich Zeit habe, rufe ich meine Mutter an.",
+            "Wenn ich Zeit habe, ich rufe meine Mutter an.",
+            "Weil ich Zeit habe, rufe ich meine Mutter an.",
+        ],
+        "correct": "Wenn ich Zeit habe, rufe ich meine Mutter an.",
+        "explanation": "Koşul yapısında wenn kullanılır; yan cümle öndeyse ana cümlenin fiili hemen gelir.",
+    },
+    {
+        "id": "a2-037",
+        "module_id": "connectors_comparison",
+        "prompt": '"Bu otel diğerinden daha sakin." cümlesi hangisidir?',
+        "options": [
+            "Dieses Hotel ist ruhiger als das andere.",
+            "Dieses Hotel ist ruhiger wie das andere.",
+            "Dieses Hotel ist am ruhiger.",
+        ],
+        "correct": "Dieses Hotel ist ruhiger als das andere.",
+        "explanation": "Standart karşılaştırma çizgisinde als gerekir.",
+    },
+    {
+        "id": "a2-038",
+        "module_id": "connectors_comparison",
+        "prompt": '"Bu seçenek en kullanışlısı." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Diese Option ist am praktischsten.",
+            "Diese Option ist mehr praktisch.",
+            "Diese Option ist am praktischer.",
+        ],
+        "correct": "Diese Option ist am praktischsten.",
+        "explanation": "Grup içindeki en yüksek derece için superlativ gerekir.",
+    },
+    {
+        "id": "a2-039",
+        "module_id": "connectors_comparison",
+        "prompt": '"Trenle gitmeyi tercih ederim." cümlesi hangisidir?',
+        "options": [
+            "Ich fahre lieber mit dem Zug.",
+            "Ich fahre gerner mit dem Zug.",
+            "Ich fahre mehr gern mit dem Zug.",
+        ],
+        "correct": "Ich fahre lieber mit dem Zug.",
+        "explanation": "gern düzensiz olarak lieber olur.",
+    },
+    {
+        "id": "a2-040",
+        "module_id": "connectors_comparison",
+        "prompt": '"Aşağıdakilerden hangisi doğru mantık kurar?"',
+        "options": [
+            "Ich bin krank. Trotzdem muss ich arbeiten.",
+            "Ich bin krank. Deshalb trotzdem arbeite ich.",
+            "Ich bin krank. Trotzdem ich muss arbeiten.",
+        ],
+        "correct": "Ich bin krank. Trotzdem muss ich arbeiten.",
+        "explanation": "trotzdem sonrası da ana cümle düzeni ister; modal fiil ikinci sırada gelir.",
+    },
+    {
+        "id": "a2-041",
+        "module_id": "future_review",
+        "prompt": '"Belgeler hazırlanıyor." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Die Unterlagen werden vorbereitet.",
+            "Die Unterlagen sind vorbereitet.",
+            "Die Unterlagen werden vorbereiten.",
+        ],
+        "correct": "Die Unterlagen werden vorbereitet.",
+        "explanation": "Süreç anlatıldığı için werden + Partizip II gerekir.",
+    },
+    {
+        "id": "a2-042",
+        "module_id": "future_review",
+        "prompt": '"Kapı açık durumda." cümlesi hangisidir?',
+        "options": [
+            "Die Tür ist geöffnet.",
+            "Die Tür wird geöffnet.",
+            "Die Tür ist öffnen.",
+        ],
+        "correct": "Die Tür ist geöffnet.",
+        "explanation": "Mevcut durum/sonuç anlatılırken sein + Partizip II kullanılır.",
+    },
+    {
+        "id": "a2-043",
+        "module_id": "future_review",
+        "prompt": '"Yarın daha erken çalışacağım." cümlesi hangisidir?',
+        "options": [
+            "Ich werde morgen früher lernen.",
+            "Ich werde morgen früher lerne.",
+            "Ich morgen werde früher lernen.",
+        ],
+        "correct": "Ich werde morgen früher lernen.",
+        "explanation": "Gelecek cümlede asıl fiil yalın halde sonda kalır.",
+    },
+    {
+        "id": "a2-044",
+        "module_id": "future_review",
+        "prompt": '"Yarın yağmur yağacak." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Es wird morgen regnen.",
+            "Es wird morgen geregnet.",
+            "Es regnen wird morgen.",
+        ],
+        "correct": "Es wird morgen regnen.",
+        "explanation": "Hava tahmininde werden + infinitiv kullanılır; pasif gibi kurulmaz.",
+    },
+    {
+        "id": "a2-045",
+        "module_id": "future_review",
+        "prompt": '"Eğer düzenli çalışırsam daha güvenli konuşacağım." cümlesi hangisidir?',
+        "options": [
+            "Wenn ich regelmäßig lerne, werde ich sicherer sprechen.",
+            "Wenn ich regelmäßig lerne, ich werde sicherer sprechen.",
+            "Weil ich regelmäßig lerne, werde ich sicherer sprechen.",
+        ],
+        "correct": "Wenn ich regelmäßig lerne, werde ich sicherer sprechen.",
+        "explanation": "Koşul ve gelecek birlikte kurulabilir; yan cümle sonrası ana cümle yeniden dizilir.",
+    },
+    {
+        "id": "a2-046",
+        "module_id": "future_review",
+        "prompt": '"Sınav için mayısta kayıt yaptıracağım." cümlesi hangisidir?',
+        "options": [
+            "Ich werde mich im Mai für die Prüfung anmelden.",
+            "Ich werde mich im Mai für die Prüfung angemeldet.",
+            "Ich mich werde im Mai anmelden für die Prüfung.",
+        ],
+        "correct": "Ich werde mich im Mai für die Prüfung anmelden.",
+        "explanation": "Reflexive fiil ve gelecek yapısı doğru sırayla kurulmalıdır.",
+    },
+    {
+        "id": "a2-047",
+        "module_id": "future_review",
+        "prompt": '"Her şeyin daha iyi olacağını umuyorum." cümlesi hangisidir?',
+        "options": [
+            "Ich hoffe, dass alles besser wird.",
+            "Ich hoffe, weil alles besser wird.",
+            "Ich hoffe, dass wird alles besser.",
+        ],
+        "correct": "Ich hoffe, dass alles besser wird.",
+        "explanation": "Umut ve beklenti dass yan cümlesiyle aktarılır; wird sona gider.",
+    },
+    {
+        "id": "a2-048",
+        "module_id": "future_review",
+        "prompt": '"Liste basılmış durumda ama sözleşme hâlâ imzalanıyor." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Die Liste ist schon gedruckt, aber der Vertrag wird noch unterschrieben.",
+            "Die Liste wird schon gedruckt, aber der Vertrag ist noch unterschrieben.",
+            "Die Liste ist drucken, aber der Vertrag wird unterschrieben noch.",
+        ],
+        "correct": "Die Liste ist schon gedruckt, aber der Vertrag wird noch unterschrieben.",
+        "explanation": "İlk kısım sonuç, ikinci kısım süreç anlatır; sein ve werden ayrımı önemlidir.",
+    },
+    {
+        "id": "a2-049",
+        "module_id": "future_review",
+        "prompt": '"Aşağıdakilerden hangisi A2 kapanış hedefini daha iyi temsil eder?"',
+        "options": [
+            "Sadece tek bir kuralı ezberlemek",
+            "Eski A1-A2 yapılarını yeni bir plan cümlesinde birlikte kullanmak",
+            "Yalnızca yeni şehir isimleri öğrenmek",
+        ],
+        "correct": "Eski A1-A2 yapılarını yeni bir plan cümlesinde birlikte kullanmak",
+        "explanation": "A2 kapanışında amaç tek kuralları değil, yapıları birlikte kullanabilmektir.",
+    },
+    {
+        "id": "a2-050",
+        "module_id": "future_review",
+        "prompt": '"Aşağıdakilerden hangisi doğru gelecek omurgasıdır?"',
+        "options": [
+            "Wir werden im Sommer mehr reisen.",
+            "Wir werden im Sommer mehr gereist.",
+            "Wir im Sommer werden mehr reisen.",
+        ],
+        "correct": "Wir werden im Sommer mehr reisen.",
+        "explanation": "werden çekimli unsur olarak ikinci yerde kalır; infinitiv sonda yer alır.",
+    },
+    {
+        "id": "a2-051",
+        "module_id": "perfect_past",
+        "prompt": '"Dün akşam eve geç döndüm." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Ich bin gestern Abend spät nach Hause gekommen.",
+            "Ich habe gestern Abend spät nach Hause gekommen.",
+            "Ich bin gestern Abend spät nach Hause kommen.",
+        ],
+        "correct": "Ich bin gestern Abend spät nach Hause gekommen.",
+        "explanation": "kommen hareket fiili olduğu için Perfekt'te sein ile kurulur.",
+    },
+    {
+        "id": "a2-052",
+        "module_id": "perfect_past",
+        "prompt": '"Bugün kahvaltı yaptın mı?" sorusunun doğru karşılığı hangisidir?',
+        "options": [
+            "Hast du heute gefrühstückt?",
+            "Bist du heute gefrühstückt?",
+            "Hast du heute frühstücken?",
+        ],
+        "correct": "Hast du heute gefrühstückt?",
+        "explanation": "frühstücken çoğu fiil gibi haben ile kurulur.",
+    },
+    {
+        "id": "a2-053",
+        "module_id": "perfect_past",
+        "prompt": '"Daha önce hiç tek başına uçmadım." cümlesi hangisidir?',
+        "options": [
+            "Ich habe noch nie allein geflogen.",
+            "Ich bin noch nie allein geflogen.",
+            "Ich habe noch nie allein fliegen.",
+        ],
+        "correct": "Ich bin noch nie allein geflogen.",
+        "explanation": "fliegen hareket fiili olarak burada sein ile kurulmalıdır.",
+    },
+    {
+        "id": "a2-054",
+        "module_id": "perfect_past",
+        "prompt": '"Aslında evde kalmak istemiştim." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Ich wollte eigentlich zu Hause bleiben.",
+            "Ich habe eigentlich zu Hause bleiben wollen.",
+            "Ich durfte eigentlich zu Hause bleiben.",
+        ],
+        "correct": "Ich wollte eigentlich zu Hause bleiben.",
+        "explanation": "Günlük Almancada modal geçmişi çoğu zaman Präteritum ile daha doğal görünür.",
+    },
+    {
+        "id": "a2-055",
+        "module_id": "perfect_past",
+        "prompt": '"Dün neden gelemedin?" sorusunun en doğal karşılığı hangisidir?',
+        "options": [
+            "Warum konntest du gestern nicht kommen?",
+            "Warum bist du gestern nicht kommen?",
+            "Warum hast du gestern nicht kommen gekonnt?",
+        ],
+        "correct": "Warum konntest du gestern nicht kommen?",
+        "explanation": "Günlük soru dilinde modal geçmiş Präteritum biçimi daha akıcıdır.",
+    },
+    {
+        "id": "a2-056",
+        "module_id": "perfect_past",
+        "prompt": '"Akşam çok geç yattığım için sabah yorgundum." cümlesindeki doğru omurga hangisidir?',
+        "options": [
+            "Ich war morgens müde, weil ich am Abend sehr spät ins Bett gegangen bin.",
+            "Ich war morgens müde, weil ich bin am Abend sehr spät ins Bett gegangen.",
+            "Ich war morgens müde, weil ich am Abend sehr spät ins Bett gehen bin.",
+        ],
+        "correct": "Ich war morgens müde, weil ich am Abend sehr spät ins Bett gegangen bin.",
+        "explanation": "Yan cümlede çekimli yardımcı fiil sona gider; gehen burada sein ile kurulur.",
+    },
+    {
+        "id": "a2-057",
+        "module_id": "perfect_past",
+        "prompt": '"Aşağıdakilerden hangisi deneyim anlatır?"',
+        "options": [
+            "Ich bin schon einmal in Wien gewesen.",
+            "Ich werde in Wien sein.",
+            "Ich bin in Wien.",
+        ],
+        "correct": "Ich bin schon einmal in Wien gewesen.",
+        "explanation": "schon einmal + Perfekt, geçmiş deneyim anlatır.",
+    },
+    {
+        "id": "a2-058",
+        "module_id": "perfect_past",
+        "prompt": '"Ödevi bitirmem gerekmedi." anlamına en yakın seçenek hangisidir?',
+        "options": [
+            "Ich musste die Hausaufgabe nicht fertig machen.",
+            "Ich durfte die Hausaufgabe nicht fertig machen.",
+            "Ich wollte die Hausaufgabe nicht fertig machen.",
+        ],
+        "correct": "Ich musste die Hausaufgabe nicht fertig machen.",
+        "explanation": "musste nicht = zorunlu değildi; durfte nicht = izin yoktu.",
+    },
+    {
+        "id": "a2-059",
+        "module_id": "perfect_past",
+        "prompt": '"Pazar günü arkadaşlarımı ziyaret ettim." cümlesi hangisidir?',
+        "options": [
+            "Ich habe am Sonntag meine Freunde besucht.",
+            "Ich bin am Sonntag meine Freunde besucht.",
+            "Ich habe am Sonntag meine Freunde besuchen.",
+        ],
+        "correct": "Ich habe am Sonntag meine Freunde besucht.",
+        "explanation": "besuchen haben + besucht ile kurulur.",
+    },
+    {
+        "id": "a2-060",
+        "module_id": "perfect_past",
+        "prompt": '"Aşağıdakilerden hangisi doğru Perfekt sorusudur?"',
+        "options": [
+            "Was hast du am Wochenende gemacht?",
+            "Was bist du am Wochenende gemacht?",
+            "Was hast du am Wochenende machen?",
+        ],
+        "correct": "Was hast du am Wochenende gemacht?",
+        "explanation": "machen fiili Perfekt'te haben ile kurulur ve soru fiille başlar.",
+    },
+    {
+        "id": "a2-061",
+        "module_id": "travel_space",
+        "prompt": '"Anahtar çekmecede." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Der Schlüssel liegt in der Schublade.",
+            "Der Schlüssel liegt in die Schublade.",
+            "Der Schlüssel steht in der Schublade.",
+        ],
+        "correct": "Der Schlüssel liegt in der Schublade.",
+        "explanation": "Konum anlatıldığı için dativ gerekir; yatay nesne için liegen uygundur.",
+    },
+    {
+        "id": "a2-062",
+        "module_id": "travel_space",
+        "prompt": '"Müzeye en hızlı nasıl giderim?" sorusunun doğru karşılığı hangisidir?',
+        "options": [
+            "Wie komme ich am schnellsten zum Museum?",
+            "Wie gehe ich am schnellsten ins Museum?",
+            "Wo komme ich am schnellsten zum Museum?",
+        ],
+        "correct": "Wie komme ich am schnellsten zum Museum?",
+        "explanation": "Yol sormada Wie komme ich ...? kalıbı çok doğaldır.",
+    },
+    {
+        "id": "a2-063",
+        "module_id": "travel_space",
+        "prompt": '"Önce dümdüz gidin, sonra sola dönün." cümlesi hangisidir?',
+        "options": [
+            "Gehen Sie zuerst geradeaus und dann links.",
+            "Gehen Sie zuerst geradeaus und dann biegen Sie links ab.",
+            "Sie gehen zuerst geradeaus und dann links abbiegen.",
+        ],
+        "correct": "Gehen Sie zuerst geradeaus und dann biegen Sie links ab.",
+        "explanation": "İkinci eylem için ayrı, temiz bir komut cümlesi gerekir.",
+    },
+    {
+        "id": "a2-064",
+        "module_id": "travel_space",
+        "prompt": '"Pazara gidiyoruz." cümlesinde doğru yapı hangisidir?',
+        "options": [
+            "Wir gehen auf den Markt.",
+            "Wir gehen in den Markt.",
+            "Wir gehen zum Markt hinein.",
+        ],
+        "correct": "Wir gehen auf den Markt.",
+        "explanation": "Açık alan/etkinlik alanı gibi yerlerde auf sık kullanılır.",
+    },
+    {
+        "id": "a2-065",
+        "module_id": "travel_space",
+        "prompt": '"Masanın yanında bir lamba duruyor." cümlesi hangisidir?',
+        "options": [
+            "Neben dem Tisch steht eine Lampe.",
+            "Neben den Tisch steht eine Lampe.",
+            "Neben dem Tisch liegt eine Lampe.",
+        ],
+        "correct": "Neben dem Tisch steht eine Lampe.",
+        "explanation": "Konum anlatıldığı için dativ gerekir; duran nesnede stehen doğal olur.",
+    },
+    {
+        "id": "a2-066",
+        "module_id": "travel_space",
+        "prompt": '"Resepsiyona sabah gidiyorum." cümlesi hangisidir?',
+        "options": [
+            "Am Morgen gehe ich zur Rezeption.",
+            "Am Morgen gehe ich in der Rezeption.",
+            "Am Morgen gehe ich nach Rezeption.",
+        ],
+        "correct": "Am Morgen gehe ich zur Rezeption.",
+        "explanation": "Kuruma/hizmet noktasına yönelirken zu çok doğal bir seçimdir.",
+    },
+    {
+        "id": "a2-067",
+        "module_id": "travel_space",
+        "prompt": '"Otelden istasyon uzak değil." cümlesi hangisidir?',
+        "options": [
+            "Vom Hotel ist der Bahnhof nicht weit.",
+            "Aus dem Hotel ist der Bahnhof nicht weit.",
+            "Zum Hotel ist der Bahnhof nicht weit.",
+        ],
+        "correct": "Vom Hotel ist der Bahnhof nicht weit.",
+        "explanation": "Noktasal çıkış/mesafe hissinde vom çok doğal çalışır.",
+    },
+    {
+        "id": "a2-068",
+        "module_id": "travel_space",
+        "prompt": '"Evdeyim." cümlesinde doğru sabit kalıp hangisidir?',
+        "options": [
+            "Ich bin zu Hause.",
+            "Ich bin nach Hause.",
+            "Ich bin im Hause.",
+        ],
+        "correct": "Ich bin zu Hause.",
+        "explanation": "Sabit konumda zu Hause kullanılır.",
+    },
+    {
+        "id": "a2-069",
+        "module_id": "travel_space",
+        "prompt": '"Doktora gidiyorum." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Ich gehe zum Arzt.",
+            "Ich gehe nach Arzt.",
+            "Ich gehe in den Arzt.",
+        ],
+        "correct": "Ich gehe zum Arzt.",
+        "explanation": "Kişi/meslek sahibine yönelimde zu kullanılır; zum doğal kısalmadır.",
+    },
+    {
+        "id": "a2-070",
+        "module_id": "travel_space",
+        "prompt": '"Aşağıdakilerden hangisi hareket değil konum anlatır?"',
+        "options": [
+            "Die Lampe hängt über dem Sofa.",
+            "Die Lampe geht über das Sofa.",
+            "Die Lampe fährt über das Sofa.",
+        ],
+        "correct": "Die Lampe hängt über dem Sofa.",
+        "explanation": "Asılı nesnenin mevcut konumu anlatılmaktadır.",
+    },
+    {
+        "id": "a2-071",
+        "module_id": "service_requests",
+        "prompt": '"Bana başka bir porsiyon getirebilir misiniz?" cümlesi hangisidir?',
+        "options": [
+            "Könnten Sie mir bitte eine andere Portion bringen?",
+            "Könnten Sie mir bitte andere Portion bringen?",
+            "Bringen Sie mir andere Portion?",
+        ],
+        "correct": "Könnten Sie mir bitte eine andere Portion bringen?",
+        "explanation": "Nazik rica ve isim grubu artikel ile eksiksiz kurulmalıdır.",
+    },
+    {
+        "id": "a2-072",
+        "module_id": "service_requests",
+        "prompt": '"Bu çorba çok tuzlu." cümlesinin en doğal karşılığı hangisidir?',
+        "options": [
+            "Die Suppe ist zu salzig.",
+            "Die Suppe ist sehr Salz.",
+            "Die Suppe passt mir nicht salzig.",
+        ],
+        "correct": "Die Suppe ist zu salzig.",
+        "explanation": "Aşırılığı belirtirken zu + sıfat doğal yapıdır.",
+    },
+    {
+        "id": "a2-073",
+        "module_id": "service_requests",
+        "prompt": '"Benim için su yerine çay olsun." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Für mich lieber Tee statt Wasser.",
+            "Für mich Tee für Wasser.",
+            "Ich möchte statt als Wasser Tee.",
+        ],
+        "correct": "Für mich lieber Tee statt Wasser.",
+        "explanation": "Kısa sipariş dilinde tercih ve değiştirme bu şekilde doğal kurulabilir.",
+    },
+    {
+        "id": "a2-074",
+        "module_id": "service_requests",
+        "prompt": '"Bu ayakkabılar bana çok dar." cümlesi hangisidir?',
+        "options": [
+            "Diese Schuhe sind mir zu eng.",
+            "Diese Schuhe gefallen mir zu eng.",
+            "Diese Schuhe passen mich nicht.",
+        ],
+        "correct": "Diese Schuhe sind mir zu eng.",
+        "explanation": "Beden/değerlendirme cümlesinde mir zu eng kalıbı çok kullanılır.",
+    },
+    {
+        "id": "a2-075",
+        "module_id": "service_requests",
+        "prompt": '"Randevuyu cuma gününe almak istiyorum." cümlesi hangisidir?',
+        "options": [
+            "Ich würde den Termin gern auf Freitag verschieben.",
+            "Ich hätte gern den Termin auf Freitag.",
+            "Ich verschiebe den Termin gern Freitag.",
+        ],
+        "correct": "Ich würde den Termin gern auf Freitag verschieben.",
+        "explanation": "Nazik plan değişikliğinde würde ... verschieben çok doğal bir kalıptır.",
+    },
+    {
+        "id": "a2-076",
+        "module_id": "service_requests",
+        "prompt": '"Başka bir şey içmek ister misiniz?" sorusu hangisidir?',
+        "options": [
+            "Noch etwas zu trinken?",
+            "Mehr trinken Sie?",
+            "Trinken Sie noch etwas mehr gern?",
+        ],
+        "correct": "Noch etwas zu trinken?",
+        "explanation": "Restoran hizmet dilinde kısa ve doğal servis sorusudur.",
+    },
+    {
+        "id": "a2-077",
+        "module_id": "service_requests",
+        "prompt": '"Bu ceket hoşuma gidiyor." cümlesi hangisidir?',
+        "options": [
+            "Diese Jacke gefällt mir.",
+            "Diese Jacke passt mir.",
+            "Diese Jacke ist mir gefallen.",
+        ],
+        "correct": "Diese Jacke gefällt mir.",
+        "explanation": "Estetik beğenide gefallen kullanılır; uyum için passen gerekir.",
+    },
+    {
+        "id": "a2-078",
+        "module_id": "service_requests",
+        "prompt": '"Bana bunu bir kez daha açıklayabilir misiniz?" cümlesindeki doğru fiil sırası hangisidir?',
+        "options": [
+            "Könnten Sie mir das noch einmal erklären?",
+            "Könnten Sie das mir noch einmal erklären?",
+            "Könnten erklären Sie mir das noch einmal?",
+        ],
+        "correct": "Könnten Sie mir das noch einmal erklären?",
+        "explanation": "Dolaylı nesne ve nesne sonrası infinitiv sonda kalır.",
+    },
+    {
+        "id": "a2-079",
+        "module_id": "service_requests",
+        "prompt": '"Daha sıcak bir mont arıyorum." cümlesi hangisidir?',
+        "options": [
+            "Ich suche einen wärmeren Mantel.",
+            "Ich suche ein wärmeren Mantel.",
+            "Ich suche einen warme Mantel.",
+        ],
+        "correct": "Ich suche einen wärmeren Mantel.",
+        "explanation": "Maskulin Akkusativ ve komparativ sıfat sonu birlikte doğru kurulmalıdır.",
+    },
+    {
+        "id": "a2-080",
+        "module_id": "service_requests",
+        "prompt": '"Hangisi daha doğal müşteri dili örneğidir?"',
+        "options": [
+            "Ich nehme heute keinen Nachtisch.",
+            "Ich nehme heute nicht Nachtisch.",
+            "Ich keinen Nachtisch heute nehme.",
+        ],
+        "correct": "Ich nehme heute keinen Nachtisch.",
+        "explanation": "İsim olumsuzluğu için kein kullanılır; söz dizimi de düz kalmalıdır.",
+    },
+    {
+        "id": "a2-081",
+        "module_id": "connectors_comparison",
+        "prompt": '"Bu konu hakkında konuşmak istemiyorum." cümlesinde doğru da-yapısı hangisidir?',
+        "options": [
+            "Darüber möchte ich nicht sprechen.",
+            "Mit ihm möchte ich nicht sprechen.",
+            "Darauf möchte ich nicht sprechen.",
+        ],
+        "correct": "Darüber möchte ich nicht sprechen.",
+        "explanation": "über + şey/konu için darüber kullanılır.",
+    },
+    {
+        "id": "a2-082",
+        "module_id": "connectors_comparison",
+        "prompt": '"Onu uzun zamandır bekliyorum." cümlesinde kişi için doğru yapı hangisidir?',
+        "options": [
+            "Ich warte schon lange auf ihn.",
+            "Ich warte schon lange darauf.",
+            "Ich warte schon lange mit ihm.",
+        ],
+        "correct": "Ich warte schon lange auf ihn.",
+        "explanation": "Kişiye dönüşte da- yapısı kullanılmaz; edat + zamir gerekir.",
+    },
+    {
+        "id": "a2-083",
+        "module_id": "connectors_comparison",
+        "prompt": '"Otel daha sakin olduğu için onu seçtim." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Ich habe das Hotel gewählt, weil es ruhiger ist.",
+            "Ich habe das Hotel gewählt, trotzdem es ruhiger ist.",
+            "Ich habe das Hotel gewählt, dass es ruhiger ist.",
+        ],
+        "correct": "Ich habe das Hotel gewählt, weil es ruhiger ist.",
+        "explanation": "Sebep açıklamasında weil gerekir.",
+    },
+    {
+        "id": "a2-084",
+        "module_id": "connectors_comparison",
+        "prompt": '"Bu tren olandan daha kullanışlı." cümlesi hangisidir?',
+        "options": [
+            "Dieser Zug ist praktischer als der andere.",
+            "Dieser Zug ist praktischer wie der andere.",
+            "Dieser Zug ist am praktischer.",
+        ],
+        "correct": "Dieser Zug ist praktischer als der andere.",
+        "explanation": "Karşılaştırmada als kullanılır.",
+    },
+    {
+        "id": "a2-085",
+        "module_id": "connectors_comparison",
+        "prompt": '"Sence yağmur yağacak mı?" cümlesinde içeriği aktaran doğru yapı hangisidir?',
+        "options": [
+            "Glaubst du, dass es regnen wird?",
+            "Glaubst du, weil es regnen wird?",
+            "Glaubst du, dass wird es regnen?",
+        ],
+        "correct": "Glaubst du, dass es regnen wird?",
+        "explanation": "Görüş/içerik aktarmada dass gerekir; yan cümlede çekimli unsur sonda olur.",
+    },
+    {
+        "id": "a2-086",
+        "module_id": "connectors_comparison",
+        "prompt": '"Bu oda en sakin olanı." cümlesi hangisidir?',
+        "options": [
+            "Dieses Zimmer ist am ruhigsten.",
+            "Dieses Zimmer ist ruhiger am meisten.",
+            "Dieses Zimmer ist der ruhigsten.",
+        ],
+        "correct": "Dieses Zimmer ist am ruhigsten.",
+        "explanation": "Prädikatif superlativte am + sıfat-sten yapısı kullanılır.",
+    },
+    {
+        "id": "a2-087",
+        "module_id": "connectors_comparison",
+        "prompt": '"Eğer bugün vaktim olursa sana yazacağım." cümlesi hangisidir?',
+        "options": [
+            "Wenn ich heute Zeit habe, schreibe ich dir.",
+            "Wenn ich heute Zeit habe, ich schreibe dir.",
+            "Weil ich heute Zeit habe, schreibe ich dir.",
+        ],
+        "correct": "Wenn ich heute Zeit habe, schreibe ich dir.",
+        "explanation": "Koşul cümlesinde wenn kullanılır; ardından ana cümle yeniden kurulur.",
+    },
+    {
+        "id": "a2-088",
+        "module_id": "connectors_comparison",
+        "prompt": '"Ben buna inanıyorum." cümlesinde doğru yapı hangisidir?',
+        "options": [
+            "Ich glaube daran.",
+            "Ich glaube an ihn.",
+            "Ich glaube darauf.",
+        ],
+        "correct": "Ich glaube daran.",
+        "explanation": "an + şey/soyut içerik için daran kullanılır.",
+    },
+    {
+        "id": "a2-089",
+        "module_id": "connectors_comparison",
+        "prompt": '"Bu plan daha ucuz ama daha kötü değil." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Dieser Plan ist billiger, aber nicht schlechter.",
+            "Dieser Plan ist billiger, sondern nicht schlechter.",
+            "Dieser Plan ist am billiger, aber nicht schlecht.",
+        ],
+        "correct": "Dieser Plan ist billiger, aber nicht schlechter.",
+        "explanation": "Karşılaştırma komparativ ile doğal kurulur.",
+    },
+    {
+        "id": "a2-090",
+        "module_id": "connectors_comparison",
+        "prompt": '"Aşağıdakilerden hangisi doğru kişi/şey ayrımı kurar?"',
+        "options": [
+            "Ich warte auf die Antwort. Ich warte schon lange darauf.",
+            "Ich warte auf meine Lehrerin. Ich warte schon lange darauf.",
+            "Ich spreche mit meinem Bruder. Ich spreche später darüber.",
+        ],
+        "correct": "Ich warte auf die Antwort. Ich warte schon lange darauf.",
+        "explanation": "Şey/konu için da- yapısı uygundur; kişi için edat + zamir gerekir.",
+    },
+    {
+        "id": "a2-091",
+        "module_id": "future_review",
+        "prompt": '"Oda şimdi hazırlanıyor." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Das Zimmer wird jetzt vorbereitet.",
+            "Das Zimmer ist jetzt vorbereitet.",
+            "Das Zimmer wird jetzt vorbereiten.",
+        ],
+        "correct": "Das Zimmer wird jetzt vorbereitet.",
+        "explanation": "Süreç devam ettiği için werden + Partizip II gerekir.",
+    },
+    {
+        "id": "a2-092",
+        "module_id": "future_review",
+        "prompt": '"Sözleşme imzalanmış durumda." cümlesi hangisidir?',
+        "options": [
+            "Der Vertrag ist unterschrieben.",
+            "Der Vertrag wird unterschrieben.",
+            "Der Vertrag ist unterschreiben.",
+        ],
+        "correct": "Der Vertrag ist unterschrieben.",
+        "explanation": "Sonuç/durum anlatıldığı için sein + Partizip II gerekir.",
+    },
+    {
+        "id": "a2-093",
+        "module_id": "future_review",
+        "prompt": '"Gelecek hafta daha çok okuyacağım." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Nächste Woche werde ich mehr lesen.",
+            "Nächste Woche werde ich mehr gelesen.",
+            "Nächste Woche ich werde mehr lesen.",
+        ],
+        "correct": "Nächste Woche werde ich mehr lesen.",
+        "explanation": "Zaman ifadesi başa gelebilir; werden ikinci sırada, infinitiv sonda kalır.",
+    },
+    {
+        "id": "a2-094",
+        "module_id": "future_review",
+        "prompt": '"Yaza kadar daha güvenli konuşacağımı düşünüyorum." cümlesi hangisidir?',
+        "options": [
+            "Ich glaube, dass ich bis zum Sommer sicherer sprechen werde.",
+            "Ich glaube, dass ich bis zum Sommer werde sicherer sprechen.",
+            "Ich glaube, weil ich bis zum Sommer sicherer sprechen werde.",
+        ],
+        "correct": "Ich glaube, dass ich bis zum Sommer sicherer sprechen werde.",
+        "explanation": "dass yan cümlesinde çekimli unsur olan werde sona gider.",
+    },
+    {
+        "id": "a2-095",
+        "module_id": "future_review",
+        "prompt": '"Hafta sonu evde kalacağım çünkü çok yorgun olacağım." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Ich werde am Wochenende zu Hause bleiben, weil ich sehr müde sein werde.",
+            "Ich werde am Wochenende zu Hause bleiben, weil ich werde sehr müde sein.",
+            "Ich werde am Wochenende zu Hause bleiben, dass ich sehr müde sein werde.",
+        ],
+        "correct": "Ich werde am Wochenende zu Hause bleiben, weil ich sehr müde sein werde.",
+        "explanation": "weil yan cümlesinde gelecek yapısı sona doğru kapanır; müde sein werde bloğu yan cümlenin sonunda birlikte duyulur.",
+    },
+    {
+        "id": "a2-096",
+        "module_id": "future_review",
+        "prompt": '"Aşağıdakilerden hangisi plan değil tahmindir?"',
+        "options": [
+            "Ich werde am Dienstag zum Arzt gehen.",
+            "Es wird heute Abend kalt werden.",
+            "Ich werde mich morgen anmelden.",
+        ],
+        "correct": "Es wird heute Abend kalt werden.",
+        "explanation": "Hava durumu ve beklenti daha çok tahmin tonunda duyulur.",
+    },
+    {
+        "id": "a2-097",
+        "module_id": "future_review",
+        "prompt": '"Aşağıdakilerden hangisi doğru A2 kapanış cümlesidir?"',
+        "options": [
+            "Wenn ich regelmäßig übe, werde ich in der Prüfung ruhiger reagieren.",
+            "Wenn ich regelmäßig übe, ich werde in der Prüfung ruhiger reagieren.",
+            "Wenn ich regelmäßig übe, werde ich in der Prüfung ruhiger reagiert.",
+        ],
+        "correct": "Wenn ich regelmäßig übe, werde ich in der Prüfung ruhiger reagieren.",
+        "explanation": "Koşul ve gelecek birlikte doğal kurulur; infinitiv sonda kalır.",
+    },
+    {
+        "id": "a2-098",
+        "module_id": "future_review",
+        "prompt": '"Bu akşam belgeler hazırlanacak." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Die Unterlagen werden heute Abend vorbereitet werden.",
+            "Die Unterlagen werden heute Abend vorbereitet.",
+            "Die Unterlagen sind heute Abend vorbereitet werden.",
+        ],
+        "correct": "Die Unterlagen werden heute Abend vorbereitet.",
+        "explanation": "Basit gelecek planı yerine pasif süreç zaten werden ile verildiğinde ek bir werden daha gerekmez.",
+    },
+    {
+        "id": "a2-099",
+        "module_id": "future_review",
+        "prompt": '"Hangisi doğru süreç/sonuç ayrımı kurar?"',
+        "options": [
+            "Die Gäste werden begrüßt, und danach ist der Raum geöffnet.",
+            "Die Gäste sind begrüßt, und danach wird der Raum geöffnet. (karşılama sürecini anlatırken)",
+            "Die Gäste werden begrüßen, und danach ist der Raum öffnen.",
+        ],
+        "correct": "Die Gäste werden begrüßt, und danach ist der Raum geöffnet.",
+        "explanation": "İlk kısım süreç, ikinci kısım sonuç durumudur.",
+    },
+    {
+        "id": "a2-100",
+        "module_id": "future_review",
+        "prompt": '"Aşağıdakilerden hangisi doğru geleceğe dönük çalışma planıdır?"',
+        "options": [
+            "Ich werde zuerst lesen und danach Schreiben üben.",
+            "Ich werde zuerst lesen und danach Schreiben geübt.",
+            "Ich zuerst werde lesen und danach Schreiben üben.",
+        ],
+        "correct": "Ich werde zuerst lesen und danach Schreiben üben.",
+        "explanation": "werden ikinci sırada kalır; ardışık iki infinitiv eylem plan içinde doğal biçimde yer alabilir.",
+    },
+    {
+        "id": "a2-101",
+        "module_id": "perfect_past",
+        "prompt": '"Dün çok erken kalktım." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Ich bin gestern sehr früh aufgestanden.",
+            "Ich habe gestern sehr früh aufgestanden.",
+            "Ich bin gestern sehr früh aufstehen.",
+        ],
+        "correct": "Ich bin gestern sehr früh aufgestanden.",
+        "explanation": "aufstehen hareket fiili olduğu için Perfekt'te sein ile kurulur.",
+    },
+    {
+        "id": "a2-102",
+        "module_id": "perfect_past",
+        "prompt": '"Daha önce hiç bu filmi görmedim." cümlesi hangisidir?',
+        "options": [
+            "Ich habe diesen Film noch nie gesehen.",
+            "Ich bin diesen Film noch nie gesehen.",
+            "Ich habe diesen Film noch nie sehen.",
+        ],
+        "correct": "Ich habe diesen Film noch nie gesehen.",
+        "explanation": "sehen fiili haben + gesehen ile kurulur; noch nie deneyim eksikliği verir.",
+    },
+    {
+        "id": "a2-103",
+        "module_id": "perfect_past",
+        "prompt": '"Neden bu kadar geç geldin?" sorusunun doğru karşılığı hangisidir?',
+        "options": [
+            "Warum bist du so spät gekommen?",
+            "Warum hast du so spät gekommen?",
+            "Warum bist du so spät kommen?",
+        ],
+        "correct": "Warum bist du so spät gekommen?",
+        "explanation": "kommen hareket fiili olduğundan sein ile kurulur.",
+    },
+    {
+        "id": "a2-104",
+        "module_id": "perfect_past",
+        "prompt": '"Ben henüz karar vermedim." cümlesi hangisidir?',
+        "options": [
+            "Ich habe mich noch nicht entschieden.",
+            "Ich bin mich noch nicht entschieden.",
+            "Ich habe mich noch nicht entscheiden.",
+        ],
+        "correct": "Ich habe mich noch nicht entschieden.",
+        "explanation": "sich entscheiden reflexive bir fiildir ve haben + entschieden ile kurulur.",
+    },
+    {
+        "id": "a2-105",
+        "module_id": "perfect_past",
+        "prompt": '"Dün dışarı çıkmak istemedim." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Ich wollte gestern nicht ausgehen.",
+            "Ich habe gestern nicht ausgehen wollen.",
+            "Ich durfte gestern nicht ausgehen wollen.",
+        ],
+        "correct": "Ich wollte gestern nicht ausgehen.",
+        "explanation": "Günlük kısa anlatıda wollen'in Präteritum biçimi daha doğal kullanılır.",
+    },
+    {
+        "id": "a2-106",
+        "module_id": "perfect_past",
+        "prompt": '"Trenle gidebildin mi?" sorusunun doğru karşılığı hangisidir?',
+        "options": [
+            "Konntest du mit dem Zug fahren?",
+            "Hast du mit dem Zug fahren gekonnt?",
+            "Bist du mit dem Zug fahren können?",
+        ],
+        "correct": "Konntest du mit dem Zug fahren?",
+        "explanation": "Modal geçmiş sorularında Präteritum kısa ve doğal bir çözümdür.",
+    },
+    {
+        "id": "a2-107",
+        "module_id": "perfect_past",
+        "prompt": '"Çok fotoğraf çektiğim için telefonum kapandı." cümlesinin doğru omurgası hangisidir?',
+        "options": [
+            "Mein Handy ist ausgegangen, weil ich viele Fotos gemacht habe.",
+            "Mein Handy hat ausgegangen, weil ich viele Fotos gemacht habe.",
+            "Mein Handy ist ausgegangen, weil ich habe viele Fotos gemacht.",
+        ],
+        "correct": "Mein Handy ist ausgegangen, weil ich viele Fotos gemacht habe.",
+        "explanation": "ausgehen sein ile kurulur; weil yan cümlesinde yardımcı fiil sona gider.",
+    },
+    {
+        "id": "a2-108",
+        "module_id": "perfect_past",
+        "prompt": '"Henüz eve dönmedi." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Er ist noch nicht nach Hause zurückgekommen.",
+            "Er hat noch nicht nach Hause zurückgekommen.",
+            "Er ist noch nicht nach Hause zurückkommen.",
+        ],
+        "correct": "Er ist noch nicht nach Hause zurückgekommen.",
+        "explanation": "zurückkommen hareket fiili olduğundan sein ile kurulur.",
+    },
+    {
+        "id": "a2-109",
+        "module_id": "perfect_past",
+        "prompt": '"Aşağıdakilerden hangisi izin eksikliğini anlatır?"',
+        "options": [
+            "Ich durfte nicht bleiben.",
+            "Ich musste nicht bleiben.",
+            "Ich wollte nicht bleiben.",
+        ],
+        "correct": "Ich durfte nicht bleiben.",
+        "explanation": "İzin yoksa dürfen'in olumsuz geçmişi kullanılır.",
+    },
+    {
+        "id": "a2-110",
+        "module_id": "perfect_past",
+        "prompt": '"Daha önce hiç tek başına yemek yaptın mı?" sorusunun doğru karşılığı hangisidir?',
+        "options": [
+            "Hast du schon einmal allein gekocht?",
+            "Bist du schon einmal allein gekocht?",
+            "Hast du schon einmal allein kochen?",
+        ],
+        "correct": "Hast du schon einmal allein gekocht?",
+        "explanation": "kochen haben ile kurulur; schon einmal deneyim sorusunu güçlendirir.",
+    },
+    {
+        "id": "a2-111",
+        "module_id": "travel_space",
+        "prompt": '"Otobüs merkeze gidiyor." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Der Bus fährt zum Zentrum.",
+            "Der Bus fährt im Zentrum.",
+            "Der Bus fährt nach dem Zentrum.",
+        ],
+        "correct": "Der Bus fährt zum Zentrum.",
+        "explanation": "Belirli hedefe yönelimde zum doğal bir kalıptır.",
+    },
+    {
+        "id": "a2-112",
+        "module_id": "travel_space",
+        "prompt": '"Lamba yatağın yanında duruyor." cümlesi hangisidir?',
+        "options": [
+            "Die Lampe steht neben dem Bett.",
+            "Die Lampe steht neben das Bett.",
+            "Die Lampe liegt neben dem Bett.",
+        ],
+        "correct": "Die Lampe steht neben dem Bett.",
+        "explanation": "Konum cümlesinde dativ gerekir; duran nesnede stehen uygundur.",
+    },
+    {
+        "id": "a2-113",
+        "module_id": "travel_space",
+        "prompt": '"Şimdi nereye gidiyorsun?" sorusunun doğru Almancası hangisidir?',
+        "options": [
+            "Wohin gehst du jetzt?",
+            "Wo gehst du jetzt?",
+            "Woher gehst du jetzt?",
+        ],
+        "correct": "Wohin gehst du jetzt?",
+        "explanation": "Hareket hedefi soruluyorsa Wohin gerekir.",
+    },
+    {
+        "id": "a2-114",
+        "module_id": "travel_space",
+        "prompt": '"Münih\'e trenle gidiyoruz." cümlesi hangisidir?',
+        "options": [
+            "Wir fahren mit dem Zug nach München.",
+            "Wir fahren mit dem Zug zu München.",
+            "Wir fahren mit dem Zug in München.",
+        ],
+        "correct": "Wir fahren mit dem Zug nach München.",
+        "explanation": "Şehir yöneliminde nach doğal seçimdir.",
+    },
+    {
+        "id": "a2-115",
+        "module_id": "travel_space",
+        "prompt": '"Resepsiyon üçüncü katta." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Die Rezeption ist im dritten Stock.",
+            "Die Rezeption ist in den dritten Stock.",
+            "Die Rezeption ist am dritten Stock.",
+        ],
+        "correct": "Die Rezeption ist im dritten Stock.",
+        "explanation": "Sabit konumda im + Stock kalıbı kullanılır.",
+    },
+    {
+        "id": "a2-116",
+        "module_id": "travel_space",
+        "prompt": '"Müzeden sonra istasyona gidiyoruz." cümlesi hangisidir?',
+        "options": [
+            "Nach dem Museum fahren wir zum Bahnhof.",
+            "Nach dem Museum fahren wir in den Bahnhof.",
+            "Nach dem Museum fahren wir nach dem Bahnhof.",
+        ],
+        "correct": "Nach dem Museum fahren wir zum Bahnhof.",
+        "explanation": "İstasyona yönelimde zum Bahnhof doğal biçimdir.",
+    },
+    {
+        "id": "a2-117",
+        "module_id": "travel_space",
+        "prompt": '"Çanta kapının arkasında." cümlesi hangisidir?',
+        "options": [
+            "Die Tasche liegt hinter der Tür.",
+            "Die Tasche liegt hinter die Tür.",
+            "Die Tasche steht hinter der Tür.",
+        ],
+        "correct": "Die Tasche liegt hinter der Tür.",
+        "explanation": "Sabit konum anlatıldığı için dativ gerekir; çanta gibi yatık nesnelerde liegen daha doğaldır.",
+    },
+    {
+        "id": "a2-118",
+        "module_id": "travel_space",
+        "prompt": '"Sabah resepsiyona gidiyorum." cümlesi için doğru seçenek hangisidir?',
+        "options": [
+            "Am Morgen gehe ich zur Rezeption.",
+            "Am Morgen gehe ich an die Rezeption.",
+            "Am Morgen gehe ich im Rezeption.",
+        ],
+        "correct": "Am Morgen gehe ich zur Rezeption.",
+        "explanation": "Kuruma/hizmet noktasına yönelimde zu kullanılır.",
+    },
+    {
+        "id": "a2-119",
+        "module_id": "travel_space",
+        "prompt": '"Işıklarda sağa dönün." cümlesinin en doğru karşılığı hangisidir?',
+        "options": [
+            "Biegen Sie an der Ampel rechts ab.",
+            "Biegen Sie in der Ampel rechts ab.",
+            "Sie rechts an der Ampel abbiegen.",
+        ],
+        "correct": "Biegen Sie an der Ampel rechts ab.",
+        "explanation": "Yön tarifinde kısa komut ve an der Ampel kalıbı doğal çalışır.",
+    },
+    {
+        "id": "a2-120",
+        "module_id": "travel_space",
+        "prompt": '"Hangi cümle sabit konumu anlatır?"',
+        "options": [
+            "Das Bild hängt über dem Sofa.",
+            "Das Bild geht über das Sofa.",
+            "Das Bild fährt über das Sofa.",
+        ],
+        "correct": "Das Bild hängt über dem Sofa.",
+        "explanation": "hängen + dativ sabit asılı konum anlatır.",
+    },
+    {
+        "id": "a2-121",
+        "module_id": "service_requests",
+        "prompt": '"Biraz daha sakin bir oda istiyorum." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Ich hätte gern ein etwas ruhigeres Zimmer.",
+            "Ich will ein etwas ruhiger Zimmer.",
+            "Ich brauche ein ruhigeres Zimmer geben.",
+        ],
+        "correct": "Ich hätte gern ein etwas ruhigeres Zimmer.",
+        "explanation": "Nazik istek ve komparativ sıfat birlikte doğru kurulmalıdır.",
+    },
+    {
+        "id": "a2-122",
+        "module_id": "service_requests",
+        "prompt": '"Bana menüyü tekrar getirebilir misiniz?" cümlesi hangisidir?',
+        "options": [
+            "Könnten Sie mir bitte die Speisekarte noch einmal bringen?",
+            "Könnten Sie bitte die Speisekarte mir bringen noch einmal?",
+            "Bringen Sie mir die Speisekarte noch einmal bitte können?",
+        ],
+        "correct": "Könnten Sie mir bitte die Speisekarte noch einmal bringen?",
+        "explanation": "Nazik ricada söz dizimi temiz ve kısa tutulmalıdır.",
+    },
+    {
+        "id": "a2-123",
+        "module_id": "service_requests",
+        "prompt": '"Bu model daha ucuz ama bana olmuyor." cümlesi hangisidir?',
+        "options": [
+            "Dieses Modell ist billiger, aber es passt mir nicht.",
+            "Dieses Modell ist billiger, aber es gefällt mir nicht passen.",
+            "Dieses Modell ist billiger, aber es passt mich nicht.",
+        ],
+        "correct": "Dieses Modell ist billiger, aber es passt mir nicht.",
+        "explanation": "passen mir fiziksel uyum bildirir.",
+    },
+    {
+        "id": "a2-124",
+        "module_id": "service_requests",
+        "prompt": '"Ben tatlı istemiyorum ama bir kahve alacağım." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Ich möchte keinen Nachtisch, aber ich nehme einen Kaffee.",
+            "Ich möchte nicht Nachtisch, aber ich nehme einen Kaffee.",
+            "Ich möchte keinen Nachtisch, aber ich nehme ein Kaffee.",
+        ],
+        "correct": "Ich möchte keinen Nachtisch, aber ich nehme einen Kaffee.",
+        "explanation": "Nachtisch maskulindir; Kaffee de maskulin Akkusativde einen olur.",
+    },
+    {
+        "id": "a2-125",
+        "module_id": "service_requests",
+        "prompt": '"Bu çok pahalı. Daha ucuz bir şeyiniz var mı?" cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Das ist zu teuer. Haben Sie etwas Günstigeres?",
+            "Das ist sehr teuer. Haben Sie günstiger etwas?",
+            "Das ist zu teuer. Sie haben etwas günstiger?",
+        ],
+        "correct": "Das ist zu teuer. Haben Sie etwas Günstigeres?",
+        "explanation": "etwas + komparativ nominalleştirme günlük alışveriş dilinde sık kullanılır.",
+    },
+    {
+        "id": "a2-126",
+        "module_id": "service_requests",
+        "prompt": '"Ben bu renkten daha koyusunu arıyorum." cümlesi hangisidir?',
+        "options": [
+            "Ich suche etwas Dunkleres in dieser Farbe.",
+            "Ich suche dunkler etwas in dieser Farbe.",
+            "Ich suche etwas dunkel in dieser Farbe.",
+        ],
+        "correct": "Ich suche etwas Dunkleres in dieser Farbe.",
+        "explanation": "Nominalleştirilmiş sıfat ile karşılaştırmalı tercih kurulabilir.",
+    },
+    {
+        "id": "a2-127",
+        "module_id": "service_requests",
+        "prompt": '"Ayrı ödeyeceğiz." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Wir zahlen getrennt.",
+            "Wir zahlen zusammen.",
+            "Wir rechnen getrennt nicht.",
+        ],
+        "correct": "Wir zahlen getrennt.",
+        "explanation": "Ödeme dilinde getrennt = ayrı olarak ödemek demektir.",
+    },
+    {
+        "id": "a2-128",
+        "module_id": "service_requests",
+        "prompt": '"Bu salatada çok fazla soğan var." cümlesi hangisidir?',
+        "options": [
+            "In diesem Salat sind zu viele Zwiebeln.",
+            "In diesem Salat ist zu viel Zwiebeln.",
+            "Dieser Salat hat zu viele Zwiebel.",
+        ],
+        "correct": "In diesem Salat sind zu viele Zwiebeln.",
+        "explanation": "Zwiebeln çoğuldur; sind ve çoğul isim gerekir.",
+    },
+    {
+        "id": "a2-129",
+        "module_id": "service_requests",
+        "prompt": '"Yazılı onay almak istiyorum." cümlesine en yakın doğru seçenek hangisi?',
+        "options": [
+            "Ich hätte gern eine schriftliche Bestätigung.",
+            "Ich hätte gern schriftliche Bestätigung.",
+            "Ich will schriftliche Bestätigung haben gern.",
+        ],
+        "correct": "Ich hätte gern eine schriftliche Bestätigung.",
+        "explanation": "İsim grubu artikel ile tam kurulmalıdır.",
+    },
+    {
+        "id": "a2-130",
+        "module_id": "service_requests",
+        "prompt": '"Aşağıdakilerden hangisi estetik beğeni değil beden uyumu anlatır?"',
+        "options": [
+            "Die Hose passt mir gut.",
+            "Die Hose gefällt mir sehr.",
+            "Die Hose ist schön.",
+        ],
+        "correct": "Die Hose passt mir gut.",
+        "explanation": "passen mir fiziksel uyum, gefallen estetik beğeni bildirir.",
+    },
+    {
+        "id": "a2-131",
+        "module_id": "connectors_comparison",
+        "prompt": '"Bu konuda onunla daha sonra konuşacağım." cümlesinde kişi için doğru yapı hangisidir?',
+        "options": [
+            "Ich spreche später mit ihm darüber.",
+            "Ich spreche später damit darüber.",
+            "Ich spreche später darüber ihn.",
+        ],
+        "correct": "Ich spreche später mit ihm darüber.",
+        "explanation": "Kişi ve konu aynı cümlede ayrıştırılabilir; kişi için mit ihm, konu için darüber kullanılır.",
+    },
+    {
+        "id": "a2-132",
+        "module_id": "connectors_comparison",
+        "prompt": '"Çok yağmur yağıyor. Buna rağmen dışarı çıkıyoruz." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Es regnet stark. Trotzdem gehen wir raus.",
+            "Es regnet stark. Deshalb gehen wir raus.",
+            "Es regnet stark. Trotzdem wir gehen raus.",
+        ],
+        "correct": "Es regnet stark. Trotzdem gehen wir raus.",
+        "explanation": "Engel bilgisine rağmen gerçekleşen eylem trotzem ile verilir.",
+    },
+    {
+        "id": "a2-133",
+        "module_id": "connectors_comparison",
+        "prompt": '"Daha erken tren daha pahalı ama daha rahat." cümlesinin en doğal karşılığı hangisidir?',
+        "options": [
+            "Der frühere Zug ist teurer, aber bequemer.",
+            "Der frühere Zug ist mehr teuer, aber bequemer.",
+            "Der frühere Zug ist teurer wie bequemer.",
+        ],
+        "correct": "Der frühere Zug ist teurer, aber bequemer.",
+        "explanation": "İki sıfat komparativde doğal biçimde art arda kullanılabilir.",
+    },
+    {
+        "id": "a2-134",
+        "module_id": "connectors_comparison",
+        "prompt": '"Seninle aynı fikirdeyim." cümlesinde konuya değil kişiye dönüş vardır. Buna en yakın doğru yapı hangisidir?',
+        "options": [
+            "Ich bin damit einverstanden.",
+            "Ich bin mit dir einverstanden.",
+            "Ich bin darauf einverstanden.",
+        ],
+        "correct": "Ich bin mit dir einverstanden.",
+        "explanation": "Kişiyle uzlaşma/uyumda mit dir gibi edat + zamir gerekir.",
+    },
+    {
+        "id": "a2-135",
+        "module_id": "connectors_comparison",
+        "prompt": '"Plan değiştiği için bugün gelemiyorum." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Ich kann heute nicht kommen, weil sich der Plan geändert hat.",
+            "Ich kann heute nicht kommen, dass sich der Plan geändert hat.",
+            "Ich kann heute nicht kommen, weil hat sich der Plan geändert.",
+        ],
+        "correct": "Ich kann heute nicht kommen, weil sich der Plan geändert hat.",
+        "explanation": "Sebep açıklaması weil ile verilir; yardımcı fiil yan cümlede sona gider.",
+    },
+    {
+        "id": "a2-136",
+        "module_id": "connectors_comparison",
+        "prompt": '"En sessiz oda hangisi?" sorusuna uygun cevap hangisidir?',
+        "options": [
+            "Zimmer 12 ist am ruhigsten.",
+            "Zimmer 12 ist ruhiger am meisten.",
+            "Zimmer 12 ist am ruhiger.",
+        ],
+        "correct": "Zimmer 12 ist am ruhigsten.",
+        "explanation": "Prädikatif superlativte am + sıfat-sten kullanılır.",
+    },
+    {
+        "id": "a2-137",
+        "module_id": "connectors_comparison",
+        "prompt": '"Buna inanıyorum ama yine de emin değilim." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Ich glaube daran, aber ich bin trotzdem nicht sicher.",
+            "Ich glaube an ihn, aber ich bin deshalb nicht sicher.",
+            "Ich glaube darüber, aber ich bin nicht sicher trotzdem.",
+        ],
+        "correct": "Ich glaube daran, aber ich bin trotzdem nicht sicher.",
+        "explanation": "Soyut içeriğe dönüşte daran, karşıt sonuçta trotzdem kullanılır.",
+    },
+    {
+        "id": "a2-138",
+        "module_id": "connectors_comparison",
+        "prompt": '"Vaktim var, bu yüzden bugün cevap yazıyorum." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Ich habe Zeit. Deshalb schreibe ich heute eine Antwort.",
+            "Ich habe Zeit. Trotzdem schreibe ich heute eine Antwort.",
+            "Ich habe Zeit. Deshalb ich schreibe heute eine Antwort.",
+        ],
+        "correct": "Ich habe Zeit. Deshalb schreibe ich heute eine Antwort.",
+        "explanation": "Sebep-sonuç yönünde deshalb ve ana cümle söz dizimi gerekir.",
+    },
+    {
+        "id": "a2-139",
+        "module_id": "connectors_comparison",
+        "prompt": '"Hangisi doğru karşılaştırma yapar?"',
+        "options": [
+            "Dieses Hotel ist kleiner als das andere, aber besser gelegen.",
+            "Dieses Hotel ist kleiner wie das andere, aber besser gelegen.",
+            "Dieses Hotel ist am kleiner als das andere.",
+        ],
+        "correct": "Dieses Hotel ist kleiner als das andere, aber besser gelegen.",
+        "explanation": "Karşılaştırmada als gerekir; ikinci sıfat Partizip kullanımıyla genişleyebilir.",
+    },
+    {
+        "id": "a2-140",
+        "module_id": "connectors_comparison",
+        "prompt": '"Aşağıdakilerden hangisi doğru içerik aktarımıdır?"',
+        "options": [
+            "Sie sagt, dass sie morgen später kommt.",
+            "Sie sagt, weil sie morgen später kommt.",
+            "Sie sagt, dass kommt sie morgen später.",
+        ],
+        "correct": "Sie sagt, dass sie morgen später kommt.",
+        "explanation": "Aktarılan bilgi dass ile kurulur ve fiil sona gider.",
+    },
+    {
+        "id": "a2-141",
+        "module_id": "future_review",
+        "prompt": '"Misafirler bilgilendiriliyor." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Die Gäste werden informiert.",
+            "Die Gäste sind informiert.",
+            "Die Gäste werden informieren.",
+        ],
+        "correct": "Die Gäste werden informiert.",
+        "explanation": "Süreç anlatıldığı için werden + Partizip II gerekir.",
+    },
+    {
+        "id": "a2-142",
+        "module_id": "future_review",
+        "prompt": '"Yarın arkadaşımı arayacağım." cümlesi hangisidir?',
+        "options": [
+            "Ich werde morgen meine Freundin anrufen.",
+            "Ich werde morgen meine Freundin angerufen.",
+            "Ich morgen werde meine Freundin anrufen.",
+        ],
+        "correct": "Ich werde morgen meine Freundin anrufen.",
+        "explanation": "werden çekimli unsur olarak ikinci sırada kalır; infinitiv sonda olur.",
+    },
+    {
+        "id": "a2-143",
+        "module_id": "future_review",
+        "prompt": '"Her şey hazır durumda." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Alles ist vorbereitet.",
+            "Alles wird vorbereitet.",
+            "Alles ist vorbereiten.",
+        ],
+        "correct": "Alles ist vorbereitet.",
+        "explanation": "Mevcut sonuç/durum anlatılıyorsa sein kullanılır.",
+    },
+    {
+        "id": "a2-144",
+        "module_id": "future_review",
+        "prompt": '"Hava daha iyi olacak." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Das Wetter wird besser werden.",
+            "Das Wetter wird besser.",
+            "Das Wetter besser wird werden.",
+        ],
+        "correct": "Das Wetter wird besser.",
+        "explanation": "Bir hava tahmininde werden + sıfat yapısı yeterlidir; ikinci bir infinitiv burada gereksizdir.",
+    },
+    {
+        "id": "a2-145",
+        "module_id": "future_review",
+        "prompt": '"Eğer zaman bulursam daha çok okuyacağım." cümlesinin doğru karşılığı hangisidir?',
+        "options": [
+            "Wenn ich Zeit finde, werde ich mehr lesen.",
+            "Wenn ich Zeit finde, ich werde mehr lesen.",
+            "Weil ich Zeit finde, werde ich mehr lesen.",
+        ],
+        "correct": "Wenn ich Zeit finde, werde ich mehr lesen.",
+        "explanation": "Koşul cümlesinde wenn kullanılır; ardından ana cümle yeniden kurulur.",
+    },
+    {
+        "id": "a2-146",
+        "module_id": "future_review",
+        "prompt": '"Sınavdan önce her gün tekrar yapacağım." cümlesi hangisidir?',
+        "options": [
+            "Ich werde vor der Prüfung jeden Tag wiederholen.",
+            "Ich werde vor der Prüfung jeden Tag wiederholt.",
+            "Ich vor der Prüfung werde jeden Tag wiederholen.",
+        ],
+        "correct": "Ich werde vor der Prüfung jeden Tag wiederholen.",
+        "explanation": "Gelecek planında infinitiv yalın biçimde sonda yer alır.",
+    },
+    {
+        "id": "a2-147",
+        "module_id": "future_review",
+        "prompt": '"Toplantı iptal ediliyor." cümlesine en yakın doğru seçenek hangisidir?',
+        "options": [
+            "Das Meeting wird abgesagt.",
+            "Das Meeting ist abgesagt.",
+            "Das Meeting wird absagen.",
+        ],
+        "correct": "Das Meeting wird abgesagt.",
+        "explanation": "İptal süreci/duyurusu için werden + abgesagt doğal çalışır.",
+    },
+    {
+        "id": "a2-148",
+        "module_id": "future_review",
+        "prompt": '"Oda zaten temizlenmiş durumda." cümlesi hangisidir?',
+        "options": [
+            "Das Zimmer ist schon gereinigt.",
+            "Das Zimmer wird schon gereinigt.",
+            "Das Zimmer ist schon reinigen.",
+        ],
+        "correct": "Das Zimmer ist schon gereinigt.",
+        "explanation": "Sonuç durumu anlatılırken sein + Partizip II kullanılır.",
+    },
+    {
+        "id": "a2-149",
+        "module_id": "future_review",
+        "prompt": '"Aşağıdakilerden hangisi doğru gelecek + dass yapısıdır?"',
+        "options": [
+            "Ich denke, dass wir morgen früher losfahren werden.",
+            "Ich denke, dass wir morgen werden früher losfahren.",
+            "Ich denke, weil wir morgen früher losfahren werden.",
+        ],
+        "correct": "Ich denke, dass wir morgen früher losfahren werden.",
+        "explanation": "dass yan cümlesinde çekimli unsur olan werden sona gider.",
+    },
+    {
+        "id": "a2-150",
+        "module_id": "future_review",
+        "prompt": '"Hangisi A2 sonunda doğru çalışma stratejisini daha iyi temsil eder?"',
+        "options": [
+            "Ich werde alte Themen wiederholen und neue Texte lesen.",
+            "Ich werde nur einzelne Regeln auswendig lernen.",
+            "Ich werde keine alten Themen wiederholen.",
+        ],
+        "correct": "Ich werde alte Themen wiederholen und neue Texte lesen.",
+        "explanation": "A2 kapanışında amaç eski ve yeni yapıları birlikte sürdürebilmektir.",
+    },
+]
+
+
+A2_GENERATED_MODULE_LESSON_MAP = {
+    "perfect_past": [1, 6],
+    "travel_space": [2, 11, 12],
+    "service_requests": [3, 4, 7],
+    "connectors_comparison": [5, 8, 9, 13],
+    "future_review": [10, 14],
+}
+
+
+def _lesson_pool(level_slug, lesson_indexes):
+    index_set = set(lesson_indexes)
+    selected = []
+    for item in GERMAN_LESSONS.get(level_slug, []):
+        if item["index"] in index_set:
+            selected.append(get_german_lesson(level_slug, item["slug"]))
+    return selected
+
+
+def _unique_options(options, correct):
+    seen = []
+    for option in options:
+        if option not in seen:
+            seen.append(option)
+    if correct not in seen:
+        seen.insert(0, correct)
+    while len(seen) < 3:
+        seen.append(f"{correct} ")
+    return seen[:3]
+
+
+def _build_a2_generated_extension():
+    questions = []
+    next_id = 151
+
+    for module_id, lesson_indexes in A2_GENERATED_MODULE_LESSON_MAP.items():
+        lessons = _lesson_pool("a2", lesson_indexes)
+        phrase_pool = []
+        vocab_pool = []
+        mistake_pool = []
+
+        for lesson in lessons:
+            phrase_pool.extend(
+                {
+                    "lesson_index": lesson["index"],
+                    "de": item["de"],
+                    "tr": item["tr"],
+                }
+                for item in lesson.get("phrase_bank", [])
+            )
+            vocab_pool.extend(
+                {
+                    "lesson_index": lesson["index"],
+                    "word": item["word"],
+                    "article": item["article"],
+                    "meanings": item["meanings"],
+                }
+                for item in lesson.get("vocabulary", [])
+                if item.get("word")
+            )
+            mistake_pool.extend(
+                {
+                    "lesson_index": lesson["index"],
+                    "wrong": item["wrong"],
+                    "right": item["right"],
+                    "reason": item.get("why") or item.get("reason") or "Bu düzeltme dersin çekirdek yapısını korur.",
+                }
+                for item in lesson.get("common_mistakes", [])
+            )
+
+        # 10 phrase translation questions
+        for idx, item in enumerate(phrase_pool[:10]):
+            distractors = [
+                phrase_pool[(idx + 1) % len(phrase_pool)]["tr"],
+                phrase_pool[(idx + 3) % len(phrase_pool)]["tr"],
+            ]
+            options = _unique_options([item["tr"], *distractors], item["tr"])
+            questions.append(
+                {
+                    "id": f"a2-{next_id:03d}",
+                    "module_id": module_id,
+                    "prompt": f'A2 {item["lesson_index"]}. ders kalıbı: "{item["de"]}" cümlesinin en yakın Türkçesi hangisidir?',
+                    "options": options,
+                    "correct": item["tr"],
+                    "explanation": "Bu kalıbı anlamı üzerinden tanımak, sınavdaki hızlı karar becerisini güçlendirir.",
+                }
+            )
+            next_id += 1
+
+        # 10 vocabulary questions: first 5 article, next 5 meaning
+        article_vocab_pool = [item for item in vocab_pool if item["article"] not in {"", "-", None}]
+
+        for idx, item in enumerate(article_vocab_pool[:5]):
+            article_options = _unique_options(
+                [item["article"], "der", "die", "das"],
+                item["article"],
+            )
+            questions.append(
+                {
+                    "id": f"a2-{next_id:03d}",
+                    "module_id": module_id,
+                    "prompt": f'A2 {item["lesson_index"]}. derste "{item["word"]}" kelimesi için doğru artikel hangisidir?',
+                    "options": article_options,
+                    "correct": item["article"],
+                    "explanation": "Kelimeyi article ile birlikte hatırlamak A2 üretiminde hata oranını düşürür.",
+                }
+            )
+            next_id += 1
+
+        for idx, item in enumerate(vocab_pool[5:10], start=5):
+            meaning = ", ".join(item["meanings"][:2])
+            distractors = [
+                ", ".join(vocab_pool[(idx + 1) % len(vocab_pool)]["meanings"][:2]),
+                ", ".join(vocab_pool[(idx + 4) % len(vocab_pool)]["meanings"][:2]),
+            ]
+            options = _unique_options([meaning, *distractors], meaning)
+            label = f'{item["article"]} {item["word"]}' if item["article"] not in {"", "-", None} else item["word"]
+            questions.append(
+                {
+                    "id": f"a2-{next_id:03d}",
+                    "module_id": module_id,
+                    "prompt": f'A2 {item["lesson_index"]}. derste "{label}" ifadesinin en yakın anlamı hangisidir?',
+                    "options": options,
+                    "correct": meaning,
+                    "explanation": "Kelimeyi bağlam içinde taşıyacak temel anlamı tanımak gerekir.",
+                }
+            )
+            next_id += 1
+
+        # 10 common mistake correction questions
+        for idx, item in enumerate(mistake_pool[:10]):
+            distractor = mistake_pool[(idx + 1) % len(mistake_pool)]["right"]
+            options = _unique_options([item["right"], item["wrong"], distractor], item["right"])
+            questions.append(
+                {
+                    "id": f"a2-{next_id:03d}",
+                    "module_id": module_id,
+                    "prompt": f'A2 {item["lesson_index"]}. derste geçen "{item["wrong"]}" cümlesi için doğru düzeltme hangisidir?',
+                    "options": options,
+                    "correct": item["right"],
+                    "explanation": item["reason"],
+                }
+            )
+            next_id += 1
+
+    return questions
+
+
+A2_LEVEL_TEST_BANK.extend(_build_a2_generated_extension())
+
+
+def _build_a2_generated_extension_v2():
+    questions = []
+    next_id = 301
+
+    for module_id, lesson_indexes in A2_GENERATED_MODULE_LESSON_MAP.items():
+        lessons = _lesson_pool("a2", lesson_indexes)
+        grammar_pool = []
+        dialogue_pool = []
+        reading_focus_pool = []
+        seen_reading_focus = set()
+
+        for lesson in lessons:
+            grammar_pool.extend(
+                {
+                    "lesson_index": lesson["index"],
+                    "title": item["title"],
+                    "when_to_use": item["when_to_use"],
+                    "formula": item["formula"],
+                }
+                for item in lesson.get("grammar_sections", [])
+            )
+            dialogue_pool.extend(
+                {
+                    "lesson_index": lesson["index"],
+                    "speaker": item["speaker"],
+                    "text_de": item["text_de"],
+                    "text_tr": item["text_tr"],
+                }
+                for item in lesson.get("mini_dialogue", {}).get("lines", [])
+            )
+            for passage in lesson.get("reading_passages", []):
+                for paragraph in passage.get("paragraphs", []):
+                    for segment in paragraph.get("segments", []):
+                        text = (segment.get("text") or "").strip()
+                        tooltip = (segment.get("tooltip") or "").strip()
+                        key = (lesson["index"], text, tooltip)
+                        if text and tooltip and key not in seen_reading_focus:
+                            seen_reading_focus.add(key)
+                            reading_focus_pool.append(
+                                {
+                                    "lesson_index": lesson["index"],
+                                    "text": text,
+                                    "tooltip": tooltip,
+                                }
+                            )
+
+        # 10 grammar-purpose questions
+        for idx, item in enumerate(grammar_pool[:10]):
+            distractors = [
+                grammar_pool[(idx + 1) % len(grammar_pool)]["when_to_use"],
+                grammar_pool[(idx + 3) % len(grammar_pool)]["when_to_use"],
+            ]
+            options = _unique_options([item["when_to_use"], *distractors], item["when_to_use"])
+            questions.append(
+                {
+                    "id": f"a2-{next_id:03d}",
+                    "module_id": module_id,
+                    "prompt": f'A2 {item["lesson_index"]}. derste "{item["title"]}" başlığının temel kullanım amacı hangisidir?',
+                    "options": options,
+                    "correct": item["when_to_use"],
+                    "explanation": "Gramer başlığının ne zaman devreye girdiğini tanımak, sınavda doğru yapı seçimini hızlandırır.",
+                }
+            )
+            next_id += 1
+
+        if len(grammar_pool) < 10:
+            for idx in range(10 - len(grammar_pool)):
+                item = grammar_pool[idx % len(grammar_pool)]
+                distractors = [
+                    grammar_pool[(idx + 1) % len(grammar_pool)]["formula"],
+                    grammar_pool[(idx + 2) % len(grammar_pool)]["formula"],
+                ]
+                options = _unique_options([item["formula"], *distractors], item["formula"])
+                questions.append(
+                    {
+                        "id": f"a2-{next_id:03d}",
+                        "module_id": module_id,
+                        "prompt": f'A2 {item["lesson_index"]}. derste "{item["title"]}" başlığı için kısa formül hangisidir?',
+                        "options": options,
+                        "correct": item["formula"],
+                        "explanation": "Kısa formül bilgisi, uzun cümleyi üretmeden önce iskeleti zihinde kurmana yardım eder.",
+                    }
+                )
+                next_id += 1
+
+        # 10 dialogue comprehension questions
+        for idx, item in enumerate(dialogue_pool[:10]):
+            distractors = [
+                dialogue_pool[(idx + 1) % len(dialogue_pool)]["text_tr"],
+                dialogue_pool[(idx + 4) % len(dialogue_pool)]["text_tr"],
+            ]
+            options = _unique_options([item["text_tr"], *distractors], item["text_tr"])
+            questions.append(
+                {
+                    "id": f"a2-{next_id:03d}",
+                    "module_id": module_id,
+                    "prompt": f'A2 {item["lesson_index"]}. dersteki diyalog satırı "{item["text_de"]}" en yakın olarak ne anlatır?',
+                    "options": options,
+                    "correct": item["text_tr"],
+                    "explanation": "Diyalog satırını bütün olarak anlamak, A2 dinleme ve okuma hızını artırır.",
+                }
+            )
+            next_id += 1
+
+        # 10 reading-focus questions
+        for idx, item in enumerate(reading_focus_pool[:10]):
+            distractors = [
+                reading_focus_pool[(idx + 1) % len(reading_focus_pool)]["tooltip"],
+                reading_focus_pool[(idx + 5) % len(reading_focus_pool)]["tooltip"],
+            ]
+            options = _unique_options([item["tooltip"], *distractors], item["tooltip"])
+            questions.append(
+                {
+                    "id": f"a2-{next_id:03d}",
+                    "module_id": module_id,
+                    "prompt": f'A2 {item["lesson_index"]}. dersteki okuma parçasında vurgulanan "{item["text"]}" ifadesi bağlamda en çok neyi karşılar?',
+                    "options": options,
+                    "correct": item["tooltip"],
+                    "explanation": "Okuma parçasındaki odak kelimeleri bağlam içinden tanımak, metin çözme hızını yükseltir.",
+                }
+            )
+            next_id += 1
+
+    return questions
+
+
+A2_LEVEL_TEST_BANK.extend(_build_a2_generated_extension_v2())
+
+
 LEVEL_TEST_BANKS = {
     "a1": A1_LEVEL_TEST_BANK,
+    "a2": A2_LEVEL_TEST_BANK,
+}
+
+
+LEVEL_TEST_CONFIGS = {
+    "a1": {
+        "title": "A1 Seviye Bitirme Testi",
+        "subtitle": "Dersleri bitirdikten sonra temeli gerçekten oturtup oturtmadığını ölç.",
+        "duration": "35-45 dk",
+        "pass_score": 80,
+        "pass_correct": 40,
+        "instructions": [
+            "Test her açıldığında soru bankasından yeni bir karışım seçilir.",
+            "Her modülde farklı derslerden gelen çekirdek yapılar ölçülür.",
+            "Bu oturum 50 sorudan oluşur; 40 doğru ve üzeri sonuç geçer kabul edilir.",
+            "Yüzde 80 ve üzeri, A1 temel omurgasının oturduğunu gösterir; düşük kalırsa özellikle zayıf modülleri tekrar etmen gerekir.",
+            "Bu bankaya her geliştirme turunda 50 yeni soru eklenebilir; yapı buna göre kuruldu.",
+        ],
+        "focus_points": [
+            "Artikel ve temel tanışma kalıpları",
+            "sein / haben / düzenli fiiller",
+            "zaman ve program cümleleri",
+            "mekân soruları ve Es gibt",
+            "Akkusativ ve sipariş kalıpları",
+        ],
+        "modules": A1_LEVEL_TEST_MODULES,
+    },
+    "a2": {
+        "title": "A2 Seviye Bitirme Testi",
+        "subtitle": "A2 omurgasının gerçekten oturup oturmadığını; geçmiş, bağlaç, hizmet dili ve gelecek planı üzerinden ölç.",
+        "duration": "40-55 dk",
+        "pass_score": 80,
+        "pass_correct": 40,
+        "instructions": [
+            "Test her açıldığında soru bankasından yeni bir karışım seçilir.",
+            "Her modül A2'nin farklı bir iletişim görevini ölçer: anlatı, yolculuk, hizmet dili, bağlaç ve gelecek planı.",
+            "Bu oturum 50 sorudan oluşur; 40 doğru ve üzeri sonuç geçer kabul edilir.",
+            "Goethe A2 mantığında yalnız kuralı bilmek değil, doğru yapıyı bağlama göre seçmek hedeflenir.",
+            "Sonraki turlarda bu bankaya 50 yeni soru daha eklenebilir; yapı genişlemeye hazırdır.",
+        ],
+        "focus_points": [
+            "Perfekt, deneyim soruları ve modal geçmiş",
+            "Yer, yön, otel dili ve hareket edatları",
+            "Nazik istekler, restoran ve alışveriş dili",
+            "Bağlaçlar, da- yapıları ve karşılaştırma",
+            "Pasif, werden ve sınav odaklı plan anlatımı",
+        ],
+        "modules": A2_LEVEL_TEST_MODULES,
+    },
 }
 
 
@@ -2060,18 +4220,16 @@ def get_level_test_bank_size(level_slug):
 
 
 def build_german_level_test(level_slug):
-    if level_slug != "a1":
-        return None
-
+    config = LEVEL_TEST_CONFIGS.get(level_slug)
     rng = SystemRandom()
     bank = LEVEL_TEST_BANKS.get(level_slug, [])
-    if not bank:
+    if not bank or not config:
         return None
 
     exercises = []
     total_questions = 0
 
-    for module in A1_LEVEL_TEST_MODULES:
+    for module in config["modules"]:
         pool = [item for item in bank if item["module_id"] == module["id"]]
         sample_size = min(module["sample_size"], len(pool))
         selected = rng.sample(pool, sample_size)
@@ -2090,27 +4248,15 @@ def build_german_level_test(level_slug):
 
     return {
         "slug": f"{level_slug}-seviye-bitirme-testi",
-        "title": "A1 Seviye Bitirme Testi",
-        "subtitle": "Dersleri bitirdikten sonra temeli gerçekten oturtup oturtmadığını ölç.",
-        "duration": "35-45 dk",
+        "title": config["title"],
+        "subtitle": config["subtitle"],
+        "duration": config["duration"],
         "question_bank_size": len(bank),
         "sample_size": total_questions,
-        "pass_score": 80,
-        "pass_correct": 40,
+        "pass_score": config["pass_score"],
+        "pass_correct": config["pass_correct"],
         "module_count": len(exercises),
-        "instructions": [
-            "Test her açıldığında soru bankasından yeni bir karışım seçilir.",
-            "Her modülde farklı derslerden gelen çekirdek yapılar ölçülür.",
-            "Bu oturum 50 sorudan oluşur; 40 doğru ve üzeri sonuç geçer kabul edilir.",
-            "Yüzde 80 ve üzeri, A1 temel omurgasının oturduğunu gösterir; düşük kalırsa özellikle zayıf modülleri tekrar etmen gerekir.",
-            "Bu bankaya her geliştirme turunda 50 yeni soru eklenebilir; yapı buna göre kuruldu.",
-        ],
-        "focus_points": [
-            "Artikel ve temel tanışma kalıpları",
-            "sein / haben / düzenli fiiller",
-            "zaman ve program cümleleri",
-            "mekân soruları ve Es gibt",
-            "Akkusativ ve sipariş kalıpları",
-        ],
+        "instructions": config["instructions"],
+        "focus_points": config["focus_points"],
         "exercises": exercises,
     }

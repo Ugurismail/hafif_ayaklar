@@ -55,32 +55,9 @@
     const root = document.getElementById(rootId);
     if (!root) return;
 
-    preventPreviewNavigation(root);
-
-    try {
-      const res = await fetch('/kenarda/preview/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        body: JSON.stringify(payload || {}),
-      });
-
-      const data = await res.json().catch(() => null);
-      if (!res.ok || !data || data.status !== 'ok') {
-        return;
-      }
-
-      root.innerHTML = data.html || '';
-      root.style.display = root.innerHTML ? 'block' : 'none';
-      reinitBootstrapOverlays(root);
-      if (typeof window.hafifAyaklarRenderMath === 'function') {
-        window.hafifAyaklarRenderMath(root);
-      }
-    } catch (e) {
-      // silent
-    }
+    // Üstte ikinci bir taslak kartı göstermiyoruz; canlı önizleme altta tek kaynak olarak kalsın.
+    root.innerHTML = '';
+    root.style.display = 'none';
   }
 
   window.kenardaUpdatePreview = updateKenardaPreview;
