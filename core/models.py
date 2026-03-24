@@ -129,6 +129,15 @@ class Question(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     from_search = models.BooleanField(default=False)
+    left_frame_pinned = models.BooleanField(default=False, verbose_name='Sol frame sabit', db_index=True)
+    left_frame_pin_order = models.PositiveIntegerField(default=0, verbose_name='Sol frame sira', db_index=True)
+    left_frame_pin_until = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Sol frame sabit bitis',
+        help_text='Bos birakilirsa sabitleme manuel kaldirilana kadar devam eder.',
+        db_index=True,
+    )
     saveditem = GenericRelation('SavedItem')
     # parent_questions alanını kaldırdık
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='questions')
@@ -164,6 +173,13 @@ class Question(models.Model):
 
     def __str__(self):
         return self.question_text
+
+    def is_left_frame_pin_active(self):
+        if not self.left_frame_pinned:
+            return False
+        if self.left_frame_pin_until is None:
+            return True
+        return self.left_frame_pin_until >= timezone.now()
 
     def has_subquestions(self):
         return self.subquestions.exists()

@@ -60,7 +60,7 @@ from ..models import (
 from ..utils import paginate_queryset, build_reference_usage_counts
 from ..forms import LibraryFileForm
 from ..services import VoteSaveService
-from ..querysets import get_today_questions_queryset
+from ..querysets import get_today_questions_queryset, get_active_left_frame_pin_q
 from .answer_views import get_all_descendant_question_ids
 from ..answer_git import attach_answer_revision_metadata
 
@@ -95,6 +95,7 @@ def user_homepage(request):
             followed_user_ids = user_profile.following.values_list('user_id', flat=True)
             # Takip edilen kullanıcıların ya soru oluşturduğu ya da cevap verdiği başlıkları göster
             all_questions_qs = all_questions_qs.filter(
+                get_active_left_frame_pin_q() |
                 Q(user_id__in=followed_user_ids) |  # Soruyu oluşturan takip edilen biri
                 Q(answers__user_id__in=followed_user_ids)  # Cevap veren takip edilen biri
             ).distinct()

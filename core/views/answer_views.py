@@ -45,7 +45,7 @@ from ..models import (
     AnswerRevision, AnswerRevisionApproval, AnswerSuggestion,
 )
 from ..forms import AnswerForm
-from ..querysets import get_today_questions_queryset
+from ..querysets import get_today_questions_queryset, get_active_left_frame_pin_q
 from ..utils import paginate_queryset
 from ..services import VoteSaveService
 
@@ -338,6 +338,7 @@ def single_answer(request, slug, answer_id):
             followed_user_ids = user_profile.following.values_list('user_id', flat=True)
             # Takip edilen kullanıcıların ya soru oluşturduğu ya da cevap verdiği başlıkları göster
             all_questions_qs = all_questions_qs.filter(
+                get_active_left_frame_pin_q() |
                 Q(user_id__in=followed_user_ids) |  # Soruyu oluşturan takip edilen biri
                 Q(answers__user_id__in=followed_user_ids)  # Cevap veren takip edilen biri
             ).distinct()

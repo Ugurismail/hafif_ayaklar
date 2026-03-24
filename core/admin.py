@@ -228,12 +228,26 @@ admin.site.register(Group, CustomGroupAdmin)
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
     search_fields = ['question_text', 'slug', 'user__username']
-    list_display = ['id', 'question_text', 'user', 'created_at', 'slug']
-    list_filter = ['created_at', 'user']
+    list_display = ['id', 'question_text', 'user', 'left_frame_pinned', 'left_frame_pin_order', 'left_frame_pin_until', 'left_frame_pin_active', 'created_at', 'slug']
+    list_filter = ['created_at', 'user', 'left_frame_pinned']
     list_display_links = ['id', 'question_text']
     readonly_fields = ['slug', 'created_at', 'updated_at']
     ordering = ['-created_at']
-    fields = ['question_text', 'slug', 'user', 'created_at', 'updated_at']
+    fields = [
+        'question_text',
+        'slug',
+        'user',
+        'left_frame_pinned',
+        'left_frame_pin_order',
+        'left_frame_pin_until',
+        'created_at',
+        'updated_at',
+    ]
+
+    def left_frame_pin_active(self, obj):
+        return obj.is_left_frame_pin_active()
+    left_frame_pin_active.boolean = True
+    left_frame_pin_active.short_description = 'Sol frame aktif mi'
 
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
