@@ -482,6 +482,22 @@ mark{
     margin-bottom: 0;
 }
 
+.answer-revision-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.48rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent);
+    background: color-mix(in srgb, var(--button-background-color) 8%, var(--content-background-color) 92%);
+    color: color-mix(in srgb, var(--text-color) 82%, var(--button-background-color) 18%);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
 /* Inline code styling: make backticks look like normal text */
 code {
     color: inherit !important;
