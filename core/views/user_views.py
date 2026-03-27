@@ -21,6 +21,7 @@ from collections import Counter
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.views import redirect_to_login
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count, Sum
@@ -37,7 +38,15 @@ from ..models import (
 from ..forms import ProfilePhotoForm
 
 
+def _redirect_profile_login(request):
+    messages.warning(request, 'Giriş yapmadan profilleri göremezsiniz.')
+    return redirect_to_login(request.get_full_path(), login_url=reverse('login'))
+
+
 def profile(request):
+    if not request.user.is_authenticated:
+        return _redirect_profile_login(request)
+
     user = request.user
     user_profile = user.userprofile
 
@@ -71,8 +80,10 @@ def profile(request):
     return redirect('user_profile', username=request.user.username)
 
 
-@login_required
 def user_profile(request, username):
+    if not request.user.is_authenticated:
+        return _redirect_profile_login(request)
+
     profile_user = get_object_or_404(User, username=username)
     user_profile = profile_user.userprofile
     active_tab = request.GET.get('tab', 'girdiler')

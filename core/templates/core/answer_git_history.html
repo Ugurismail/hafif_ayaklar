@@ -87,7 +87,7 @@
           <div class="answer-git-meta">
             Yanıt sahibi:
             <a href="{% url 'user_profile' answer.user.username %}" class="text-decoration-none">{{ answer.user.username }}</a>
-            · Güncel sürüm: r{{ current_revision.revision_no }}
+            · Güncel sürüm: v.{{ current_revision.revision_no }}
             · Toplam sürüm: {{ revisions|length }}
             · Açık öneri: {{ answer.get_open_suggestion_count }}
           </div>
@@ -297,12 +297,12 @@
         <div class="answer-git-preview-grid mb-3">
           {% if revision.previous_revision %}
             <div class="answer-git-preview-card">
-              <div class="answer-git-preview-head">Önceki sürüm · r{{ revision.previous_revision.revision_no }}</div>
+              <div class="answer-git-preview-head">Önceki sürüm · v.{{ revision.previous_revision.revision_no }}</div>
               <div class="answer-git-preview-body answer-text">{{ revision.previous_rendered_html|safe }}</div>
             </div>
           {% endif %}
           <div class="answer-git-preview-card">
-            <div class="answer-git-preview-head">{% if revision.previous_revision %}Yeni sürüm{% else %}İlk sürüm{% endif %} · r{{ revision.revision_no }}</div>
+            <div class="answer-git-preview-head">{% if revision.previous_revision %}Yeni sürüm{% else %}İlk sürüm{% endif %} · v.{{ revision.revision_no }}</div>
             <div class="answer-git-preview-body answer-text">{{ revision.rendered_html|safe }}</div>
           </div>
         </div>

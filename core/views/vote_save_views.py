@@ -7,6 +7,7 @@ Vote and save item views
 - unpin_entry
 """
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -207,12 +208,15 @@ def get_saved_items(request):
 def pin_entry(request, answer_id):
     if request.method == 'POST':
         user = request.user
+        answer = get_object_or_404(Answer, id=answer_id)
+        if answer.user_id != user.id:
+            messages.error(request, 'Sadece kendi girdini profiline sabitleyebilirsin.')
+            return redirect(request.META.get('HTTP_REFERER', 'user_homepage'))
         # Mevcut sabitlenmiş girdiyi kaldır
         PinnedEntry.objects.filter(user=user).delete()
         # Yeni girdiyi sabitle
-        answer = get_object_or_404(Answer, id=answer_id)
         PinnedEntry.objects.create(user=user, answer=answer)
-    return redirect(request.META.get('HTTP_REFERER', 'home'))
+    return redirect(request.META.get('HTTP_REFERER', 'user_homepage'))
 
 
 @login_required
@@ -220,4 +224,4 @@ def unpin_entry(request):
     if request.method == 'POST':
         user = request.user
         PinnedEntry.objects.filter(user=user).delete()
-    return redirect(request.META.get('HTTP_REFERER', 'home'))
+    return redirect(request.META.get('HTTP_REFERER', 'user_homepage'))

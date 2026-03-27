@@ -68,7 +68,7 @@
       <h2 class="h5 mb-3">İşlenmiş karşılaştırma</h2>
       <div class="suggestion-preview-grid mb-3">
         <div class="suggestion-preview-card">
-          <div class="suggestion-preview-head">Taban sürüm · r{{ suggestion.base_revision.revision_no }}</div>
+          <div class="suggestion-preview-head">Taban sürüm · v.{{ suggestion.base_revision.revision_no }}</div>
           <div class="suggestion-preview-body answer-text">{{ base_rendered_html|safe }}</div>
         </div>
         <div class="suggestion-preview-card">
@@ -78,7 +78,7 @@
       </div>
       {% if is_outdated %}
         <div class="suggestion-preview-card mb-3">
-          <div class="suggestion-preview-head">Güncel yayınlanan sürüm · r{{ current_revision.revision_no }}</div>
+          <div class="suggestion-preview-head">Güncel yayınlanan sürüm · v.{{ current_revision.revision_no }}</div>
           <div class="suggestion-preview-body answer-text">{{ current_rendered_html|safe }}</div>
         </div>
       {% endif %}

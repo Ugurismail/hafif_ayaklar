@@ -19,14 +19,16 @@ class QuestionSitemap(Sitemap):
 
 class UserProfileSitemap(Sitemap):
     changefreq = "weekly"
-    priority = 0.5
+    priority = 0.7
 
     def items(self):
         return UserProfile.objects.filter(user__is_active=True).select_related('user')
 
     def lastmod(self, obj):
-        # Users don't have an updated_at field, so we use a default
-        return None
+        latest_question = obj.user.questions.order_by('-updated_at').values_list('updated_at', flat=True).first()
+        latest_answer = obj.user.answers.order_by('-updated_at').values_list('updated_at', flat=True).first()
+        timestamps = [ts for ts in (obj.last_seen, latest_question, latest_answer) if ts is not None]
+        return max(timestamps) if timestamps else None
 
     def location(self, obj):
         return reverse('user_profile', kwargs={'username': obj.user.username})

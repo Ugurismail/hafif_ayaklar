@@ -359,7 +359,7 @@
                         {{ revision.answer.question.question_text }}
                       </a>
                       <div class="small text-muted mt-1">
-                        r{{ revision.revision_no }} · {{ revision.get_source_display }} · {{ revision.created_by.username }} · {{ revision.created_at|date:"d M Y H:i" }}
+                        v.{{ revision.revision_no }} · {{ revision.get_source_display }} · {{ revision.created_by.username }} · {{ revision.created_at|date:"d M Y H:i" }}
                         {% if revision.is_current %}· Güncel{% endif %}
                       </div>
                     </div>

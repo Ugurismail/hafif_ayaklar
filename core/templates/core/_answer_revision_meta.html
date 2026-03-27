@@ -1,6 +1,6 @@
 {% if answer.current_revision %}
   <div class="small text-muted mt-1 d-flex flex-wrap align-items-center gap-2">
-    <span class="answer-revision-badge">{{ answer.current_revision.revision_no }}. sürüm</span>
+    <span class="answer-revision-badge">v.{{ answer.current_revision.revision_no }}</span>
     {% if answer.additional_contributors %}
       <span> · Katkı: {{ answer.additional_contributors|join:", " }}</span>
     {% endif %}

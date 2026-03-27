@@ -164,6 +164,7 @@
                                                 <i class="bi bi-share"></i> Paylaş
                                             </a>
                                         </li>
+                                        {% if request.user.is_authenticated and request.user == answer.user %}
                                         <li>
                                             <form action="{% url 'pin_entry' answer_id=answer.id %}" method="post">
                                                 {% csrf_token %}
@@ -171,8 +172,8 @@
                                                     <i class="bi bi-pin-angle"></i> Profile Sabitle
                                                 </button>
                                             </form>
-                                            
                                         </li>
+                                        {% endif %}
                                         {% if request.user.is_authenticated and request.user != answer.user %}
                                         <li>
                                             <a class="dropdown-item" href="{% url 'answer_suggest_edit' answer.id %}">

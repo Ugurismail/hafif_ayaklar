@@ -280,7 +280,7 @@
                         </div>
                         <div class="text-end">
                             <small class="text-muted me-2 d-inline-flex align-items-center justify-content-end gap-2 flex-wrap">
-                                <span class="answer-revision-badge">{{ focused_current_revision.revision_no }}. sürüm</span>
+                                <span class="answer-revision-badge">v.{{ focused_current_revision.revision_no }}</span>
                                 <a href="{% url 'user_profile' focused_answer.user.username %}">{{ focused_answer.user.username }}</a>
                                 | {{ focused_answer.created_at|date:"Y-m-d H:i" }}
                                 {% if focused_answer.updated_at|date:"Y-m-d H:i:s" > focused_answer.created_at|date:"Y-m-d H:i:s" %}
@@ -317,6 +317,7 @@
                                     <li>
                                         <a class="dropdown-item share-link" href="#" data-answer-id="{{ focused_answer.id }}"><i class="bi bi-share"></i> Paylaş</a>
                                     </li>
+                                    {% if request.user.is_authenticated and request.user == focused_answer.user %}
                                     <li>
                                         <form action="{% url 'pin_entry' answer_id=focused_answer.id %}" method="post">
                                             {% csrf_token %}
@@ -325,6 +326,7 @@
                                             </button>
                                         </form>
                                     </li>
+                                    {% endif %}
                                     <li>
                                         <a class="dropdown-item" href="{% url 'send_message_from_answer' focused_answer.id %}">
                                             <i class="bi bi-envelope"></i> Mesaj Gönder
@@ -447,6 +449,7 @@
                                     <li>
                                         <a class="dropdown-item share-link" href="#" data-answer-id="{{ answer.id }}"><i class="bi bi-share"></i> Paylaş</a>
                                     </li>
+                                            {% if request.user.is_authenticated and request.user == answer.user %}
                                             <li>
                                                 <form action="{% url 'pin_entry' answer_id=answer.id %}" method="post">
                                                     {% csrf_token %}
@@ -455,6 +458,7 @@
                                                     </button>
                                                 </form>
                                             </li>
+                                            {% endif %}
                                             <li>
                                                 <a class="dropdown-item" href="{% url 'send_message_from_answer' answer.id %}">
                                                     <i class="bi bi-envelope"></i> Mesaj Gönder

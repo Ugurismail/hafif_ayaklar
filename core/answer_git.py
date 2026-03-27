@@ -365,8 +365,8 @@ def build_answer_history_graph(answer, approval_summary_map=None):
             'y': y,
             'width': node_width,
             'height': node_height,
-            'label': f"r{revision.revision_no}",
-            'title': f"Sürüm r{revision.revision_no}",
+            'label': f"v.{revision.revision_no}",
+            'title': f"Sürüm v.{revision.revision_no}",
             'meta': (
                 f"{revision.created_by.username} · {revision.get_source_display()} · "
                 f"Onay {len(summary['approved_users'])} · Bekleyen {len(summary['pending_users'])} · "
