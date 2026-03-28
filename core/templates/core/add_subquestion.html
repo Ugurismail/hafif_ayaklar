@@ -386,7 +386,8 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
         body: JSON.stringify({
             title: questionText,
             content: answerText,
-            question_id: null  // Yeni başlık için question_id yok
+            question_id: {{ parent_question.id }},
+            draft_source: 'subquestion'
         })
     })
     .then(r => r.json())
@@ -401,7 +402,8 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
                 window.kenardaUpdatePreview({
                     title: questionText,
                     content: answerText,
-                    question_id: null
+                    question_id: {{ parent_question.id }},
+                    draft_source: 'subquestion'
                 });
             }
             // Formu temizleme - kullanıcı üzerinde çalışmaya devam edebilir

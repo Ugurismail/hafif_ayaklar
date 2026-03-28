@@ -344,6 +344,25 @@ def add_question(request):
 def add_subquestion(request, slug):
     parent_question = get_object_or_404(Question, slug=slug)
     all_questions = get_today_questions_queryset()
+    draft_title = None
+    draft_content = None
+
+    draft_id = request.GET.get('draft_id')
+    if draft_id:
+        try:
+            taslak = Kenarda.objects.get(
+                pk=draft_id,
+                user=request.user,
+                question=parent_question,
+                answer__isnull=True,
+                is_sent=False,
+                draft_source='subquestion',
+            )
+            draft_title = taslak.title
+            draft_content = taslak.content
+        except Kenarda.DoesNotExist:
+            pass
+
     if request.method == 'POST':
         form = QuestionForm(request.POST)
         if form.is_valid():
@@ -384,7 +403,10 @@ def add_subquestion(request, slug):
             messages.success(request, 'Alt soru başarıyla eklendi.')
             return redirect('question_detail', slug=subquestion.slug)
     else:
-        form = QuestionForm()
+        form = QuestionForm(initial={
+            'question_text': draft_title or '',
+            'answer_text': draft_content or '',
+        })
 
     # Kullanıcının önceki tanımlarını getir
     from ..models import Definition
@@ -395,6 +417,8 @@ def add_subquestion(request, slug):
         'parent_question': parent_question,
         'all_questions': all_questions,
         'user_definitions': user_definitions,
+        'draft_title': draft_title,
+        'draft_content': draft_content,
     }
     return render(request, 'core/add_subquestion.html', context)
 

@@ -10,6 +10,7 @@ Kenarda (draft) views
 import json
 import re
 
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -101,7 +102,12 @@ def kenarda_save(request):
             existing = Kenarda.objects.filter(user=request.user, answer=answer, is_sent=False).first()
         elif question:
             # Soruya yeni yanıt taslağı
-            existing = Kenarda.objects.filter(user=request.user, question=question, answer__isnull=True, is_sent=False).first()
+            existing_qs = Kenarda.objects.filter(user=request.user, question=question, answer__isnull=True, is_sent=False)
+            if draft_source:
+                existing_qs = existing_qs.filter(draft_source=draft_source)
+            else:
+                existing_qs = existing_qs.filter(Q(draft_source__isnull=True) | Q(draft_source=''))
+            existing = existing_qs.first()
         elif title:
             # Yeni başlık taslağı
             existing = Kenarda.objects.filter(user=request.user, title=title, question__isnull=True, answer__isnull=True, is_sent=False).first()
@@ -110,7 +116,7 @@ def kenarda_save(request):
 
         if existing:
             existing.content = content
-            if title and not existing.question and not existing.answer:  # Sadece yeni başlık taslağında title güncelle
+            if title and not existing.answer:
                 existing.title = title
             if draft_source:  # Kaynağı güncelle
                 existing.draft_source = draft_source
@@ -121,7 +127,7 @@ def kenarda_save(request):
                 user=request.user,
                 question=question,
                 answer=answer,
-                title=title if (not question and not answer) else None,  # Sadece yeni başlık için title
+                title=title if (title and not answer) else None,
                 content=content,
                 draft_source=draft_source,
                 is_sent=False

@@ -65,7 +65,7 @@
                           title="Yeniden düzenle">
                     <i class="bi bi-pencil-square"></i>
                   </button>
-                {% if t.question %}
+                {% if t.question and t.draft_source != 'subquestion' %}
                   <button class="btn btn-sm btn-theme-third gonder-btn flex-fill"
                           data-taslak-id="{{ t.id }}"
                           data-question-slug="{{ t.question.slug }}"
@@ -239,6 +239,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return;
       }
+      if (draftSource === 'subquestion') {
+        window.location.href = "/" + questionSlug + "/add-subquestion/?draft_id=" + taslakId;
+        return;
+      }
+
       // Question varsa, o soruya git
       window.location.href = "/" + questionSlug + "/?draft_id=" + taslakId;
     }
