@@ -357,54 +357,63 @@
                             </a>
                         </div>
                     </li>
-                    <li class="nav-item d-lg-none mobile-utility-panel">
-                        <div class="mobile-nav-section-label">Kısayollar</div>
-                        <div class="mobile-utility-grid">
-                            <a class="nav-link mobile-utility-link" href="{% url 'radio_home' %}" title="Radyo">
-                                <i class="bi bi-broadcast-pin {% if radio_is_live %}radio-live-icon{% endif %}"></i>
-                                <span class="ms-1">Radyo{% if radio_is_live %} · canlı{% endif %}</span>
-                            </a>
-                            <a class="nav-link mobile-utility-link" href="{% url 'all_hashtags' %}" title="Etiketler">
-                                <i class="bi bi-hash"></i>
-                                <span class="ms-1">Etiketler</span>
-                            </a>
-                            <a class="nav-link mobile-utility-link" href="{% url 'file_library' %}" title="Dosyalar">
-                                <i class="bi bi-folder2-open"></i>
-                                <span class="ms-1">Dosyalar</span>
-                            </a>
-                            <a class="nav-link mobile-utility-link" href="{% url 'kenarda_list' %}" title="Kenardakiler">
-                                <i class="bi bi-hourglass"></i>
-                                <span class="ms-1">Kenardakiler</span>
-                            </a>
-                            <a class="nav-link mobile-utility-link" href="{% url 'polls_home' %}" title="Anketler">
-                                <i class="bi bi-card-checklist"></i>
-                                <span class="ms-1">Anketler</span>
-                            </a>
-                            <a class="nav-link mobile-utility-link" href="{% url 'german_course_home' %}" title="Almanca">
-                                <i class="bi bi-translate"></i>
-                                <span class="ms-1">Almanca</span>
-                            </a>
-                            <a class="nav-link mobile-utility-link" href="{% url 'memur_exam' %}" title="Sınav">
-                                <i class="bi bi-journal-check"></i>
-                                <span class="ms-1">Sınav</span>
-                            </a>
-                            <a class="nav-link mobile-utility-link" href="{% url 'site_statistics' %}" title="Site İstatistikleri">
-                                <i class="bi bi-bar-chart"></i>
-                                <span class="ms-1">Site İstatistikleri</span>
-                            </a>
-                            <a class="nav-link mobile-utility-link" href="{% url 'user_list' %}" title="Tüm Kullanıcılar">
-                                <i class="bi bi-people"></i>
-                                <span class="ms-1">Tüm Kullanıcılar</span>
-                            </a>
-                            <a class="nav-link mobile-utility-link" href="{% url 'delphoi_home' %}" title="Delphoi Kahini">
-                                <i class="fa-solid fa-hat-wizard"></i>
-                                <span class="ms-1">Delphoi Kahini</span>
-                            </a>
-                            <a class="nav-link mobile-utility-link" href="{% url 'about' %}" title="Hakkında">
-                                <i class="bi bi-info-circle"></i>
-                                <span class="ms-1">Hakkında</span>
-                            </a>
-                        </div>
+                    <li class="nav-item d-lg-none mobile-accordion-item">
+                        <details class="mobile-nav-accordion" open>
+                            <summary>Kısayollar</summary>
+                            <div class="mobile-utility-grid">
+                                <a class="nav-link mobile-utility-link" href="{% url 'radio_home' %}" title="Radyo">
+                                    <i class="bi bi-broadcast-pin {% if radio_is_live %}radio-live-icon{% endif %}"></i>
+                                    <span class="ms-1">Radyo{% if radio_is_live %} · canlı{% endif %}</span>
+                                </a>
+                                <a class="nav-link mobile-utility-link" href="{% url 'kenarda_list' %}" title="Kenardakiler">
+                                    <i class="bi bi-hourglass"></i>
+                                    <span class="ms-1">Kenardakiler</span>
+                                </a>
+                                <a class="nav-link mobile-utility-link" href="{% url 'file_library' %}" title="Dosyalar">
+                                    <i class="bi bi-folder2-open"></i>
+                                    <span class="ms-1">Dosyalar</span>
+                                </a>
+                                <a class="nav-link mobile-utility-link" href="{% url 'all_hashtags' %}" title="Etiketler">
+                                    <i class="bi bi-hash"></i>
+                                    <span class="ms-1">Etiketler</span>
+                                </a>
+                                <a class="nav-link mobile-utility-link" href="{% url 'polls_home' %}" title="Anketler">
+                                    <i class="bi bi-card-checklist"></i>
+                                    <span class="ms-1">Anketler</span>
+                                </a>
+                                <a class="nav-link mobile-utility-link" href="{% url 'german_course_home' %}" title="Almanca">
+                                    <i class="bi bi-translate"></i>
+                                    <span class="ms-1">Almanca</span>
+                                </a>
+                            </div>
+                        </details>
+                    </li>
+                    <li class="nav-item d-lg-none mobile-accordion-item">
+                        <details class="mobile-nav-accordion">
+                            <summary>Daha Fazla</summary>
+                            <div class="mobile-utility-grid mobile-utility-grid--secondary">
+                                <a class="nav-link mobile-utility-link" href="{% url 'memur_exam' %}" title="Sınav">
+                                    <i class="bi bi-journal-check"></i>
+                                    <span class="ms-1">Sınav</span>
+                                </a>
+                                <a class="nav-link mobile-utility-link" href="{% url 'site_statistics' %}" title="Site İstatistikleri">
+                                    <i class="bi bi-bar-chart"></i>
+                                    <span class="ms-1">Site İstatistikleri</span>
+                                </a>
+                                <a class="nav-link mobile-utility-link" href="{% url 'user_list' %}" title="Tüm Kullanıcılar">
+                                    <i class="bi bi-people"></i>
+                                    <span class="ms-1">Tüm Kullanıcılar</span>
+                                </a>
+                                <a class="nav-link mobile-utility-link" href="{% url 'delphoi_home' %}" title="Delphoi Kahini">
+                                    <i class="fa-solid fa-hat-wizard"></i>
+                                    <span class="ms-1">Delphoi Kahini</span>
+                                </a>
+                                <a class="nav-link mobile-utility-link" href="{% url 'about' %}" title="Hakkında">
+                                    <i class="bi bi-info-circle"></i>
+                                    <span class="ms-1">Hakkında</span>
+                                </a>
+                            </div>
+                        </details>
                     </li>
                     
                     {% else %}

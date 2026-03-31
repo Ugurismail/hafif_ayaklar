@@ -2094,21 +2094,21 @@ a.hashtag-link:hover {
 
 @media (max-width: 991.98px) {
     #navbarNav {
-        padding-top: 0.75rem;
+        padding-top: 0.6rem;
     }
 
     #navbarNav .navbar-nav {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.6rem;
     }
 
     #navbarNav .nav-item {
-        width: 100%;
+        width: auto;
     }
 
     #navbarNav .mobile-primary-item {
-        width: calc(50% - 0.3rem);
+        width: auto;
     }
 
     #navbarNav .nav-link,
@@ -2117,9 +2117,9 @@ a.hashtag-link:hover {
         align-items: center;
         gap: 0.65rem;
         justify-content: flex-start;
-        padding: 0.78rem 0.9rem;
-        border-radius: 14px;
-        min-height: 44px;
+        padding: 0.72rem 0.82rem;
+        border-radius: 12px;
+        min-height: 42px;
         background: color-mix(in srgb, var(--button-background-color) 8%, transparent);
     }
 
@@ -2141,31 +2141,30 @@ a.hashtag-link:hover {
     }
 
     #navbarNav .mobile-account-panel,
-    #navbarNav .mobile-utility-panel {
+    #navbarNav .mobile-accordion-item {
+        grid-column: 1 / -1;
         width: 100%;
     }
 
     #navbarNav .mobile-nav-section-label {
-        margin: 0.25rem 0 0.1rem;
+        margin: 0.15rem 0 0.05rem;
         padding-left: 0.25rem;
         color: color-mix(in srgb, var(--header-text-color) 74%, var(--text-color) 26%);
-        font-size: 0.76rem;
+        font-size: 0.72rem;
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
     }
 
-    #navbarNav .mobile-account-grid,
-    #navbarNav .mobile-utility-grid {
+    #navbarNav .mobile-account-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 0.6rem;
     }
 
-    #navbarNav .mobile-account-grid .nav-link,
-    #navbarNav .mobile-utility-grid .nav-link {
-        min-height: 46px;
-        font-size: 0.98rem;
+    #navbarNav .mobile-account-grid .nav-link {
+        min-height: 44px;
+        font-size: 0.94rem;
     }
 
     #navbarNav .mobile-utility-link {
@@ -2178,7 +2177,6 @@ a.hashtag-link:hover {
     }
 
     #navbarNav .mobile-logout-link {
-        grid-column: 1 / -1;
         background: color-mix(in srgb, var(--button-background-color) 18%, transparent);
         border: 1px solid color-mix(in srgb, var(--button-background-color) 35%, transparent);
         color: var(--header-text-color) !important;
@@ -2190,7 +2188,52 @@ a.hashtag-link:hover {
         background: color-mix(in srgb, var(--button-background-color) 24%, transparent) !important;
     }
 
+    #navbarNav .mobile-nav-accordion {
+        border: 1px solid color-mix(in srgb, var(--button-background-color) 16%, transparent);
+        border-radius: 14px;
+        background: color-mix(in srgb, var(--button-background-color) 6%, transparent);
+        overflow: hidden;
+    }
+
+    #navbarNav .mobile-nav-accordion summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 0.82rem 0.95rem;
+        font-weight: 600;
+        color: var(--header-text-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    #navbarNav .mobile-nav-accordion summary::-webkit-details-marker {
+        display: none;
+    }
+
+    #navbarNav .mobile-nav-accordion summary::after {
+        content: "+";
+        font-size: 1.1rem;
+        line-height: 1;
+        opacity: 0.75;
+    }
+
+    #navbarNav .mobile-nav-accordion[open] summary::after {
+        content: "–";
+    }
+
+    #navbarNav .mobile-utility-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem;
+        padding: 0 0.8rem 0.8rem;
+    }
+
     #navbarNav .mobile-utility-grid .nav-link {
-        min-height: 44px;
+        min-height: 42px;
+        font-size: 0.93rem;
+    }
+
+    #navbarNav .mobile-utility-grid--secondary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
