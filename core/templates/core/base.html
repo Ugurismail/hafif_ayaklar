@@ -293,6 +293,11 @@
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item" href="{% url 'memur_exam' %}">
+                                    <i class="bi bi-journal-check"></i> Sınav
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item" href="{% url 'site_statistics' %}">
                                     <i class="bi bi-bar-chart"></i> Site İstatistikleri
                                 </a>
@@ -354,6 +359,12 @@
                         <a class="nav-link" href="{% url 'german_course_home' %}" title="Almanca">
                             <i class="bi bi-translate"></i>
                             <span class="ms-1 d-lg-none">Almanca</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'memur_exam' %}" title="Sınav">
+                            <i class="bi bi-journal-check"></i>
+                            <span class="ms-1 d-lg-none">Sınav</span>
                         </a>
                     </li>
                     <li class="nav-item">

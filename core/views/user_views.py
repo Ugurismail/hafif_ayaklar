@@ -465,94 +465,86 @@ def user_settings(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         if 'reset' in request.POST:
-            # Varsayılan değerlere dön
-            profile.background_color = '#F5F5F5'
-            profile.text_color = '#000000'
-            profile.header_background_color = '#F5F5F5'
-            profile.header_text_color = '#333333'
-            profile.link_color = '#6E8CA7'
-            profile.link_hover_color = '#4E647E'
-            profile.button_background_color = '#6E8CA7'
-            profile.button_hover_background_color = '#4E647E'
-            profile.button_text_color = '#ffffff'
-            profile.hover_background_color = '#f0f0f0'
-            profile.icon_color = '#333333'
-            profile.icon_hover_color = '#007bff'
-            profile.answer_background_color = '#F5F5F5'
-            profile.content_background_color = '#ffffff'
-            profile.tab_background_color = '#f8f9fa'
-            profile.tab_text_color = '#000000'
-            profile.tab_active_background_color = '#ffffff'
-            profile.tab_active_text_color = '#000000'
-            profile.dropdown_text_color = '#333333'
-            profile.dropdown_hover_background_color = '#f2f2f2'
-            profile.dropdown_hover_text_color = '#0056b3'
-            profile.nav_link_hover_color = '#007bff'
-            profile.nav_link_hover_bg = '#f5f5f5'
+            # Varsayılan değerlere dön (Old Money)
+            profile.background_color = '#F5F0E6'
+            profile.text_color = '#1F1A14'
+            profile.header_background_color = '#22312B'
+            profile.header_text_color = '#F7F2E8'
+            profile.link_color = '#2F6B4F'
+            profile.link_hover_color = '#1E4D38'
+            profile.button_background_color = '#B08D57'
+            profile.button_hover_background_color = '#9A7747'
+            profile.button_text_color = '#FAF7F0'
+            profile.hover_background_color = '#E7DFD2'
+            profile.icon_color = '#22312B'
+            profile.icon_hover_color = '#B08D57'
+            profile.answer_background_color = '#F5F0E6'
+            profile.content_background_color = '#FFF9F0'
+            profile.tab_background_color = '#EFE6D8'
+            profile.tab_text_color = '#1F1A14'
+            profile.tab_active_background_color = '#FFF9F0'
+            profile.tab_active_text_color = '#22312B'
+            profile.dropdown_text_color = '#1F1A14'
+            profile.dropdown_hover_background_color = '#E7DFD2'
+            profile.dropdown_hover_text_color = '#22312B'
+            profile.nav_link_hover_color = '#FAF7F0'
+            profile.nav_link_hover_bg = '#2B3D35'
 
-            #benim eklediklerim
-            profile.message_bubble_color="#d1e7ff"
-            profile.tbas_color="#000000"
-
-            profile.font_size='16'
-
-            profile.pagination_background_color = '#ffffff'
-            profile.pagination_text_color = '#000000'
-            # profile.pagination_active_background_color = '#007bff'
-            # profile.pagination_active_text_color = '#ffffff'
-
-            profile.cemil = '#ffffff'
-            profile.yanit_card='#ffffff'
-            profile.secondary_button_background_color = '#6c757d'
-            profile.secondary_button_text_color = '#ffffff'
-            profile.secondary_button_hover_background_color= '#495057'
-
-            profile.font_family = 'EB Garamond'
-            # Diğer renk alanlarını da varsayılan değerlere ayarlayın
+            profile.message_bubble_color = '#DCE8DE'
+            profile.tbas_color = '#1F1A14'
+            profile.font_size = '18'
+            profile.pagination_background_color = '#FFF9F0'
+            profile.pagination_text_color = '#22312B'
+            profile.cemil = '#FFF9F0'
+            profile.yanit_card = '#FFF9F0'
+            profile.secondary_button_background_color = '#2E3A2F'
+            profile.secondary_button_text_color = '#F7F2E8'
+            profile.secondary_button_hover_background_color = '#243028'
+            profile.font_family = 'Crimson+Text'
             profile.save()
             messages.success(request, 'Renk ayarlarınız varsayılan değerlere döndürüldü.')
             return redirect('user_settings')
         else:
             # Formdan gelen değerleri kaydet
-            profile.secondary_button_background_color = request.POST.get('secondary_button_background_color','#6c757d')
-            profile.secondary_button_text_color = request.POST.get('secondary_button_text_color','#ffffff')
-            profile.secondary_button_hover_background_color = request.POST.get('secondary_button_hover_background_color','#495057')
+            profile.secondary_button_background_color = request.POST.get('secondary_button_background_color','#2E3A2F')
+            profile.secondary_button_text_color = request.POST.get('secondary_button_text_color','#F7F2E8')
+            profile.secondary_button_hover_background_color = request.POST.get('secondary_button_hover_background_color','#243028')
 
-            profile.font_size = int(request.POST.get('font_size', 16))  # Sayıya çeviriyoruz
+            profile.font_size = int(request.POST.get('font_size', 18))  # Sayıya çeviriyoruz
 
             #benim eklediklerim
-            profile.message_bubble_color = request.POST.get('message_bubble_color', '#d1e7ff')
-            profile.tbas_color = request.POST.get('tbas_color', '#000000')
-            profile.background_color = request.POST.get('background_color', '#F5F5F5')
-            profile.text_color = request.POST.get('text_color', '#000000')
-            profile.header_background_color = request.POST.get('header_background_color', '#F5F5F5')
-            profile.header_text_color = request.POST.get('header_text_color', '#333333')
-            profile.link_color = request.POST.get('link_color', '#6E8CA7')
-            profile.link_hover_color = request.POST.get('link_hover_color', '#4E647E')
-            profile.button_background_color = request.POST.get('button_background_color', '#6E8CA7')
-            profile.button_hover_background_color = request.POST.get('button_hover_background_color', '#4E647E')
-            profile.button_text_color = request.POST.get('button_text_color', '#ffffff')
-            profile.hover_background_color = request.POST.get('hover_background_color', '#f0f0f0')
-            profile.icon_color = request.POST.get('icon_color', '#333333')
-            profile.icon_hover_color = request.POST.get('icon_hover_color', '#007bff')
-            profile.answer_background_color = request.POST.get('answer_background_color', '#F5F5F5')
-            profile.content_background_color = request.POST.get('content_background_color', '#ffffff')
-            profile.tab_background_color = request.POST.get('tab_background_color', '#f8f9fa')
-            profile.tab_text_color = request.POST.get('tab_text_color', '#000000')
-            profile.tab_active_background_color = request.POST.get('tab_active_background_color', '#ffffff')
-            profile.tab_active_text_color = request.POST.get('tab_active_text_color', '#000000')
-            profile.dropdown_text_color = request.POST.get('dropdown_text_color', '#333333')
-            profile.dropdown_hover_background_color = request.POST.get('dropdown_hover_background_color', '#f2f2f2')
-            profile.dropdown_hover_text_color = request.POST.get('dropdown_hover_text_color', '#0056b3')
-            profile.nav_link_hover_color = request.POST.get('nav_link_hover_color', '#007bff')
-            profile.nav_link_hover_bg = request.POST.get('nav_link_hover_bg', '#f5f5f5')
+            profile.message_bubble_color = request.POST.get('message_bubble_color', '#DCE8DE')
+            profile.tbas_color = request.POST.get('tbas_color', '#1F1A14')
+            profile.background_color = request.POST.get('background_color', '#F5F0E6')
+            profile.text_color = request.POST.get('text_color', '#1F1A14')
+            profile.header_background_color = request.POST.get('header_background_color', '#22312B')
+            profile.header_text_color = request.POST.get('header_text_color', '#F7F2E8')
+            profile.link_color = request.POST.get('link_color', '#2F6B4F')
+            profile.link_hover_color = request.POST.get('link_hover_color', '#1E4D38')
+            profile.button_background_color = request.POST.get('button_background_color', '#B08D57')
+            profile.button_hover_background_color = request.POST.get('button_hover_background_color', '#9A7747')
+            profile.button_text_color = request.POST.get('button_text_color', '#FAF7F0')
+            profile.hover_background_color = request.POST.get('hover_background_color', '#E7DFD2')
+            profile.icon_color = request.POST.get('icon_color', '#22312B')
+            profile.icon_hover_color = request.POST.get('icon_hover_color', '#B08D57')
+            profile.answer_background_color = request.POST.get('answer_background_color', '#F5F0E6')
+            profile.content_background_color = request.POST.get('content_background_color', '#FFF9F0')
+            profile.tab_background_color = request.POST.get('tab_background_color', '#EFE6D8')
+            profile.tab_text_color = request.POST.get('tab_text_color', '#1F1A14')
+            profile.tab_active_background_color = request.POST.get('tab_active_background_color', '#FFF9F0')
+            profile.tab_active_text_color = request.POST.get('tab_active_text_color', '#22312B')
+            profile.dropdown_text_color = request.POST.get('dropdown_text_color', '#1F1A14')
+            profile.dropdown_hover_background_color = request.POST.get('dropdown_hover_background_color', '#E7DFD2')
+            profile.dropdown_hover_text_color = request.POST.get('dropdown_hover_text_color', '#22312B')
+            profile.nav_link_hover_color = request.POST.get('nav_link_hover_color', '#FAF7F0')
+            profile.nav_link_hover_bg = request.POST.get('nav_link_hover_bg', '#2B3D35')
 
-            profile.pagination_background_color = request.POST.get('pagination_background_color', '#ffffff')
-            profile.pagination_text_color = request.POST.get('pagination_text_color', '#000000')
+            profile.pagination_background_color = request.POST.get('pagination_background_color', '#FFF9F0')
+            profile.pagination_text_color = request.POST.get('pagination_text_color', '#22312B')
             # profile.pagination_active_background_color = request.POST.get('pagination_active_background_color', '#007bff')
             # profile.pagination_active_text_color = request.POST.get('pagination_active_text_color', '#ffffff')
-            profile.yanit_card= request.POST.get('yanit_card','#ffffff')
-            profile.font_family = request.POST.get('font_family', 'EB+Garamond')
+            profile.yanit_card= request.POST.get('yanit_card','#FFF9F0')
+            profile.font_family = request.POST.get('font_family', 'Crimson+Text')
             # Diğer renk alanlarını da kaydedin
             profile.save()
             messages.success(request, 'Renk ayarlarınız güncellendi.')

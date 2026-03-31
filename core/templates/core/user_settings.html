@@ -13,7 +13,8 @@
             <label for="theme_select" class="form-label">Hazır Tema:</label>
 	            <select id="theme_select" class="form-select">
 	                <option value="">-- Tema Seçin --</option>
-	                <option value="default">Varsayılan</option>
+	                <option value="default">Old Money (Varsayılan)</option>
+                <option value="classic_garamond">Klasik Garamond</option>
 	                <option value="gece">Gece Modu</option>
 	                <option value="ocean">Ocean Breeze (Okyanus Mavisi)</option>
 	                <option value="forest">Forest Zen (Orman Yeşili)</option>
@@ -24,8 +25,7 @@
 	                <option value="cyberpunk">Cyberpunk (Neon Futuristik)</option>
 	                <option value="sakura">Sakura (Japon Kiraz Çiçeği)</option>
 	                <option value="nordic">Nordic (İskandinav Minimalist)</option>
-	                <option value="old_money">Old Money</option>
-	                <option value="the_porcelain">The Porcelain (Modern Minimal)</option>
+		                <option value="the_porcelain">The Porcelain (Modern Minimal)</option>
 	                <option value="the_man">The Man</option>
 	                <option value="the_woman">The Woman</option>
 	                <option value="the_2slgbtq_plus">The 2SLGBTQ+</option>
@@ -230,13 +230,13 @@
                 <select name="font_family" id="font_family" class="form-select">
                     <!-- Serif Fontlar (Klasik, okunabilir) - Türkçe karakter desteği olan -->
                     <optgroup label="📖 Serif (Klasik Okuma Fontları)">
-                        <option value="EB+Garamond"     {% if user_profile.font_family == "EB+Garamond" %}selected{% endif %}>EB Garamond (Varsayılan)</option>
+                        <option value="EB+Garamond"     {% if user_profile.font_family == "EB+Garamond" %}selected{% endif %}>EB Garamond</option>
                         <option value="Merriweather"    {% if user_profile.font_family == "Merriweather" %}selected{% endif %}>Merriweather</option>
                         <option value="Georgia"         {% if user_profile.font_family == "Georgia" %}selected{% endif %}>Georgia</option>
                         <option value="Times+New+Roman" {% if user_profile.font_family == "Times+New+Roman" %}selected{% endif %}>Times New Roman</option>
                         <option value="Book+Antiqua"    {% if user_profile.font_family == "Book+Antiqua" %}selected{% endif %}>Book Antiqua</option>
                         <option value="Cormorant+Garamond" {% if user_profile.font_family == "Cormorant+Garamond" %}selected{% endif %}>Cormorant Garamond</option>
-                        <option value="Crimson+Text"    {% if user_profile.font_family == "Crimson+Text" %}selected{% endif %}>Crimson Text</option>
+                        <option value="Crimson+Text"    {% if user_profile.font_family == "Crimson+Text" %}selected{% endif %}>Crimson Text (Varsayılan)</option>
                         <option value="Crimson+Pro"     {% if user_profile.font_family == "Crimson+Pro" %}selected{% endif %}>Crimson Pro</option>
                         <option value="Lora"            {% if user_profile.font_family == "Lora" %}selected{% endif %}>Lora</option>
                         <option value="Libre+Baskerville" {% if user_profile.font_family == "Libre+Baskerville" %}selected{% endif %}>Libre Baskerville</option>
@@ -394,39 +394,40 @@
     // TEMALAR BURADA TANIMLI (Sadece 6 kaliteli tema)
     const THEMES = {
         "default": {
-            "background_color": "#F5F5F5",
-            "text_color": "#000000",
-            "header_background_color": "#F5F5F5",
-            "header_text_color": "#333333",
-            "link_color": "#6E8CA7",
-            "link_hover_color": "#4E647E",
-            "button_background_color": "#6E8CA7",
-            "button_hover_background_color": "#4E647E",
-            "button_text_color": "#ffffff",
-            "secondary_button_background_color": "#6c757d",
-            "secondary_button_hover_background_color": "#495057",
-            "secondary_button_text_color": "#ffffff",
-            "message_bubble_color": "#d1e7ff",
-            "tbas_color": "#000000",
-            "font_size": "16",
-            "hover_background_color": "#f0f0f0",
-            "hover_text_color": "#000000",
-            "icon_color": "#333333",
-            "icon_hover_color": "#007bff",
-            "answer_background_color": "#F5F5F5",
-            "content_background_color": "#ffffff",
-            "tab_background_color": "#f8f9fa",
-            "tab_text_color": "#000000",
-            "tab_active_background_color": "#ffffff",
-            "tab_active_text_color": "#000000",
-            "dropdown_text_color": "#333333",
-            "dropdown_hover_background_color": "#f2f2f2",
-            "dropdown_hover_text_color": "#0056b3",
-            "nav_link_hover_color": "#007bff",
-            "nav_link_hover_bg": "#f5f5f5",
-            "pagination_background_color": "#ffffff",
-            "pagination_text_color": "#000000",
-            "font_family": "EB Garamond"
+            "background_color": "#F5F0E6",
+            "text_color": "#1F1A14",
+            "header_background_color": "#22312B",
+            "header_text_color": "#F7F2E8",
+            "link_color": "#2F6B4F",
+            "link_hover_color": "#1E4D38",
+            "button_background_color": "#B08D57",
+            "button_hover_background_color": "#9A7747",
+            "button_text_color": "#FAF7F0",
+            "secondary_button_background_color": "#2E3A2F",
+            "secondary_button_hover_background_color": "#243028",
+            "secondary_button_text_color": "#F7F2E8",
+            "message_bubble_color": "#DCE8DE",
+            "tbas_color": "#1F1A14",
+            "yanit_card": "#FFF9F0",
+            "font_size": "18",
+            "hover_background_color": "#E7DFD2",
+            "hover_text_color": "#1F1A14",
+            "icon_color": "#22312B",
+            "icon_hover_color": "#B08D57",
+            "answer_background_color": "#F5F0E6",
+            "content_background_color": "#FFF9F0",
+            "tab_background_color": "#EFE6D8",
+            "tab_text_color": "#1F1A14",
+            "tab_active_background_color": "#FFF9F0",
+            "tab_active_text_color": "#22312B",
+            "dropdown_text_color": "#1F1A14",
+            "dropdown_hover_background_color": "#E7DFD2",
+            "dropdown_hover_text_color": "#22312B",
+            "nav_link_hover_color": "#FAF7F0",
+            "nav_link_hover_bg": "#2B3D35",
+            "pagination_background_color": "#FFF9F0",
+            "pagination_text_color": "#22312B",
+            "font_family": "Crimson+Text"
         },
         "gece": {
             "background_color": "#181824",
@@ -778,42 +779,42 @@
 	    "pagination_text_color": "#2B3E50",
 	    "font_family": "DM+Sans"
 	},
-        "old_money": {
-            "background_color": "#F5F0E6",
-            "text_color": "#1F1A14",
-            "header_background_color": "#22312B",
-            "header_text_color": "#F7F2E8",
-            "link_color": "#2F6B4F",
-            "link_hover_color": "#1E4D38",
-            "button_background_color": "#B08D57",
-            "button_hover_background_color": "#9A7747",
-            "button_text_color": "#FAF7F0",
-            "secondary_button_background_color": "#2E3A2F",
-            "secondary_button_hover_background_color": "#243028",
-            "secondary_button_text_color": "#F7F2E8",
-            "message_bubble_color": "#DCE8DE",
-            "tbas_color": "#1F1A14",
-            "yanit_card": "#FFF9F0",
-            "font_size": "18",
-            "hover_background_color": "#E7DFD2",
-            "hover_text_color": "#1F1A14",
-            "icon_color": "#22312B",
-            "icon_hover_color": "#B08D57",
-            "answer_background_color": "#F5F0E6",
-            "content_background_color": "#FFF9F0",
-            "tab_background_color": "#EFE6D8",
-            "tab_text_color": "#1F1A14",
-            "tab_active_background_color": "#FFF9F0",
-            "tab_active_text_color": "#22312B",
-            "dropdown_text_color": "#1F1A14",
-            "dropdown_hover_background_color": "#E7DFD2",
-            "dropdown_hover_text_color": "#22312B",
-            "nav_link_hover_color": "#FAF7F0",
-	            "nav_link_hover_bg": "#2B3D35",
-	            "pagination_background_color": "#FFF9F0",
-	            "pagination_text_color": "#22312B",
-	            "font_family": "Crimson+Text"
-	        },
+        "classic_garamond": {
+            "background_color": "#F5F5F5",
+            "text_color": "#000000",
+            "header_background_color": "#F5F5F5",
+            "header_text_color": "#333333",
+            "link_color": "#6E8CA7",
+            "link_hover_color": "#4E647E",
+            "button_background_color": "#6E8CA7",
+            "button_hover_background_color": "#4E647E",
+            "button_text_color": "#ffffff",
+            "secondary_button_background_color": "#6c757d",
+            "secondary_button_hover_background_color": "#495057",
+            "secondary_button_text_color": "#ffffff",
+            "message_bubble_color": "#d1e7ff",
+            "tbas_color": "#000000",
+            "yanit_card": "#ffffff",
+            "font_size": "16",
+            "hover_background_color": "#f0f0f0",
+            "hover_text_color": "#000000",
+            "icon_color": "#333333",
+            "icon_hover_color": "#007bff",
+            "answer_background_color": "#F5F5F5",
+            "content_background_color": "#ffffff",
+            "tab_background_color": "#f8f9fa",
+            "tab_text_color": "#000000",
+            "tab_active_background_color": "#ffffff",
+            "tab_active_text_color": "#000000",
+            "dropdown_text_color": "#333333",
+            "dropdown_hover_background_color": "#f2f2f2",
+            "dropdown_hover_text_color": "#0056b3",
+            "nav_link_hover_color": "#007bff",
+            "nav_link_hover_bg": "#f5f5f5",
+            "pagination_background_color": "#ffffff",
+            "pagination_text_color": "#000000",
+            "font_family": "EB+Garamond"
+        },
 	        "the_porcelain": {
 	            "background_color": "#F6F3EE",
 	            "text_color": "#1C232B",

@@ -1,0 +1,1110 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Memur Sınavı Mini Çalışma</title>
+  <style>
+    :root {
+      --ink: #1f2933;
+      --muted: #6c6b68;
+      --line: #dccfbe;
+      --accent: #b75d2f;
+      --accent-soft: #f4dcc9;
+      --paper: rgba(255, 253, 249, 0.93);
+      --ok: #1d6b45;
+      --ok-soft: #e0f1e8;
+      --bad: #9a2c2c;
+      --bad-soft: #f7e3e3;
+      --shadow: 0 18px 40px rgba(51, 42, 30, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(183, 93, 47, 0.14), transparent 28%),
+        radial-gradient(circle at top right, rgba(74, 109, 96, 0.1), transparent 24%),
+        linear-gradient(180deg, #f6efe6 0%, #f1e6d8 100%);
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    .page {
+      width: min(1080px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    .hero,
+    .toolbar,
+    .answer-key,
+    .topic-section,
+    .status-box {
+      background: var(--paper);
+      border: 1px solid rgba(220, 207, 190, 0.95);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      border-radius: 28px;
+      padding: 18px 22px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #81401d;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 16px 0 10px;
+      font-family: "Iowan Old Style", "Palatino Linotype", serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+
+    .lead,
+    .meta,
+    .toolbar-note,
+    .answer-key p,
+    .topic-meta,
+    .feedback {
+      color: var(--muted);
+    }
+
+    .lead {
+      margin: 0;
+      max-width: 74ch;
+      font-size: 1.02rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .meta {
+      margin-top: 16px;
+      font-size: 0.94rem;
+    }
+
+    code {
+      font-family: "SF Mono", "Consolas", monospace;
+      background: #f4ede5;
+      padding: 0.1em 0.4em;
+      border-radius: 6px;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 12px;
+      z-index: 5;
+      margin: 20px 0 18px;
+      padding: 18px;
+      border-radius: 22px;
+      transition:
+        padding 0.28s ease,
+        border-radius 0.28s ease,
+        transform 0.28s ease,
+        box-shadow 0.28s ease;
+    }
+
+    .toolbar.collapsed {
+      width: fit-content;
+      min-width: 0;
+      margin-left: auto;
+      margin-right: 0;
+      padding: 0;
+      border-radius: 999px;
+      transform: translateY(-2px) scale(0.98);
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+
+    .toolbar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      transition: margin-bottom 0.28s ease;
+    }
+
+    .toolbar.collapsed .toolbar-header {
+      margin-bottom: 0;
+      justify-content: flex-end;
+      width: auto;
+      padding: 4px;
+      border-radius: 999px;
+      background: var(--paper);
+      border: 1px solid rgba(220, 207, 190, 0.95);
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar-heading {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+      transition:
+        opacity 0.22s ease,
+        max-width 0.28s ease,
+        transform 0.28s ease,
+        margin 0.28s ease;
+      max-width: 420px;
+    }
+
+    .toolbar.collapsed .toolbar-heading {
+      opacity: 0;
+      max-width: 0;
+      margin: 0;
+      overflow: hidden;
+      transform: translateX(8px);
+      pointer-events: none;
+    }
+
+    .toolbar-title {
+      font-size: 0.94rem;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .toolbar-current {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toolbar-toggle {
+      flex: 0 0 auto;
+      background: #faf5ef;
+      transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.28s ease;
+    }
+
+    .toolbar.collapsed .toolbar-toggle {
+      animation: collapsePulse 0.8s ease;
+      box-shadow: 0 10px 24px rgba(51, 42, 30, 0.12);
+    }
+
+    .toolbar-body {
+      overflow: hidden;
+      max-height: 420px;
+      opacity: 1;
+      transform: translateY(0);
+      transition:
+        max-height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.22s ease,
+        transform 0.28s ease;
+    }
+
+    .toolbar.collapsed .toolbar-body {
+      max-height: 0;
+      width: 0;
+      max-width: 0;
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+    }
+
+    @keyframes collapsePulse {
+      0% {
+        transform: scale(0.92);
+      }
+      45% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .topic-picker {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .topic-picker label {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .topic-select {
+      width: 100%;
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 13px 16px;
+      background: #faf5ef;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      background-image:
+        linear-gradient(45deg, transparent 50%, #7c6958 50%),
+        linear-gradient(135deg, #7c6958 50%, transparent 50%);
+      background-position:
+        calc(100% - 20px) calc(50% - 3px),
+        calc(100% - 14px) calc(50% - 3px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+    }
+
+    .toolbar-main {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .stat {
+      min-width: 132px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: #f8f2ea;
+      border: 1px solid var(--line);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.2rem;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 11px 16px;
+      font: inherit;
+      font-weight: 700;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      touch-action: manipulation;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: #bfae9c;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #fffaf4;
+      border-color: transparent;
+    }
+
+    .secondary {
+      background: #f9f4ee;
+    }
+
+    .toolbar-note {
+      margin-top: 12px;
+      font-size: 0.92rem;
+    }
+
+    .status-box {
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .answer-key {
+      margin-bottom: 18px;
+      padding: 18px;
+      border-radius: 22px;
+    }
+
+    .answer-key[hidden] {
+      display: none;
+    }
+
+    .answer-key h2 {
+      margin: 0 0 8px;
+      font-size: 1.08rem;
+    }
+
+    .answer-topic-group + .answer-topic-group {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .answer-topic-title {
+      margin: 0 0 10px;
+      font-size: 0.98rem;
+      font-weight: 800;
+    }
+
+    .answer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+      gap: 8px;
+    }
+
+    .answer-chip {
+      padding: 8px 10px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid var(--line);
+      background: #fcf8f2;
+      font-weight: 700;
+    }
+
+    #content {
+      display: grid;
+      gap: 18px;
+    }
+
+    .topic-section {
+      border-radius: 24px;
+      padding: 20px;
+    }
+
+    .topic-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .topic-title {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .topic-meta {
+      font-size: 0.92rem;
+    }
+
+    .questions {
+      display: grid;
+      gap: 16px;
+    }
+
+    .question-card {
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(220, 207, 190, 0.95);
+      background: rgba(252, 250, 247, 0.96);
+    }
+
+    .question-head {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .number-badge {
+      flex: 0 0 auto;
+      min-width: 42px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: #f5eee4;
+      border: 1px solid var(--line);
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .question-text {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .option {
+      display: grid;
+      grid-template-columns: auto auto 1fr;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fcfaf7;
+      transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+      cursor: pointer;
+    }
+
+    .option:hover {
+      transform: translateY(-1px);
+      border-color: #c7b5a1;
+    }
+
+    .option input {
+      margin-top: 4px;
+      width: 18px;
+      height: 18px;
+    }
+
+    .option-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-grid;
+      place-items: center;
+      font-weight: 800;
+      background: #f1e8dd;
+      color: #7c6958;
+    }
+
+    .option.selected {
+      border-color: #bfa58c;
+      background: #f7efe6;
+    }
+
+    .option.correct {
+      border-color: rgba(29, 107, 69, 0.24);
+      background: var(--ok-soft);
+    }
+
+    .option.wrong {
+      border-color: rgba(154, 44, 44, 0.22);
+      background: var(--bad-soft);
+    }
+
+    .feedback {
+      margin-top: 12px;
+      min-height: 24px;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .feedback.ok {
+      color: var(--ok);
+    }
+
+    .feedback.bad {
+      color: var(--bad);
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        width: min(100vw - 20px, 1080px);
+        padding-top: 16px;
+      }
+
+      .hero,
+      .toolbar,
+      .answer-key,
+      .topic-section,
+      .status-box {
+        border-radius: 20px;
+      }
+
+      .hero {
+        padding: 14px 16px;
+      }
+
+      .lead {
+        font-size: 0.98rem;
+      }
+
+      .toolbar {
+        top: 8px;
+        padding: 14px;
+      }
+
+      .toolbar.collapsed {
+        padding: 0;
+      }
+
+      .toolbar-header {
+        gap: 10px;
+      }
+
+      .toolbar-current {
+        font-size: 0.96rem;
+      }
+
+      .toolbar-toggle {
+        min-height: 42px;
+        padding-inline: 14px;
+      }
+
+      .topic-select {
+        min-height: 48px;
+      }
+
+      .toolbar-main {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .stat {
+        min-width: 0;
+        padding: 10px 10px;
+      }
+
+      .stat strong {
+        font-size: 1.05rem;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+      }
+
+      .actions button {
+        width: 100%;
+        min-height: 46px;
+      }
+
+      .toolbar-note {
+        margin-top: 10px;
+        font-size: 0.88rem;
+      }
+
+      .topic-head {
+        gap: 6px;
+      }
+
+      .topic-title {
+        font-size: 1.05rem;
+      }
+
+      .question-card {
+        padding: 14px;
+      }
+
+      .question-head {
+        gap: 10px;
+      }
+
+      .question-text {
+        font-size: 0.98rem;
+      }
+
+      .option {
+        padding: 13px 12px;
+        gap: 12px;
+      }
+
+      .option-letter {
+        width: 30px;
+        height: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <p class="lead">mail adresi: uguraygun001@hotmail.com</p>
+    </section>
+
+    <section id="toolbar" class="toolbar">
+      <div class="toolbar-header">
+        <div class="toolbar-heading">
+          <div class="toolbar-title">Kontrol Paneli</div>
+          <div id="toolbar-current" class="toolbar-current">-</div>
+        </div>
+        <button id="toolbar-toggle-btn" class="toolbar-toggle" type="button" aria-expanded="true">Paneli Gizle</button>
+      </div>
+
+      <div id="toolbar-body" class="toolbar-body">
+        <div class="topic-picker">
+          <label for="topic-select">Konu Seç</label>
+          <select id="topic-select" class="topic-select"></select>
+        </div>
+
+        <div class="toolbar-main">
+          <div class="stats">
+            <div class="stat">
+              <strong id="topic-count">-</strong>
+              <span>görünen soru</span>
+            </div>
+            <div class="stat">
+              <strong id="answered-count">-</strong>
+              <span>işaretlenen</span>
+            </div>
+            <div class="stat">
+              <strong id="score-count">-</strong>
+              <span>doğru</span>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="check-btn" class="primary" type="button">Kontrol Et</button>
+            <button id="toggle-answers-btn" class="secondary" type="button">Cevapları Göster</button>
+            <button id="clear-btn" type="button">Temizle ve Karıştır</button>
+          </div>
+        </div>
+
+        <div class="toolbar-note">
+          <strong>Not:</strong> <span id="scope-note"></span>
+        </div>
+      </div>
+    </section>
+
+    <section id="status-box" class="status-box" hidden></section>
+
+    <section id="answer-key" class="answer-key" hidden>
+      <h2>Cevap Anahtarı</h2>
+      <p>Doğru şıklar PDF’nin sonundaki cevap anahtarından alındı.</p>
+      <div id="answer-key-content"></div>
+    </section>
+
+    <main id="content"></main>
+  </div>
+
+  <script src="questions.js"></script>
+  <script>
+    const examData = window.EXAM_DATA;
+    const contentEl = document.getElementById("content");
+    const toolbarEl = document.getElementById("toolbar");
+    const toolbarBodyEl = document.getElementById("toolbar-body");
+    const toolbarToggleBtn = document.getElementById("toolbar-toggle-btn");
+    const toolbarCurrentEl = document.getElementById("toolbar-current");
+    const topicSelectEl = document.getElementById("topic-select");
+    const topicCountEl = document.getElementById("topic-count");
+    const answeredCountEl = document.getElementById("answered-count");
+    const scoreCountEl = document.getElementById("score-count");
+    const toggleAnswersBtn = document.getElementById("toggle-answers-btn");
+    const answerKeyEl = document.getElementById("answer-key");
+    const answerKeyContentEl = document.getElementById("answer-key-content");
+    const statusBoxEl = document.getElementById("status-box");
+    const scopeNoteEl = document.getElementById("scope-note");
+    const checkBtn = document.getElementById("check-btn");
+    const clearBtn = document.getElementById("clear-btn");
+    const STORAGE_KEY = `memur-mini-sinav-${examData?.version || "fallback"}`;
+    const DISPLAY_OPTION_LETTERS = ["a", "b", "c", "d"];
+
+    if (!examData || !Array.isArray(examData.topics)) {
+      statusBoxEl.hidden = false;
+      statusBoxEl.textContent = "Soru verisi yüklenemedi. questions.js dosyasını kontrol et.";
+      throw new Error("questions.js yüklenemedi.");
+    }
+
+    const topics = examData.topics;
+    const topicMap = new Map(topics.map((topic) => [topic.id, topic]));
+    const questionMap = new Map();
+    const topicByQuestionId = new Map();
+
+    for (const topic of topics) {
+      for (const question of topic.questions) {
+        questionMap.set(question.id, question);
+        topicByQuestionId.set(question.id, topic.id);
+      }
+    }
+
+    const state = loadState();
+    render();
+
+    topicSelectEl.addEventListener("change", () => {
+      state.selectedTopicId = topicSelectEl.value;
+      persistState();
+      render();
+    });
+
+    toolbarToggleBtn.addEventListener("click", () => {
+      state.toolbarCollapsed = !state.toolbarCollapsed;
+      persistState();
+      renderToolbar();
+    });
+
+    contentEl.addEventListener("change", (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || input.type !== "radio") return;
+      state.answers[input.name] = input.value;
+      persistState();
+      updateQuestionState(input.name);
+      updateStats();
+    });
+
+    checkBtn.addEventListener("click", () => {
+      state.checked = true;
+      persistState();
+      updateAllQuestionStates();
+      updateStats();
+      renderStatus();
+    });
+
+    toggleAnswersBtn.addEventListener("click", () => {
+      state.showAnswers = !state.showAnswers;
+      persistState();
+      updateAllQuestionStates();
+      renderAnswerKey();
+      renderStatus();
+      toggleAnswersBtn.textContent = state.showAnswers ? "Cevapları Gizle" : "Cevapları Göster";
+    });
+
+    clearBtn.addEventListener("click", () => {
+      const visibleTopics = getVisibleTopics();
+      const scopeLabel = state.selectedTopicId === "all" ? "görünen tüm konular" : visibleTopics[0].title;
+      if (!window.confirm(`${scopeLabel} için seçimler silinsin ve sıra yeniden karıştırılsın mı?`)) {
+        return;
+      }
+
+      for (const topic of visibleTopics) {
+        for (const question of topic.questions) {
+          delete state.answers[question.id];
+        }
+        shuffleTopic(topic.id);
+      }
+
+      state.checked = false;
+      state.showAnswers = false;
+      persistState();
+      render();
+    });
+
+    function loadState() {
+      const baseState = {
+        selectedTopicId: topics[0]?.id || "all",
+        answers: {},
+        checked: false,
+        showAnswers: false,
+        toolbarCollapsed: false,
+        orders: buildDefaultOrders()
+      };
+
+      try {
+        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        const selectedTopicId = raw.selectedTopicId === "all" || topicMap.has(raw.selectedTopicId)
+          ? raw.selectedTopicId
+          : baseState.selectedTopicId;
+
+        return {
+          selectedTopicId,
+          answers: {},
+          checked: false,
+          showAnswers: false,
+          toolbarCollapsed: false,
+          orders: baseState.orders
+        };
+      } catch {
+        return baseState;
+      }
+    }
+
+    function buildDefaultOrders() {
+      const orders = {};
+      for (const topic of topics) {
+        orders[topic.id] = {
+          questionOrder: topic.questions.map((question) => question.id),
+          optionOrders: Object.fromEntries(
+            topic.questions.map((question) => [question.id, ["a", "b", "c", "d"]])
+          )
+        };
+      }
+      return orders;
+    }
+
+    function persistState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        selectedTopicId: state.selectedTopicId
+      }));
+    }
+
+    function getVisibleTopics() {
+      if (state.selectedTopicId === "all") return topics;
+      return topicMap.has(state.selectedTopicId) ? [topicMap.get(state.selectedTopicId)] : [topics[0]];
+    }
+
+    function getOrderedQuestions(topic) {
+      const order = state.orders[topic.id]?.questionOrder || topic.questions.map((question) => question.id);
+      return order.map((id) => questionMap.get(id)).filter(Boolean);
+    }
+
+    function render() {
+      renderToolbar();
+      renderTopicSelect();
+      renderContent();
+      renderAnswerKey();
+      renderStatus();
+      updateStats();
+      toggleAnswersBtn.textContent = state.showAnswers ? "Cevapları Gizle" : "Cevapları Göster";
+      scopeNoteEl.textContent = state.selectedTopicId === "all"
+        ? "Temizle ve Karıştır görünürdeki tüm konuları sıfırlar."
+        : "Temizle ve Karıştır yalnızca seçili konuyu sıfırlar.";
+    }
+
+    function renderToolbar() {
+      const visibleTopics = getVisibleTopics();
+      const currentTopicLabel = state.selectedTopicId === "all"
+        ? `Tüm Konular • ${topics.reduce((total, topic) => total + topic.questionCount, 0)} soru`
+        : `${visibleTopics[0].shortTitle} • ${visibleTopics[0].questionCount} soru`;
+
+      toolbarCurrentEl.textContent = currentTopicLabel;
+      toolbarEl.classList.toggle("collapsed", state.toolbarCollapsed);
+      toolbarToggleBtn.textContent = state.toolbarCollapsed ? "Paneli Aç" : "Paneli Gizle";
+      toolbarToggleBtn.setAttribute("aria-expanded", String(!state.toolbarCollapsed));
+      toolbarBodyEl.setAttribute("aria-hidden", String(state.toolbarCollapsed));
+    }
+
+    function renderTopicSelect() {
+      const allTopic = {
+        id: "all",
+        shortTitle: "Tüm Konular",
+        questionCount: topics.reduce((total, topic) => total + topic.questionCount, 0)
+      };
+
+      topicSelectEl.innerHTML = [allTopic, ...topics].map((topic) => {
+        const selected = state.selectedTopicId === topic.id ? "selected" : "";
+        return `<option value="${topic.id}" ${selected}>${escapeHtml(topic.shortTitle)} (${topic.questionCount})</option>`;
+      }).join("");
+    }
+
+    function renderContent() {
+      const visibleTopics = getVisibleTopics();
+      contentEl.innerHTML = visibleTopics.map((topic) => renderTopicSection(topic)).join("");
+      updateAllQuestionStates();
+    }
+
+    function renderTopicSection(topic) {
+      const questions = getOrderedQuestions(topic);
+      return `
+        <section class="topic-section">
+          <div class="topic-head">
+            <h2 class="topic-title">${escapeHtml(topic.title)}</h2>
+            <div class="topic-meta">Sayfa ${topic.pageStart}-${topic.pageEnd} • ${topic.questionCount} soru</div>
+          </div>
+          <div class="questions">
+            ${questions.map((question) => renderQuestionCard(topic, question)).join("")}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderQuestionCard(topic, question) {
+      const optionOrder = state.orders[topic.id].optionOrders[question.id];
+      return `
+        <article class="question-card" id="question-${question.id}">
+          <div class="question-head">
+            <div class="number-badge">${question.number}</div>
+            <p class="question-text">${escapeHtml(question.question)}</p>
+          </div>
+          <div class="options">
+            ${optionOrder.map((optionKey, index) => {
+              const displayLetter = DISPLAY_OPTION_LETTERS[index];
+              const checked = state.answers[question.id] === optionKey ? "checked" : "";
+              return `
+                <label class="option" data-question-id="${question.id}" data-option-key="${optionKey}">
+                  <input type="radio" name="${question.id}" value="${optionKey}" ${checked}>
+                  <span class="option-letter">${displayLetter.toUpperCase()}</span>
+                  <span>${escapeHtml(question.options[optionKey])}</span>
+                </label>
+              `;
+            }).join("")}
+          </div>
+          <div class="feedback" id="feedback-${question.id}"></div>
+        </article>
+      `;
+    }
+
+    function renderAnswerKey() {
+      answerKeyEl.hidden = !state.showAnswers;
+      if (!state.showAnswers) {
+        answerKeyContentEl.innerHTML = "";
+        return;
+      }
+
+      answerKeyContentEl.innerHTML = getVisibleTopics().map((topic) => {
+        return `
+          <div class="answer-topic-group">
+            <div class="answer-topic-title">${escapeHtml(topic.title)}</div>
+            <div class="answer-grid">
+              ${topic.questions.map((question) => {
+                return `<div class="answer-chip">${question.number}: ${getDisplayedAnswerLetter(topic.id, question).toUpperCase()}</div>`;
+              }).join("")}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function updateAllQuestionStates() {
+      for (const topic of getVisibleTopics()) {
+        for (const question of topic.questions) {
+          updateQuestionState(question.id);
+        }
+      }
+    }
+
+    function updateQuestionState(questionId) {
+      const question = questionMap.get(questionId);
+      if (!question) return;
+
+      const selected = state.answers[questionId];
+      const feedbackEl = document.getElementById(`feedback-${questionId}`);
+      const optionEls = document.querySelectorAll(`[data-question-id="${questionId}"]`);
+      const correctDisplayLetter = getDisplayedAnswerLetter(topicByQuestionId.get(questionId), question).toUpperCase();
+
+      optionEls.forEach((optionEl) => {
+        const optionKey = optionEl.dataset.optionKey;
+        optionEl.classList.toggle("selected", selected === optionKey);
+        optionEl.classList.remove("correct", "wrong");
+
+        if (state.checked || state.showAnswers) {
+          if (optionKey === question.answer) {
+            optionEl.classList.add("correct");
+          }
+          if (selected === optionKey && selected !== question.answer) {
+            optionEl.classList.add("wrong");
+          }
+        }
+      });
+
+      if (!feedbackEl) return;
+
+      if (!(state.checked || state.showAnswers)) {
+        feedbackEl.textContent = "";
+        feedbackEl.className = "feedback";
+        return;
+      }
+
+      if (!selected) {
+        feedbackEl.textContent = `Doğru cevap: ${correctDisplayLetter}`;
+        feedbackEl.className = "feedback";
+        return;
+      }
+
+      if (selected === question.answer) {
+        feedbackEl.textContent = "Doğru.";
+        feedbackEl.className = "feedback ok";
+        return;
+      }
+
+      feedbackEl.textContent = `Yanlış. Doğru cevap: ${correctDisplayLetter}`;
+      feedbackEl.className = "feedback bad";
+    }
+
+    function updateStats() {
+      const visibleQuestions = getVisibleTopics().flatMap((topic) => topic.questions);
+      const answered = visibleQuestions.filter((question) => state.answers[question.id]).length;
+
+      topicCountEl.textContent = `${visibleQuestions.length}`;
+      answeredCountEl.textContent = `${answered} / ${visibleQuestions.length}`;
+
+      if (!state.checked) {
+        scoreCountEl.textContent = "-";
+        return;
+      }
+
+      const correct = visibleQuestions.filter(
+        (question) => state.answers[question.id] === question.answer
+      ).length;
+      scoreCountEl.textContent = `${correct} / ${visibleQuestions.length}`;
+    }
+
+    function renderStatus() {
+      const visibleQuestions = getVisibleTopics().flatMap((topic) => topic.questions);
+      if (!(state.checked || state.showAnswers)) {
+        statusBoxEl.hidden = true;
+        statusBoxEl.textContent = "";
+        return;
+      }
+
+      const answered = visibleQuestions.filter((question) => state.answers[question.id]).length;
+      const correct = visibleQuestions.filter(
+        (question) => state.answers[question.id] === question.answer
+      ).length;
+
+      let text = `${visibleQuestions.length} soruluk görünüm açık. ${answered} soru işaretlendi.`;
+      if (state.checked) {
+        text += ` Doğru sayısı: ${correct}.`;
+      }
+      if (state.showAnswers) {
+        text += " Cevap anahtarı ve doğru şıklar gösteriliyor.";
+      }
+
+      statusBoxEl.hidden = false;
+      statusBoxEl.textContent = text;
+    }
+
+    function shuffleTopic(topicId) {
+      const topic = topicMap.get(topicId);
+      if (!topic) return;
+
+      const questionIds = [...topic.questions.map((question) => question.id)];
+      shuffleArray(questionIds);
+      state.orders[topicId].questionOrder = questionIds;
+
+      for (const question of topic.questions) {
+        const optionLetters = ["a", "b", "c", "d"];
+        shuffleArray(optionLetters);
+        state.orders[topicId].optionOrders[question.id] = optionLetters;
+      }
+    }
+
+    function shuffleArray(items) {
+      for (let idx = items.length - 1; idx > 0; idx -= 1) {
+        const swapIndex = Math.floor(Math.random() * (idx + 1));
+        [items[idx], items[swapIndex]] = [items[swapIndex], items[idx]];
+      }
+    }
+
+    function getDisplayedAnswerLetter(topicId, question) {
+      const optionOrder = state.orders[topicId].optionOrders[question.id];
+      const answerIndex = optionOrder.indexOf(question.answer);
+      return DISPLAY_OPTION_LETTERS[answerIndex] || question.answer;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+  </script>
+</body>
+</html>

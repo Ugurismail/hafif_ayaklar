@@ -1,0 +1,103 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Sınav | Hafif Ayaklar{% endblock %}
+{% block meta_description %}Üyelik gerektirmeden kullanılabilen sınav ekranı.{% endblock %}
+
+{% block extra_css %}
+<style>
+  .memur-exam-shell {
+    padding: 1.5rem 0 2rem;
+  }
+
+  .memur-exam-card {
+    background: color-mix(in srgb, var(--content-background-color) 94%, transparent);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    box-shadow: 0 18px 50px color-mix(in srgb, var(--shadow-color) 55%, transparent);
+    overflow: hidden;
+  }
+
+  .memur-exam-head {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background:
+      radial-gradient(circle at top left, color-mix(in srgb, var(--button-background-color) 14%, transparent), transparent 38%),
+      radial-gradient(circle at top right, color-mix(in srgb, var(--secondary-button-background-color) 16%, transparent), transparent 30%),
+      color-mix(in srgb, var(--content-background-color) 97%, transparent);
+  }
+
+  .memur-exam-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+  }
+
+  .memur-exam-actions .btn {
+    white-space: nowrap;
+  }
+
+  .memur-exam-frame-wrap {
+    padding: 0.8rem;
+    background: color-mix(in srgb, var(--background-color) 80%, var(--content-background-color));
+  }
+
+  .memur-exam-frame {
+    display: block;
+    width: 100%;
+    min-height: calc(100vh - 200px);
+    border: 0;
+    background: #fff;
+    border-radius: 18px;
+  }
+
+  @media (max-width: 768px) {
+    .memur-exam-head {
+      flex-direction: column;
+    }
+
+    .memur-exam-actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .memur-exam-frame-wrap {
+      padding: 0.5rem;
+    }
+
+    .memur-exam-frame {
+      min-height: calc(100vh - 240px);
+      border-radius: 14px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid memur-exam-shell">
+  <div class="memur-exam-card">
+    <div class="memur-exam-head">
+      <div class="memur-exam-actions">
+        <a class="btn btn-theme-secondary" href="{% static 'tools/memur-sinavi/index.html' %}" target="_blank" rel="noopener noreferrer">
+          <i class="bi bi-box-arrow-up-right"></i> Yeni Sekmede Aç
+        </a>
+      </div>
+    </div>
+    <div class="memur-exam-frame-wrap">
+      <iframe
+        class="memur-exam-frame"
+        src="{% static 'tools/memur-sinavi/index.html' %}"
+        title="Sınav"
+        loading="eager"
+        referrerpolicy="same-origin"
+      ></iframe>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -94,6 +94,7 @@ urlpatterns = [
     path('add_question_from_search/', views.add_question_from_search, name='add_question_from_search'),
     path('bkz/<path:query>/', views.bkz_view, name='bkz'),
     path('games/game-of-life/', views.game_of_life, name='game_of_life'),
+    path('memur-sinavi/', views.memur_exam, name='memur_exam'),
 
     # AJAX İşlemleri
     path('vote/', views.vote, name='vote'),

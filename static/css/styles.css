@@ -1,43 +1,42 @@
 :root {
-    /* Defaults use system colors; authenticated users override via :root in base.html */
-    --secondary-button-background-color: color-mix(in srgb, CanvasText 18%, Canvas);
-    --secondary-button-hover-background-color: color-mix(in srgb, CanvasText 26%, Canvas);
-    --secondary-button-text-color: CanvasText;
-    --font-size: 16px;
-    --message-bubble: color-mix(in srgb, Highlight 14%, Canvas);
-    --tbas-color: CanvasText;
-    --background-color: Canvas;
-    --text-color: CanvasText;
-    --header-background-color: Canvas;
-    --header-text-color: CanvasText;
-    --link-color: LinkText;
-    --link-hover-color: LinkText;
-    --button-background-color: Highlight;
-    --button-hover-background-color: color-mix(in srgb, Highlight 82%, CanvasText);
-    --button-text-color: HighlightText;
-    --hover-background-color: color-mix(in srgb, CanvasText 6%, Canvas);
-    --icon-color: color-mix(in srgb, CanvasText 70%, transparent);
-    --icon-hover-color: CanvasText;
-    --answer-background-color: Canvas;
-    --content-background-color: Canvas;
-    --tab-background-color: color-mix(in srgb, CanvasText 5%, Canvas);
-    --tab-text-color: CanvasText;
-    --tab-active-background-color: Canvas;
-    --tab-active-text-color: CanvasText;
-    --dropdown-text-color: CanvasText;
-    --dropdown-hover-background-color: var(--hover-background-color);
-    --dropdown-hover-text-color: CanvasText;
-    --nav-link-hover-color: var(--header-text-color);
-    --nav-link-hover-bg: var(--hover-background-color);
-    --pagination-background-color: var(--content-background-color);
-    --pagination-text-color: var(--text-color);
-    --body-font-family: "EB Garamond", serif;
-    --yanit-card-background-color: var(--content-background-color);
+    /* Anonymous / global default theme: Old Money */
+    --secondary-button-background-color: #2E3A2F;
+    --secondary-button-hover-background-color: #243028;
+    --secondary-button-text-color: #F7F2E8;
+    --font-size: 18px;
+    --message-bubble: #DCE8DE;
+    --tbas-color: #1F1A14;
+    --background-color: #F5F0E6;
+    --text-color: #1F1A14;
+    --header-background-color: #22312B;
+    --header-text-color: #F7F2E8;
+    --link-color: #2F6B4F;
+    --link-hover-color: #1E4D38;
+    --button-background-color: #B08D57;
+    --button-hover-background-color: #9A7747;
+    --button-text-color: #FAF7F0;
+    --hover-background-color: #E7DFD2;
+    --icon-color: #22312B;
+    --icon-hover-color: #B08D57;
+    --answer-background-color: #F5F0E6;
+    --content-background-color: #FFF9F0;
+    --tab-background-color: #EFE6D8;
+    --tab-text-color: #1F1A14;
+    --tab-active-background-color: #FFF9F0;
+    --tab-active-text-color: #22312B;
+    --dropdown-text-color: #1F1A14;
+    --dropdown-hover-background-color: #E7DFD2;
+    --dropdown-hover-text-color: #22312B;
+    --nav-link-hover-color: #FAF7F0;
+    --nav-link-hover-bg: #2B3D35;
+    --pagination-background-color: #FFF9F0;
+    --pagination-text-color: #22312B;
+    --body-font-family: "Crimson Text", serif;
+    --yanit-card-background-color: #FFF9F0;
 
     --border-color: color-mix(in srgb, var(--text-color) 25%, transparent);
     --shadow-color: color-mix(in srgb, var(--text-color) 18%, transparent);
 
-    /* Toast notification colors */
     --toast-success-bg: var(--content-background-color);
     --toast-success-border: var(--secondary-button-background-color);
     --toast-success-text: var(--text-color);

@@ -76,6 +76,10 @@ def get_today_questions_page(request, per_page=25):
     return paginate_queryset(queryset, request, 'page', per_page)
 
 
+def memur_exam(request):
+    return render(request, 'core/memur_exam.html')
+
+
 def user_homepage(request):
     # Public view - anyone can see questions
     # But some features require login
