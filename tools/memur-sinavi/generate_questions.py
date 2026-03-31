@@ -159,6 +159,28 @@ MANUAL_QUESTION_PATCHES = {
             "d": "DDY’nin",
         }
     },
+    ("turkce-dil-bilgisi-kurallari", 1): {
+        "options": {
+            "a": "[[u]]Bartın’a[[/u]] hiç gittin mi?",
+            "b": "Vadideki [[u]]Zambak’ı[[/u]] okuduğumda uzun süre etkisinde kaldım.",
+            "c": "[[u]]Türkçe’nin[[/u]] gücünü bilmek lazım.",
+            "d": "[[u]]Avusturalya’da[[/u]] arkadaşımı ziyaret ettim.",
+        }
+    },
+    ("turkce-dil-bilgisi-kurallari", 34): {
+        "question": "“Kentimiz, [[u]]bayındırlı[[/u]] ve gelişmiş bir kenttir.” Yukarıdaki cümlede altı çizili sözcük yerine aşağıdakilerden hangisi gelmelidir?"
+    },
+    ("turkce-dil-bilgisi-kurallari", 42): {
+        "options": {
+            "a": "[[u]]Ucuzca[[/u]] bir otel arıyordu.",
+            "b": "[[u]]Ahbapca[[/u]] bir tutum takındı.",
+            "c": "Başını [[u]]hafifce[[/u]] öne eğdi.",
+            "d": "[[u]]Kitapın[[/u]] kapağı yırtılmış.",
+        }
+    },
+    ("yazisma-dosyalama-usulleri", 27): {
+        "question": "“Belgenin hangi dosya ile ilişkili olduğunu veya işlemi biten belgenin hangi dosya/klasöre konulacağını gösteren alfabetik, sayısal, alfa-nümerik tanımlama” aşağıdakilerden hangisinin tanımıdır?"
+    },
 }
 
 GLOBAL_TEXT_PATCHES = {
@@ -171,6 +193,8 @@ GLOBAL_TEXT_PATCHES = {
     "1)Merkezi": "1) Merkezi",
     "1)Aşağıdakilerden": "1) Aşağıdakilerden",
     "17)Aşağıdakilerden": "17) Aşağıdakilerden",
+    "(IV)tatlı": "(IV) tatlı",
+    "(III)Çünkü": "(III) Çünkü",
 }
 
 

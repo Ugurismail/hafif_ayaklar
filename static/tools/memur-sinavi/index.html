@@ -924,13 +924,18 @@
       `;
     }
 
+    function renderInlineMarkup(text) {
+      return escapeHtml(text)
+        .replace(/\[\[u\]\](.*?)\[\[\/u\]\]/g, '<u>$1<\/u>');
+    }
+
     function renderQuestionCard(topic, question) {
       const optionOrder = state.orders[topic.id].optionOrders[question.id];
       return `
         <article class="question-card" id="question-${question.id}">
           <div class="question-head">
             <div class="number-badge">${question.number}</div>
-            <p class="question-text">${escapeHtml(question.question)}</p>
+            <p class="question-text">${renderInlineMarkup(question.question)}</p>
           </div>
           <div class="options">
             ${optionOrder.map((optionKey, index) => {
@@ -940,7 +945,7 @@
                 <label class="option" data-question-id="${question.id}" data-option-key="${optionKey}">
                   <input type="radio" name="${question.id}" value="${optionKey}" ${checked}>
                   <span class="option-letter">${displayLetter.toUpperCase()}</span>
-                  <span>${escapeHtml(question.options[optionKey])}</span>
+                  <span>${renderInlineMarkup(question.options[optionKey])}</span>
                 </label>
               `;
             }).join("")}
