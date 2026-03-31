@@ -183,26 +183,26 @@
                 {% endif %}
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
+                    <li class="nav-item mobile-primary-item">
                         <a class="nav-link" href="{% url 'user_homepage' %}" title="Ana Sayfa">
                             <i class="bi bi-house"></i>
                             <span class="ms-1 d-lg-none">Ana Sayfa</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item mobile-primary-item">
                         <a class="nav-link" href="{% url 'question_map' %}" title="Harita">
                             <i class="bi bi-diagram-3"></i>
                             <span class="ms-1 d-lg-none">Harita</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item mobile-primary-item">
                         <a class="nav-link" href="{% url 'question_schema' %}" title="Adim Sema">
                             <i class="bi bi-layout-sidebar-inset"></i>
                             <span class="ms-1 d-lg-none">Sema</span>
                         </a>
                     </li>
                     <!-- Bildirimler -->
-                    <li class="nav-item">
+                    <li class="nav-item mobile-primary-item">
                         <a class="nav-link position-relative" href="{% url 'notification_list' %}" title="Bildirimler">
                             <i class="bi bi-bell"></i>
                             <span class="ms-1 d-lg-none">Bildirimler</span>
@@ -212,13 +212,12 @@
                         </a>
                     </li>
                     <!-- Müteferrik / Ek Menü -->
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown d-none d-lg-block">
                         <a class="nav-link dropdown-toggle position-relative" href="#" id="extraMenu" title="Müteferrik" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-radio-live="{{ radio_is_live|yesno:'1,0' }}">
                             <i class="bi bi-umbrella-fill"></i>
                             {% if radio_is_live %}
                                 <span class="radio-live-dot" aria-hidden="true"></span>
                             {% endif %}
-                            <span class="ms-1 d-lg-none">Müteferrik</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="extraMenu">
                             {% comment %}
@@ -332,7 +331,7 @@
                         </ul>
                     </li>
                     <!-- Mesajlar -->
-                    <li class="nav-item">
+                    <li class="nav-item mobile-primary-item">
                         <a class="nav-link position-relative" href="{% url 'message_list' %}" title="Mesajlar">
                             <i class="bi bi-envelope" id="message-icon"></i>
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="message-badge" style="background-color: var(--secondary-button-background-color); color: var(--secondary-button-text-color); {% if unread_message_count == 0 %}display: none;{% endif %}">
@@ -340,6 +339,72 @@
                             </span>
                             <span class="ms-1 d-lg-none">Mesajlar</span>
                         </a>
+                    </li>
+                    <li class="nav-item d-lg-none mobile-account-panel">
+                        <div class="mobile-nav-section-label">Hesap</div>
+                        <div class="mobile-account-grid">
+                            <a class="nav-link mobile-account-link" href="{% url 'profile' %}" title="Profilim">
+                                <i class="bi bi-person"></i>
+                                <span class="ms-1">Profilim</span>
+                            </a>
+                            <a class="nav-link mobile-account-link" href="{% url 'user_settings' %}" title="Renk Ayarları">
+                                <i class="bi bi-gear"></i>
+                                <span class="ms-1">Renk Ayarları</span>
+                            </a>
+                            <a class="nav-link mobile-logout-link" href="{% url 'logout' %}" title="Çıkış Yap">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span class="ms-1">Çıkış Yap</span>
+                            </a>
+                        </div>
+                    </li>
+                    <li class="nav-item d-lg-none mobile-utility-panel">
+                        <div class="mobile-nav-section-label">Kısayollar</div>
+                        <div class="mobile-utility-grid">
+                            <a class="nav-link mobile-utility-link" href="{% url 'radio_home' %}" title="Radyo">
+                                <i class="bi bi-broadcast-pin {% if radio_is_live %}radio-live-icon{% endif %}"></i>
+                                <span class="ms-1">Radyo{% if radio_is_live %} · canlı{% endif %}</span>
+                            </a>
+                            <a class="nav-link mobile-utility-link" href="{% url 'all_hashtags' %}" title="Etiketler">
+                                <i class="bi bi-hash"></i>
+                                <span class="ms-1">Etiketler</span>
+                            </a>
+                            <a class="nav-link mobile-utility-link" href="{% url 'file_library' %}" title="Dosyalar">
+                                <i class="bi bi-folder2-open"></i>
+                                <span class="ms-1">Dosyalar</span>
+                            </a>
+                            <a class="nav-link mobile-utility-link" href="{% url 'kenarda_list' %}" title="Kenardakiler">
+                                <i class="bi bi-hourglass"></i>
+                                <span class="ms-1">Kenardakiler</span>
+                            </a>
+                            <a class="nav-link mobile-utility-link" href="{% url 'polls_home' %}" title="Anketler">
+                                <i class="bi bi-card-checklist"></i>
+                                <span class="ms-1">Anketler</span>
+                            </a>
+                            <a class="nav-link mobile-utility-link" href="{% url 'german_course_home' %}" title="Almanca">
+                                <i class="bi bi-translate"></i>
+                                <span class="ms-1">Almanca</span>
+                            </a>
+                            <a class="nav-link mobile-utility-link" href="{% url 'memur_exam' %}" title="Sınav">
+                                <i class="bi bi-journal-check"></i>
+                                <span class="ms-1">Sınav</span>
+                            </a>
+                            <a class="nav-link mobile-utility-link" href="{% url 'site_statistics' %}" title="Site İstatistikleri">
+                                <i class="bi bi-bar-chart"></i>
+                                <span class="ms-1">Site İstatistikleri</span>
+                            </a>
+                            <a class="nav-link mobile-utility-link" href="{% url 'user_list' %}" title="Tüm Kullanıcılar">
+                                <i class="bi bi-people"></i>
+                                <span class="ms-1">Tüm Kullanıcılar</span>
+                            </a>
+                            <a class="nav-link mobile-utility-link" href="{% url 'delphoi_home' %}" title="Delphoi Kahini">
+                                <i class="fa-solid fa-hat-wizard"></i>
+                                <span class="ms-1">Delphoi Kahini</span>
+                            </a>
+                            <a class="nav-link mobile-utility-link" href="{% url 'about' %}" title="Hakkında">
+                                <i class="bi bi-info-circle"></i>
+                                <span class="ms-1">Hakkında</span>
+                            </a>
+                        </div>
                     </li>
                     
                     {% else %}
