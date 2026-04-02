@@ -701,6 +701,53 @@ textarea.auto-expand.expanded {
     color: var(--link-color);
 }
 
+#mainNavbar .navbar-main-link {
+    border-radius: 12px;
+}
+
+@media (min-width: 992px) {
+    #mainNavbar .navbar-main-link {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.55rem 0.72rem;
+    }
+
+    #mainNavbar .navbar-main-link:hover,
+    #mainNavbar .navbar-main-link:focus {
+        background: color-mix(in srgb, var(--button-background-color) 10%, transparent);
+    }
+
+    #mainNavbar .navbar-section-toggle {
+        font-weight: 600;
+    }
+
+    #mainNavbar .navbar-section-menu {
+        min-width: 17rem;
+        border-radius: 14px;
+        padding-top: 0.45rem;
+        padding-bottom: 0.45rem;
+    }
+
+    #mainNavbar .navbar-section-menu .dropdown-header {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    #mainNavbar .navbar-section-menu .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    #mainNavbar .navbar-icon-link {
+        justify-content: center;
+        min-width: 2.85rem;
+    }
+}
+
 /* Voted Buttons */
 .bi-chevron-up,
 .bi-chevron-down {
@@ -2094,13 +2141,14 @@ a.hashtag-link:hover {
 
 @media (max-width: 991.98px) {
     #navbarNav {
-        padding-top: 0.6rem;
+        padding-top: 0.55rem;
     }
 
     #navbarNav .navbar-nav {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.6rem;
+        gap: 0.55rem;
+        align-items: start;
     }
 
     #navbarNav .nav-item {
@@ -2117,9 +2165,9 @@ a.hashtag-link:hover {
         align-items: center;
         gap: 0.65rem;
         justify-content: flex-start;
-        padding: 0.72rem 0.82rem;
+        padding: 0.68rem 0.78rem;
         border-radius: 12px;
-        min-height: 42px;
+        min-height: 40px;
         background: color-mix(in srgb, var(--button-background-color) 8%, transparent);
     }
 
@@ -2147,7 +2195,7 @@ a.hashtag-link:hover {
     }
 
     #navbarNav .mobile-nav-section-label {
-        margin: 0.15rem 0 0.05rem;
+        margin: 0.1rem 0 0.05rem;
         padding-left: 0.25rem;
         color: color-mix(in srgb, var(--header-text-color) 74%, var(--text-color) 26%);
         font-size: 0.72rem;
@@ -2159,12 +2207,12 @@ a.hashtag-link:hover {
     #navbarNav .mobile-account-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.6rem;
+        gap: 0.5rem;
     }
 
     #navbarNav .mobile-account-grid .nav-link {
-        min-height: 44px;
-        font-size: 0.94rem;
+        min-height: 40px;
+        font-size: 0.88rem;
     }
 
     #navbarNav .mobile-utility-link {
@@ -2198,7 +2246,7 @@ a.hashtag-link:hover {
     #navbarNav .mobile-nav-accordion summary {
         list-style: none;
         cursor: pointer;
-        padding: 0.82rem 0.95rem;
+        padding: 0.76rem 0.9rem;
         font-weight: 600;
         color: var(--header-text-color);
         display: flex;
@@ -2224,13 +2272,15 @@ a.hashtag-link:hover {
     #navbarNav .mobile-utility-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.55rem;
-        padding: 0 0.8rem 0.8rem;
+        gap: 0.45rem;
+        padding: 0 0.75rem 0.75rem;
     }
 
     #navbarNav .mobile-utility-grid .nav-link {
-        min-height: 42px;
-        font-size: 0.93rem;
+        min-height: 38px;
+        font-size: 0.86rem;
+        border-radius: 11px;
+        padding: 0.62rem 0.68rem;
     }
 
     #navbarNav .mobile-utility-grid--secondary {
