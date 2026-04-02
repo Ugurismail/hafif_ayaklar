@@ -80,6 +80,64 @@ def memur_exam(request):
     return render(request, 'core/memur_exam.html')
 
 
+def logic_home(request):
+    levels = [
+        {
+            "slug": "temel",
+            "title": "Temel Mantık",
+            "summary": "Önerme, argüman, öncül-sonuç ayrımı ve geçerlilik refleksi.",
+            "lessons": 10,
+            "status": "İlk seri",
+        },
+        {
+            "slug": "arguman",
+            "title": "Argüman Analizi",
+            "summary": "Kısa metinde sonuç cümlesini, gerekçeyi ve sakat çıkarımı ayıklama.",
+            "lessons": 10,
+            "status": "Planlandı",
+        },
+        {
+            "slug": "safsata",
+            "title": "Safsatalar",
+            "summary": "Gündelik tartışmada en sık görülen safsata kalıplarını tanıma.",
+            "lessons": 10,
+            "status": "Planlandı",
+        },
+        {
+            "slug": "sembolik",
+            "title": "Sembolik Mantığa Giriş",
+            "summary": "Bağlaçlar, niceleyiciler ve kontrollü sembolleştirme temeli.",
+            "lessons": 10,
+            "status": "Planlandı",
+        },
+    ]
+
+    teaching_model = [
+        "Kuralı ezberletmek yerine önce örnek argümanı parçalarız.",
+        "Her ders doğru/yanlış karşıt örnek taşır; yalnız tanım verilmez.",
+        "Kısa çözüm mantığı zorunlu olur; sadece şık işaretleme ile bırakılmaz.",
+        "Safsata ve geçerlilik sorularında neden-sonuç zinciri açık gösterilir.",
+    ]
+
+    starter_modules = [
+        "Önerme nedir, soru ve emir neden önerme değildir?",
+        "Argüman, öncül ve sonuç nasıl ayırt edilir?",
+        "Geçerli ve geçersiz çıkarım arasındaki fark nedir?",
+        "ve / veya / değil / ise bağlaçları nasıl çalışır?",
+        "En sık görülen günlük safsatalar hangileridir?",
+    ]
+
+    return render(
+        request,
+        "core/logic_home.html",
+        {
+            "logic_levels": levels,
+            "logic_model": teaching_model,
+            "starter_modules": starter_modules,
+        },
+    )
+
+
 def user_homepage(request):
     # Public view - anyone can see questions
     # But some features require login

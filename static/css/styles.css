@@ -742,6 +742,37 @@ textarea.auto-expand.expanded {
         gap: 0.55rem;
     }
 
+    #mainNavbar .navbar-branch-menu {
+        min-width: 18rem;
+    }
+
+    #mainNavbar .dropdown-branch-group {
+        position: relative;
+        margin: 0 0.65rem 0.35rem 1rem;
+        padding-left: 0.9rem;
+        border-left: 1px dashed color-mix(in srgb, var(--button-background-color) 28%, transparent);
+    }
+
+    #mainNavbar .branch-item {
+        position: relative;
+        margin-bottom: 0.2rem;
+        padding-left: 0.95rem;
+    }
+
+    #mainNavbar .branch-item::before {
+        content: "";
+        position: absolute;
+        left: -0.9rem;
+        top: 50%;
+        width: 0.7rem;
+        border-top: 1px solid color-mix(in srgb, var(--button-background-color) 28%, transparent);
+        transform: translateY(-50%);
+    }
+
+    #mainNavbar .branch-item--root {
+        font-weight: 600;
+    }
+
     #mainNavbar .navbar-icon-link {
         justify-content: center;
         min-width: 2.85rem;
@@ -2285,5 +2316,48 @@ a.hashtag-link:hover {
 
     #navbarNav .mobile-utility-grid--secondary {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #navbarNav .mobile-branch-list {
+        padding: 0.1rem 0.85rem 0.85rem;
+    }
+
+    #navbarNav .mobile-branch-group {
+        position: relative;
+        margin-top: 0.35rem;
+        padding-left: 0.95rem;
+        border-left: 1px dashed color-mix(in srgb, var(--button-background-color) 20%, transparent);
+    }
+
+    #navbarNav .mobile-branch-label {
+        margin: 0.2rem 0 0.25rem;
+        color: color-mix(in srgb, var(--header-text-color) 70%, var(--text-color) 30%);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    #navbarNav .mobile-branch-link {
+        position: relative;
+        margin-bottom: 0.38rem;
+        min-height: 38px;
+        font-size: 0.86rem;
+        border-radius: 11px;
+        padding: 0.62rem 0.68rem 0.62rem 0.95rem;
+    }
+
+    #navbarNav .mobile-branch-link::before {
+        content: "";
+        position: absolute;
+        left: -0.95rem;
+        top: 50%;
+        width: 0.75rem;
+        border-top: 1px solid color-mix(in srgb, var(--button-background-color) 20%, transparent);
+        transform: translateY(-50%);
+    }
+
+    #navbarNav .mobile-branch-link--root {
+        font-weight: 600;
     }
 }

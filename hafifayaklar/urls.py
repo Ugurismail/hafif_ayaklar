@@ -7,6 +7,7 @@ from core.sitemaps import QuestionSitemap, UserProfileSitemap, StaticViewSitemap
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 from django.templatetags.static import static as static_url
+from core.views.misc_views import logic_home
 import os
 
 sitemaps = {
@@ -24,6 +25,7 @@ urlpatterns = [
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots_txt'),
     # Google requires at least 48x48 for the Search results icon; serve a 48x48 PNG via /favicon.ico.
     path('favicon.ico', RedirectView.as_view(url=static_url('imgs/favicon-48.png'), permanent=True), name='favicon'),
+    path('mantik/', logic_home, name='logic_home'),
     path('', include('core.urls')),
 ]
 

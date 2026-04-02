@@ -1,0 +1,187 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Mantık | Hafif Ayaklar{% endblock %}
+
+{% block extra_css %}
+<style>
+  .logic-shell {
+    padding: 2rem 0 3.5rem;
+  }
+
+  .logic-hero {
+    border-radius: 30px;
+    padding: 2.2rem;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 18%, transparent);
+    background:
+      radial-gradient(circle at top left, rgba(181, 153, 103, 0.16), transparent 34%),
+      radial-gradient(circle at bottom right, rgba(70, 97, 86, 0.12), transparent 36%),
+      linear-gradient(140deg, color-mix(in srgb, var(--content-background-color) 94%, white 6%), color-mix(in srgb, var(--background-color) 91%, white 9%));
+    box-shadow: 0 24px 54px color-mix(in srgb, var(--text-color) 10%, transparent);
+  }
+
+  .logic-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.48rem 0.88rem;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: color-mix(in srgb, var(--button-background-color) 12%, white 88%);
+  }
+
+  .logic-hero h1 {
+    margin: 1rem 0 0.7rem;
+    font-size: clamp(2.3rem, 4vw, 4.2rem);
+    line-height: 0.94;
+    letter-spacing: -0.04em;
+  }
+
+  .logic-hero p {
+    max-width: 760px;
+    color: color-mix(in srgb, var(--text-color) 74%, transparent);
+    font-size: 1.04rem;
+  }
+
+  .logic-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 1.2rem;
+    margin-top: 2rem;
+  }
+
+  .logic-card {
+    border-radius: 24px;
+    padding: 1.3rem;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 92%, white 8%);
+  }
+
+  .logic-card h2 {
+    margin: 0 0 0.85rem;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+
+  .logic-levels {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .logic-level {
+    border-radius: 18px;
+    padding: 1rem 1.05rem;
+    background: color-mix(in srgb, var(--background-color) 92%, white 8%);
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
+  }
+
+  .logic-level-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .logic-level-top strong {
+    font-size: 1.08rem;
+  }
+
+  .logic-badge {
+    padding: 0.28rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    background: color-mix(in srgb, var(--button-background-color) 10%, white 90%);
+  }
+
+  .logic-level p {
+    margin: 0 0 0.7rem;
+    color: color-mix(in srgb, var(--text-color) 72%, transparent);
+  }
+
+  .logic-meta {
+    font-size: 0.92rem;
+    color: color-mix(in srgb, var(--text-color) 60%, transparent);
+  }
+
+  .logic-list {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+
+  .logic-list li + li {
+    margin-top: 0.7rem;
+  }
+
+  @media (max-width: 991.98px) {
+    .logic-shell {
+      padding: 1.2rem 0 2.4rem;
+    }
+
+    .logic-hero {
+      padding: 1.4rem;
+      border-radius: 22px;
+    }
+
+    .logic-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container logic-shell">
+  <section class="logic-hero">
+    <div class="logic-kicker">
+      <i class="bi bi-lightbulb"></i>
+      <span>Mantık</span>
+    </div>
+    <h1>Mantığı tanım ezberiyle değil, akıl yürütme üzerinden kuracağız.</h1>
+    <p>
+      Bu modülün hedefi sembolleri rastgele öğretmek değil. Önce argümanın iskeletini ayıklayacağız,
+      sonra geçerlilik, safsata ve sembolleştirme katmanlarına çıkacağız. Ders akışı kısa tanım + açıklamalı
+      örnek + karşıt örnek + test mantığıyla kurulacak.
+    </p>
+  </section>
+
+  <div class="logic-grid">
+    <section class="logic-card">
+      <h2>Seviye Omurgası</h2>
+      <div class="logic-levels">
+        {% for level in logic_levels %}
+          <article class="logic-level">
+            <div class="logic-level-top">
+              <strong>{{ level.title }}</strong>
+              <span class="logic-badge">{{ level.status }}</span>
+            </div>
+            <p>{{ level.summary }}</p>
+            <div class="logic-meta">{{ level.lessons }} derslik ilk plan</div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="logic-card">
+      <h2>Öğretim Modeli</h2>
+      <ul class="logic-list">
+        {% for item in logic_model %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+
+  <section class="logic-card mt-4">
+    <h2>İlk Başlayacağımız Dersler</h2>
+    <ul class="logic-list">
+      {% for item in starter_modules %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

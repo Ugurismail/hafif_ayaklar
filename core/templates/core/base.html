@@ -195,73 +195,60 @@
                             <span class="ms-1 d-lg-none">Sınav</span>
                         </a>
                     </li>
-                    <li class="nav-item dropdown d-none d-lg-block">
-                        <a class="nav-link dropdown-toggle navbar-main-link navbar-section-toggle" href="#" id="schemaMenu" title="Şema" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-layout-sidebar-inset"></i>
-                            <span class="ms-1">Şema</span>
+                    <li class="nav-item mobile-primary-item">
+                        <a class="nav-link navbar-main-link" href="{% url 'logic_home' %}" title="Mantık">
+                            <i class="bi bi-lightbulb"></i>
+                            <span class="ms-1 d-lg-none">Mantık</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end navbar-section-menu" aria-labelledby="schemaMenu">
-                            <li><h6 class="dropdown-header">Görünümler</h6></li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'question_schema' %}">
+                    </li>
+                    <li class="nav-item dropdown d-none d-lg-block">
+                        <a class="nav-link dropdown-toggle navbar-main-link navbar-section-toggle navbar-icon-link" href="#" id="schemaMenu" title="Şemsiye" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-umbrella-fill"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end navbar-section-menu navbar-branch-menu" aria-labelledby="schemaMenu">
+                            <li><h6 class="dropdown-header"><i class="bi bi-diagram-3 me-2"></i>Dallar</h6></li>
+                            <li class="dropdown-branch-group">
+                                <a class="dropdown-item branch-item branch-item--root" href="{% url 'question_schema' %}">
                                     <i class="bi bi-layout-sidebar-inset"></i> Şema Görünümü
                                 </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'all_hashtags' %}">
+                                <a class="dropdown-item branch-item" href="{% url 'all_hashtags' %}">
                                     <i class="bi bi-hash"></i> Etiketler
                                 </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'file_library' %}">
+                                <a class="dropdown-item branch-item" href="{% url 'file_library' %}">
                                     <i class="bi bi-folder2-open"></i> Dosyalar
                                 </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'kenarda_list' %}">
+                                <a class="dropdown-item branch-item" href="{% url 'kenarda_list' %}">
                                     <i class="bi bi-hourglass"></i> Kenardakiler
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Araçlar</h6></li>
-                            <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'radio_home' %}">
+                            <li><h6 class="dropdown-header"><i class="bi bi-tools me-2"></i>Araçlar</h6></li>
+                            <li class="dropdown-branch-group">
+                                <a class="dropdown-item branch-item branch-item--root d-flex align-items-center gap-2" href="{% url 'radio_home' %}">
                                     <i class="bi bi-broadcast-pin {% if radio_is_live %}radio-live-icon{% endif %}" id="radioMenuIcon" data-icon-default="bi-broadcast-pin" data-icon-active="bi-broadcast"></i>
                                     <span>Radyo</span>
                                     {% if radio_is_live %}
                                         <span class="radio-live-pill">canlı</span>
                                     {% endif %}
                                 </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'polls_home' %}">
+                                <a class="dropdown-item branch-item" href="{% url 'polls_home' %}">
                                     <i class="bi bi-card-checklist"></i> Anketler
                                 </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'site_statistics' %}">
+                                <a class="dropdown-item branch-item" href="{% url 'site_statistics' %}">
                                     <i class="bi bi-bar-chart"></i> Site İstatistikleri
                                 </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'german_course_home' %}">
+                                <a class="dropdown-item branch-item" href="{% url 'german_course_home' %}">
                                     <i class="bi bi-translate"></i> Almanca
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Topluluk</h6></li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'user_list' %}">
+                            <li><h6 class="dropdown-header"><i class="bi bi-people me-2"></i>Topluluk</h6></li>
+                            <li class="dropdown-branch-group">
+                                <a class="dropdown-item branch-item branch-item--root" href="{% url 'user_list' %}">
                                     <i class="bi bi-people"></i> Tüm Kullanıcılar
                                 </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'delphoi_home' %}">
+                                <a class="dropdown-item branch-item" href="{% url 'delphoi_home' %}">
                                     <i class="fa-solid fa-hat-wizard"></i> Delphoi Kahini
                                 </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'about' %}">
+                                <a class="dropdown-item branch-item" href="{% url 'about' %}">
                                     <i class="bi bi-info-circle"></i> Hakkında
                                 </a>
                             </li>
@@ -288,7 +275,6 @@
                     <li class="nav-item dropdown d-none d-lg-block">
                         <a class="nav-link dropdown-toggle navbar-main-link navbar-section-toggle" href="#" id="accountMenu" title="Hesap" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-person-circle"></i>
-                            <span class="ms-1">Hesap</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end navbar-section-menu" aria-labelledby="accountMenu">
                             <li>
@@ -327,52 +313,61 @@
                     </li>
                     <li class="nav-item d-lg-none mobile-accordion-item">
                         <details class="mobile-nav-accordion">
-                            <summary>Şema Menüsü</summary>
-                            <div class="mobile-utility-grid">
-                                <a class="nav-link mobile-utility-link" href="{% url 'question_schema' %}" title="Şema Görünümü">
-                                    <i class="bi bi-layout-sidebar-inset"></i>
-                                    <span class="ms-1">Şema</span>
-                                </a>
-                                <a class="nav-link mobile-utility-link" href="{% url 'radio_home' %}" title="Radyo">
-                                    <i class="bi bi-broadcast-pin {% if radio_is_live %}radio-live-icon{% endif %}"></i>
-                                    <span class="ms-1">Radyo{% if radio_is_live %} · canlı{% endif %}</span>
-                                </a>
-                                <a class="nav-link mobile-utility-link" href="{% url 'all_hashtags' %}" title="Etiketler">
-                                    <i class="bi bi-hash"></i>
-                                    <span class="ms-1">Etiketler</span>
-                                </a>
-                                <a class="nav-link mobile-utility-link" href="{% url 'file_library' %}" title="Dosyalar">
-                                    <i class="bi bi-folder2-open"></i>
-                                    <span class="ms-1">Dosyalar</span>
-                                </a>
-                                <a class="nav-link mobile-utility-link" href="{% url 'kenarda_list' %}" title="Kenardakiler">
-                                    <i class="bi bi-hourglass"></i>
-                                    <span class="ms-1">Kenardakiler</span>
-                                </a>
-                                <a class="nav-link mobile-utility-link" href="{% url 'polls_home' %}" title="Anketler">
-                                    <i class="bi bi-card-checklist"></i>
-                                    <span class="ms-1">Anketler</span>
-                                </a>
-                                <a class="nav-link mobile-utility-link" href="{% url 'site_statistics' %}" title="Site İstatistikleri">
-                                    <i class="bi bi-bar-chart"></i>
-                                    <span class="ms-1">İstatistikler</span>
-                                </a>
-                                <a class="nav-link mobile-utility-link" href="{% url 'german_course_home' %}" title="Almanca">
-                                    <i class="bi bi-translate"></i>
-                                    <span class="ms-1">Almanca</span>
-                                </a>
-                                <a class="nav-link mobile-utility-link" href="{% url 'user_list' %}" title="Tüm Kullanıcılar">
-                                    <i class="bi bi-people"></i>
-                                    <span class="ms-1">Kullanıcılar</span>
-                                </a>
-                                <a class="nav-link mobile-utility-link" href="{% url 'delphoi_home' %}" title="Delphoi Kahini">
-                                    <i class="fa-solid fa-hat-wizard"></i>
-                                    <span class="ms-1">Delphoi</span>
-                                </a>
-                                <a class="nav-link mobile-utility-link" href="{% url 'about' %}" title="Hakkında">
-                                    <i class="bi bi-info-circle"></i>
-                                    <span class="ms-1">Hakkında</span>
-                                </a>
+                            <summary><span><i class="bi bi-umbrella-fill me-2"></i>Şemsiye</span></summary>
+                            <div class="mobile-branch-list">
+                                <div class="mobile-branch-group">
+                                    <div class="mobile-branch-label">Dallar</div>
+                                    <a class="nav-link mobile-branch-link mobile-branch-link--root" href="{% url 'question_schema' %}" title="Şema Görünümü">
+                                        <i class="bi bi-layout-sidebar-inset"></i>
+                                        <span class="ms-1">Şema</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'all_hashtags' %}" title="Etiketler">
+                                        <i class="bi bi-hash"></i>
+                                        <span class="ms-1">Etiketler</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'file_library' %}" title="Dosyalar">
+                                        <i class="bi bi-folder2-open"></i>
+                                        <span class="ms-1">Dosyalar</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'kenarda_list' %}" title="Kenardakiler">
+                                        <i class="bi bi-hourglass"></i>
+                                        <span class="ms-1">Kenardakiler</span>
+                                    </a>
+                                </div>
+                                <div class="mobile-branch-group">
+                                    <div class="mobile-branch-label">Araçlar</div>
+                                    <a class="nav-link mobile-branch-link mobile-branch-link--root" href="{% url 'radio_home' %}" title="Radyo">
+                                        <i class="bi bi-broadcast-pin {% if radio_is_live %}radio-live-icon{% endif %}"></i>
+                                        <span class="ms-1">Radyo{% if radio_is_live %} · canlı{% endif %}</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'polls_home' %}" title="Anketler">
+                                        <i class="bi bi-card-checklist"></i>
+                                        <span class="ms-1">Anketler</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'site_statistics' %}" title="Site İstatistikleri">
+                                        <i class="bi bi-bar-chart"></i>
+                                        <span class="ms-1">İstatistikler</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'german_course_home' %}" title="Almanca">
+                                        <i class="bi bi-translate"></i>
+                                        <span class="ms-1">Almanca</span>
+                                    </a>
+                                </div>
+                                <div class="mobile-branch-group">
+                                    <div class="mobile-branch-label">Topluluk</div>
+                                    <a class="nav-link mobile-branch-link mobile-branch-link--root" href="{% url 'user_list' %}" title="Tüm Kullanıcılar">
+                                        <i class="bi bi-people"></i>
+                                        <span class="ms-1">Kullanıcılar</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'delphoi_home' %}" title="Delphoi Kahini">
+                                        <i class="fa-solid fa-hat-wizard"></i>
+                                        <span class="ms-1">Delphoi</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'about' %}" title="Hakkında">
+                                        <i class="bi bi-info-circle"></i>
+                                        <span class="ms-1">Hakkında</span>
+                                    </a>
+                                </div>
                             </div>
                         </details>
                     </li>
@@ -390,24 +385,26 @@
                             <span class="ms-1 d-lg-none">Sınav</span>
                         </a>
                     </li>
-                    <li class="nav-item dropdown d-none d-lg-block">
-                        <a class="nav-link dropdown-toggle navbar-main-link navbar-section-toggle" href="#" id="schemaMenuGuest" title="Şema" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-layout-sidebar-inset"></i>
-                            <span class="ms-1">Şema</span>
+                    <li class="nav-item mobile-primary-item">
+                        <a class="nav-link" href="{% url 'logic_home' %}" title="Mantık">
+                            <i class="bi bi-lightbulb"></i>
+                            <span class="ms-1 d-lg-none">Mantık</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end navbar-section-menu" aria-labelledby="schemaMenuGuest">
-                            <li>
-                                <a class="dropdown-item" href="{% url 'question_schema' %}">
+                    </li>
+                    <li class="nav-item dropdown d-none d-lg-block">
+                        <a class="nav-link dropdown-toggle navbar-main-link navbar-section-toggle navbar-icon-link" href="#" id="schemaMenuGuest" title="Şemsiye" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-umbrella-fill"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end navbar-section-menu navbar-branch-menu" aria-labelledby="schemaMenuGuest">
+                            <li><h6 class="dropdown-header"><i class="bi bi-diagram-3 me-2"></i>Dallar</h6></li>
+                            <li class="dropdown-branch-group">
+                                <a class="dropdown-item branch-item branch-item--root" href="{% url 'question_schema' %}">
                                     <i class="bi bi-layout-sidebar-inset"></i> Şema Görünümü
                                 </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'german_course_home' %}">
+                                <a class="dropdown-item branch-item" href="{% url 'german_course_home' %}">
                                     <i class="bi bi-translate"></i> Almanca
                                 </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'about' %}">
+                                <a class="dropdown-item branch-item" href="{% url 'about' %}">
                                     <i class="bi bi-info-circle"></i> Hakkında
                                 </a>
                             </li>
@@ -415,20 +412,23 @@
                     </li>
                     <li class="nav-item d-lg-none mobile-accordion-item">
                         <details class="mobile-nav-accordion">
-                            <summary>Şema Menüsü</summary>
-                            <div class="mobile-utility-grid">
-                                <a class="nav-link mobile-utility-link" href="{% url 'question_schema' %}" title="Şema Görünümü">
-                                    <i class="bi bi-layout-sidebar-inset"></i>
-                                    <span class="ms-1">Şema</span>
-                                </a>
-                                <a class="nav-link mobile-utility-link" href="{% url 'german_course_home' %}" title="Almanca">
-                                    <i class="bi bi-translate"></i>
-                                    <span class="ms-1">Almanca</span>
-                                </a>
-                                <a class="nav-link mobile-utility-link" href="{% url 'about' %}" title="Hakkında">
-                                    <i class="bi bi-info-circle"></i>
-                                    <span class="ms-1">Hakkında</span>
-                                </a>
+                            <summary><span><i class="bi bi-umbrella-fill me-2"></i>Şemsiye</span></summary>
+                            <div class="mobile-branch-list">
+                                <div class="mobile-branch-group">
+                                    <div class="mobile-branch-label">Dallar</div>
+                                    <a class="nav-link mobile-branch-link mobile-branch-link--root" href="{% url 'question_schema' %}" title="Şema Görünümü">
+                                        <i class="bi bi-layout-sidebar-inset"></i>
+                                        <span class="ms-1">Şema</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'german_course_home' %}" title="Almanca">
+                                        <i class="bi bi-translate"></i>
+                                        <span class="ms-1">Almanca</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'about' %}" title="Hakkında">
+                                        <i class="bi bi-info-circle"></i>
+                                        <span class="ms-1">Hakkında</span>
+                                    </a>
+                                </div>
                             </div>
                         </details>
                     </li>
