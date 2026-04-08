@@ -7,70 +7,12 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 {% endblock %}
 
-{% block extra_css %}
-<style>
-    .active-filter {
-        background: var(--button-background-color, #6E8CA7) !important;
-        color: var(--button-text-color, #fff) !important;
-    }
-    .active-filter i {
-        color: var(--button-text-color, #fff) !important;
-    }
-    .left-quick-actions {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
-        gap: 0.55rem;
-        margin-bottom: 0.6rem;
-    }
-    .left-quick-action {
-        min-height: 68px;
-        border-radius: 14px;
-        padding: 0.45rem 0.35rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.35rem;
-        text-align: center;
-        transition: transform 0.18s ease, background 0.18s ease;
-    }
-    .left-quick-action:hover {
-        transform: translateY(-1px);
-    }
-    .left-quick-action i {
-        font-size: 1.1rem;
-    }
-    .left-quick-action span {
-        font-size: 0.68rem;
-        line-height: 1.18;
-        font-weight: 600;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="container mt-5" id="naber" data-disable-card-active-scale="1">
     <div class="row" style="height: 100vh; min-height: 500px;">
         <!-- sol sütun -->
         <div class="col-md-2 d-flex flex-column sol-scroll" style="border-right: 1px solid #ccc; height: 90%; min-height: 0;">
-            <div class="left-quick-actions">
-                <a href="#" id="random-question-btn" title="Rastgele Başlıkla Doldur" class="vote-btn2 left-quick-action">
-                    <i class="bi bi-shuffle"></i>
-                    <span>Rastgele Başlıkla Doldur</span>
-                </a>
-                <a href="#" id="shuffle-btn" title="Rastgele Başlığa Git" class="vote-btn2 left-quick-action">
-                    <i class="bi bi-asterisk"></i>
-                    <span>Rastgele Başlığa Git</span>
-                </a>
-                {% if user.is_authenticated %}
-                <a href="?followed={% if show_followed_only %}0{% else %}1{% endif %}" id="followed-filter-btn"
-                   title="{% if show_followed_only %}Tümünü Göster{% else %}Sadece Takip Ettiklerim{% endif %}"
-                   class="vote-btn2 left-quick-action {% if show_followed_only %}active-filter{% endif %}">
-                    <i class="bi bi-people-fill"></i>
-                    <span>{% if show_followed_only %}Tümünü Göster{% else %}Takip Ettiklerim{% endif %}</span>
-                </a>
-                {% endif %}
-            </div>
+            {% include 'core/_left_quick_actions.html' %}
             <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
                 <ul class="list-unstyled" id="questions-list">
                     {% for question in all_questions %}

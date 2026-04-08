@@ -1,8 +1,192 @@
+from importlib import import_module
+from types import SimpleNamespace
+
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from django.conf import settings
-from .views import map_data_view
-from . import views
+
+
+def lazy_view(module_path, attr_name):
+    def _wrapped(*args, **kwargs):
+        view = getattr(import_module(module_path), attr_name)
+        return view(*args, **kwargs)
+
+    _wrapped.__name__ = attr_name
+    _wrapped.__qualname__ = attr_name
+    _wrapped.__module__ = __name__
+    return _wrapped
+
+
+_LAZY_VIEW_MODULES = {
+    "about": "misc_views",
+    "add_answer": "answer_views",
+    "add_existing_subquestion": "question_views",
+    "add_question": "question_views",
+    "add_question_from_search": "question_views",
+    "add_random_sentence": "random_sentence_views",
+    "add_starting_question": "question_views",
+    "add_subquestion": "question_views",
+    "admin_merge_question": "question_views",
+    "all_hashtags": "hashtag_views",
+    "answer_git_history": "answer_views",
+    "answer_live_preview": "answer_views",
+    "answer_revision_approve": "answer_views",
+    "answer_revision_reject": "answer_views",
+    "answer_suggest_edit": "answer_views",
+    "answer_suggestion_accept": "answer_views",
+    "answer_suggestion_detail": "answer_views",
+    "answer_suggestion_reject": "answer_views",
+    "bkz_view": "question_views",
+    "check_new_messages": "message_views",
+    "cikis_dogru_sik_sec": "cikis_test_views",
+    "cikis_dogrusu_ayarla": "cikis_test_views",
+    "cikis_sik_edit": "cikis_test_views",
+    "cikis_sik_ekle": "cikis_test_views",
+    "cikis_sonuc_sil": "cikis_test_views",
+    "cikis_soru_edit": "cikis_test_views",
+    "cikis_soru_ekle": "cikis_test_views",
+    "cikis_soru_sil": "cikis_test_views",
+    "cikis_test_coz": "cikis_test_views",
+    "cikis_test_list": "cikis_test_views",
+    "cikis_testi_coz": "cikis_test_views",
+    "cikis_testi_create": "cikis_test_views",
+    "cikis_testi_detail": "cikis_test_views",
+    "cikis_testi_sil": "cikis_test_views",
+    "cikis_testi_sonuc_list": "cikis_test_views",
+    "cikis_testleri_list": "cikis_test_views",
+    "create_definition": "definition_reference_views",
+    "create_invitation": "auth_views",
+    "create_poll": "poll_views",
+    "create_program": "radio_views",
+    "create_reference": "definition_reference_views",
+    "custom_400_view": "misc_views",
+    "custom_403_view": "misc_views",
+    "custom_404_view": "misc_views",
+    "custom_500_view": "misc_views",
+    "custom_502_view": "misc_views",
+    "debug_show_400": "misc_views",
+    "debug_show_403": "misc_views",
+    "debug_show_404": "misc_views",
+    "debug_show_500": "misc_views",
+    "debug_show_502": "misc_views",
+    "delete_answer": "answer_views",
+    "delete_definition": "definition_reference_views",
+    "delete_program": "radio_views",
+    "delete_question": "question_views",
+    "delete_reference": "definition_reference_views",
+    "delphoi_home": "delphoi_views",
+    "delphoi_result": "delphoi_views",
+    "dj_dashboard": "radio_views",
+    "download_entries_docx": "misc_views",
+    "download_entries_json": "misc_views",
+    "download_entries_pdf": "misc_views",
+    "download_entries_xlsx": "misc_views",
+    "edit_answer": "answer_views",
+    "edit_definition": "definition_reference_views",
+    "edit_program": "radio_views",
+    "edit_reference": "definition_reference_views",
+    "file_library": "misc_views",
+    "file_library_delete": "misc_views",
+    "file_library_list": "misc_views",
+    "file_library_search": "misc_views",
+    "filter_answers": "misc_views",
+    "follow_answer": "notification_views",
+    "follow_question": "notification_views",
+    "follow_user": "user_views",
+    "game_of_life": "iat_views",
+    "german_course_home": "german_views",
+    "german_lesson_detail": "german_views",
+    "german_level_test": "german_views",
+    "get_agora_token": "radio_views",
+    "get_all_definitions": "definition_reference_views",
+    "get_random_sentence": "random_sentence_views",
+    "get_references": "definition_reference_views",
+    "get_root_questions": "answer_views",
+    "get_saved_items": "vote_save_views",
+    "get_unread_notification_count": "notification_views",
+    "get_user_answers": "answer_views",
+    "get_user_definitions": "definition_reference_views",
+    "get_user_questions": "user_views",
+    "hashtag_view": "hashtag_views",
+    "iat_result": "iat_views",
+    "iat_result_page": "iat_views",
+    "iat_start": "iat_views",
+    "iat_test": "iat_views",
+    "ignore_random_sentence": "random_sentence_views",
+    "kenarda_gonder": "kenarda_views",
+    "kenarda_list": "kenarda_views",
+    "kenarda_preview": "kenarda_views",
+    "kenarda_save": "kenarda_views",
+    "kenarda_sil": "kenarda_views",
+    "load_more_questions": "misc_views",
+    "load_more_search_results": "misc_views",
+    "map_data_view": "question_views",
+    "mark_all_notifications_read": "notification_views",
+    "mark_notification_read": "notification_views",
+    "memur_exam": "misc_views",
+    "message_detail": "message_views",
+    "message_list": "message_views",
+    "notification_list": "notification_views",
+    "pin_entry": "vote_save_views",
+    "poll_detail": "poll_views",
+    "poll_popover_content": "poll_views",
+    "poll_question_redirect": "poll_views",
+    "polls_home": "poll_views",
+    "profile": "user_views",
+    "program_detail": "radio_views",
+    "question_detail": "question_views",
+    "question_map": "question_views",
+    "question_schema": "question_views",
+    "question_schema_children": "question_views",
+    "question_schema_content": "question_views",
+    "question_schema_search": "question_views",
+    "radio_chat_messages": "radio_views",
+    "radio_home": "radio_views",
+    "random_question_id": "misc_views",
+    "reference_search": "misc_views",
+    "save_item": "vote_save_views",
+    "search": "misc_views",
+    "search_hashtags": "hashtag_views",
+    "search_questions_for_linking": "question_views",
+    "search_questions_for_merging": "question_views",
+    "search_suggestions": "misc_views",
+    "send_invitation": "auth_views",
+    "send_message_from_answer": "message_views",
+    "send_message_from_user": "message_views",
+    "shuffle_questions": "misc_views",
+    "signup": "auth_views",
+    "single_answer": "answer_views",
+    "site_statistics": "misc_views",
+    "start_broadcast": "radio_views",
+    "stop_broadcast": "radio_views",
+    "trending_hashtags": "hashtag_views",
+    "unfollow_answer": "notification_views",
+    "unfollow_question": "notification_views",
+    "unfollow_user": "user_views",
+    "unlink_from_parent": "question_views",
+    "unpin_entry": "vote_save_views",
+    "update_listener_count": "radio_views",
+    "update_profile_photo": "user_views",
+    "upload_editor_image": "misc_views",
+    "user_homepage": "misc_views",
+    "user_list": "user_views",
+    "user_login": "auth_views",
+    "user_logout": "auth_views",
+    "user_profile": "user_views",
+    "user_search": "misc_views",
+    "user_settings": "user_views",
+    "vote": "vote_save_views",
+    "vote_poll": "poll_views",
+    "vote_poll_ajax": "poll_views",
+    "vote_random_sentence": "random_sentence_views"
+}
+
+views = SimpleNamespace(**{
+    name: lazy_view(f"core.views.{module_name}", name)
+    for name, module_name in _LAZY_VIEW_MODULES.items()
+    if name != "map_data_view"
+})
+map_data_view = lazy_view("core.views.question_views", "map_data_view")
 
 urlpatterns = [
     # Ana Sayfa
@@ -224,8 +408,8 @@ urlpatterns = [
 ]
 
 # Custom error handlers
-handler400 = 'core.views.custom_400_view'
-handler403 = 'core.views.custom_403_view'
-handler404 = 'core.views.custom_404_view'
-handler500 = 'core.views.custom_500_view'
+handler400 = 'core.views.misc_views.custom_400_view'
+handler403 = 'core.views.misc_views.custom_403_view'
+handler404 = 'core.views.misc_views.custom_404_view'
+handler500 = 'core.views.misc_views.custom_500_view'
 handler502 = 'core.views.custom_502_view'

@@ -107,6 +107,15 @@ let searchTimeout = null; // Debounce için
 let activeSearchRequestToken = 0;
 let seenSearchKeys = new Set();
 
+function normalizeSuggestionLabel(value) {
+    return String(value || '')
+        .normalize('NFKC')
+        .replace(/[‘’‚‛`´]/g, "'")
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLocaleLowerCase('tr-TR');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     var searchInput = document.getElementById('search-input');
     var searchResults = document.getElementById('search-results');
@@ -128,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
             currentSearchOffset = 0;
             lastSearchResults = [];
             seenSearchKeys.clear();
+            searchResults.innerHTML = '';
         }
 
         isLoadingMore = true;
@@ -148,16 +158,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Gelen sonuçları ekle
             data.suggestions.forEach(function(item) {
+                const normalizedLabel = normalizeSuggestionLabel(item && item.label);
                 let itemKey = '';
                 if (item && item.type === 'question') {
-                    itemKey = 'question|' + String(item.label || '').trim().toLocaleLowerCase('tr-TR');
+                    itemKey = 'question|' + normalizedLabel;
+                } else if (item && item.type === 'user') {
+                    itemKey = 'user|' + normalizedLabel;
+                } else if (item && item.type === 'hashtag') {
+                    itemKey = 'hashtag|' + normalizedLabel;
                 } else {
-                    itemKey = String(item.type || '') + '|' + String(item.url || item.label || '');
+                    itemKey = String(item.type || '') + '|' + normalizeSuggestionLabel(item.url || item.label || '');
                 }
-                if (seenSearchKeys.has(itemKey)) {
+                if (!itemKey || seenSearchKeys.has(itemKey)) {
                     return;
                 }
                 seenSearchKeys.add(itemKey);
+
+                const existingDomItem = searchResults.querySelector('[data-search-key="' + CSS.escape(itemKey) + '"]');
+                if (existingDomItem) {
+                    return;
+                }
 
                 lastSearchResults.push(item);
 
@@ -167,6 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 div.textContent = item.label;
                 div.dataset.type = item.type;
                 div.dataset.url = item.url; // Store full URL for all types
+                div.dataset.searchKey = itemKey;
                 if (item.type === 'question') {
                     // URL'den slug'ı çıkar (örn: /slug/ -> slug)
                     const slug = item.url.split('/').filter(s => s).pop();

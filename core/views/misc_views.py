@@ -29,6 +29,7 @@ import random
 import re
 from collections import Counter
 from datetime import timedelta
+import unicodedata
 from io import BytesIO
 from itertools import chain
 from uuid import uuid4
@@ -634,6 +635,14 @@ def file_library_delete(request, file_id):
     return redirect('file_library')
 
 
+
+
+def _normalize_search_label(value):
+    normalized = unicodedata.normalize('NFKC', value or '')
+    normalized = normalized.replace('’', "'").replace('`', "'").replace('´', "'")
+    normalized = re.sub(r'\s+', ' ', normalized).strip().casefold()
+    return normalized
+
 def search_suggestions(request):
     query = request.GET.get('q', '')
     offset = int(request.GET.get('offset', 0))
@@ -680,7 +689,7 @@ def search_suggestions(request):
     seen_question_labels = set()
     appended_question_count = 0
     for question in questions:
-        normalized_label = (question.question_text or '').strip().casefold()
+        normalized_label = _normalize_search_label(question.question_text)
         if not normalized_label or normalized_label in seen_question_labels:
             continue
         seen_question_labels.add(normalized_label)

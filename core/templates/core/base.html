@@ -195,12 +195,6 @@
                             <span class="ms-1 d-lg-none">Sınav</span>
                         </a>
                     </li>
-                    <li class="nav-item mobile-primary-item">
-                        <a class="nav-link navbar-main-link" href="{% url 'logic_home' %}" title="Mantık">
-                            <i class="bi bi-lightbulb"></i>
-                            <span class="ms-1 d-lg-none">Mantık</span>
-                        </a>
-                    </li>
                     <li class="nav-item dropdown d-none d-lg-block">
                         <a class="nav-link dropdown-toggle navbar-main-link navbar-section-toggle navbar-icon-link" href="#" id="schemaMenu" title="Şemsiye" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-umbrella-fill"></i>
@@ -236,8 +230,14 @@
                                 <a class="dropdown-item branch-item" href="{% url 'site_statistics' %}">
                                     <i class="bi bi-bar-chart"></i> Site İstatistikleri
                                 </a>
+                            </li>
+                            <li><h6 class="dropdown-header"><i class="bi bi-book me-2"></i>Dersler</h6></li>
+                            <li class="dropdown-branch-group">
                                 <a class="dropdown-item branch-item" href="{% url 'german_course_home' %}">
                                     <i class="bi bi-translate"></i> Almanca
+                                </a>
+                                <a class="dropdown-item branch-item" href="{% url 'logic_home' %}">
+                                    <i class="bi bi-lightbulb"></i> Mantık
                                 </a>
                             </li>
                             <li><h6 class="dropdown-header"><i class="bi bi-people me-2"></i>Topluluk</h6></li>
@@ -348,9 +348,16 @@
                                         <i class="bi bi-bar-chart"></i>
                                         <span class="ms-1">İstatistikler</span>
                                     </a>
+                                </div>
+                                <div class="mobile-branch-group">
+                                    <div class="mobile-branch-label">Dersler</div>
                                     <a class="nav-link mobile-branch-link" href="{% url 'german_course_home' %}" title="Almanca">
                                         <i class="bi bi-translate"></i>
                                         <span class="ms-1">Almanca</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'logic_home' %}" title="Mantık">
+                                        <i class="bi bi-lightbulb"></i>
+                                        <span class="ms-1">Mantık</span>
                                     </a>
                                 </div>
                                 <div class="mobile-branch-group">
@@ -385,12 +392,6 @@
                             <span class="ms-1 d-lg-none">Sınav</span>
                         </a>
                     </li>
-                    <li class="nav-item mobile-primary-item">
-                        <a class="nav-link" href="{% url 'logic_home' %}" title="Mantık">
-                            <i class="bi bi-lightbulb"></i>
-                            <span class="ms-1 d-lg-none">Mantık</span>
-                        </a>
-                    </li>
                     <li class="nav-item dropdown d-none d-lg-block">
                         <a class="nav-link dropdown-toggle navbar-main-link navbar-section-toggle navbar-icon-link" href="#" id="schemaMenuGuest" title="Şemsiye" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-umbrella-fill"></i>
@@ -401,9 +402,18 @@
                                 <a class="dropdown-item branch-item branch-item--root" href="{% url 'question_schema' %}">
                                     <i class="bi bi-layout-sidebar-inset"></i> Şema Görünümü
                                 </a>
+                            </li>
+                            <li><h6 class="dropdown-header"><i class="bi bi-book me-2"></i>Dersler</h6></li>
+                            <li class="dropdown-branch-group">
                                 <a class="dropdown-item branch-item" href="{% url 'german_course_home' %}">
                                     <i class="bi bi-translate"></i> Almanca
                                 </a>
+                                <a class="dropdown-item branch-item" href="{% url 'logic_home' %}">
+                                    <i class="bi bi-lightbulb"></i> Mantık
+                                </a>
+                            </li>
+                            <li><h6 class="dropdown-header"><i class="bi bi-info-circle me-2"></i>Bilgi</h6></li>
+                            <li class="dropdown-branch-group">
                                 <a class="dropdown-item branch-item" href="{% url 'about' %}">
                                     <i class="bi bi-info-circle"></i> Hakkında
                                 </a>
@@ -420,10 +430,20 @@
                                         <i class="bi bi-layout-sidebar-inset"></i>
                                         <span class="ms-1">Şema</span>
                                     </a>
+                                </div>
+                                <div class="mobile-branch-group">
+                                    <div class="mobile-branch-label">Dersler</div>
                                     <a class="nav-link mobile-branch-link" href="{% url 'german_course_home' %}" title="Almanca">
                                         <i class="bi bi-translate"></i>
                                         <span class="ms-1">Almanca</span>
                                     </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'logic_home' %}" title="Mantık">
+                                        <i class="bi bi-lightbulb"></i>
+                                        <span class="ms-1">Mantık</span>
+                                    </a>
+                                </div>
+                                <div class="mobile-branch-group">
+                                    <div class="mobile-branch-label">Bilgi</div>
                                     <a class="nav-link mobile-branch-link" href="{% url 'about' %}" title="Hakkında">
                                         <i class="bi bi-info-circle"></i>
                                         <span class="ms-1">Hakkında</span>

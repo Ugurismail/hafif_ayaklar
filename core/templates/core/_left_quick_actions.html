@@ -1,0 +1,42 @@
+<div class="left-quick-actions">
+    <a href="#"
+       id="random-question-btn"
+       title="Rastgele Başlıkla Doldur"
+       aria-label="Rastgele Başlıkla Doldur"
+       class="vote-btn2 left-quick-action">
+        <i class="bi bi-shuffle"></i>
+        <span class="left-quick-action-label">
+            <span>Başlık</span>
+            <span>Doldur</span>
+        </span>
+    </a>
+    <a href="#"
+       id="shuffle-btn"
+       title="Rastgele Başlığa Git"
+       aria-label="Rastgele Başlığa Git"
+       class="vote-btn2 left-quick-action">
+        <i class="bi bi-asterisk"></i>
+        <span class="left-quick-action-label">
+            <span>Başlığa</span>
+            <span>Git</span>
+        </span>
+    </a>
+    {% if user.is_authenticated %}
+    <a href="?followed={% if show_followed_only %}0{% else %}1{% endif %}"
+       id="followed-filter-btn"
+       title="{% if show_followed_only %}Tümünü Göster{% else %}Sadece Takip Ettiklerim{% endif %}"
+       aria-label="{% if show_followed_only %}Tümünü Göster{% else %}Sadece Takip Ettiklerim{% endif %}"
+       class="vote-btn2 left-quick-action {% if show_followed_only %}active-filter{% endif %}">
+        <i class="bi bi-people-fill"></i>
+        <span class="left-quick-action-label">
+            {% if show_followed_only %}
+                <span>Tümünü</span>
+                <span>Göster</span>
+            {% else %}
+                <span>Takip</span>
+                <span>Filtresi</span>
+            {% endif %}
+        </span>
+    </a>
+    {% endif %}
+</div>
