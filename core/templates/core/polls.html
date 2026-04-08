@@ -313,11 +313,34 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  var createPollModalEl = document.getElementById('createPollModal');
+  var createPollModal = createPollModalEl ? bootstrap.Modal.getOrCreateInstance(createPollModalEl) : null;
   // Multi-step form
   var step1 = document.getElementById('pollStep1');
   var step2 = document.getElementById('pollStep2');
   var toStep2Btn = document.getElementById('toStep2Btn');
   var backToStep1Btn = document.getElementById('backToStep1Btn');
+  var hasOptionErrors = {{ form.option_1.errors|yesno:"true,false" }}
+    || {{ form.option_2.errors|yesno:"true,false" }}
+    || {{ form.option_3.errors|yesno:"true,false" }}
+    || {{ form.option_4.errors|yesno:"true,false" }}
+    || {{ form.option_5.errors|yesno:"true,false" }}
+    || {{ form.option_6.errors|yesno:"true,false" }}
+    || {{ form.option_7.errors|yesno:"true,false" }}
+    || {{ form.option_8.errors|yesno:"true,false" }}
+    || {{ form.option_9.errors|yesno:"true,false" }}
+    || {{ form.option_10.errors|yesno:"true,false" }};
+
+  {% if open_create_poll_modal %}
+    if (step1 && step2 && hasOptionErrors) {
+      step1.style.display = 'none';
+      step2.style.display = 'block';
+    }
+    if (createPollModal) {
+      createPollModal.show();
+    }
+  {% endif %}
+
   toStep2Btn.addEventListener('click', function() {
     var questionInput = document.querySelector('[name="question_text"]');
     if (!questionInput.value.trim()) {

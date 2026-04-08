@@ -21,6 +21,10 @@ from ..forms import PollForm
 
 
 def polls_home(request):
+    return render(request, 'core/polls.html', _build_polls_context())
+
+
+def _build_polls_context(form=None, open_create_poll_modal=False):
     # Aktif anketler (end_date > şu an)
     active_polls = Poll.objects.filter(end_date__gt=timezone.now()).order_by('-created_at')
     # Süresi geçmiş anketler (end_date <= şu an)
@@ -60,14 +64,13 @@ def polls_home(request):
             'options_data': options_data
         })
 
-
-    form = PollForm()
-    return render(request, 'core/polls.html', {
+    return {
         'active_polls': active_polls,
         'expired_polls_data': expired_polls_data,
-        'form': form,
+        'form': form or PollForm(),
         'active_polls_data': active_polls_data,
-    })
+        'open_create_poll_modal': open_create_poll_modal,
+    }
 
 
 @login_required
@@ -92,11 +95,13 @@ def create_poll(request):
             messages.success(request, 'Anket başarıyla oluşturuldu.')
             return redirect('polls_home')
         else:
-            # Form geçersizse hata mesajlarını göster
-            return render(request, 'core/create_poll.html', {'form': form})
+            return render(
+                request,
+                'core/polls.html',
+                _build_polls_context(form=form, open_create_poll_modal=True),
+            )
     else:
-        form = PollForm()
-        return render(request, 'core/create_poll.html', {'form': form})
+        return redirect('polls_home')
 
 
 @login_required
