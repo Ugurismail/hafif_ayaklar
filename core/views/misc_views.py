@@ -27,6 +27,7 @@ import json
 import os
 import random
 import re
+import unicodedata
 from collections import Counter
 from datetime import timedelta
 from io import BytesIO
@@ -619,10 +620,16 @@ def search_suggestions(request):
         question_text__icontains=query
     ).order_by('-created_at')[offset:offset + (limit * 3)]
 
+    def normalize_search_label(value):
+        normalized = unicodedata.normalize('NFKC', value or '')
+        normalized = normalized.replace('’', "'").replace('`', "'").replace('´', "'")
+        normalized = re.sub(r'\s+', ' ', normalized).strip().casefold()
+        return normalized
+
     seen_question_labels = set()
     appended_question_count = 0
     for question in questions:
-        normalized_label = (question.question_text or '').strip().casefold()
+        normalized_label = normalize_search_label(question.question_text)
         if not normalized_label or normalized_label in seen_question_labels:
             continue
         seen_question_labels.add(normalized_label)
