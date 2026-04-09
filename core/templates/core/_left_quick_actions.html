@@ -1,4 +1,4 @@
-<div class="left-quick-actions">
+<div class="left-quick-actions{% if not user.is_authenticated %} left-quick-actions-anon{% endif %}">
     <a href="#"
        id="random-question-btn"
        title="Rastgele Başlıkla Doldur"
