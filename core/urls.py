@@ -58,6 +58,7 @@ urlpatterns = [
     path('send_message/answer/<int:answer_id>/', views.send_message_from_answer, name='send_message_from_answer'),
     path('check_new_messages/', views.check_new_messages, name='check_new_messages'),
     path('send_message/user/<int:user_id>/', views.send_message_from_user, name='send_message_from_user'),
+    path('online-chat/messages/', views.online_chat_messages, name='online_chat_messages'),
 
     # Arama
     path('search/', views.search, name='search'),

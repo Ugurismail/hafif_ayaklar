@@ -16,7 +16,7 @@ from core.models import (
     Poll, PollOption, PollVote, SavedItem, Vote, PinnedEntry,
     Entry, RandomSentence, Message, Definition, Reference,CikisTesti,
     CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy,
-    QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage,
+    QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage, OnlineChatMessage,
     LibraryFile, DailyVisitor
 )
 
@@ -34,6 +34,7 @@ admin.site.register(Vote)
 admin.site.register(PinnedEntry)
 admin.site.register(Entry)
 admin.site.register(RandomSentence)
+admin.site.register(OnlineChatMessage)
 admin.site.register(LibraryFile)
 
 

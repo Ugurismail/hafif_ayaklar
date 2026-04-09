@@ -384,35 +384,84 @@
                     </li>
                     
                     {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'question_map' %}" title="Harita">
+                    <li class="nav-item mobile-primary-item">
+                        <a class="nav-link navbar-main-link" href="{% url 'question_map' %}" title="Harita">
                             <i class="bi bi-diagram-3"></i>
                             <span class="ms-1 d-lg-none">Harita</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'question_schema' %}" title="Adim Sema">
-                            <i class="bi bi-layout-sidebar-inset"></i>
-                            <span class="ms-1 d-lg-none">Sema</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'german_course_home' %}" title="Almanca">
-                            <i class="bi bi-translate"></i>
-                            <span class="ms-1 d-lg-none">Almanca</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logic_home' %}" title="Mantık">
-                            <i class="bi bi-lightbulb"></i>
-                            <span class="ms-1 d-lg-none">Mantık</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'memur_exam' %}" title="Sınav">
+                    <li class="nav-item mobile-primary-item">
+                        <a class="nav-link navbar-main-link" href="{% url 'memur_exam' %}" title="Sınav">
                             <i class="bi bi-journal-check"></i>
                             <span class="ms-1 d-lg-none">Sınav</span>
                         </a>
+                    </li>
+                    <li class="nav-item dropdown d-none d-lg-block">
+                        <a class="nav-link dropdown-toggle position-relative navbar-main-link navbar-section-toggle navbar-icon-link" href="#" id="guestExtraMenu" title="Şemsiye" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-umbrella-fill"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end navbar-section-menu navbar-branch-menu" aria-labelledby="guestExtraMenu">
+                            <li><h6 class="dropdown-header"><i class="bi bi-diagram-3 me-2"></i>Dallar</h6></li>
+                            <li class="dropdown-branch-group">
+                                <a class="dropdown-item branch-item branch-item--root" href="{% url 'question_schema' %}">
+                                    <i class="bi bi-layout-sidebar-inset"></i> Şema
+                                </a>
+                                <a class="dropdown-item branch-item" href="{% url 'all_hashtags' %}">
+                                    <i class="bi bi-hash"></i> Etiketler
+                                </a>
+                            </li>
+                            <li><h6 class="dropdown-header"><i class="bi bi-book me-2"></i>Dersler</h6></li>
+                            <li class="dropdown-branch-group">
+                                <a class="dropdown-item" href="{% url 'german_course_home' %}">
+                                    <i class="bi bi-translate"></i> Almanca
+                                </a>
+                                <a class="dropdown-item" href="{% url 'logic_home' %}">
+                                    <i class="bi bi-lightbulb"></i> Mantık
+                                </a>
+                            </li>
+                            <li><h6 class="dropdown-header"><i class="bi bi-people me-2"></i>Topluluk</h6></li>
+                            <li class="dropdown-branch-group">
+                                <a class="dropdown-item" href="{% url 'about' %}">
+                                    <i class="bi bi-info-circle"></i> Hakkında
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item d-lg-none mobile-accordion-item">
+                        <details class="mobile-nav-accordion">
+                            <summary><span><i class="bi bi-umbrella-fill me-2"></i>Şemsiye</span></summary>
+                            <div class="mobile-branch-list">
+                                <div class="mobile-branch-group">
+                                    <div class="mobile-branch-label">Dallar</div>
+                                    <a class="nav-link mobile-branch-link mobile-branch-link--root" href="{% url 'question_schema' %}" title="Şema">
+                                        <i class="bi bi-layout-sidebar-inset"></i>
+                                        <span class="ms-1">Şema</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'all_hashtags' %}" title="Etiketler">
+                                        <i class="bi bi-hash"></i>
+                                        <span class="ms-1">Etiketler</span>
+                                    </a>
+                                </div>
+                                <div class="mobile-branch-group">
+                                    <div class="mobile-branch-label">Dersler</div>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'german_course_home' %}" title="Almanca">
+                                        <i class="bi bi-translate"></i>
+                                        <span class="ms-1">Almanca</span>
+                                    </a>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'logic_home' %}" title="Mantık">
+                                        <i class="bi bi-lightbulb"></i>
+                                        <span class="ms-1">Mantık</span>
+                                    </a>
+                                </div>
+                                <div class="mobile-branch-group">
+                                    <div class="mobile-branch-label">Topluluk</div>
+                                    <a class="nav-link mobile-branch-link" href="{% url 'about' %}" title="Hakkında">
+                                        <i class="bi bi-info-circle"></i>
+                                        <span class="ms-1">Hakkında</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </details>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">Giriş Yap</a>
@@ -503,11 +552,18 @@
 
     <!-- Yardım Butonu -->
     <style>
-    .floating-help-btn {
+    .floating-tools {
         position: fixed;
         bottom: 20px;
         right: 20px;
         z-index: 9998;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: right 0.2s ease, opacity 0.2s ease;
+    }
+
+    .floating-help-btn {
         width: 50px;
         height: 50px;
         border-radius: 50%;
@@ -524,11 +580,354 @@
         background: var(--button-hover-background-color, #0056b3);
         color: var(--button-text-color, #fff);
     }
+
+    .floating-chat-btn {
+        position: relative;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 1px solid color-mix(in srgb, var(--button-background-color, #007bff) 45%, transparent);
+        background: var(--content-background-color, #fff);
+        color: var(--icon-color, #22312B);
+        font-size: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 10px rgba(0,0,0,0.18);
+    }
+
+    .floating-chat-btn:hover {
+        background: color-mix(in srgb, var(--button-background-color, #007bff) 12%, var(--content-background-color, #fff) 88%);
+        color: var(--icon-hover-color, var(--button-background-color, #007bff));
+    }
+
+    .floating-chat-count {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: var(--button-background-color, #007bff);
+        color: var(--button-text-color, #fff);
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.16);
+    }
+
+    .online-chat-layout {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 1rem;
+        min-height: 430px;
+    }
+
+    .online-chat-sidebar {
+        border-right: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
+        padding-right: 0.9rem;
+    }
+
+    .online-chat-sidebar-title {
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.75;
+        margin-bottom: 0.75rem;
+    }
+
+    .online-chat-user-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        max-height: 430px;
+        overflow-y: auto;
+    }
+
+    .online-chat-user {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.5rem 0.6rem;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--button-background-color) 7%, transparent);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .online-chat-user:hover {
+        background: color-mix(in srgb, var(--button-background-color) 12%, transparent);
+        color: inherit;
+    }
+
+    .online-chat-user-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex: 0 0 34px;
+    }
+
+    .online-chat-user-meta {
+        min-width: 0;
+    }
+
+    .online-chat-user-name {
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    .online-chat-user-time {
+        font-size: 0.78rem;
+        opacity: 0.7;
+    }
+
+    .online-chat-main {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .online-chat-messages {
+        flex: 1 1 auto;
+        min-height: 320px;
+        max-height: 430px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem;
+        padding-right: 0.3rem;
+    }
+
+    .online-chat-message {
+        display: flex;
+        gap: 0.65rem;
+        align-items: flex-start;
+    }
+
+    .online-chat-message-own {
+        flex-direction: row-reverse;
+    }
+
+    .online-chat-message-bubble {
+        max-width: min(78%, 560px);
+        padding: 0.72rem 0.9rem;
+        border-radius: 16px;
+        background: color-mix(in srgb, var(--button-background-color) 8%, var(--content-background-color) 92%);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    }
+
+    .online-chat-message-own .online-chat-message-bubble {
+        background: color-mix(in srgb, var(--secondary-button-background-color) 18%, var(--content-background-color) 82%);
+    }
+
+    .online-chat-message-head {
+        display: flex;
+        align-items: baseline;
+        gap: 0.45rem;
+        margin-bottom: 0.3rem;
+        font-size: 0.82rem;
+    }
+
+    .online-chat-message-user {
+        font-weight: 700;
+    }
+
+    .online-chat-message-time {
+        opacity: 0.65;
+    }
+
+    .online-chat-message-body {
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .online-chat-form {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-end;
+        margin-top: 1rem;
+    }
+
+    .online-chat-form textarea {
+        min-height: 72px;
+        resize: vertical;
+    }
+
+    .online-chat-empty {
+        opacity: 0.68;
+        padding: 1rem 0.25rem;
+    }
+
+    .online-chat-panel {
+        width: min(460px, 100vw);
+        top: 12vh;
+        height: 76vh;
+        background: var(--content-background-color, #fff);
+        color: inherit;
+        border-left: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
+        box-shadow: -12px 0 32px rgba(0,0,0,0.12);
+        border-top-left-radius: 18px;
+        border-bottom-left-radius: 18px;
+    }
+
+    .online-chat-panel .offcanvas-header {
+        padding-top: 0.65rem;
+        padding-bottom: 0.65rem;
+        border-bottom: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
+    }
+
+    .online-chat-panel .offcanvas-body {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+        padding-top: 0.55rem;
+        padding-bottom: 0.55rem;
+    }
+
+    .online-chat-panel .online-chat-layout {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        gap: 0.85rem;
+    }
+
+    .online-chat-panel .online-chat-sidebar {
+        border-right: 0;
+        border-bottom: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
+        padding-right: 0;
+        padding-bottom: 0.45rem;
+        flex: 0 0 auto;
+    }
+
+    .online-chat-panel .online-chat-sidebar-title {
+        font-size: 0.68rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .online-chat-panel .online-chat-user-list {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 0.3rem;
+        max-height: none;
+        padding-bottom: 0.2rem;
+    }
+
+    .online-chat-panel .online-chat-user {
+        flex: 0 0 auto;
+        min-width: 124px;
+        gap: 0.35rem;
+        padding: 0.3rem 0.4rem;
+        border-radius: 9px;
+    }
+
+    .online-chat-panel .online-chat-user-avatar {
+        width: 20px;
+        height: 20px;
+        flex: 0 0 20px;
+    }
+
+    .online-chat-panel .online-chat-user-name {
+        font-size: 0.82rem;
+        line-height: 1.05;
+    }
+
+    .online-chat-panel .online-chat-user-time {
+        font-size: 0.64rem;
+    }
+
+    .online-chat-panel .online-chat-main {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .online-chat-panel .online-chat-messages {
+        min-height: 0;
+        max-height: none;
+        padding-bottom: 0.25rem;
+    }
+
+    .online-chat-panel .online-chat-form {
+        margin-top: 0.45rem;
+        padding-top: 0.45rem;
+        border-top: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
+        background: var(--content-background-color, #fff);
+    }
+
+    .online-chat-panel .online-chat-form textarea {
+        min-height: 54px;
+    }
+
+    body.online-chat-open .floating-tools {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    @media (max-width: 767.98px) {
+        .online-chat-panel {
+            top: 0;
+            height: 100vh;
+            width: 100vw;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .floating-tools {
+            right: 14px;
+            bottom: 14px;
+            gap: 10px;
+        }
+
+        .online-chat-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .online-chat-sidebar {
+            border-right: 0;
+            border-bottom: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
+            padding-right: 0;
+            padding-bottom: 0.8rem;
+        }
+
+        .online-chat-messages {
+            max-height: none;
+        }
+
+        .online-chat-form {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        body.online-chat-open .floating-tools {
+            opacity: 0;
+            pointer-events: none;
+        }
+    }
     </style>
 
 {% if user.is_authenticated %}
-    <div class="floating-help-btn" id="help-btn" >
-        ?
+    <div class="floating-tools">
+        <button type="button"
+                class="floating-chat-btn"
+                id="online-chat-btn"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#onlineChatPanel"
+                title="Online Sohbet">
+            <i class="bi bi-chat-dots"></i>
+            <span class="floating-chat-count" id="onlineChatCount" style="display:none;">0</span>
+        </button>
+        <div class="floating-help-btn" id="help-btn" >
+            ?
+        </div>
     </div>
 {% endif %}   
 
@@ -613,6 +1012,43 @@
   </div>
     {% endif %}
 
+    {% if user.is_authenticated %}
+    <div class="offcanvas offcanvas-end online-chat-panel" tabindex="-1" id="onlineChatPanel" aria-labelledby="onlineChatPanelLabel" data-bs-backdrop="false" data-bs-scroll="true">
+      <div class="offcanvas-header">
+        <div>
+          <h5 class="offcanvas-title" id="onlineChatPanelLabel">Online Sohbet</h5>
+          <small class="text-muted" id="onlineChatMeta">Çevrimiçi kullanıcılar yükleniyor...</small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Kapat"></button>
+      </div>
+      <div class="offcanvas-body">
+        <div class="online-chat-layout">
+          <aside class="online-chat-sidebar">
+            <div class="online-chat-sidebar-title">Çevrimiçi Kullanıcılar</div>
+            <div id="onlineChatUsers" class="online-chat-user-list">
+              <div class="online-chat-empty">Yükleniyor...</div>
+            </div>
+          </aside>
+          <section class="online-chat-main">
+            <div id="onlineChatMessages" class="online-chat-messages">
+              <div class="online-chat-empty">Mesajlar yükleniyor...</div>
+            </div>
+            <form id="onlineChatForm" class="online-chat-form">
+              <div class="flex-grow-1">
+                <textarea id="onlineChatInput"
+                          class="form-control"
+                          maxlength="500"
+                          rows="2"
+                          placeholder="Tüm online kullanıcılara mesaj yaz..."></textarea>
+              </div>
+              <button type="submit" class="btn btn-theme-primary">Gönder</button>
+            </form>
+          </section>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
     <!-- Toast Container for General Messages -->
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 10000;" id="toastContainer">
     </div>
@@ -645,6 +1081,7 @@
     <script src="{% static 'js/base.js' %}?v={{ STATIC_ASSET_VERSION }}-searchdedupe1"></script>
     {% if user.is_authenticated %}
     <script src="{% static 'js/message_notifications.js' %}"></script>
+    <script src="{% static 'js/online_chat.js' %}?v={{ STATIC_ASSET_VERSION }}-panel3"></script>
     {% endif %}
     <script src="{% static 'js/animations.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>
     <script src="{% static 'js/dropdown_zindex.js' %}"></script>

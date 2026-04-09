@@ -383,6 +383,26 @@ class Message(models.Model):
     def __str__(self):
         return f"{self.sender.username} -> {self.recipient.username}: {self.body[:20]}"
 
+
+class OnlineChatMessage(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='online_chat_messages'
+    )
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['user', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username}: {self.body[:24]}"
+
 class StartingQuestion(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='starting_questions')
     question = models.ForeignKey(
