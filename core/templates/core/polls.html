@@ -141,6 +141,15 @@
                         aria-controls="poll-details-{{ apoll.poll.id }}">
                   Detayları Göster
                 </button>
+                {% if apoll.can_edit %}
+                  <a href="{% url 'edit_poll' apoll.poll.id %}" class="btn btn-outline-theme-secondary btn-sm mt-2 mt-md-0">Düzenle</a>
+                {% endif %}
+                {% if apoll.can_manage %}
+                  <form action="{% url 'delete_poll' apoll.poll.id %}" method="post" class="d-inline" onsubmit="return confirm('Bu anket silinsin mi?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm mt-2 mt-md-0">Sil</button>
+                  </form>
+                {% endif %}
               </div>
               <div class="collapse" id="poll-details-{{ apoll.poll.id }}">
                 <h6 class="fw-bold">Seçenekler:</h6>
@@ -208,6 +217,17 @@
             <span class="expired-poll-badge">Süresi Geçti</span>
             <div class="poll-title">{{ epoll.poll.question_text }}</div>
             <div class="poll-meta-date">{{ epoll.poll.end_date|date:"Y-m-d H:i" }}</div>
+            {% if epoll.can_manage %}
+              <div class="d-flex gap-2 mb-2">
+                {% if epoll.can_edit %}
+                  <a href="{% url 'edit_poll' epoll.poll.id %}" class="btn btn-outline-theme-secondary btn-sm">Düzenle</a>
+                {% endif %}
+                <form action="{% url 'delete_poll' epoll.poll.id %}" method="post" class="d-inline" onsubmit="return confirm('Bu anket silinsin mi?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-danger btn-sm">Sil</button>
+                </form>
+              </div>
+            {% endif %}
             <div class="expired-poll-options">
               {% for opt_data in epoll.options_data %}
                 <div class="expired-poll-option">
@@ -306,6 +326,85 @@
     </div>
   </div>
 </div>
+
+{% if edit_form and editing_poll %}
+<div class="modal fade" id="editPollModal" tabindex="-1" aria-labelledby="editPollModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{% url 'edit_poll' editing_poll.id %}" method="post" id="editPollForm">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="editPollModalLabel">Anketi Düzenle</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+        </div>
+        <div class="modal-body">
+          <div id="editPollStep1">
+            <div class="mb-3">
+              {{ edit_form.question_text.label_tag }}
+              {{ edit_form.question_text }}
+              {% if edit_form.question_text.errors %}
+              <div class="text-danger">{{ edit_form.question_text.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="mb-3">
+              {{ edit_form.end_date.label_tag }}
+              {{ edit_form.end_date }}
+              {% if edit_form.end_date.errors %}
+              <div class="text-danger">{{ edit_form.end_date.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="form-check mb-3">
+              {{ edit_form.is_anonymous }}
+              {{ edit_form.is_anonymous.label_tag }}
+              {% if edit_form.is_anonymous.errors %}
+              <div class="text-danger">{{ edit_form.is_anonymous.errors }}</div>
+              {% endif %}
+            </div>
+            <button type="button" class="btn btn-theme-primary" id="toEditStep2Btn">İleri</button>
+          </div>
+          <div id="editPollStep2" style="display: none;">
+            <h6>Seçenekler:</h6>
+            <div id="editOptionsContainer">
+              <div class="mb-2" id="editOptionField1">
+                {{ edit_form.option_1.label_tag }}
+                {{ edit_form.option_1 }}
+                {% if edit_form.option_1.errors %}
+                <div class="text-danger">{{ edit_form.option_1.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="mb-2" id="editOptionField2">
+                {{ edit_form.option_2.label_tag }}
+                {{ edit_form.option_2 }}
+                {% if edit_form.option_2.errors %}
+                <div class="text-danger">{{ edit_form.option_2.errors }}</div>
+                {% endif %}
+              </div>
+              {% for i in "3,4,5,6,7,8,9,10"|split:"," %}
+                {% with field_name="option_"|add:i %}
+                  {% with field=edit_form|field_by_name:field_name %}
+                    <div class="mb-2 option-field" id="editOptionField{{ i }}" {% if not field.value %}style="display: none;"{% endif %}>
+                      {{ field.label_tag }}
+                      {{ field }}
+                      {% if field.errors %}
+                        <div class="text-danger">{{ field.errors }}</div>
+                      {% endif %}
+                    </div>
+                  {% endwith %}
+                {% endwith %}
+              {% endfor %}
+            </div>
+            <button type="button" class="btn btn-theme-secondary" id="editAddOptionBtn">Seçenek Ekle</button>
+            <div class="mt-3 d-flex justify-content-between">
+              <button type="button" class="btn btn-theme-secondary" id="backToEditStep1Btn">Geri</button>
+              <button type="submit" class="btn btn-theme-primary">Anketi Güncelle</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock content %}
 
 {% block extra_js %}
@@ -315,11 +414,51 @@
 document.addEventListener('DOMContentLoaded', function() {
   var createPollModalEl = document.getElementById('createPollModal');
   var createPollModal = createPollModalEl ? bootstrap.Modal.getOrCreateInstance(createPollModalEl) : null;
-  // Multi-step form
-  var step1 = document.getElementById('pollStep1');
-  var step2 = document.getElementById('pollStep2');
-  var toStep2Btn = document.getElementById('toStep2Btn');
-  var backToStep1Btn = document.getElementById('backToStep1Btn');
+  var editPollModalEl = document.getElementById('editPollModal');
+  var editPollModal = editPollModalEl ? bootstrap.Modal.getOrCreateInstance(editPollModalEl) : null;
+
+  function initPollWizard(config) {
+    var step1 = document.getElementById(config.step1Id);
+    var step2 = document.getElementById(config.step2Id);
+    var toStep2Btn = document.getElementById(config.toStep2BtnId);
+    var backToStep1Btn = document.getElementById(config.backToStep1BtnId);
+    var addOptionBtn = document.getElementById(config.addOptionBtnId);
+    if (!step1 || !step2 || !toStep2Btn || !backToStep1Btn || !addOptionBtn) {
+      return;
+    }
+
+    toStep2Btn.addEventListener('click', function() {
+      var questionInput = document.querySelector(config.formSelector + ' [name="question_text"]');
+      if (!questionInput.value.trim()) {
+        questionInput.classList.add('is-invalid');
+        questionInput.focus();
+        return;
+      }
+      questionInput.classList.remove('is-invalid');
+      step1.style.display = 'none';
+      step2.style.display = 'block';
+    });
+
+    backToStep1Btn.addEventListener('click', function() {
+      step2.style.display = 'none';
+      step1.style.display = 'block';
+    });
+
+    var maxOptions = 10;
+    var currentVisibleOptions = config.initialVisibleOptions || 2;
+    addOptionBtn.addEventListener('click', function() {
+      if (currentVisibleOptions < maxOptions) {
+        currentVisibleOptions++;
+        var nextOptionField = document.getElementById(config.optionPrefix + currentVisibleOptions);
+        if (nextOptionField) nextOptionField.style.display = 'block';
+        if (currentVisibleOptions === maxOptions) addOptionBtn.disabled = true;
+      }
+    });
+    if (currentVisibleOptions === maxOptions) {
+      addOptionBtn.disabled = true;
+    }
+  }
+
   var hasOptionErrors = {{ form.option_1.errors|yesno:"true,false" }}
     || {{ form.option_2.errors|yesno:"true,false" }}
     || {{ form.option_3.errors|yesno:"true,false" }}
@@ -341,36 +480,54 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   {% endif %}
 
-  toStep2Btn.addEventListener('click', function() {
-    var questionInput = document.querySelector('[name="question_text"]');
-    if (!questionInput.value.trim()) {
-      questionInput.classList.add('is-invalid');
-      questionInput.focus();
-      return;
-    } else {
-      questionInput.classList.remove('is-invalid');
-      step1.style.display = 'none';
-      step2.style.display = 'block';
-    }
+  initPollWizard({
+    step1Id: 'pollStep1',
+    step2Id: 'pollStep2',
+    toStep2BtnId: 'toStep2Btn',
+    backToStep1BtnId: 'backToStep1Btn',
+    addOptionBtnId: 'addOptionBtn',
+    optionPrefix: 'optionField',
+    formSelector: '#pollForm',
+    initialVisibleOptions: 2
   });
-  if(backToStep1Btn) {
-    backToStep1Btn.addEventListener('click', function() {
-      step2.style.display = 'none';
-      step1.style.display = 'block';
+
+  {% if edit_form and editing_poll %}
+    var editHasOptionErrors = {{ edit_form.option_1.errors|yesno:"true,false" }}
+      || {{ edit_form.option_2.errors|yesno:"true,false" }}
+      || {{ edit_form.option_3.errors|yesno:"true,false" }}
+      || {{ edit_form.option_4.errors|yesno:"true,false" }}
+      || {{ edit_form.option_5.errors|yesno:"true,false" }}
+      || {{ edit_form.option_6.errors|yesno:"true,false" }}
+      || {{ edit_form.option_7.errors|yesno:"true,false" }}
+      || {{ edit_form.option_8.errors|yesno:"true,false" }}
+      || {{ edit_form.option_9.errors|yesno:"true,false" }}
+      || {{ edit_form.option_10.errors|yesno:"true,false" }};
+    var editVisibleOptions = 2;
+    {% for i in "10,9,8,7,6,5,4,3"|split:"," %}
+      {% with field_name="option_"|add:i %}
+        {% with field=edit_form|field_by_name:field_name %}
+          {% if field.value %}editVisibleOptions = Math.max(editVisibleOptions, {{ i }});{% endif %}
+        {% endwith %}
+      {% endwith %}
+    {% endfor %}
+    if (editHasOptionErrors) {
+      document.getElementById('editPollStep1').style.display = 'none';
+      document.getElementById('editPollStep2').style.display = 'block';
+    }
+    if (editPollModal) {
+      editPollModal.show();
+    }
+    initPollWizard({
+      step1Id: 'editPollStep1',
+      step2Id: 'editPollStep2',
+      toStep2BtnId: 'toEditStep2Btn',
+      backToStep1BtnId: 'backToEditStep1Btn',
+      addOptionBtnId: 'editAddOptionBtn',
+      optionPrefix: 'editOptionField',
+      formSelector: '#editPollForm',
+      initialVisibleOptions: editVisibleOptions
     });
-  }
-  // Seçenek ekle
-  var addOptionBtn = document.getElementById('addOptionBtn');
-  var maxOptions = 10;
-  var currentVisibleOptions = 2;
-  addOptionBtn.addEventListener('click', function() {
-    if (currentVisibleOptions < maxOptions) {
-      currentVisibleOptions++;
-      var nextOptionField = document.getElementById('optionField' + currentVisibleOptions);
-      if (nextOptionField) nextOptionField.style.display = 'block';
-      if (currentVisibleOptions === maxOptions) addOptionBtn.disabled = true;
-    }
-  });
+  {% endif %}
 
   // Süresi geçmiş anketlerde arama filtresi
   var pollSearch = document.getElementById('expiredPollSearch');

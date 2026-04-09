@@ -114,6 +114,8 @@ urlpatterns = [
     # ANKETLER/POLL URL'LERİ (tamamı "polls/" prefixli)
     path('polls/', views.polls_home, name='polls_home'),
     path('polls/create/', views.create_poll, name='create_poll'),
+    path('polls/<int:poll_id>/edit/', views.edit_poll, name='edit_poll'),
+    path('polls/<int:poll_id>/delete/', views.delete_poll, name='delete_poll'),
     path('polls/<int:poll_id>/vote/<int:option_id>/', views.vote_poll, name='vote_poll'),
     path('polls/<int:poll_id>/question/', views.poll_question_redirect, name='poll_question_redirect'),
     path('polls/<int:poll_id>/popover/', views.poll_popover_content, name='poll_popover'),
