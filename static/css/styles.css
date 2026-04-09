@@ -650,6 +650,69 @@ textarea.auto-expand.expanded {
 }
 
 
+.active-filter {
+    background: var(--button-background-color) !important;
+    color: var(--button-text-color) !important;
+    border-color: color-mix(in srgb, var(--button-background-color) 55%, transparent) !important;
+}
+
+.active-filter i,
+.active-filter .left-quick-action-label {
+    color: var(--button-text-color) !important;
+}
+
+.left-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+    margin-bottom: 0.9rem;
+    align-items: stretch;
+}
+
+.left-quick-action {
+    min-width: 0;
+    min-height: 62px;
+    padding: 0.45rem 0.2rem;
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 95%, white 5%);
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--header-background-color) 8%, transparent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.28rem;
+    text-align: center;
+    text-decoration: none !important;
+    transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.left-quick-action:hover {
+    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--button-background-color) 8%, var(--content-background-color) 92%);
+    border-color: color-mix(in srgb, var(--button-background-color) 24%, transparent);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--button-background-color) 12%, transparent);
+}
+
+.left-quick-action i {
+    font-size: 1.05rem;
+    line-height: 1;
+    color: var(--icon-color);
+}
+
+.left-quick-action-label {
+    display: block;
+    color: var(--text-color);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    text-decoration: none !important;
+    word-break: keep-all;
+    white-space: nowrap;
+}
+
+
 /* Vote and Save Buttons */
 .vote-btn,
 .save-btn {
