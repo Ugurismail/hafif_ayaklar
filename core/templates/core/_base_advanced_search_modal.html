@@ -1,0 +1,59 @@
+<!-- Gelişmiş Arama Modal -->
+<div class="modal fade" id="advancedSearchModal" tabindex="-1" aria-labelledby="advancedSearchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="advancedSearchForm" method="get" action="{% url 'search' %}">
+          <!-- method="get" ve action="/search/" => direk GET parametresiyle search view'e gider -->
+
+          <div class="modal-header">
+            <h5 class="modal-title" id="advancedSearchModalLabel">Gelişmiş Arama</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+          </div>
+
+          <div class="modal-body">
+            <!-- Kullanıcı Adı -->
+            <div class="mb-3">
+              <label for="searchUser" class="form-label">Kullanıcı Adı</label>
+              <input type="text" class="form-control" id="searchUser" name="username" placeholder="ör. yigit">
+            </div>
+
+            <!-- Tarih Aralığı -->
+            <div class="mb-3">
+              <label for="searchDateFrom" class="form-label">Başlangıç Tarihi</label>
+              <input type="date" class="form-control" id="searchDateFrom" name="date_from">
+            </div>
+            <div class="mb-3">
+              <label for="searchDateTo" class="form-label">Bitiş Tarihi</label>
+              <input type="date" class="form-control" id="searchDateTo" name="date_to">
+            </div>
+
+            <!-- Metin Arama (Ek kelimeler) -->
+            <div class="mb-3">
+              <label for="searchKeywords" class="form-label">Metin İçinde Geçen Kelime(ler)</label>
+              <input type="text" class="form-control" id="searchKeywords" name="keywords" placeholder="ör. python django">
+            </div>
+
+            <!-- Etiket Filtresi -->
+            <div class="mb-3">
+              <label for="searchHashtag" class="form-label">Etiket</label>
+              <input type="text" class="form-control" id="searchHashtag" name="hashtag" placeholder="ör. programlama">
+            </div>
+
+            <!-- Takip Ettiklerim -->
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="searchFollowedOnly" name="followed_only" value="1">
+              <label class="form-check-label" for="searchFollowedOnly">
+                Sadece takip ettiğim kullanıcıların başlıklarını/entry'lerini göster
+              </label>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">Kapat</button>
+            <button type="submit" class="btn btn-theme-primary">Ara</button>
+          </div>
+        </form>
+      </div>
+    </div>
+</div>
