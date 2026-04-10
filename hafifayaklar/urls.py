@@ -49,7 +49,7 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Custom error handlers (use our themed templates)
-handler400 = 'core.views.custom_400_view'
-handler403 = 'core.views.custom_403_view'
-handler404 = 'core.views.custom_404_view'
-handler500 = 'core.views.custom_500_view'
+handler400 = 'core.views.error_views.custom_400_view'
+handler403 = 'core.views.error_views.custom_403_view'
+handler404 = 'core.views.error_views.custom_404_view'
+handler500 = 'core.views.error_views.custom_500_view'

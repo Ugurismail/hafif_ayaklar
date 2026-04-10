@@ -1,29 +1,210 @@
-# Core views package
-# This file imports all views from modularized files
-# Allows backward compatibility with: from core.views import *
+"""Lazy compatibility exports for core.views."""
 
-# Import from modular files
-from .auth_views import *
-from .user_views import *
-from .question_views import *
-from .answer_views import *
-from .message_views import *
-from .vote_save_views import *
-from .random_sentence_views import *
-from .definition_reference_views import *
-from .poll_views import *
-from .iat_views import *
-from .kenarda_views import *
-from .cikis_test_views import *
-from .delphoi_views import *
-from .hashtag_views import *
-from .notification_views import *
-from .site_views import *
-from .library_views import *
-from .error_views import *
-from .export_views import *
-from .misc_views import *
-from .search_views import *
-from .radio_views import *
-from .german_views import *
-from .online_chat_views import *
+from importlib import import_module
+
+_ATTR_TO_MODULE = {
+    'about': 'core.views.site_views',
+    'add_answer': 'core.views.answer_views',
+    'add_answer_text_to_docx': 'core.views.export_views',
+    'add_existing_subquestion': 'core.views.question_views',
+    'add_question': 'core.views.question_views',
+    'add_question_from_search': 'core.views.question_views',
+    'add_question_tree_to_docx': 'core.views.export_views',
+    'add_random_sentence': 'core.views.random_sentence_views',
+    'add_starting_question': 'core.views.question_views',
+    'add_subquestion': 'core.views.question_views',
+    'admin_merge_question': 'core.views.question_views',
+    'all_hashtags': 'core.views.hashtag_views',
+    'answer_git_history': 'core.views.answer_views',
+    'answer_live_preview': 'core.views.answer_views',
+    'answer_revision_approve': 'core.views.answer_views',
+    'answer_revision_reject': 'core.views.answer_views',
+    'answer_suggest_edit': 'core.views.answer_views',
+    'answer_suggestion_accept': 'core.views.answer_views',
+    'answer_suggestion_detail': 'core.views.answer_views',
+    'answer_suggestion_reject': 'core.views.answer_views',
+    'bkz_view': 'core.views.question_views',
+    'check_new_messages': 'core.views.message_views',
+    'cikis_dogru_sik_sec': 'core.views.cikis_test_views',
+    'cikis_dogrusu_ayarla': 'core.views.cikis_test_views',
+    'cikis_sik_edit': 'core.views.cikis_test_views',
+    'cikis_sik_ekle': 'core.views.cikis_test_views',
+    'cikis_sonuc_sil': 'core.views.cikis_test_views',
+    'cikis_soru_edit': 'core.views.cikis_test_views',
+    'cikis_soru_ekle': 'core.views.cikis_test_views',
+    'cikis_soru_sil': 'core.views.cikis_test_views',
+    'cikis_test_coz': 'core.views.cikis_test_views',
+    'cikis_test_list': 'core.views.cikis_test_views',
+    'cikis_testi_coz': 'core.views.cikis_test_views',
+    'cikis_testi_create': 'core.views.cikis_test_views',
+    'cikis_testi_detail': 'core.views.cikis_test_views',
+    'cikis_testi_sil': 'core.views.cikis_test_views',
+    'cikis_testi_sonuc_list': 'core.views.cikis_test_views',
+    'cikis_testleri_list': 'core.views.cikis_test_views',
+    'collect_user_bibliography': 'core.views.export_views',
+    'create_definition': 'core.views.definition_reference_views',
+    'create_invitation': 'core.views.auth_views',
+    'create_poll': 'core.views.poll_views',
+    'create_program': 'core.views.radio_views',
+    'create_reference': 'core.views.definition_reference_views',
+    'custom_400_view': 'core.views.error_views',
+    'custom_403_view': 'core.views.error_views',
+    'custom_404_view': 'core.views.error_views',
+    'custom_500_view': 'core.views.error_views',
+    'custom_502_view': 'core.views.error_views',
+    'debug_raise_400': 'core.views.error_views',
+    'debug_raise_403': 'core.views.error_views',
+    'debug_raise_404': 'core.views.error_views',
+    'debug_raise_500': 'core.views.error_views',
+    'debug_show_400': 'core.views.error_views',
+    'debug_show_403': 'core.views.error_views',
+    'debug_show_404': 'core.views.error_views',
+    'debug_show_500': 'core.views.error_views',
+    'debug_show_502': 'core.views.error_views',
+    'delete_answer': 'core.views.answer_views',
+    'delete_definition': 'core.views.definition_reference_views',
+    'delete_poll': 'core.views.poll_views',
+    'delete_program': 'core.views.radio_views',
+    'delete_question': 'core.views.question_views',
+    'delete_question_and_subquestions': 'core.views.question_views',
+    'delete_reference': 'core.views.definition_reference_views',
+    'delphoi_home': 'core.views.delphoi_views',
+    'delphoi_result': 'core.views.delphoi_views',
+    'dj_dashboard': 'core.views.radio_views',
+    'download_entries_docx': 'core.views.export_views',
+    'download_entries_json': 'core.views.export_views',
+    'download_entries_pdf': 'core.views.export_views',
+    'download_entries_xlsx': 'core.views.export_views',
+    'edit_answer': 'core.views.answer_views',
+    'edit_definition': 'core.views.definition_reference_views',
+    'edit_poll': 'core.views.poll_views',
+    'edit_program': 'core.views.radio_views',
+    'edit_reference': 'core.views.definition_reference_views',
+    'file_library': 'core.views.library_views',
+    'file_library_delete': 'core.views.library_views',
+    'file_library_list': 'core.views.library_views',
+    'file_library_search': 'core.views.library_views',
+    'filter_answers': 'core.views.export_views',
+    'follow_answer': 'core.views.notification_views',
+    'follow_question': 'core.views.notification_views',
+    'follow_user': 'core.views.user_views',
+    'game_of_life': 'core.views.iat_views',
+    'generate_question_nodes': 'core.views.question_views',
+    'german_course_home': 'core.views.german_views',
+    'german_lesson_detail': 'core.views.german_views',
+    'german_level_test': 'core.views.german_views',
+    'get_agora_token': 'core.views.radio_views',
+    'get_all_definitions': 'core.views.definition_reference_views',
+    'get_all_descendant_question_ids': 'core.views.answer_views',
+    'get_filtered_user_answers': 'core.views.export_views',
+    'get_invitation_tree': 'core.views.user_views',
+    'get_random_sentence': 'core.views.random_sentence_views',
+    'get_references': 'core.views.definition_reference_views',
+    'get_root_questions': 'core.views.answer_views',
+    'get_saved_items': 'core.views.vote_save_views',
+    'get_today_questions_page': 'core.views.site_views',
+    'get_top_words': 'core.views.user_views',
+    'get_unread_notification_count': 'core.views.notification_views',
+    'get_user_answers': 'core.views.answer_views',
+    'get_user_color': 'core.views.user_views',
+    'get_user_definitions': 'core.views.definition_reference_views',
+    'get_user_id': 'core.views.user_views',
+    'get_user_questions': 'core.views.user_views',
+    'hashtag_view': 'core.views.hashtag_views',
+    'iat_result': 'core.views.iat_views',
+    'iat_result_page': 'core.views.iat_views',
+    'iat_start': 'core.views.iat_views',
+    'iat_test': 'core.views.iat_views',
+    'ignore_random_sentence': 'core.views.random_sentence_views',
+    'insert_toc': 'core.views.export_views',
+    'is_custom_order_request': 'core.views.export_views',
+    'kenarda_gonder': 'core.views.kenarda_views',
+    'kenarda_list': 'core.views.kenarda_views',
+    'kenarda_preview': 'core.views.kenarda_views',
+    'kenarda_save': 'core.views.kenarda_views',
+    'kenarda_sil': 'core.views.kenarda_views',
+    'load_more_questions': 'core.views.search_views',
+    'load_more_search_results': 'core.views.search_views',
+    'logic_home': 'core.views.logic_views',
+    'logic_lesson_detail': 'core.views.logic_views',
+    'logic_level_test': 'core.views.logic_views',
+    'map_data_view': 'core.views.question_views',
+    'mark_all_notifications_read': 'core.views.notification_views',
+    'mark_notification_read': 'core.views.notification_views',
+    'memur_exam': 'core.views.site_views',
+    'message_detail': 'core.views.message_views',
+    'message_list': 'core.views.message_views',
+    'notification_list': 'core.views.notification_views',
+    'online_chat_messages': 'core.views.online_chat_views',
+    'pin_entry': 'core.views.vote_save_views',
+    'poll_detail': 'core.views.poll_views',
+    'poll_popover_content': 'core.views.poll_views',
+    'poll_question_redirect': 'core.views.poll_views',
+    'polls_home': 'core.views.poll_views',
+    'profile': 'core.views.user_views',
+    'program_detail': 'core.views.radio_views',
+    'question_detail': 'core.views.question_views',
+    'question_map': 'core.views.question_views',
+    'question_schema': 'core.views.question_views',
+    'question_schema_children': 'core.views.question_views',
+    'question_schema_content': 'core.views.question_views',
+    'question_schema_search': 'core.views.question_views',
+    'radio_chat_messages': 'core.views.radio_views',
+    'radio_home': 'core.views.radio_views',
+    'random_question_id': 'core.views.site_views',
+    'reference_search': 'core.views.search_views',
+    'save_item': 'core.views.vote_save_views',
+    'search': 'core.views.search_views',
+    'search_hashtags': 'core.views.hashtag_views',
+    'search_questions_for_linking': 'core.views.question_views',
+    'search_questions_for_merging': 'core.views.question_views',
+    'search_suggestions': 'core.views.search_views',
+    'send_invitation': 'core.views.auth_views',
+    'send_message_from_answer': 'core.views.message_views',
+    'send_message_from_user': 'core.views.message_views',
+    'sent_messages': 'core.views.message_views',
+    'shuffle_questions': 'core.views.site_views',
+    'signup': 'core.views.auth_views',
+    'single_answer': 'core.views.answer_views',
+    'site_statistics': 'core.views.site_views',
+    'start_broadcast': 'core.views.radio_views',
+    'stop_broadcast': 'core.views.radio_views',
+    'trending_hashtags': 'core.views.hashtag_views',
+    'unfollow_answer': 'core.views.notification_views',
+    'unfollow_question': 'core.views.notification_views',
+    'unfollow_user': 'core.views.user_views',
+    'unlink_from_parent': 'core.views.question_views',
+    'unpin_entry': 'core.views.vote_save_views',
+    'update_listener_count': 'core.views.radio_views',
+    'update_profile_photo': 'core.views.user_views',
+    'upload_editor_image': 'core.views.library_views',
+    'user_homepage': 'core.views.site_views',
+    'user_list': 'core.views.user_views',
+    'user_login': 'core.views.auth_views',
+    'user_logout': 'core.views.auth_views',
+    'user_profile': 'core.views.user_views',
+    'user_search': 'core.views.search_views',
+    'user_settings': 'core.views.user_views',
+    'view_message': 'core.views.message_views',
+    'vote': 'core.views.vote_save_views',
+    'vote_poll': 'core.views.poll_views',
+    'vote_poll_ajax': 'core.views.poll_views',
+    'vote_random_sentence': 'core.views.random_sentence_views',
+    'would_create_cycle': 'core.views.question_views',
+    'would_create_cycle_user_based': 'core.views.question_views',
+}
+
+__all__ = sorted(_ATTR_TO_MODULE)
+
+def __getattr__(name):
+    try:
+        module_name = _ATTR_TO_MODULE[name]
+    except KeyError as exc:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from exc
+    module = import_module(module_name)
+    value = getattr(module, name)
+    globals()[name] = value
+    return value
+
+def __dir__():
+    return sorted(set(globals()) | set(__all__))

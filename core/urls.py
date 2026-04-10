@@ -1,22 +1,43 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from django.conf import settings
-from .views import map_data_view
-from . import views
+from .views.answer_views import add_answer, answer_git_history, answer_live_preview, answer_revision_approve, answer_revision_reject, answer_suggest_edit, answer_suggestion_accept, answer_suggestion_detail, answer_suggestion_reject, delete_answer, edit_answer, get_root_questions, get_user_answers, single_answer
+from .views.auth_views import create_invitation, send_invitation, signup, user_login, user_logout
+from .views.cikis_test_views import cikis_dogru_sik_sec, cikis_dogrusu_ayarla, cikis_sik_edit, cikis_sik_ekle, cikis_sonuc_sil, cikis_soru_edit, cikis_soru_ekle, cikis_soru_sil, cikis_test_coz, cikis_test_list, cikis_testi_coz, cikis_testi_create, cikis_testi_detail, cikis_testi_sil, cikis_testi_sonuc_list, cikis_testleri_list
+from .views.definition_reference_views import create_definition, create_reference, delete_definition, delete_reference, edit_definition, edit_reference, get_all_definitions, get_references, get_user_definitions
+from .views.delphoi_views import delphoi_home, delphoi_result
+from .views.error_views import custom_400_view, custom_403_view, custom_404_view, custom_500_view, custom_502_view, debug_show_400, debug_show_403, debug_show_404, debug_show_500, debug_show_502
+from .views.export_views import download_entries_docx, download_entries_json, download_entries_pdf, download_entries_xlsx, filter_answers
+from .views.german_views import german_course_home, german_lesson_detail, german_level_test
+from .views.hashtag_views import all_hashtags, hashtag_view, search_hashtags, trending_hashtags
+from .views.iat_views import game_of_life, iat_result, iat_result_page, iat_start, iat_test
+from .views.kenarda_views import kenarda_gonder, kenarda_list, kenarda_preview, kenarda_save, kenarda_sil
+from .views.library_views import file_library, file_library_delete, file_library_list, file_library_search, upload_editor_image
+from .views.message_views import check_new_messages, message_detail, message_list, send_message_from_answer, send_message_from_user
+from .views.notification_views import follow_answer, follow_question, get_unread_notification_count, mark_all_notifications_read, mark_notification_read, notification_list, unfollow_answer, unfollow_question
+from .views.online_chat_views import online_chat_messages
+from .views.poll_views import create_poll, delete_poll, edit_poll, poll_detail, poll_popover_content, poll_question_redirect, polls_home, vote_poll, vote_poll_ajax
+from .views.question_views import add_existing_subquestion, add_question, add_question_from_search, add_starting_question, add_subquestion, admin_merge_question, bkz_view, delete_question, map_data_view, question_detail, question_map, question_schema, question_schema_children, question_schema_content, question_schema_search, search_questions_for_linking, search_questions_for_merging, unlink_from_parent
+from .views.radio_views import create_program, delete_program, dj_dashboard, edit_program, get_agora_token, program_detail, radio_chat_messages, radio_home, start_broadcast, stop_broadcast, update_listener_count
+from .views.random_sentence_views import add_random_sentence, get_random_sentence, ignore_random_sentence, vote_random_sentence
+from .views.search_views import load_more_questions, load_more_search_results, reference_search, search, search_suggestions, user_search
+from .views.site_views import about, memur_exam, random_question_id, shuffle_questions, site_statistics, user_homepage
+from .views.user_views import follow_user, get_user_questions, profile, unfollow_user, update_profile_photo, user_list, user_profile, user_settings
+from .views.vote_save_views import get_saved_items, pin_entry, save_item, unpin_entry, vote
 
 urlpatterns = [
     # Ana Sayfa
-    path('', views.user_homepage, name='user_homepage'),
+    path('', user_homepage, name='user_homepage'),
 
     # Debug-only: themed error pages preview (local dev only)
     # Note: must be above the catch-all question routes.
     *(
         [
-            path('__error__/400/', views.debug_show_400, name='debug_error_400'),
-            path('__error__/403/', views.debug_show_403, name='debug_error_403'),
-            path('__error__/404/', views.debug_show_404, name='debug_error_404'),
-            path('__error__/500/', views.debug_show_500, name='debug_error_500'),
-            path('__error__/502/', views.debug_show_502, name='debug_error_502'),
+            path('__error__/400/', debug_show_400, name='debug_error_400'),
+            path('__error__/403/', debug_show_403, name='debug_error_403'),
+            path('__error__/404/', debug_show_404, name='debug_error_404'),
+            path('__error__/500/', debug_show_500, name='debug_error_500'),
+            path('__error__/502/', debug_show_502, name='debug_error_502'),
         ]
         if not getattr(settings, 'IS_HOSTED', False)
         else []
@@ -24,211 +45,211 @@ urlpatterns = [
 
 
     # Kullanıcı Kayıt ve Giriş
-    path('signup/', views.signup, name='signup'),
-    path('login/', views.user_login, name='login'),
-    path('logout/', views.user_logout, name='logout'),
+    path('signup/', signup, name='signup'),
+    path('login/', user_login, name='login'),
+    path('logout/', user_logout, name='logout'),
 
     # Kullanıcı Profili
-    path('profile/update_photo/', views.update_profile_photo, name='update_profile_photo'),
-    path('pin_entry/answer/<int:answer_id>/', views.pin_entry, name='pin_entry'),
-    path('unpin_entry/', views.unpin_entry, name='unpin_entry'),
-    path('profile/', views.profile, name='profile'),
-    path('profile/<str:username>/follow/', views.follow_user, name='follow_user'),
-    path('profile/<str:username>/unfollow/', views.unfollow_user, name='unfollow_user'),
-    path('profile/<str:username>/', views.user_profile, name='user_profile'),
+    path('profile/update_photo/', update_profile_photo, name='update_profile_photo'),
+    path('pin_entry/answer/<int:answer_id>/', pin_entry, name='pin_entry'),
+    path('unpin_entry/', unpin_entry, name='unpin_entry'),
+    path('profile/', profile, name='profile'),
+    path('profile/<str:username>/follow/', follow_user, name='follow_user'),
+    path('profile/<str:username>/unfollow/', unfollow_user, name='unfollow_user'),
+    path('profile/<str:username>/', user_profile, name='user_profile'),
 
     # Soru İşlemleri
-    path('add-question/', views.add_question, name='add_question'),
+    path('add-question/', add_question, name='add_question'),
 
     # Yanıt İşlemleri
-    path('answer/<int:answer_id>/edit/', views.edit_answer, name='edit_answer'),
-    path('answer/<int:answer_id>/delete/', views.delete_answer, name='delete_answer'),
-    path('answer/<int:answer_id>/history/', views.answer_git_history, name='answer_git_history'),
-    path('answer/<int:answer_id>/suggest/', views.answer_suggest_edit, name='answer_suggest_edit'),
-    path('answer/preview/', views.answer_live_preview, name='answer_live_preview'),
-    path('answer/revision/<int:revision_id>/approve/', views.answer_revision_approve, name='answer_revision_approve'),
-    path('answer/revision/<int:revision_id>/reject/', views.answer_revision_reject, name='answer_revision_reject'),
-    path('answer/suggestion/<int:suggestion_id>/', views.answer_suggestion_detail, name='answer_suggestion_detail'),
-    path('answer/suggestion/<int:suggestion_id>/accept/', views.answer_suggestion_accept, name='answer_suggestion_accept'),
-    path('answer/suggestion/<int:suggestion_id>/reject/', views.answer_suggestion_reject, name='answer_suggestion_reject'),
+    path('answer/<int:answer_id>/edit/', edit_answer, name='edit_answer'),
+    path('answer/<int:answer_id>/delete/', delete_answer, name='delete_answer'),
+    path('answer/<int:answer_id>/history/', answer_git_history, name='answer_git_history'),
+    path('answer/<int:answer_id>/suggest/', answer_suggest_edit, name='answer_suggest_edit'),
+    path('answer/preview/', answer_live_preview, name='answer_live_preview'),
+    path('answer/revision/<int:revision_id>/approve/', answer_revision_approve, name='answer_revision_approve'),
+    path('answer/revision/<int:revision_id>/reject/', answer_revision_reject, name='answer_revision_reject'),
+    path('answer/suggestion/<int:suggestion_id>/', answer_suggestion_detail, name='answer_suggestion_detail'),
+    path('answer/suggestion/<int:suggestion_id>/accept/', answer_suggestion_accept, name='answer_suggestion_accept'),
+    path('answer/suggestion/<int:suggestion_id>/reject/', answer_suggestion_reject, name='answer_suggestion_reject'),
 
     # Mesajlaşma URL'leri
-    path('messages/', views.message_list, name='message_list'),
-    path('messages/<str:username>/', views.message_detail, name='message_detail'),
-    path('send_message/answer/<int:answer_id>/', views.send_message_from_answer, name='send_message_from_answer'),
-    path('check_new_messages/', views.check_new_messages, name='check_new_messages'),
-    path('send_message/user/<int:user_id>/', views.send_message_from_user, name='send_message_from_user'),
-    path('online-chat/messages/', views.online_chat_messages, name='online_chat_messages'),
+    path('messages/', message_list, name='message_list'),
+    path('messages/<str:username>/', message_detail, name='message_detail'),
+    path('send_message/answer/<int:answer_id>/', send_message_from_answer, name='send_message_from_answer'),
+    path('check_new_messages/', check_new_messages, name='check_new_messages'),
+    path('send_message/user/<int:user_id>/', send_message_from_user, name='send_message_from_user'),
+    path('online-chat/messages/', online_chat_messages, name='online_chat_messages'),
 
     # Arama
-    path('search/', views.search, name='search'),
-    path('search_suggestions/', views.search_suggestions, name='search_suggestions'),
-    path('load_more_questions/', views.load_more_questions, name='load_more_questions'),
-    path('load_more_search_results/', views.load_more_search_results, name='load_more_search_results'),
-    path('reference-search/', views.reference_search, name='reference_search'),
-    path('user-search/', views.user_search, name='user_search'),
-    path('search-questions-for-linking/', views.search_questions_for_linking, name='search_questions_for_linking'),
+    path('search/', search, name='search'),
+    path('search_suggestions/', search_suggestions, name='search_suggestions'),
+    path('load_more_questions/', load_more_questions, name='load_more_questions'),
+    path('load_more_search_results/', load_more_search_results, name='load_more_search_results'),
+    path('reference-search/', reference_search, name='reference_search'),
+    path('user-search/', user_search, name='user_search'),
+    path('search-questions-for-linking/', search_questions_for_linking, name='search_questions_for_linking'),
     # Admin-only endpoint (must NOT be under /admin/ because it conflicts with Django admin URLs)
-    path('merge/search-questions/', views.search_questions_for_merging, name='search_questions_for_merging'),
+    path('merge/search-questions/', search_questions_for_merging, name='search_questions_for_merging'),
 
     # Kullanıcı Ayarları
-    path('settings/', views.user_settings, name='user_settings'),
+    path('settings/', user_settings, name='user_settings'),
 
     # Diğer İşlemler
-    path('about/', views.about, name='about'),
-    path('files/', views.file_library, name='file_library'),
-    path('files/search/', views.file_library_search, name='file_library_search'),
-    path('files/list/', views.file_library_list, name='file_library_list'),
-    path('files/<int:file_id>/delete/', views.file_library_delete, name='file_library_delete'),
-    path('upload-editor-image/', views.upload_editor_image, name='upload_editor_image'),
-    path('statistics/', views.site_statistics, name='site_statistics'),
-    path('almanca/', views.german_course_home, name='german_course_home'),
-    path('almanca/<slug:level_slug>/seviye-bitirme-testi/', views.german_level_test, name='german_level_test'),
-    path('almanca/<slug:level_slug>/<slug:lesson_slug>/', views.german_lesson_detail, name='german_lesson_detail'),
-    path('map/', views.question_map, name='question_map'),
+    path('about/', about, name='about'),
+    path('files/', file_library, name='file_library'),
+    path('files/search/', file_library_search, name='file_library_search'),
+    path('files/list/', file_library_list, name='file_library_list'),
+    path('files/<int:file_id>/delete/', file_library_delete, name='file_library_delete'),
+    path('upload-editor-image/', upload_editor_image, name='upload_editor_image'),
+    path('statistics/', site_statistics, name='site_statistics'),
+    path('almanca/', german_course_home, name='german_course_home'),
+    path('almanca/<slug:level_slug>/seviye-bitirme-testi/', german_level_test, name='german_level_test'),
+    path('almanca/<slug:level_slug>/<slug:lesson_slug>/', german_lesson_detail, name='german_lesson_detail'),
+    path('map/', question_map, name='question_map'),
     path('map-data/', map_data_view, name='map_data'),
-    path('map/schema/', views.question_schema, name='question_schema'),
-    path('map/schema/search/', views.question_schema_search, name='question_schema_search'),
-    path('map/schema/<int:question_id>/children/', views.question_schema_children, name='question_schema_children'),
-    path('map/schema/<int:question_id>/content/', views.question_schema_content, name='question_schema_content'),
-    path('add-starting-question/', views.add_starting_question, name='add_starting_question'),
-    path('add_question_from_search/', views.add_question_from_search, name='add_question_from_search'),
-    path('bkz/<path:query>/', views.bkz_view, name='bkz'),
-    path('games/game-of-life/', views.game_of_life, name='game_of_life'),
-    path('memur-sinavi/', views.memur_exam, name='memur_exam'),
+    path('map/schema/', question_schema, name='question_schema'),
+    path('map/schema/search/', question_schema_search, name='question_schema_search'),
+    path('map/schema/<int:question_id>/children/', question_schema_children, name='question_schema_children'),
+    path('map/schema/<int:question_id>/content/', question_schema_content, name='question_schema_content'),
+    path('add-starting-question/', add_starting_question, name='add_starting_question'),
+    path('add_question_from_search/', add_question_from_search, name='add_question_from_search'),
+    path('bkz/<path:query>/', bkz_view, name='bkz'),
+    path('games/game-of-life/', game_of_life, name='game_of_life'),
+    path('memur-sinavi/', memur_exam, name='memur_exam'),
 
     # AJAX İşlemleri
-    path('vote/', views.vote, name='vote'),
-    path('save-item/', views.save_item, name='save_item'),
-    path('users/', views.user_list, name='user_list'),
-    path('create_invitation/', views.create_invitation, name='create_invitation'),
-    path('send-invitation/', views.send_invitation, name='send_invitation'),
+    path('vote/', vote, name='vote'),
+    path('save-item/', save_item, name='save_item'),
+    path('users/', user_list, name='user_list'),
+    path('create_invitation/', create_invitation, name='create_invitation'),
+    path('send-invitation/', send_invitation, name='send_invitation'),
 
     path('password_change/', auth_views.PasswordChangeView.as_view(template_name='core/password_change.html'), name='password_change'),
     path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(template_name='core/password_change_done.html'), name='password_change_done'),
 
-    path('random_sentence/', views.get_random_sentence, name='get_random_sentence'),
-    path('add_random_sentence/', views.add_random_sentence, name='add_random_sentence'),
-    path('ignore_random_sentence/', views.ignore_random_sentence, name='ignore_random_sentence'),
-    path('vote_random_sentence/', views.vote_random_sentence, name='vote_random_sentence'),
+    path('random_sentence/', get_random_sentence, name='get_random_sentence'),
+    path('add_random_sentence/', add_random_sentence, name='add_random_sentence'),
+    path('ignore_random_sentence/', ignore_random_sentence, name='ignore_random_sentence'),
+    path('vote_random_sentence/', vote_random_sentence, name='vote_random_sentence'),
 
     # ANKETLER/POLL URL'LERİ (tamamı "polls/" prefixli)
-    path('polls/', views.polls_home, name='polls_home'),
-    path('polls/create/', views.create_poll, name='create_poll'),
-    path('polls/<int:poll_id>/edit/', views.edit_poll, name='edit_poll'),
-    path('polls/<int:poll_id>/delete/', views.delete_poll, name='delete_poll'),
-    path('polls/<int:poll_id>/vote/<int:option_id>/', views.vote_poll, name='vote_poll'),
-    path('polls/<int:poll_id>/question/', views.poll_question_redirect, name='poll_question_redirect'),
-    path('polls/<int:poll_id>/popover/', views.poll_popover_content, name='poll_popover'),
-    path('polls/<int:poll_id>/vote-ajax/', views.vote_poll_ajax, name='vote_poll_ajax'),
-    path('polls/<int:poll_id>/', views.poll_detail, name='poll_detail'),
+    path('polls/', polls_home, name='polls_home'),
+    path('polls/create/', create_poll, name='create_poll'),
+    path('polls/<int:poll_id>/edit/', edit_poll, name='edit_poll'),
+    path('polls/<int:poll_id>/delete/', delete_poll, name='delete_poll'),
+    path('polls/<int:poll_id>/vote/<int:option_id>/', vote_poll, name='vote_poll'),
+    path('polls/<int:poll_id>/question/', poll_question_redirect, name='poll_question_redirect'),
+    path('polls/<int:poll_id>/popover/', poll_popover_content, name='poll_popover'),
+    path('polls/<int:poll_id>/vote-ajax/', vote_poll_ajax, name='vote_poll_ajax'),
+    path('polls/<int:poll_id>/', poll_detail, name='poll_detail'),
 
     # Tanımlar ve referanslar (diğer özel işlemler)
-    path('create-definition/<path:slug>/', views.create_definition, name='create_definition'),
-    path('get-user-definitions/', views.get_user_definitions, name='get_user_definitions'),
-    path('definition/<int:definition_id>/edit/', views.edit_definition, name='edit_definition'),
-    path('definition/<int:definition_id>/delete/', views.delete_definition, name='delete_definition'),
-    path('get-all-definitions/', views.get_all_definitions, name='get_all_definitions'),
-    path('create-reference/', views.create_reference, name='create_reference'),
-    path('get-references/', views.get_references, name='get_references'),
-    path('reference/<int:reference_id>/edit/', views.edit_reference, name='edit_reference'),
-    path('reference/<int:reference_id>/delete/', views.delete_reference, name='delete_reference'),
-    # path('profile/<str:username>/download_entries/', views.download_entries, name='download_entries'),
-    path('profile/<str:username>/download_entries_json/', views.download_entries_json, name='download_entries_json'),
-    path('profile/<str:username>/download_entries_xlsx/', views.download_entries_xlsx, name='download_entries_xlsx'),
-    path('profile/<str:username>/download_entries_docx/', views.download_entries_docx, name='download_entries_docx'),
-    path('profile/<str:username>/download_entries_pdf/', views.download_entries_pdf, name='download_entries_pdf'),
-    path('question/<int:question_id>/filter_answers/', views.filter_answers, name='filter_answers'),
+    path('create-definition/<path:slug>/', create_definition, name='create_definition'),
+    path('get-user-definitions/', get_user_definitions, name='get_user_definitions'),
+    path('definition/<int:definition_id>/edit/', edit_definition, name='edit_definition'),
+    path('definition/<int:definition_id>/delete/', delete_definition, name='delete_definition'),
+    path('get-all-definitions/', get_all_definitions, name='get_all_definitions'),
+    path('create-reference/', create_reference, name='create_reference'),
+    path('get-references/', get_references, name='get_references'),
+    path('reference/<int:reference_id>/edit/', edit_reference, name='edit_reference'),
+    path('reference/<int:reference_id>/delete/', delete_reference, name='delete_reference'),
+    # path('profile/<str:username>/download_entries/', download_entries, name='download_entries'),
+    path('profile/<str:username>/download_entries_json/', download_entries_json, name='download_entries_json'),
+    path('profile/<str:username>/download_entries_xlsx/', download_entries_xlsx, name='download_entries_xlsx'),
+    path('profile/<str:username>/download_entries_docx/', download_entries_docx, name='download_entries_docx'),
+    path('profile/<str:username>/download_entries_pdf/', download_entries_pdf, name='download_entries_pdf'),
+    path('question/<int:question_id>/filter_answers/', filter_answers, name='filter_answers'),
 
     # Aramalar
-    path('get-user-questions/', views.get_user_questions, name='get_user_questions'),
-    path('get-user-answers/', views.get_user_answers, name='get_user_answers'),
-    path('get-root-questions/', views.get_root_questions, name='get_root_questions'),
-    path('get-saved-items/', views.get_saved_items, name='get_saved_items'),
+    path('get-user-questions/', get_user_questions, name='get_user_questions'),
+    path('get-user-answers/', get_user_answers, name='get_user_answers'),
+    path('get-root-questions/', get_root_questions, name='get_root_questions'),
+    path('get-saved-items/', get_saved_items, name='get_saved_items'),
 
-    path('iat/', views.iat_start, name='iat_start'),
-    path('iat/test/', views.iat_test, name='iat_test'),
-    path('iat/result/page/', views.iat_result_page, name='iat_result_page'),
-    path('iat/result/', views.iat_result, name='iat_result'),
+    path('iat/', iat_start, name='iat_start'),
+    path('iat/test/', iat_test, name='iat_test'),
+    path('iat/result/page/', iat_result_page, name='iat_result_page'),
+    path('iat/result/', iat_result, name='iat_result'),
 
-    path("kenarda/save/", views.kenarda_save, name="kenarda_save"),
-    path("kenarda/preview/", views.kenarda_preview, name="kenarda_preview"),
-    path('kenarda/', views.kenarda_list, name='kenarda_list'),
-    path('kenarda/sil/<int:pk>/', views.kenarda_sil, name='kenarda_sil'),
-    path('kenarda/gonder/<int:pk>/', views.kenarda_gonder, name='kenarda_gonder'),
+    path("kenarda/save/", kenarda_save, name="kenarda_save"),
+    path("kenarda/preview/", kenarda_preview, name="kenarda_preview"),
+    path('kenarda/', kenarda_list, name='kenarda_list'),
+    path('kenarda/sil/<int:pk>/', kenarda_sil, name='kenarda_sil'),
+    path('kenarda/gonder/<int:pk>/', kenarda_gonder, name='kenarda_gonder'),
 
-    path('cikis_testleri/', views.cikis_testleri_list, name='cikis_testleri_list'),
-    path('cikis_testleri/olustur/', views.cikis_testi_create, name='cikis_testi_create'),
-    path('cikis_testleri/<int:test_id>/', views.cikis_testi_detail, name='cikis_testi_detail'),
-    path('cikis_testleri/<int:test_id>/soru_ekle/', views.cikis_soru_ekle, name='cikis_soru_ekle'),
-    path('cikis_testleri/soru/<int:soru_id>/sik_ekle/', views.cikis_sik_ekle, name='cikis_sik_ekle'),
-    path('cikis_testleri/soru/<int:soru_id>/dogru_sik/', views.cikis_dogru_sik_sec, name='cikis_dogru_sik_sec'),
-    path('cikis_testleri/<int:test_id>/coz/', views.cikis_testi_coz, name='cikis_testi_coz'),
-    path('cikis_testleri/<int:test_id>/sonuclar/', views.cikis_testi_sonuc_list, name='cikis_testi_sonuc_list'),
-    path('cikis_testleri/<int:test_id>/dogru_ayarla/', views.cikis_dogrusu_ayarla, name='cikis_dogrusu_ayarla'),
-    path('cikis-testleri/', views.cikis_test_list, name='cikis_test_list'),
-    path('cikis-test/<int:test_id>/coz/', views.cikis_test_coz, name='cikis_test_coz'),
-    path('cikis_testleri/sonuc/<int:sonuc_id>/sil/', views.cikis_sonuc_sil, name='cikis_sonuc_sil'),
-    path('cikis_testleri/soru/<int:soru_id>/edit/', views.cikis_soru_edit, name='cikis_soru_edit'),
-    path('cikis_testleri/soru/<int:soru_id>/sil/', views.cikis_soru_sil, name='cikis_soru_sil'),
-    path('cikis_testi/<int:test_id>/sil/', views.cikis_testi_sil, name='cikis_testi_sil'),
-    path('cikis_testleri/sik/<int:sik_id>/edit/', views.cikis_sik_edit, name='cikis_sik_edit'),
+    path('cikis_testleri/', cikis_testleri_list, name='cikis_testleri_list'),
+    path('cikis_testleri/olustur/', cikis_testi_create, name='cikis_testi_create'),
+    path('cikis_testleri/<int:test_id>/', cikis_testi_detail, name='cikis_testi_detail'),
+    path('cikis_testleri/<int:test_id>/soru_ekle/', cikis_soru_ekle, name='cikis_soru_ekle'),
+    path('cikis_testleri/soru/<int:soru_id>/sik_ekle/', cikis_sik_ekle, name='cikis_sik_ekle'),
+    path('cikis_testleri/soru/<int:soru_id>/dogru_sik/', cikis_dogru_sik_sec, name='cikis_dogru_sik_sec'),
+    path('cikis_testleri/<int:test_id>/coz/', cikis_testi_coz, name='cikis_testi_coz'),
+    path('cikis_testleri/<int:test_id>/sonuclar/', cikis_testi_sonuc_list, name='cikis_testi_sonuc_list'),
+    path('cikis_testleri/<int:test_id>/dogru_ayarla/', cikis_dogrusu_ayarla, name='cikis_dogrusu_ayarla'),
+    path('cikis-testleri/', cikis_test_list, name='cikis_test_list'),
+    path('cikis-test/<int:test_id>/coz/', cikis_test_coz, name='cikis_test_coz'),
+    path('cikis_testleri/sonuc/<int:sonuc_id>/sil/', cikis_sonuc_sil, name='cikis_sonuc_sil'),
+    path('cikis_testleri/soru/<int:soru_id>/edit/', cikis_soru_edit, name='cikis_soru_edit'),
+    path('cikis_testleri/soru/<int:soru_id>/sil/', cikis_soru_sil, name='cikis_soru_sil'),
+    path('cikis_testi/<int:test_id>/sil/', cikis_testi_sil, name='cikis_testi_sil'),
+    path('cikis_testleri/sik/<int:sik_id>/edit/', cikis_sik_edit, name='cikis_sik_edit'),
 
-    path('random_question_id/', views.random_question_id, name='random_question_id'),#bunu sonra kullanacağız.
-    path('shuffle_questions/', views.shuffle_questions, name='shuffle_questions'),
+    path('random_question_id/', random_question_id, name='random_question_id'),#bunu sonra kullanacağız.
+    path('shuffle_questions/', shuffle_questions, name='shuffle_questions'),
 
-    path('delphoi/', views.delphoi_home, name='delphoi_home'),
-    path('delphoi/result/', views.delphoi_result, name='delphoi_result'),
+    path('delphoi/', delphoi_home, name='delphoi_home'),
+    path('delphoi/result/', delphoi_result, name='delphoi_result'),
 
     # Hashtag URLs
-    path('hashtag/<str:hashtag_name>/', views.hashtag_view, name='hashtag_view'),
-    path('hashtags/trending/', views.trending_hashtags, name='trending_hashtags'),
-    path('hashtags/all/', views.all_hashtags, name='all_hashtags'),
-    path('hashtags/search/', views.search_hashtags, name='search_hashtags'),
+    path('hashtag/<str:hashtag_name>/', hashtag_view, name='hashtag_view'),
+    path('hashtags/trending/', trending_hashtags, name='trending_hashtags'),
+    path('hashtags/all/', all_hashtags, name='all_hashtags'),
+    path('hashtags/search/', search_hashtags, name='search_hashtags'),
 
     # Notification URLs
-    path('notifications/', views.notification_list, name='notification_list'),
-    path('notifications/<int:notification_id>/mark-read/', views.mark_notification_read, name='mark_notification_read'),
-    path('notifications/mark-all-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
-    path('notifications/unread-count/', views.get_unread_notification_count, name='get_unread_notification_count'),
+    path('notifications/', notification_list, name='notification_list'),
+    path('notifications/<int:notification_id>/mark-read/', mark_notification_read, name='mark_notification_read'),
+    path('notifications/mark-all-read/', mark_all_notifications_read, name='mark_all_notifications_read'),
+    path('notifications/unread-count/', get_unread_notification_count, name='get_unread_notification_count'),
 
     # Follow URLs
-    path('question/<int:question_id>/follow/', views.follow_question, name='follow_question'),
-    path('question/<int:question_id>/unfollow/', views.unfollow_question, name='unfollow_question'),
-    path('answer/<int:answer_id>/follow/', views.follow_answer, name='follow_answer'),
-    path('answer/<int:answer_id>/unfollow/', views.unfollow_answer, name='unfollow_answer'),
+    path('question/<int:question_id>/follow/', follow_question, name='follow_question'),
+    path('question/<int:question_id>/unfollow/', unfollow_question, name='unfollow_question'),
+    path('answer/<int:answer_id>/follow/', follow_answer, name='follow_answer'),
+    path('answer/<int:answer_id>/unfollow/', unfollow_answer, name='unfollow_answer'),
 
     # Radio URLs
-    path('radio/', views.radio_home, name='radio_home'),
-    path('radio/program/<int:program_id>/', views.program_detail, name='program_detail'),
-    path('radio/dj/', views.dj_dashboard, name='dj_dashboard'),
-    path('radio/dj/create/', views.create_program, name='create_program'),
-    path('radio/dj/edit/<int:program_id>/', views.edit_program, name='edit_program'),
-    path('radio/dj/delete/<int:program_id>/', views.delete_program, name='delete_program'),
-    path('radio/dj/start/<int:program_id>/', views.start_broadcast, name='start_broadcast'),
-    path('radio/dj/stop/<int:program_id>/', views.stop_broadcast, name='stop_broadcast'),
-    path('radio/token/<int:program_id>/', views.get_agora_token, name='get_agora_token'),
-    path('radio/listener-count/<int:program_id>/', views.update_listener_count, name='update_listener_count'),
-    path('radio/chat/<int:program_id>/', views.radio_chat_messages, name='radio_chat_messages'),
+    path('radio/', radio_home, name='radio_home'),
+    path('radio/program/<int:program_id>/', program_detail, name='program_detail'),
+    path('radio/dj/', dj_dashboard, name='dj_dashboard'),
+    path('radio/dj/create/', create_program, name='create_program'),
+    path('radio/dj/edit/<int:program_id>/', edit_program, name='edit_program'),
+    path('radio/dj/delete/<int:program_id>/', delete_program, name='delete_program'),
+    path('radio/dj/start/<int:program_id>/', start_broadcast, name='start_broadcast'),
+    path('radio/dj/stop/<int:program_id>/', stop_broadcast, name='stop_broadcast'),
+    path('radio/token/<int:program_id>/', get_agora_token, name='get_agora_token'),
+    path('radio/listener-count/<int:program_id>/', update_listener_count, name='update_listener_count'),
+    path('radio/chat/<int:program_id>/', radio_chat_messages, name='radio_chat_messages'),
 
     # SLUG-BASED QUESTION URLS (EN SONDA OLMALI - catch-all)
     # Örnek: /ozgurluk-nedir/ veya /yapılacaklar/ -> question detail
     # SPESİFİK pattern'lar ÖNCE gelmeli (single_answer, add-answer, etc.)
-    path('<path:slug>/answer/<int:answer_id>/', views.single_answer, name='single_answer'),
-    path('<path:slug>/add-answer/', views.add_answer, name='add_answer'),
-    path('<path:slug>/delete/', views.delete_question, name='delete_question'),
-    path('<path:slug>/add-subquestion/', views.add_subquestion, name='add_subquestion'),
-    path('<path:slug>/add-as-subquestion/', views.add_existing_subquestion, name='add_existing_subquestion'),
-    path('<path:slug>/admin-merge/', views.admin_merge_question, name='admin_merge_question'),
-    path('<path:slug>/unlink-from-parent/<int:parent_id>/', views.unlink_from_parent, name='unlink_from_parent'),
-    path('<path:slug>/filter_answers/', views.filter_answers, name='filter_answers'),
+    path('<path:slug>/answer/<int:answer_id>/', single_answer, name='single_answer'),
+    path('<path:slug>/add-answer/', add_answer, name='add_answer'),
+    path('<path:slug>/delete/', delete_question, name='delete_question'),
+    path('<path:slug>/add-subquestion/', add_subquestion, name='add_subquestion'),
+    path('<path:slug>/add-as-subquestion/', add_existing_subquestion, name='add_existing_subquestion'),
+    path('<path:slug>/admin-merge/', admin_merge_question, name='admin_merge_question'),
+    path('<path:slug>/unlink-from-parent/<int:parent_id>/', unlink_from_parent, name='unlink_from_parent'),
+    path('<path:slug>/filter_answers/', filter_answers, name='filter_answers'),
     # EN GENEL pattern EN SONDA (catch-all)
-    path('<path:slug>/', views.question_detail, name='question_detail'),
+    path('<path:slug>/', question_detail, name='question_detail'),
 ]
 
 # Custom error handlers
-handler400 = 'core.views.custom_400_view'
-handler403 = 'core.views.custom_403_view'
-handler404 = 'core.views.custom_404_view'
-handler500 = 'core.views.custom_500_view'
-handler502 = 'core.views.custom_502_view'
+handler400 = 'core.views.error_views.custom_400_view'
+handler403 = 'core.views.error_views.custom_403_view'
+handler404 = 'core.views.error_views.custom_404_view'
+handler500 = 'core.views.error_views.custom_500_view'
+handler502 = 'core.views.error_views.custom_502_view'
