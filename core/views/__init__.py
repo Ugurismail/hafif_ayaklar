@@ -18,6 +18,9 @@ from .cikis_test_views import *
 from .delphoi_views import *
 from .hashtag_views import *
 from .notification_views import *
+from .site_views import *
+from .library_views import *
+from .error_views import *
 from .misc_views import *
 from .search_views import *
 from .radio_views import *

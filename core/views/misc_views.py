@@ -1,16 +1,6 @@
 """
 Miscellaneous views
-- user_homepage
-- site_statistics
-- about
-- custom_404_view
-- custom_403_view
-- custom_500_view
-- custom_502_view
-- random_question_id
-- shuffle_questions
 - get_today_questions_queryset
-- get_today_questions_page
 - download_entries_json
 - download_entries_xlsx
 - download_entries_docx
@@ -64,620 +54,67 @@ ALLOWED_EDITOR_IMAGE_MIME_TYPES = {'image/jpeg', 'image/png', 'image/gif', 'imag
 MAX_EDITOR_IMAGE_SIZE = 5 * 1024 * 1024
 
 
-def get_today_questions_page(request, per_page=25):
-    """Helper for paginating today's questions"""
-    queryset = get_today_questions_queryset()
-    return paginate_queryset(queryset, request, 'page', per_page)
 
 
-def memur_exam(request):
-    return render(request, 'core/memur_exam.html')
 
 
-def user_homepage(request):
-    # Public view - anyone can see questions
-    # But some features require login
-
-    # Takip ettiklerim filtresi
-    followed_param = request.GET.get('followed', '0')
-    show_followed_only = followed_param == '1'
-
-    # 1. Tüm Sorular (ve cevap sayısı) - Using new utility
-    all_questions_qs = get_today_questions_queryset().select_related('user')
-
-    # Takip ettiklerim filtresi uygulanırsa
-    if show_followed_only and request.user.is_authenticated:
-        try:
-            user_profile = request.user.userprofile
-            # UserProfile'dan User ID'lerini al
-            followed_user_ids = user_profile.following.values_list('user_id', flat=True)
-            # Takip edilen kullanıcıların ya soru oluşturduğu ya da cevap verdiği başlıkları göster
-            all_questions_qs = all_questions_qs.filter(
-                get_active_left_frame_pin_q() |
-                Q(user_id__in=followed_user_ids) |  # Soruyu oluşturan takip edilen biri
-                Q(answers__user_id__in=followed_user_ids)  # Cevap veren takip edilen biri
-            ).distinct()
-        except UserProfile.DoesNotExist:
-            # Kullanıcının profili yoksa boş sonuç döndür
-            all_questions_qs = Question.objects.none()
-
-    all_questions = paginate_queryset(all_questions_qs, request, 'page', 20)
-
-    # 2. Rastgele Cevaplar -- OPTİMİZE (direkt order_by('?') kullan, daha hızlı)
-    # values_list tüm tabloyı tararsa çok yavaş olur, bunun yerine doğrudan rastgele order kullan
-    random_items = list(Answer.objects.select_related(
-        'question',
-        'user',
-        'user__userprofile'
-    ).order_by('?')[:20])
-    attach_answer_revision_metadata(random_items, current_user=request.user)
-
-    # 3. Başlangıç Soruları (sadece login olmuş kullanıcılar için) - Using new utility
-    if request.user.is_authenticated:
-        user_child_ids = QuestionRelationship.objects.filter(
-            user=request.user
-        ).values_list('child_id', flat=True).distinct()
-        starting_questions_qs = StartingQuestion.objects.filter(
-            user=request.user
-        ).exclude(
-            question_id__in=user_child_ids
-        ).select_related('question').annotate(
-            total_subquestions=Count('question__child_relationships', filter=Q(question__child_relationships__user=request.user)),
-            latest_subquestion_date=Max('question__child_relationships__created_at', filter=Q(question__child_relationships__user=request.user))
-        ).order_by(F('latest_subquestion_date').desc(nulls_last=True)).select_related('question__user')
-
-        starting_questions = paginate_queryset(starting_questions_qs, request, 'starting_page', 10)
-    else:
-        starting_questions = None
-
-    # 4-6. Vote and Save data - Using new VoteSaveService
-    if random_items:
-        VoteSaveService.annotate_user_votes(random_items, request.user, Answer)
-        saved_answer_ids, answer_save_dict = VoteSaveService.get_save_info(random_items, request.user, Answer)
-    else:
-        saved_answer_ids = set()
-        answer_save_dict = {}
-
-    context = {
-        'random_items': random_items,
-        'saved_answer_ids': saved_answer_ids,
-        'answer_save_dict': answer_save_dict,
-        'all_questions': all_questions,  # Pagineli queryset
-        'starting_questions': starting_questions,  # Pagineli queryset
-        'show_followed_only': show_followed_only,
-    }
-    return render(request, 'core/user_homepage.html', context)
 
 
 @login_required
-def site_statistics(request):
-    today = now().date()
-    active_tab = request.GET.get('tab', 'word-analysis')  # Varsayılan olarak "Kelime Analizi" sekmesi
-
-    # Defensive tracking: if middleware was not reloaded yet, ensure this page view is still counted.
-    if LastSeenMiddleware._should_track_unique_visitor(request):
-        visitor_hash = LastSeenMiddleware._build_daily_visitor_hash(request, today)
-        if visitor_hash:
-            try:
-                DailyVisitor.objects.get_or_create(date=today, visitor_hash=visitor_hash)
-            except DatabaseError:
-                pass
-
-    today_unique_visitors = DailyVisitor.objects.filter(date=today).count()
-
-    visitor_range_options = [
-        ('7d', 'Son 7 Gün'),
-        ('30d', 'Son 30 Gün'),
-        ('90d', 'Son 90 Gün'),
-        ('365d', 'Son 365 Gün'),
-        ('all', 'Tüm Zamanlar'),
-    ]
-    visitor_group_options = [
-        ('day', 'Günlük'),
-        ('week', 'Haftalık'),
-        ('month', 'Aylık'),
-    ]
-
-    visitor_range_days = {
-        '7d': 7,
-        '30d': 30,
-        '90d': 90,
-        '365d': 365,
-        'all': None,
-    }
-
-    selected_visitor_range = request.GET.get('visitor_range', '30d')
-    if selected_visitor_range not in visitor_range_days:
-        selected_visitor_range = '30d'
-
-    selected_visitor_group = request.GET.get('visitor_group', 'day')
-    if selected_visitor_group not in {'day', 'week', 'month'}:
-        selected_visitor_group = 'day'
-
-    visitor_qs = DailyVisitor.objects.all()
-    selected_days = visitor_range_days[selected_visitor_range]
-    if selected_days:
-        start_date = today - timedelta(days=selected_days - 1)
-        visitor_qs = visitor_qs.filter(date__gte=start_date)
-
-    visitor_labels = []
-    visitor_values = []
-    if selected_visitor_group == 'day':
-        visitor_rows = visitor_qs.values('date').annotate(unique_visitors=Count('visitor_hash')).order_by('date')
-        for row in visitor_rows:
-            visitor_labels.append(row['date'].strftime('%d.%m.%Y'))
-            visitor_values.append(row['unique_visitors'])
-    elif selected_visitor_group == 'week':
-        visitor_rows = visitor_qs.annotate(period=TruncWeek('date')).values('period').annotate(
-            unique_visitors=Count('visitor_hash')
-        ).order_by('period')
-        for row in visitor_rows:
-            period = row['period']
-            period_date = period.date() if hasattr(period, 'date') else period
-            iso = period_date.isocalendar()
-            visitor_labels.append(f"{iso.year}-W{iso.week:02d}")
-            visitor_values.append(row['unique_visitors'])
-    else:
-        visitor_rows = visitor_qs.annotate(period=TruncMonth('date')).values('period').annotate(
-            unique_visitors=Count('visitor_hash')
-        ).order_by('period')
-        for row in visitor_rows:
-            period = row['period']
-            period_date = period.date() if hasattr(period, 'date') else period
-            visitor_labels.append(period_date.strftime('%Y-%m'))
-            visitor_values.append(row['unique_visitors'])
-
-    visitor_chart_data = {
-        'labels': visitor_labels,
-        'values': visitor_values,
-    }
-    visitor_total_unique = sum(visitor_values)
-    visitor_peak_unique = max(visitor_values) if visitor_values else 0
-
-    # Kullanıcı sayısı (en az bir soru veya yanıt yazmış olanlar)
-    user_count = User.objects.filter(
-        Q(questions__isnull=False) | Q(answers__isnull=False)
-    ).distinct().count()
-
-    # Toplam soru ve yanıt sayısı
-    total_questions = Question.objects.count()
-    total_answers = Answer.objects.count()
-
-    # Toplam beğeni ve beğenmeme sayısı
-    total_likes = Vote.objects.filter(value=1).count()
-    total_dislikes = Vote.objects.filter(value=-1).count()
-
-    # En çok soru soran kullanıcılar
-    top_question_users = User.objects.annotate(
-        question_count=Count('questions')
-    ).order_by('-question_count')[:5]
-
-    # En çok yanıt veren kullanıcılar
-    top_answer_users = User.objects.annotate(
-        answer_count=Count('answers')
-    ).order_by('-answer_count')[:5]
-
-    # En çok beğenilen sorular (upvotes)
-    top_liked_questions = Question.objects.annotate(
-        like_count=F('upvotes')
-    ).order_by('-like_count')[:5]
-
-    # En çok beğenilen yanıtlar (upvotes)
-    top_liked_answers = Answer.objects.annotate(
-        like_count=F('upvotes')
-    ).order_by('-like_count')[:5]
-
-    # En çok kaydedilen sorular
-    top_saved_questions = Question.objects.annotate(
-        save_count=Count('saveditem')
-    ).order_by('-save_count')[:5]
-
-    # En çok kaydedilen yanıtlar
-    top_saved_answers = Answer.objects.annotate(
-        save_count=Count('saveditem')
-    ).order_by('-save_count')[:5]
-
-    # --- KELİME ANALİZİ ve KELİME ARAMA ---
-    question_texts = list(Question.objects.values_list('question_text', flat=True))
-    answer_texts = list(Answer.objects.values_list('answer_text', flat=True))
-
-    all_texts = []
-    word_counts = Counter()
-    total_words = 0
-    total_characters = 0
-
-    # Metin istatistiklerini tek geçişte çıkar
-    for text in chain(question_texts, answer_texts):
-        all_texts.append(text)
-        if not text:
-            continue
-        total_characters += len(text)
-        words = WORD_PATTERN.findall(text.lower())
-        total_words += len(words)
-        word_counts.update(words)
-
-    # Kaynak kullanım sayılarını tek geçişte çıkar (N+1'i önler)
-    reference_usage_counts = build_reference_usage_counts(answer_texts=answer_texts, use_cache=False)
-
-    # Hariç tutulan kelimeleri işle
-    exclude_words_input = request.GET.get('exclude_words', '')
-    if exclude_words_input:
-        exclude_words_list = re.split(r',\s*', exclude_words_input.strip())
-        exclude_words = set(word.lower() for word in exclude_words_list if word.strip())
-    else:
-        exclude_words = set()
-
-    filtered_word_counts = Counter(
-        {word: count for word, count in word_counts.items() if word not in exclude_words}
-    )
-    top_words = filtered_word_counts.most_common(10)
-
-    # --- Anahtar kelime arama: tüm başlık ve yanıtlarda toplam kaç kere geçiyor? ---
-    search_word = request.GET.get('search_word', '').strip().lower()
-    search_word_count = None
-    if search_word:
-        # Hariç tutulan bir kelimeyle aynıysa, doğrudan 0 göster
-        if search_word in exclude_words:
-            search_word_count = 0
-        else:
-            # Arama sonucunu kelime analizinde kullandığımız aynı token sayacından üret.
-            # Böylece "En Sık Geçen Kelimeler" listesi ile arama sonucu tutarlı kalır.
-            search_word_count = word_counts.get(search_word, 0)
-
-    # --- En çok kullanılan kaynaklar ---
-    all_references = list(Reference.objects.all())
-    for ref in all_references:
-        ref.usage_count = reference_usage_counts.get(ref.id, 0)
-
-    all_references.sort(key=lambda ref: (ref.usage_count, ref.id), reverse=True)
-    paginator_references = Paginator(all_references, 20)  # Sayfa başına 20 kaynak
-    reference_page_number = request.GET.get('reference_page', 1)
-    top_references = paginator_references.get_page(reference_page_number)
-    # --- Ek İstatistikler ---
-
-    # Toplam girdi sayısı (soru + yanıt)
-    total_entries = len(all_texts)
-
-    # Ortalama girdi başına kelime ve karakter
-    avg_words_per_entry = round(total_words / total_entries, 2) if total_entries else 0
-    avg_chars_per_entry = round(total_characters / total_entries, 2) if total_entries else 0
-
-    # Kullanıcı başına ortalama girdi (aktif kullanıcılar = user_count)
-    avg_entries_per_user = round(total_entries / user_count, 2) if user_count else 0
-
-    # Toplam kaynak sayısı
-    total_references_count = Reference.objects.count()
-
-    context = {
-        'active_tab': active_tab,
-        'today_unique_visitors': today_unique_visitors,
-        'visitor_range_options': visitor_range_options,
-        'visitor_group_options': visitor_group_options,
-        'selected_visitor_range': selected_visitor_range,
-        'selected_visitor_group': selected_visitor_group,
-        'visitor_chart_data': visitor_chart_data,
-        'visitor_total_unique': visitor_total_unique,
-        'visitor_peak_unique': visitor_peak_unique,
-        'visitor_data_points': len(visitor_values),
-        'user_count': user_count,
-        'total_questions': total_questions,
-        'total_answers': total_answers,
-        'total_likes': total_likes,
-        'total_dislikes': total_dislikes,
-        'total_references_count': total_references_count,
-        'top_question_users': top_question_users,
-        'top_answer_users': top_answer_users,
-        'top_liked_questions': top_liked_questions,
-        'top_liked_answers': top_liked_answers,
-        'top_saved_questions': top_saved_questions,
-        'top_saved_answers': top_saved_answers,
-        'top_words': top_words,
-        'search_word_count': search_word_count,
-        'search_word': search_word,
-        'exclude_words': ', '.join(sorted(exclude_words)),
-        'exclude_words_input': exclude_words_input,
-        'top_references': top_references,
-        'total_words': total_words,
-        'total_characters': total_characters,
-        'avg_words_per_entry': avg_words_per_entry,
-        'avg_chars_per_entry': avg_chars_per_entry,
-        'avg_entries_per_user': avg_entries_per_user,
-    }
-    return render(request, 'core/site_statistics.html', context)
 
 
-def about(request):
-    return render(request, 'core/about.html')
 
 
 @login_required
-def file_library(request):
-    query = request.GET.get('q', '').strip()
-    profile = getattr(request.user, 'userprofile', None)
-    can_upload = bool(getattr(profile, 'can_upload_files', False) or request.user.is_superuser)
-
-    form = None
-    if request.method == 'POST':
-        if not can_upload:
-            raise PermissionDenied("Dosya yukleme yetkiniz yok.")
-        form = LibraryFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            new_file = form.save(commit=False)
-            new_file.uploaded_by = request.user
-            new_file.save()
-            messages.success(request, "Dosya yuklendi.")
-            return redirect('file_library')
-    elif can_upload:
-        form = LibraryFileForm()
-
-    return render(request, 'core/file_library.html', {
-        'form': form,
-        'can_upload': can_upload,
-        'query': query,
-    })
 
 
 @login_required
 @require_POST
-def upload_editor_image(request):
-    image_file = request.FILES.get('image')
-    if not image_file:
-        return JsonResponse({'error': 'Gorsel dosyasi bulunamadi.'}, status=400)
-
-    if image_file.size > MAX_EDITOR_IMAGE_SIZE:
-        return JsonResponse({'error': 'Dosya boyutu 5 MB sinirini asiyor.'}, status=400)
-
-    extension = os.path.splitext(image_file.name or '')[1].lower()
-    if extension not in ALLOWED_EDITOR_IMAGE_EXTENSIONS:
-        return JsonResponse({'error': 'Sadece PNG, JPG, GIF veya WEBP desteklenir.'}, status=400)
-
-    content_type = (getattr(image_file, 'content_type', '') or '').lower()
-    if content_type and content_type not in ALLOWED_EDITOR_IMAGE_MIME_TYPES:
-        return JsonResponse({'error': 'Desteklenmeyen dosya turu.'}, status=400)
-
-    try:
-        image_file.seek(0)
-        with Image.open(image_file) as img:
-            img.verify()
-        image_file.seek(0)
-    except (UnidentifiedImageError, OSError):
-        return JsonResponse({'error': 'Gecersiz gorsel dosyasi.'}, status=400)
-
-    subdir = now().strftime('editor_images/%Y/%m')
-    filename = f'{uuid4().hex}{extension}'
-    saved_path = default_storage.save(f'{subdir}/{filename}', image_file)
-
-    return JsonResponse({
-        'ok': True,
-        'file_url': default_storage.url(saved_path),
-    })
 
 
 @login_required
-def file_library_search(request):
-    query = request.GET.get('q', '').strip()
-    limit_param = request.GET.get('limit')
-    if limit_param is None:
-        limit = 10 if not query else 20
-    else:
-        try:
-            limit = int(limit_param)
-        except ValueError:
-            limit = 12 if not query else 20
-
-    limit = max(1, min(limit, 50))
-
-    files_qs = LibraryFile.objects.select_related('uploaded_by').order_by('-uploaded_at')
-    if query:
-        files_qs = files_qs.filter(
-            Q(title__icontains=query) |
-            Q(description__icontains=query) |
-            Q(file__icontains=query) |
-            Q(uploaded_by__username__icontains=query)
-        )
-
-    total_count = files_qs.count()
-    files_qs = files_qs[:limit]
-
-    results = []
-    for item in files_qs:
-        results.append({
-            'id': item.id,
-            'title': item.title,
-            'description': item.description,
-            'filename': item.filename(),
-            'size': item.human_size(),
-            'uploaded_by': item.uploaded_by.username,
-            'uploaded_at': item.uploaded_at.strftime("%d.%m.%Y %H:%M"),
-            'file_url': item.file.url,
-        })
-
-    return JsonResponse({
-        'results': results,
-        'count': total_count,
-        'shown': len(results),
-        'query': query,
-        'label': 'Son yuklenenler' if not query else 'Arama sonuclari',
-    })
 
 
 @login_required
-def file_library_list(request):
-    limit_param = request.GET.get('limit')
-    offset_param = request.GET.get('offset')
-    mine_param = request.GET.get('mine', '0')
-
-    try:
-        limit = int(limit_param) if limit_param is not None else 20
-    except ValueError:
-        limit = 20
-    try:
-        offset = int(offset_param) if offset_param is not None else 0
-    except ValueError:
-        offset = 0
-
-    limit = max(1, min(limit, 50))
-    offset = max(0, offset)
-    only_mine = mine_param == '1'
-
-    files_qs = LibraryFile.objects.select_related('uploaded_by').order_by('-uploaded_at')
-    if only_mine:
-        files_qs = files_qs.filter(uploaded_by=request.user)
-
-    total_count = files_qs.count()
-    files_qs = files_qs[offset:offset + limit]
-
-    results = []
-    for item in files_qs:
-        results.append({
-            'id': item.id,
-            'title': item.title,
-            'description': item.description,
-            'filename': item.filename(),
-            'size': item.human_size(),
-            'uploaded_by': item.uploaded_by.username,
-            'uploaded_at': item.uploaded_at.strftime("%d.%m.%Y %H:%M"),
-            'file_url': item.file.url,
-            'can_delete': request.user.is_superuser or item.uploaded_by_id == request.user.id,
-        })
-
-    return JsonResponse({
-        'results': results,
-        'count': total_count,
-        'shown': len(results),
-        'offset': offset,
-        'limit': limit,
-        'mine': only_mine,
-        'has_more': offset + len(results) < total_count,
-        'label': 'Benim dosyalarim' if only_mine else 'Tum dosyalar',
-    })
 
 
 @login_required
 @require_POST
-def file_library_delete(request, file_id):
-    file_obj = get_object_or_404(LibraryFile, pk=file_id)
-    if not (request.user.is_superuser or file_obj.uploaded_by_id == request.user.id):
-        raise PermissionDenied("Bu dosyayi silme yetkiniz yok.")
-
-    file_obj.file.delete(save=False)
-    file_obj.delete()
-
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({'ok': True})
-
-    messages.success(request, "Dosya silindi.")
-    return redirect('file_library')
 
 
-def custom_400_view(request, exception):
-    response = render(request, 'core/400.html')
-    response.status_code = 400
-    return response
 
 
-def custom_404_view(request, exception):
-    response = render(request, '404.html')
-    response.status_code = 404
-    return response
 
 
-def custom_403_view(request, exception):
-    response = render(request, '403.html')
-    response.status_code = 403
-    return response
 
 
-def custom_500_view(request):
-    response = render(request, '500.html')
-    response.status_code = 500
-    return response
 
 
-def custom_502_view(request):
-    response = render(request, 'core/502.html')
-    response.status_code = 502
-    return response
 
 
-def _ensure_localhost_request(request):
-    host = (request.get_host() or '').split(':', 1)[0]
-    if host not in ('127.0.0.1', 'localhost'):
-        raise Http404
 
 
-def debug_show_400(request):
-    _ensure_localhost_request(request)
-    return custom_400_view(request, exception=None)
 
 
-def debug_show_403(request):
-    _ensure_localhost_request(request)
-    return custom_403_view(request, exception=None)
 
 
-def debug_show_404(request):
-    _ensure_localhost_request(request)
-    return custom_404_view(request, exception=None)
 
 
-def debug_show_500(request):
-    _ensure_localhost_request(request)
-    return custom_500_view(request)
 
 
-def debug_show_502(request):
-    _ensure_localhost_request(request)
-    return custom_502_view(request)
 
 
-def debug_raise_400(request):
-    _ensure_localhost_request(request)
-    raise SuspiciousOperation("Debug 400")
 
 
-def debug_raise_403(request):
-    _ensure_localhost_request(request)
-    raise PermissionDenied("Debug 403")
 
 
-def debug_raise_404(request):
-    _ensure_localhost_request(request)
-    raise Http404("Debug 404")
 
 
-def debug_raise_500(request):
-    _ensure_localhost_request(request)
-    raise RuntimeError("Debug 500")
 
 
 @require_POST
-def random_question_id(request):
-    ids = list(Question.objects.values_list('id', flat=True))
-    if not ids:
-        return JsonResponse({'question_id': None})
-    random_id = random.choice(ids)
-    return JsonResponse({'question_id': random_id})
 
 
-def shuffle_questions(request):
-    all_ids = list(Question.objects.values_list('id', flat=True))
-    if not all_ids:
-        return JsonResponse({'questions': []})
-    # Rastgele 20 id seç
-    sample_size = min(20, len(all_ids))
-    selected_ids = random.sample(all_ids, sample_size)
-    # Sırayı karıştır, başlıkları çek
-    questions = (Question.objects
-                 .filter(id__in=selected_ids)
-                 .annotate(answers_count=Count('answers'))
-                 .values('id', 'slug', 'question_text', 'answers_count'))
-    # Rastgele sıralamayı korumak için shuffle
-    questions = list(questions)
-    random.shuffle(questions)
-    return JsonResponse({'questions': [
-        {'id': q['id'], 'slug': q['slug'], 'text': q['question_text'], 'answers_count': q['answers_count']} for q in questions
-    ]})
 
 
 def collect_user_bibliography(target_user, specific_answers=None):
