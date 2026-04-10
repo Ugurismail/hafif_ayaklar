@@ -21,6 +21,7 @@ from .notification_views import *
 from .site_views import *
 from .library_views import *
 from .error_views import *
+from .export_views import *
 from .misc_views import *
 from .search_views import *
 from .radio_views import *
