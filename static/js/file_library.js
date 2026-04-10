@@ -254,9 +254,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function handleDelete(item) {
+    async function handleDelete(item) {
         if (!deleteUrlTemplate || !item || !item.id) return;
-        if (!confirm('Bu dosyayi silmek istiyor musun?')) return;
+
+        if (typeof showConfirm !== 'function') {
+            showFeedback('Onay penceresi yuklenemedi.', 'error');
+            return;
+        }
+        const confirmed = await showConfirm('Bu dosyayi silmek istiyor musun?', 'Dosyayi Sil', 'Sil', 'btn-outline-danger');
+        if (!confirmed) return;
 
         const csrfToken = getCsrfToken();
         const url = deleteUrlTemplate.replace('/0/', `/${item.id}/`);

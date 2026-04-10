@@ -131,7 +131,6 @@ _ATTR_TO_MODULE = {
     'map_data_view': 'core.views.question_views',
     'mark_all_notifications_read': 'core.views.notification_views',
     'mark_notification_read': 'core.views.notification_views',
-    'memur_exam': 'core.views.site_views',
     'message_detail': 'core.views.message_views',
     'message_list': 'core.views.message_views',
     'notification_list': 'core.views.notification_views',

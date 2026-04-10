@@ -1,0 +1,91 @@
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const wrappers = document.querySelectorAll('.poll-icon-wrapper');
+    if (!wrappers.length) return;
+
+    const popTpl  = "{% url 'poll_popover' 0 %}";
+    const voteTpl = "{% url 'vote_poll_ajax' 0 %}";
+    const detTpl  = "{% url 'poll_detail' 0 %}";
+
+    const openMap = new Map();
+
+    function scheduleHide(pid) {
+      const openItem = openMap.get(pid);
+      if (!openItem || openItem.hideTimer) return;
+      openItem.hideTimer = setTimeout(() => {
+        openItem.instance.hide();
+        openMap.delete(pid);
+      }, 200);
+    }
+
+    function show(icon, pid) {
+      fetch(popTpl.replace('0', pid))
+        .then((response) => response.json())
+        .then((data) => {
+          const popover = new bootstrap.Popover(icon, {
+            html: true,
+            trigger: 'manual',
+            content: data.html,
+            placement: 'top',
+            sanitize: false,
+            container: 'body',
+          });
+
+          popover.show();
+          const tip = popover.getTipElement();
+          tip.addEventListener('mouseenter', () => {
+            const openItem = openMap.get(pid);
+            if (openItem?.hideTimer) {
+              clearTimeout(openItem.hideTimer);
+              openItem.hideTimer = null;
+            }
+          });
+          tip.addEventListener('mouseleave', () => scheduleHide(pid));
+          openMap.set(pid, { instance: popover, hideTimer: null });
+        });
+    }
+
+    wrappers.forEach((wrapper) => {
+      const icon = wrapper.querySelector('.poll-icon');
+      const pid = wrapper.dataset.pollId;
+      if (!icon || !pid) return;
+
+      icon.addEventListener('mouseenter', () => {
+        if (!openMap.has(pid)) show(icon, pid);
+      });
+      icon.addEventListener('mouseleave', () => scheduleHide(pid));
+      icon.addEventListener('click', () => {
+        window.location.href = detTpl.replace('0', pid);
+      });
+    });
+
+    document.body.addEventListener('submit', (event) => {
+      if (!event.target.classList.contains('popover-vote-form')) return;
+      event.preventDefault();
+
+      const form = event.target;
+      const pid = form.dataset.pollId;
+      const formData = new FormData(form);
+
+      fetch(voteTpl.replace('0', pid), {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          const openItem = openMap.get(pid);
+          if (!openItem) return;
+
+          openItem.instance.getTipElement().querySelector('.popover-body').innerHTML = data.html;
+          if (data.html.includes('Oyunuz kaydedildi')) {
+            setTimeout(() => {
+              openItem.instance.hide();
+              openMap.delete(pid);
+            }, 750);
+          }
+        });
+    });
+  });
+</script>

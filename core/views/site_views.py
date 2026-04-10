@@ -32,10 +32,6 @@ def get_today_questions_page(request, per_page=25):
     return paginate_queryset(queryset, request, 'page', per_page)
 
 
-def memur_exam(request):
-    return render(request, 'core/memur_exam.html')
-
-
 def user_homepage(request):
     followed_param = request.GET.get('followed', '0')
     show_followed_only = followed_param == '1'
