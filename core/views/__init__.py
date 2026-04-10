@@ -19,6 +19,7 @@ from .delphoi_views import *
 from .hashtag_views import *
 from .notification_views import *
 from .misc_views import *
+from .search_views import *
 from .radio_views import *
 from .german_views import *
 from .online_chat_views import *
