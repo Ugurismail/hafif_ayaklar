@@ -18,7 +18,8 @@ from .views.notification_views import follow_answer, follow_question, get_unread
 from .views.online_chat_views import online_chat_messages
 from .views.poll_views import create_poll, delete_poll, edit_poll, poll_detail, poll_popover_content, poll_question_redirect, polls_home, vote_poll, vote_poll_ajax
 from .views.question_map_views import map_data_view, question_map, question_schema, question_schema_children, question_schema_content, question_schema_search
-from .views.question_views import add_existing_subquestion, add_question, add_question_from_search, add_starting_question, add_subquestion, admin_merge_question, bkz_view, delete_question, question_detail, search_questions_for_linking, search_questions_for_merging, unlink_from_parent
+from .views.question_link_views import add_existing_subquestion, admin_merge_question, search_questions_for_linking, search_questions_for_merging, unlink_from_parent
+from .views.question_views import add_question, add_question_from_search, add_starting_question, add_subquestion, bkz_view, delete_question, question_detail
 from .views.radio_views import create_program, delete_program, dj_dashboard, edit_program, get_agora_token, program_detail, radio_chat_messages, radio_home, start_broadcast, stop_broadcast, update_listener_count
 from .views.random_sentence_views import add_random_sentence, get_random_sentence, ignore_random_sentence, vote_random_sentence
 from .views.search_views import load_more_questions, load_more_search_results, reference_search, search, search_suggestions, user_search
