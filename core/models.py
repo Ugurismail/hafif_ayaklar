@@ -432,6 +432,94 @@ class SavedItem(models.Model):
                 self.object_id = self.answer.id
         super(SavedItem, self).save(*args, **kwargs)
 
+
+class SavedCollection(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_collections')
+    name = models.CharField(max_length=80)
+    description = models.CharField(max_length=160, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'name')
+        ordering = ['name', 'id']
+        indexes = [
+            models.Index(fields=['user', 'name']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} / {self.name}"
+
+
+class SavedCollectionItem(models.Model):
+    collection = models.ForeignKey(SavedCollection, on_delete=models.CASCADE, related_name='items')
+    saved_item = models.ForeignKey(SavedItem, on_delete=models.CASCADE, related_name='collection_links')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('collection', 'saved_item')
+        indexes = [
+            models.Index(fields=['collection', 'created_at']),
+            models.Index(fields=['saved_item']),
+        ]
+
+    def save(self, *args, **kwargs):
+        if self.collection.user_id != self.saved_item.user_id:
+            raise ValueError('Collection and saved item must belong to the same user.')
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.collection.name} -> {self.saved_item_id}"
+
+
+class ContentReport(models.Model):
+    REASON_CHOICES = [
+        ('spam', 'Spam'),
+        ('abuse', 'Hakaret / Saldırgan içerik'),
+        ('offtopic', 'Konu dışı'),
+        ('misinfo', 'Yanıltıcı / sorunlu içerik'),
+        ('copyright', 'Telif ihlali'),
+        ('other', 'Diğer'),
+    ]
+
+    STATUS_CHOICES = [
+        ('open', 'Açık'),
+        ('reviewed', 'İncelendi'),
+        ('dismissed', 'Reddedildi'),
+        ('actioned', 'İşlem uygulandı'),
+    ]
+
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='content_reports')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    reason = models.CharField(max_length=24, choices=REASON_CHOICES)
+    details = models.TextField(blank=True, default='')
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default='open', db_index=True)
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_content_reports'
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    resolution_note = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('reporter', 'content_type', 'object_id')
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', '-created_at']),
+            models.Index(fields=['content_type', 'object_id']),
+            models.Index(fields=['reporter', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.reporter.username} -> {self.content_type.model}:{self.object_id} ({self.reason})"
+
 class Vote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     value = models.IntegerField()  # +1 or -1

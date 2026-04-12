@@ -1091,4 +1091,197 @@ var referenceModalElem = document.getElementById('referenceModal');
     });
   }
 
+  function initInlineAutocomplete() {
+    var textarea = document.getElementById('id_answer_text') ||
+      document.querySelector('textarea[name="answer_text"]');
+    if (!textarea) return;
+
+    var dropdown = document.createElement('div');
+    dropdown.className = 'answer-inline-autocomplete';
+    document.body.appendChild(dropdown);
+
+    var state = {
+      items: [],
+      activeIndex: -1,
+      start: 0,
+      end: 0,
+      prefix: '',
+      query: '',
+      requestToken: 0
+    };
+    var debounceTimer = null;
+
+    function hideDropdown() {
+      dropdown.classList.remove('show');
+      dropdown.innerHTML = '';
+      state.items = [];
+      state.activeIndex = -1;
+    }
+
+    function positionDropdown() {
+      var rect = textarea.getBoundingClientRect();
+      var top = window.scrollY + rect.bottom + 8;
+      if (top + dropdown.offsetHeight > window.scrollY + window.innerHeight - 16) {
+        top = window.scrollY + rect.top - dropdown.offsetHeight - 8;
+      }
+      dropdown.style.top = top + 'px';
+      dropdown.style.left = (window.scrollX + rect.left) + 'px';
+      dropdown.style.width = Math.min(rect.width, 360) + 'px';
+    }
+
+    function getCaretContext() {
+      var cursor = textarea.selectionStart || 0;
+      var beforeCursor = textarea.value.slice(0, cursor);
+      var match = beforeCursor.match(/(?:^|[\s(\[])([#@][0-9A-Za-zÇĞİÖŞÜçğıöşü_.-]{1,40})$/u);
+      if (!match) return null;
+      var token = match[1];
+      return {
+        prefix: token.charAt(0),
+        query: token.slice(1),
+        start: cursor - token.length,
+        end: cursor
+      };
+    }
+
+    function renderDropdown() {
+      if (!state.items.length) {
+        hideDropdown();
+        return;
+      }
+      dropdown.innerHTML = '';
+      state.items.forEach(function (item, index) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'answer-inline-autocomplete-item' + (index === state.activeIndex ? ' active' : '');
+        button.innerHTML =
+          '<span class="answer-inline-autocomplete-main">' +
+            '<span class="answer-inline-autocomplete-label">' + item.label + '</span>' +
+          '</span>' +
+          '<span class="answer-inline-autocomplete-meta">' + item.meta + '</span>';
+        button.addEventListener('mousedown', function (event) {
+          event.preventDefault();
+          applySelection(item);
+        });
+        dropdown.appendChild(button);
+      });
+      dropdown.classList.add('show');
+      positionDropdown();
+    }
+
+    function applySelection(item) {
+      var before = textarea.value.slice(0, state.start);
+      var after = textarea.value.slice(state.end);
+      var replacement = state.prefix + item.value + ' ';
+      textarea.value = before + replacement + after;
+      var caret = before.length + replacement.length;
+      textarea.selectionStart = caret;
+      textarea.selectionEnd = caret;
+      textarea.focus({ preventScroll: true });
+      dispatchAnswerTextChanged(textarea);
+      hideDropdown();
+    }
+
+    function normalizeHashtagResults(data) {
+      if (!data || !Array.isArray(data.hashtags)) return [];
+      return data.hashtags.map(function (hashtag) {
+        return {
+          value: hashtag.name,
+          label: '#' + hashtag.name,
+          meta: (hashtag.usage_count || 0) + ' kullanım'
+        };
+      });
+    }
+
+    function normalizeUserResults(data) {
+      if (!data || !Array.isArray(data.results)) return [];
+      return data.results.map(function (user) {
+        return {
+          value: user.username,
+          label: '@' + user.username,
+          meta: 'kullanıcı'
+        };
+      });
+    }
+
+    function fetchSuggestions(context) {
+      state.requestToken += 1;
+      var currentToken = state.requestToken;
+      var url = context.prefix === '#'
+        ? '/hashtags/search/?q=' + encodeURIComponent(context.query)
+        : '/user-search/?q=' + encodeURIComponent(context.query);
+
+      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (currentToken !== state.requestToken) return;
+          state.items = context.prefix === '#'
+            ? normalizeHashtagResults(data)
+            : normalizeUserResults(data);
+          state.activeIndex = state.items.length ? 0 : -1;
+          renderDropdown();
+        })
+        .catch(function () {
+          hideDropdown();
+        });
+    }
+
+    function scheduleLookup() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(function () {
+        var context = getCaretContext();
+        if (!context || !context.query.trim()) {
+          hideDropdown();
+          return;
+        }
+        state.start = context.start;
+        state.end = context.end;
+        state.prefix = context.prefix;
+        state.query = context.query;
+        fetchSuggestions(context);
+      }, 140);
+    }
+
+    textarea.addEventListener('input', scheduleLookup);
+    textarea.addEventListener('click', scheduleLookup);
+    textarea.addEventListener('keyup', function (event) {
+      if (['ArrowUp', 'ArrowDown', 'Enter', 'Escape', 'Tab'].indexOf(event.key) !== -1) return;
+      scheduleLookup();
+    });
+
+    textarea.addEventListener('keydown', function (event) {
+      if (!dropdown.classList.contains('show')) return;
+      if (event.key === 'Escape') {
+        hideDropdown();
+        return;
+      }
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        state.activeIndex = (state.activeIndex + 1) % state.items.length;
+        renderDropdown();
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        state.activeIndex = (state.activeIndex - 1 + state.items.length) % state.items.length;
+        renderDropdown();
+        return;
+      }
+      if (event.key === 'Enter' || event.key === 'Tab') {
+        if (state.activeIndex < 0 || !state.items[state.activeIndex]) return;
+        event.preventDefault();
+        applySelection(state.items[state.activeIndex]);
+      }
+    });
+
+    window.addEventListener('resize', function () {
+      if (dropdown.classList.contains('show')) positionDropdown();
+    });
+    document.addEventListener('click', function (event) {
+      if (event.target === textarea || dropdown.contains(event.target)) return;
+      hideDropdown();
+    });
+  }
+
+  initInlineAutocomplete();
+
 });

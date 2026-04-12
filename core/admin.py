@@ -17,7 +17,7 @@ from core.models import (
     Entry, RandomSentence, Message, Definition, Reference,CikisTesti,
     CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy,
     QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage, OnlineChatMessage,
-    LibraryFile, DailyVisitor
+    LibraryFile, DailyVisitor, SavedCollection, SavedCollectionItem, ContentReport
 )
 
 # =============================================================================
@@ -30,12 +30,33 @@ class UserProfileAdmin(admin.ModelAdmin):
     ordering = ("-last_seen",)
     search_fields = ("user__username", "user__email")
 admin.site.register(SavedItem)
+@admin.register(SavedCollection)
+class SavedCollectionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'user', 'updated_at')
+    search_fields = ('name', 'user__username')
+    ordering = ('user__username', 'name')
+
+
+@admin.register(SavedCollectionItem)
+class SavedCollectionItemAdmin(admin.ModelAdmin):
+    list_display = ('id', 'collection', 'saved_item', 'created_at')
+    search_fields = ('collection__name', 'saved_item__user__username')
+    ordering = ('-created_at',)
+
 admin.site.register(Vote)
 admin.site.register(PinnedEntry)
 admin.site.register(Entry)
 admin.site.register(RandomSentence)
 admin.site.register(OnlineChatMessage)
 admin.site.register(LibraryFile)
+
+
+@admin.register(ContentReport)
+class ContentReportAdmin(admin.ModelAdmin):
+    list_display = ('id', 'reason', 'status', 'reporter', 'content_type', 'object_id', 'created_at', 'reviewed_by')
+    list_filter = ('reason', 'status', 'content_type', 'created_at')
+    search_fields = ('reporter__username', 'details', 'resolution_note')
+    ordering = ('-created_at',)
 
 
 @admin.register(DailyVisitor)

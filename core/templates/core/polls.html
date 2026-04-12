@@ -145,7 +145,7 @@
                   <a href="{% url 'edit_poll' apoll.poll.id %}" class="btn btn-outline-theme-secondary btn-sm mt-2 mt-md-0">Düzenle</a>
                 {% endif %}
                 {% if apoll.can_manage %}
-                  <form action="{% url 'delete_poll' apoll.poll.id %}" method="post" class="d-inline" onsubmit="return confirm('Bu anket silinsin mi?');">
+                  <form action="{% url 'delete_poll' apoll.poll.id %}" method="post" class="d-inline poll-delete-form">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline-danger btn-sm mt-2 mt-md-0">Sil</button>
                   </form>
@@ -222,7 +222,7 @@
                 {% if epoll.can_edit %}
                   <a href="{% url 'edit_poll' epoll.poll.id %}" class="btn btn-outline-theme-secondary btn-sm">Düzenle</a>
                 {% endif %}
-                <form action="{% url 'delete_poll' epoll.poll.id %}" method="post" class="d-inline" onsubmit="return confirm('Bu anket silinsin mi?');">
+                <form action="{% url 'delete_poll' epoll.poll.id %}" method="post" class="d-inline poll-delete-form">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-outline-danger btn-sm">Sil</button>
                 </form>
@@ -541,6 +541,19 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
   }
+
+  document.querySelectorAll('.poll-delete-form').forEach(function(formEl) {
+    formEl.addEventListener('submit', async function(event) {
+      event.preventDefault();
+      if (typeof showConfirm !== 'function') {
+        return;
+      }
+      var confirmed = await showConfirm('Bu anket silinsin mi?', 'Anketi Sil', 'Sil', 'btn-outline-danger');
+      if (confirmed) {
+        formEl.submit();
+      }
+    });
+  });
 });
 </script>
 {% endblock extra_js %}

@@ -1,0 +1,54 @@
+{% extends 'core/base.html' %}
+
+{% block title %}İçerik Raporla - Hafif Ayaklar{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 760px;">
+  <div class="card">
+    <div class="card-body">
+      <h1 class="h4 mb-3">İçerik Raporla</h1>
+      <p class="text-muted small mb-3">
+        Bu rapor yönetici kuyruğuna düşer. Kısa ve somut yazman yeterli.
+      </p>
+
+      <div class="border rounded p-3 mb-4 bg-light-subtle">
+        {% if reported_type == 'question' %}
+          <div class="small text-muted mb-1">Soru</div>
+          <div class="fw-semibold">{{ reported_object.question_text }}</div>
+        {% else %}
+          <div class="small text-muted mb-1">Yanıt</div>
+          <div class="fw-semibold mb-2">{{ reported_object.question.question_text }}</div>
+          <div>{{ reported_object.answer_text|truncatewords:40 }}</div>
+        {% endif %}
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="content_type" value="{{ reported_type }}">
+        <input type="hidden" name="object_id" value="{{ reported_object.id }}">
+        <input type="hidden" name="next" value="{{ next_url }}">
+
+        <div class="mb-3">
+          <label class="form-label" for="reportReason">Neden</label>
+          <select class="form-select" id="reportReason" name="reason" required>
+            <option value="">Seç...</option>
+            {% for value, label in reason_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="reportDetails">Not</label>
+          <textarea class="form-control" id="reportDetails" name="details" rows="5" maxlength="2000" placeholder="Kısa açıklama ekleyebilirsin."></textarea>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-theme-primary">Rapor Gönder</button>
+          <a href="{{ next_url }}" class="btn btn-outline-theme-secondary">Vazgeç</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

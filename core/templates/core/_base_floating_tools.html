@@ -378,6 +378,41 @@ body.online-chat-open .floating-tools {
 {% endif %}
 
 {% if user.is_authenticated %}
+<div class="modal fade" id="globalSaveCollectionModal" tabindex="-1" aria-labelledby="globalSaveCollectionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="globalSaveCollectionModalLabel">Kaydet ve Koleksiyona Ekle</h5>
+          <div class="small text-muted" id="globalSaveCollectionModalMeta">Bu içerik için koleksiyon seç.</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <form id="globalSaveCollectionForm">
+        <div class="modal-body">
+          <input type="hidden" id="globalSaveCollectionContentType" value="">
+          <input type="hidden" id="globalSaveCollectionObjectId" value="">
+          <input type="hidden" id="globalSaveCollectionSavedState" value="0">
+          <div class="mb-3">
+            <label class="form-label small text-muted mb-1" for="globalSaveCollectionName">Yeni koleksiyon</label>
+            <input type="text" class="form-control" id="globalSaveCollectionName" maxlength="80" placeholder="Örn. Sonra bak">
+          </div>
+          <div class="small text-muted mb-2">Var olan koleksiyonlar</div>
+          <div id="globalSaveCollectionChoices" class="d-flex flex-column gap-2" style="max-height: 240px; overflow-y: auto;"></div>
+          <div id="globalSaveCollectionEmpty" class="small text-muted mt-2" style="display:none;">Henüz koleksiyonun yok. İstersen yukarıdan yeni bir tane oluştur.</div>
+        </div>
+        <div class="modal-footer d-flex justify-content-between">
+          <button type="button" class="btn btn-outline-danger" id="globalSaveCollectionRemoveBtn" style="display:none;">Kaydı Kaldır</button>
+          <div class="d-flex gap-2 ms-auto">
+            <button type="button" class="btn btn-outline-theme-secondary" data-bs-dismiss="modal">İptal</button>
+            <button type="submit" class="btn btn-theme-primary">Kaydet</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="position-fixed bottom-0 end-3 p-3" style="z-index: 9999;">
     <div id="randomToast"
          class="toast fade"

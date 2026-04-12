@@ -6,6 +6,7 @@ from .views.answer_profile_views import get_root_questions, get_user_answers
 from .views.answer_revision_views import answer_git_history, answer_live_preview, answer_revision_approve, answer_revision_reject, answer_suggest_edit, answer_suggestion_accept, answer_suggestion_detail, answer_suggestion_reject
 from .views.auth_views import create_invitation, send_invitation, signup, user_login, user_logout
 from .views.cikis_test_views import cikis_dogru_sik_sec, cikis_dogrusu_ayarla, cikis_sik_edit, cikis_sik_ekle, cikis_sonuc_sil, cikis_soru_edit, cikis_soru_ekle, cikis_soru_sil, cikis_test_coz, cikis_test_list, cikis_testi_coz, cikis_testi_create, cikis_testi_detail, cikis_testi_sil, cikis_testi_sonuc_list, cikis_testleri_list
+from .views.collection_views import create_saved_collection, delete_saved_collection, saved_collections_home, saved_item_collection_options, update_saved_item_collections
 from .views.definition_reference_views import create_definition, create_reference, delete_definition, delete_reference, edit_definition, edit_reference, get_all_definitions, get_references, get_user_definitions
 from .views.delphoi_views import delphoi_home, delphoi_result
 from .views.error_views import custom_400_view, custom_403_view, custom_404_view, custom_500_view, custom_502_view, debug_show_400, debug_show_403, debug_show_404, debug_show_500, debug_show_502
@@ -24,6 +25,7 @@ from .views.question_link_views import add_existing_subquestion, admin_merge_que
 from .views.question_page_views import add_question, add_question_from_search, add_starting_question, add_subquestion, bkz_view, delete_question, question_detail
 from .views.radio_views import create_program, delete_program, dj_dashboard, edit_program, get_agora_token, program_detail, radio_chat_messages, radio_home, start_broadcast, stop_broadcast, update_listener_count
 from .views.random_sentence_views import add_random_sentence, get_random_sentence, ignore_random_sentence, vote_random_sentence
+from .views.report_views import report_content, report_content_ajax
 from .views.search_views import load_more_questions, load_more_search_results, reference_search, search, search_suggestions, user_search
 from .views.site_views import about, random_question_id, shuffle_questions, site_statistics, user_homepage
 from .views.user_views import follow_user, get_user_questions, profile, unfollow_user, update_profile_photo, user_list, user_profile, user_settings
@@ -168,6 +170,13 @@ urlpatterns = [
     path('get-user-answers/', get_user_answers, name='get_user_answers'),
     path('get-root-questions/', get_root_questions, name='get_root_questions'),
     path('get-saved-items/', get_saved_items, name='get_saved_items'),
+    path('collections/', saved_collections_home, name='saved_collections_home'),
+    path('collections/options/', saved_item_collection_options, name='saved_item_collection_options'),
+    path('collections/create/', create_saved_collection, name='create_saved_collection'),
+    path('collections/<int:collection_id>/delete/', delete_saved_collection, name='delete_saved_collection'),
+    path('collections/saved-item/<int:saved_item_id>/update/', update_saved_item_collections, name='update_saved_item_collections'),
+    path('report-content/', report_content, name='report_content'),
+    path('report-content/ajax/', report_content_ajax, name='report_content_ajax'),
 
     path('iat/', iat_start, name='iat_start'),
     path('iat/test/', iat_test, name='iat_test'),

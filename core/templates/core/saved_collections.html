@@ -1,0 +1,221 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load custom_tags %}
+{% load markdownify %}
+
+{% block title %}Koleksiyonlar - Hafif Ayaklar{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h1 class="h3 mb-1">Koleksiyonlar</h1>
+      <p class="text-muted mb-0">Kaydettiğin içerikleri klasörleyip burada tutabilirsin.</p>
+    </div>
+    <a href="{% url 'profile' %}?tab=kaydedilenler" class="btn btn-outline-theme-secondary">Kaydedilenlere Dön</a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="mb-3">Yeni Koleksiyon</h5>
+          <form method="post" action="{% url 'create_saved_collection' %}" class="mb-4">
+            {% csrf_token %}
+            <div class="mb-2">
+              <input type="text" class="form-control" name="name" maxlength="80" placeholder="Örn. Sonra Bak" required>
+            </div>
+            <div class="mb-2">
+              <input type="text" class="form-control" name="description" maxlength="160" placeholder="Kısa açıklama">
+            </div>
+            <button type="submit" class="btn btn-theme-primary">Oluştur</button>
+          </form>
+
+          <h6 class="mb-2">Filtrele</h6>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <a href="{% url 'saved_collections_home' %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" class="btn btn-sm {% if not selected_collection_id %}btn-theme-primary{% else %}btn-outline-theme-secondary{% endif %}">Tümü</a>
+            {% for collection in collections %}
+              <a href="{% url 'saved_collections_home' %}?collection={{ collection.id }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}" class="btn btn-sm {% if selected_collection_id == collection.id %}btn-theme-primary{% else %}btn-outline-theme-secondary{% endif %}">
+                {{ collection.name }} <span class="opacity-75">{{ collection.item_count }}</span>
+              </a>
+            {% empty %}
+              <span class="text-muted small">Henüz koleksiyon yok.</span>
+            {% endfor %}
+          </div>
+
+          <div class="list-group">
+            {% for collection in collections %}
+              <div class="list-group-item d-flex justify-content-between align-items-start gap-2">
+                <div>
+                  <div class="fw-semibold">{{ collection.name }}</div>
+                  {% if collection.description %}<div class="small text-muted">{{ collection.description }}</div>{% endif %}
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge rounded-pill text-bg-light">{{ collection.item_count }}</span>
+                  <form method="post" action="{% url 'delete_saved_collection' collection.id %}" class="saved-collection-delete-form m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Sil">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          <form method="get" class="mb-3 d-flex gap-2">
+            {% if selected_collection_id %}
+              <input type="hidden" name="collection" value="{{ selected_collection_id }}">
+            {% endif %}
+            <input type="text" class="form-control" name="q" value="{{ search_query }}" placeholder="Kaydedilenlerde ara...">
+            <button type="submit" class="btn btn-theme-primary">Ara</button>
+          </form>
+
+          <div class="d-flex flex-column gap-3">
+            {% for item in saved_items %}
+              <div class="border rounded p-3 collection-saved-card" data-saved-item-id="{{ item.saved_item.id }}" data-collection-ids="{% for collection in item.collections %}{{ collection.id }}{% if not forloop.last %},{% endif %}{% endfor %}">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                  <div class="flex-grow-1">
+                    {% if item.type == 'question' %}
+                      <div class="small text-muted mb-1">Soru</div>
+                      <a href="{{ item.detail_url }}" class="text-decoration-none fw-semibold">{{ item.object.question_text }}</a>
+                    {% else %}
+                      <div class="small text-muted mb-1">Yanıt</div>
+                      <a href="{{ item.detail_url }}" class="text-decoration-none fw-semibold">{{ item.object.question.question_text }}</a>
+                      <div class="mt-2 text-body">{{ item.object.answer_text|truncatewords:28 }}</div>
+                    {% endif %}
+                    <div class="mt-2 d-flex flex-wrap gap-2 collection-badges">
+                      {% for collection in item.collections %}
+                        <span class="badge rounded-pill text-bg-light">{{ collection.name }}</span>
+                      {% empty %}
+                        <span class="text-muted small">Henüz koleksiyona eklenmedi.</span>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-theme-secondary manage-collections-btn"
+                          data-saved-item-id="{{ item.saved_item.id }}"
+                          data-saved-item-label="{% if item.type == 'question' %}{{ item.object.question_text|escape }}{% else %}{{ item.object.question.question_text|escape }}{% endif %}">
+                    Koleksiyonlar
+                  </button>
+                </div>
+              </div>
+            {% empty %}
+              <p class="text-muted mb-0">Bu filtrede gösterilecek kayıt yok.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="savedCollectionAssignModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Koleksiyonlar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <form id="savedCollectionAssignForm">
+        <div class="modal-body">
+          <div class="text-muted small mb-2" id="savedCollectionAssignLabel"></div>
+          <input type="hidden" id="savedCollectionAssignItemId" value="">
+          <div id="savedCollectionAssignChoices" class="d-flex flex-column gap-2"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-theme-secondary" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-theme-primary">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{{ collections|json_script:"saved-collections-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const collectionsData = JSON.parse(document.getElementById('saved-collections-data').textContent || '[]');
+  const modalEl = document.getElementById('savedCollectionAssignModal');
+  const formEl = document.getElementById('savedCollectionAssignForm');
+  const itemIdEl = document.getElementById('savedCollectionAssignItemId');
+  const choicesEl = document.getElementById('savedCollectionAssignChoices');
+  const labelEl = document.getElementById('savedCollectionAssignLabel');
+  const modal = modalEl ? new bootstrap.Modal(modalEl) : null;
+
+  document.querySelectorAll('.saved-collection-delete-form').forEach(function(form) {
+    form.addEventListener('submit', async function (event) {
+      if (typeof showConfirm !== 'function') {
+        return;
+      }
+      event.preventDefault();
+      const ok = await showConfirm('Bu koleksiyon silinsin mi?', 'Koleksiyonu Sil', 'Sil', 'btn-outline-danger');
+      if (ok) form.submit();
+    });
+  });
+
+  document.querySelectorAll('.manage-collections-btn').forEach(function(button) {
+    button.addEventListener('click', function () {
+      const card = button.closest('.collection-saved-card');
+      const selected = new Set((card.dataset.collectionIds || '').split(',').filter(Boolean));
+      itemIdEl.value = button.dataset.savedItemId || '';
+      labelEl.textContent = button.dataset.savedItemLabel || '';
+      choicesEl.innerHTML = '';
+      collectionsData.forEach(function (collection) {
+        const wrapper = document.createElement('label');
+        wrapper.className = 'd-flex align-items-center gap-2 border rounded px-2 py-2';
+        wrapper.innerHTML = '<input class="form-check-input mt-0" type="checkbox" value="' + collection.id + '" ' + (selected.has(String(collection.id)) ? 'checked' : '') + '> <span>' + collection.name + '</span>';
+        choicesEl.appendChild(wrapper);
+      });
+      if (!collectionsData.length) {
+        choicesEl.innerHTML = '<div class="text-muted small">Önce en az bir koleksiyon oluştur.</div>';
+      }
+      modal.show();
+    });
+  });
+
+  formEl?.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    const savedItemId = itemIdEl.value;
+    if (!savedItemId) return;
+    const formData = new FormData();
+    choicesEl.querySelectorAll('input[type="checkbox"]:checked').forEach(function (input) {
+      formData.append('collection_ids', input.value);
+    });
+    formData.append('csrfmiddlewaretoken', document.querySelector('input[name="csrfmiddlewaretoken"]')?.value || document.querySelector('meta[name="csrf-token"]')?.content || '');
+
+    const response = await fetch('{% url "update_saved_item_collections" 0 %}'.replace('/0/', '/' + savedItemId + '/'), {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData,
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      if (typeof showToast === 'function') showToast(data.error || 'Koleksiyonlar güncellenemedi.', 'error');
+      return;
+    }
+
+    const card = document.querySelector('.collection-saved-card[data-saved-item-id="' + savedItemId + '"]');
+    if (card) {
+      card.dataset.collectionIds = data.collections.map(function (collection) { return collection.id; }).join(',');
+      const badges = card.querySelector('.collection-badges');
+      if (badges) {
+        badges.innerHTML = data.collections.length
+          ? data.collections.map(function (collection) { return '<span class="badge rounded-pill text-bg-light">' + collection.name + '</span>'; }).join('')
+          : '<span class="text-muted small">Henüz koleksiyona eklenmedi.</span>';
+      }
+    }
+    if (typeof showToast === 'function') showToast('Koleksiyonlar güncellendi.', 'success');
+    modal.hide();
+  });
+});
+</script>
+{% endblock %}

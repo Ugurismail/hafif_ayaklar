@@ -15,7 +15,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
 
-from ..models import Vote, SavedItem, PinnedEntry, Answer, Notification
+from ..models import Vote, SavedCollection, SavedCollectionItem, SavedItem, PinnedEntry, Answer, Notification
 
 
 def vote(request):
@@ -126,6 +126,10 @@ def save_item(request):
         except ContentType.DoesNotExist:
             return JsonResponse({'error': 'Invalid content_type'}, status=400)
 
+        action = request.POST.get('action', '').strip()
+        raw_collection_ids = request.POST.getlist('collection_ids[]') or request.POST.getlist('collection_ids')
+        new_collection_name = request.POST.get('new_collection_name', '').strip()
+
         # Daha önce kaydedilmiş mi kontrol edin
         existing_item = SavedItem.objects.filter(
             user=request.user,
@@ -133,23 +137,98 @@ def save_item(request):
             object_id=object_id
         ).first()
 
-        if existing_item:
-            # Eğer kaydedilmişse, kaydı silerek "kaydetmeyi kaldır" işlemi yapın
+        if action == 'unsave' and existing_item:
             existing_item.delete()
-            # Kaydedilme sayısını alın
+            save_count = SavedItem.objects.filter(
+                content_type=content_type_obj,
+                object_id=object_id
+            ).count()
+            return JsonResponse({'status': 'unsaved', 'save_count': save_count})
+
+        manage_collections = (
+            action == 'save'
+            or bool(raw_collection_ids)
+            or bool(new_collection_name)
+        )
+
+        if manage_collections:
+            created_now = False
+            if existing_item:
+                saved_item = existing_item
+            else:
+                saved_item = SavedItem.objects.create(
+                    user=request.user,
+                    content_type=content_type_obj,
+                    object_id=object_id
+                )
+                created_now = True
+
+            valid_ids = []
+            for value in raw_collection_ids:
+                try:
+                    valid_ids.append(int(value))
+                except (TypeError, ValueError):
+                    continue
+
+            selected_collections = list(SavedCollection.objects.filter(user=request.user, id__in=valid_ids))
+
+            if new_collection_name:
+                if len(new_collection_name) > 80:
+                    return JsonResponse({'error': 'Koleksiyon adı çok uzun.'}, status=400)
+                collection, _ = SavedCollection.objects.get_or_create(
+                    user=request.user,
+                    name=new_collection_name,
+                    defaults={'description': ''},
+                )
+                if collection.id not in {item.id for item in selected_collections}:
+                    selected_collections.append(collection)
+
+            selected_ids = {collection.id for collection in selected_collections}
+            SavedCollectionItem.objects.filter(saved_item=saved_item).exclude(collection_id__in=selected_ids).delete()
+            for collection in selected_collections:
+                SavedCollectionItem.objects.get_or_create(collection=collection, saved_item=saved_item)
+
+            save_count = SavedItem.objects.filter(
+                content_type=content_type_obj,
+                object_id=object_id
+            ).count()
+
+            if created_now:
+                try:
+                    if content_type_obj.model == 'answer':
+                        answer = Answer.objects.filter(id=object_id).select_related('user', 'question').first()
+                        if answer and answer.user_id != request.user.id:
+                            Notification.create_answer_save_notification(
+                                recipient=answer.user,
+                                sender=request.user,
+                                answer=answer,
+                            )
+                except Exception:
+                    pass
+
+            return JsonResponse({
+                'status': 'saved',
+                'save_count': save_count,
+                'saved_item_id': saved_item.id,
+                'collections': [
+                    {'id': collection.id, 'name': collection.name}
+                    for collection in selected_collections
+                ],
+            })
+
+        if existing_item:
+            existing_item.delete()
             save_count = SavedItem.objects.filter(
                 content_type=content_type_obj,
                 object_id=object_id
             ).count()
             return JsonResponse({'status': 'unsaved', 'save_count': save_count})
         else:
-            # Yeni bir kayıt oluşturun
             saved_item = SavedItem.objects.create(
                 user=request.user,
                 content_type=content_type_obj,
                 object_id=object_id
             )
-            # Kaydedilme sayısını alın
             save_count = SavedItem.objects.filter(
                 content_type=content_type_obj,
                 object_id=object_id
@@ -168,7 +247,7 @@ def save_item(request):
             except Exception:
                 pass
 
-            return JsonResponse({'status': 'saved', 'save_count': save_count})
+            return JsonResponse({'status': 'saved', 'save_count': save_count, 'saved_item_id': saved_item.id, 'collections': []})
 
 
 @login_required

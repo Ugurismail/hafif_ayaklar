@@ -130,6 +130,13 @@
                       <i class="bi bi-arrow-right-circle"></i>
                     </a>
                     {% endif %}
+                    {% if request.user.is_authenticated and request.user != question.user %}
+                    <a href="{% url 'report_content' %}?content_type=question&object_id={{ question.id }}&next={{ request.get_full_path|urlencode }}"
+                       class="ms-2"
+                       title="İçeriği Raporla">
+                      <i class="bi bi-flag"></i>
+                    </a>
+                    {% endif %}
                     {% endif %}
                 </div>
                 <!-- Sağ Kısım: Kullanıcı Bilgisi ve Tarih -->
@@ -305,6 +312,13 @@
                                             <i class="bi bi-envelope"></i> Mesaj Gönder
                                         </a>
                                     </li>
+                                    {% if request.user.is_authenticated and request.user != focused_answer.user %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'report_content' %}?content_type=answer&object_id={{ focused_answer.id }}&next={{ request.get_full_path|urlencode }}">
+                                            <i class="bi bi-flag"></i> Raporla
+                                        </a>
+                                    </li>
+                                    {% endif %}
                                     <li id="word-count-{{ focused_answer.id }}" style="text-align:center;">
                                         Kelime Sayısı: ...
                                     </li>
@@ -437,6 +451,13 @@
                                                     <i class="bi bi-envelope"></i> Mesaj Gönder
                                                 </a>
                                             </li>
+                                            {% if request.user.is_authenticated and request.user != answer.user %}
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'report_content' %}?content_type=answer&object_id={{ answer.id }}&next={{ request.get_full_path|urlencode }}">
+                                                    <i class="bi bi-flag"></i> Raporla
+                                                </a>
+                                            </li>
+                                            {% endif %}
                                             <li id="word-count-{{ answer.id }}" style="text-align:center;">
                                                 Kelime Sayısı: ...
                                             </li>
