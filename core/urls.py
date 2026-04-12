@@ -9,6 +9,7 @@ from .views.cikis_test_views import cikis_dogru_sik_sec, cikis_dogrusu_ayarla, c
 from .views.collection_views import create_saved_collection, delete_saved_collection, saved_collections_home, saved_item_collection_options, update_saved_item_collections
 from .views.definition_reference_views import create_definition, create_reference, delete_definition, delete_reference, edit_definition, edit_reference, get_all_definitions, get_references, get_user_definitions
 from .views.delphoi_views import delphoi_home, delphoi_result
+from .views.ethics_views import ethics_atlas
 from .views.error_views import custom_400_view, custom_403_view, custom_404_view, custom_500_view, custom_502_view, debug_show_400, debug_show_403, debug_show_404, debug_show_500, debug_show_502
 from .views.export_views import download_entries_docx, download_entries_json, download_entries_pdf, download_entries_xlsx, filter_answers
 from .views.german_views import german_course_home, german_lesson_detail, german_level_test
@@ -103,6 +104,7 @@ urlpatterns = [
 
     # Diğer İşlemler
     path('about/', about, name='about'),
+    path('etik-atlasi/', ethics_atlas, name='ethics_atlas'),
     path('files/', file_library, name='file_library'),
     path('files/search/', file_library_search, name='file_library_search'),
     path('files/list/', file_library_list, name='file_library_list'),

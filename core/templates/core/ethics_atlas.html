@@ -1,0 +1,66 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Etik Atlası - Hafif Ayaklar{% endblock %}
+
+{% block extra_css %}
+<style>
+  .ethics-atlas-shell {
+    margin-top: 96px;
+    padding: 0 1rem 1rem;
+  }
+
+  .ethics-atlas-frame {
+    width: 100%;
+    height: calc(100vh - 140px);
+    min-height: 720px;
+    border: 1px solid color-mix(in srgb, var(--header-background-color, #22312B) 12%, transparent);
+    border-radius: 20px;
+    background: #f5efe4;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+
+  .ethics-atlas-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #f5efe4;
+  }
+
+  @media (max-width: 991.98px) {
+    .ethics-atlas-shell {
+      margin-top: 88px;
+      padding: 0 0.75rem 0.75rem;
+    }
+
+    .ethics-atlas-frame {
+      height: calc(100vh - 120px);
+      min-height: 620px;
+      border-radius: 16px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ethics-atlas-shell">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+      <h1 class="h3 mb-1">Etik Atlası</h1>
+      <p class="text-muted mb-0">Etik düşünce tarihini ilişkiler ağı içinde incelemek için izole atlas görünümü.</p>
+    </div>
+    <a class="btn btn-outline-theme-secondary" href="{% static 'tools/etik-atlasi/index.html' %}?v={{ STATIC_ASSET_VERSION }}-ethics3" target="_blank" rel="noopener">
+      Yeni Sekmede Aç
+    </a>
+  </div>
+
+  <div class="ethics-atlas-frame">
+    <iframe
+      src="{% static 'tools/etik-atlasi/index.html' %}?v={{ STATIC_ASSET_VERSION }}-ethics3"
+      title="Etik Atlası"
+      loading="lazy"
+      referrerpolicy="same-origin"></iframe>
+  </div>
+</div>
+{% endblock %}
