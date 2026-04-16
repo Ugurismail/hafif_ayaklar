@@ -18,7 +18,7 @@ from django.utils.timezone import now
 
 from ..answer_git import attach_answer_revision_metadata
 from ..middleware import LastSeenMiddleware
-from ..models import Answer, DailyVisitor, Question, QuestionRelationship, Reference, StartingQuestion, UserProfile, Vote
+from ..models import Answer, DailyVisitor, Question, QuestionRelationship, Reference, StartingQuestion, UserProfile, VisitSession, Vote
 from ..querysets import get_active_left_frame_pin_q, get_today_questions_queryset
 from ..services import VoteSaveService
 from ..utils import build_reference_usage_counts, paginate_queryset
@@ -112,6 +112,7 @@ def site_statistics(request):
                 pass
 
     today_unique_visitors = DailyVisitor.objects.filter(date=today).count()
+    today_visit_sessions = VisitSession.objects.filter(date=today).count()
 
     visitor_range_options = [
         ('7d', 'Son 7 Gün'),
@@ -248,6 +249,7 @@ def site_statistics(request):
     context = {
         'active_tab': active_tab,
         'today_unique_visitors': today_unique_visitors,
+        'today_visit_sessions': today_visit_sessions,
         'visitor_range_options': visitor_range_options,
         'visitor_group_options': visitor_group_options,
         'selected_visitor_range': selected_visitor_range,

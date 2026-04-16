@@ -122,6 +122,38 @@ class DailyVisitor(models.Model):
         return f"{self.date} - {self.visitor_hash[:10]}"
 
 
+class VisitSession(models.Model):
+    """
+    Stores visit-like local sessions.
+
+    A visit is restarted after a period of inactivity in middleware, so this
+    model approximates "visits/sessions" rather than unique devices.
+    """
+
+    date = models.DateField(db_index=True)
+    visit_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    visitor_hash = models.CharField(max_length=64, blank=True, default="")
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="visit_sessions",
+    )
+    started_at = models.DateTimeField(auto_now_add=True)
+    last_seen_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-started_at"]
+        indexes = [
+            models.Index(fields=["date", "started_at"]),
+            models.Index(fields=["date", "visitor_hash"]),
+        ]
+
+    def __str__(self):
+        return f"{self.date} - {self.visit_token}"
+
+
 class Question(models.Model):
     question_text = models.CharField(max_length=255)
     slug = models.SlugField(max_length=300, unique=True, blank=True)  # SEO-friendly URL

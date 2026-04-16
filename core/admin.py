@@ -17,7 +17,7 @@ from core.models import (
     Entry, RandomSentence, Message, Definition, Reference,CikisTesti,
     CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy,
     QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage, OnlineChatMessage,
-    LibraryFile, DailyVisitor, SavedCollection, SavedCollectionItem, ContentReport
+    LibraryFile, DailyVisitor, VisitSession, SavedCollection, SavedCollectionItem, ContentReport
 )
 
 # =============================================================================
@@ -66,6 +66,15 @@ class DailyVisitorAdmin(admin.ModelAdmin):
     search_fields = ("visitor_hash",)
     ordering = ("-date", "-last_seen_at")
     readonly_fields = ("date", "visitor_hash", "first_seen_at", "last_seen_at")
+
+
+@admin.register(VisitSession)
+class VisitSessionAdmin(admin.ModelAdmin):
+    list_display = ("date", "visit_token", "user", "started_at", "last_seen_at")
+    list_filter = ("date",)
+    search_fields = ("visit_token", "visitor_hash", "user__username")
+    ordering = ("-started_at",)
+    readonly_fields = ("date", "visit_token", "visitor_hash", "started_at", "last_seen_at")
 
 # =============================================================================
 # 2) Kullanıcı Admin – Mesaj Gönderme, Grupların Gösterimi ve Filtrelenmesi

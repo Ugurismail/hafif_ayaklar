@@ -10,7 +10,7 @@ from django.http import Http404
 from django.shortcuts import render
 from django.utils import timezone
 
-from .models import DailyVisitor, UserProfile
+from .models import DailyVisitor, UserProfile, VisitSession
 
 
 class CustomErrorPagesMiddleware:
@@ -55,13 +55,17 @@ class LastSeenMiddleware:
 
     SESSION_KEY = "_last_seen_update_ts"
     VISITOR_COOKIE_KEY = "_daily_visitor_seen"
+    VISIT_COOKIE_KEY = "_visit_token"
     THROTTLE_DELTA = timedelta(minutes=1)
+    VISIT_INACTIVITY_DELTA = timedelta(minutes=30)
+    VISIT_COOKIE_MAX_AGE = 60 * 60 * 24 * 30
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
         visitor_cookie_value = self._track_daily_unique_visitor(request)
+        visit_cookie_value = self._track_visit_session(request)
         response = self.get_response(request)
         self._update_last_seen(request)
 
@@ -71,6 +75,19 @@ class LastSeenMiddleware:
                     self.VISITOR_COOKIE_KEY,
                     visitor_cookie_value,
                     max_age=60 * 60 * 24 * 2,
+                    secure=getattr(settings, "SESSION_COOKIE_SECURE", False),
+                    httponly=True,
+                    samesite="Lax",
+                )
+            except Exception:
+                pass
+
+        if visit_cookie_value:
+            try:
+                response.set_cookie(
+                    self.VISIT_COOKIE_KEY,
+                    visit_cookie_value,
+                    max_age=self.VISIT_COOKIE_MAX_AGE,
                     secure=getattr(settings, "SESSION_COOKIE_SECURE", False),
                     httponly=True,
                     samesite="Lax",
@@ -135,6 +152,66 @@ class LastSeenMiddleware:
             return None
 
         return today_marker
+
+    def _track_visit_session(self, request):
+        if not self._should_track_unique_visitor(request):
+            return None
+
+        current_time = timezone.now()
+        today = timezone.localdate()
+        visitor_hash = self._build_daily_visitor_hash(request, today) or ""
+        visit_token = (request.COOKIES.get(self.VISIT_COOKIE_KEY) or "").strip()
+        active_visit = None
+
+        if visit_token:
+            active_visit = VisitSession.objects.filter(visit_token=visit_token).first()
+            if active_visit:
+                is_stale = (
+                    active_visit.date != today
+                    or (current_time - active_visit.last_seen_at) >= self.VISIT_INACTIVITY_DELTA
+                )
+                if is_stale:
+                    active_visit = None
+
+        if active_visit is None and visitor_hash:
+            active_visit = (
+                VisitSession.objects.filter(
+                    date=today,
+                    visitor_hash=visitor_hash,
+                    last_seen_at__gte=current_time - self.VISIT_INACTIVITY_DELTA,
+                )
+                .order_by("-last_seen_at")
+                .first()
+            )
+
+        user = getattr(request, "user", None)
+        user_id = user.id if user and user.is_authenticated else None
+
+        if active_visit:
+            update_fields = {}
+            if (current_time - active_visit.last_seen_at) >= self.THROTTLE_DELTA:
+                update_fields["last_seen_at"] = current_time
+            if user_id and active_visit.user_id != user_id:
+                update_fields["user_id"] = user_id
+            if update_fields:
+                try:
+                    VisitSession.objects.filter(pk=active_visit.pk).update(**update_fields)
+                except DatabaseError:
+                    pass
+            if str(active_visit.visit_token) != visit_token:
+                return str(active_visit.visit_token)
+            return None
+
+        try:
+            new_visit = VisitSession.objects.create(
+                date=today,
+                visitor_hash=visitor_hash,
+                user_id=user_id,
+            )
+        except DatabaseError:
+            return None
+
+        return str(new_visit.visit_token)
 
     @staticmethod
     def _should_track_unique_visitor(request):
