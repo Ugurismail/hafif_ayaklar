@@ -25,6 +25,7 @@ else:
 # Static asset cache-busting version (keep stable so browser caching works).
 # Bump this (or set env var) when you deploy new static files.
 STATIC_ASSET_VERSION = os.environ.get('STATIC_ASSET_VERSION', '1')
+GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID', 'G-7JSG99BCHT').strip()
 
 # Hardcoded ALLOWED_HOSTS to ensure all domains are always included
 ALLOWED_HOSTS = [
@@ -120,10 +121,11 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'core.context_processors.static_asset_version',
-                'core.context_processors.unread_message_count',
-                'core.context_processors.unread_notification_count',
-                'core.context_processors.radio_live_indicator',
+            'core.context_processors.static_asset_version',
+            'core.context_processors.google_analytics',
+            'core.context_processors.unread_message_count',
+            'core.context_processors.unread_notification_count',
+            'core.context_processors.radio_live_indicator',
             ],
         },
     },
