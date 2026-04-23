@@ -1696,6 +1696,31 @@ span.icon-number {
     .btn-toolbar[role="toolbar"]::-webkit-scrollbar{
         height: 6px;
     }
+
+    /* On question pages, the center column should use page scroll on mobile.
+       Fixed-height nested scroll areas render as an inner "window" on some iOS browsers. */
+    #naber.question-layout-container {
+        height: auto;
+        min-height: 0;
+    }
+
+    #naber.question-layout-container > .three-panel-row {
+        height: auto;
+        min-height: 0;
+    }
+
+    #naber.question-layout-container > .three-panel-row > .col-12.col-lg-8 {
+        height: auto !important;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    #naber.question-layout-container > .three-panel-row > .col-12.col-lg-8 > div {
+        flex: 0 0 auto !important;
+        height: auto !important;
+        min-height: 0;
+        overflow: visible !important;
+    }
 }
 
 /* Sadece sol-scroll sınıfında scrollbar'ı özelleştirir */

@@ -485,6 +485,78 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Mobile navbar overlay behaviour
+document.addEventListener('DOMContentLoaded', function() {
+    const body = document.body;
+    const navbar = document.getElementById('mainNavbar');
+    const navbarCollapseEl = document.getElementById('navbarNav');
+    const navbarBackdrop = document.querySelector('[data-mobile-navbar-close]');
+
+    if (!navbar || !navbarCollapseEl || typeof bootstrap === 'undefined' || !bootstrap.Collapse) {
+        return;
+    }
+
+    let collapseInstance = bootstrap.Collapse.getInstance(navbarCollapseEl);
+    if (!collapseInstance) {
+        collapseInstance = new bootstrap.Collapse(navbarCollapseEl, { toggle: false });
+    }
+
+    function syncNavbarOffset() {
+        const rect = navbar.getBoundingClientRect();
+        document.documentElement.style.setProperty('--mobile-navbar-offset', Math.round(rect.height) + 'px');
+    }
+
+    function isMobileViewport() {
+        return window.innerWidth < 992;
+    }
+
+    function closeMobileNavbar() {
+        body.classList.remove('mobile-navbar-open');
+        if (isMobileViewport() && navbarCollapseEl.classList.contains('show')) {
+            collapseInstance.hide();
+        }
+    }
+
+    syncNavbarOffset();
+    window.addEventListener('resize', function() {
+        syncNavbarOffset();
+        if (!isMobileViewport()) {
+            body.classList.remove('mobile-navbar-open');
+        }
+    });
+
+    navbarCollapseEl.addEventListener('show.bs.collapse', function() {
+        syncNavbarOffset();
+        if (isMobileViewport()) {
+            body.classList.add('mobile-navbar-open');
+        }
+    });
+
+    navbarCollapseEl.addEventListener('hidden.bs.collapse', function() {
+        body.classList.remove('mobile-navbar-open');
+    });
+
+    if (navbarBackdrop) {
+        navbarBackdrop.addEventListener('click', function() {
+            closeMobileNavbar();
+        });
+    }
+
+    document.addEventListener('click', function(event) {
+        const clickedLink = event.target.closest('#navbarNav a.nav-link[href]');
+        if (!clickedLink || !isMobileViewport()) {
+            return;
+        }
+        closeMobileNavbar();
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && body.classList.contains('mobile-navbar-open')) {
+            closeMobileNavbar();
+        }
+    });
+});
+
 // Answer images: click to open larger preview modal
 document.addEventListener('DOMContentLoaded', function() {
     var previewModalEl = document.getElementById('answerImagePreviewModal');
