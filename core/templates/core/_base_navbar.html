@@ -14,7 +14,6 @@
             </button>
             <!-- Navbar İçeriği -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                {% if user.is_authenticated %}
                 <form id="search-form" class="d-flex mx-auto" style="width: 400px;">
                     {% csrf_token %}
                     <input type="text" autocomplete="off" id="search-input" class="form-control" placeholder="Başlık/Soru ya da Kullanıcı Ara">
@@ -23,7 +22,6 @@
                         <i class="bi bi-funnel"></i>
                     </button>
                 </form>
-                {% endif %}
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
                     <li class="nav-item mobile-primary-item">

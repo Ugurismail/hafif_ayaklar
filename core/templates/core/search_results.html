@@ -19,7 +19,7 @@
         {% if item.type == "question" %}
         <li class="baslik py-3 px-3 mb-2" style="border-radius: 8px;">
           <span class="badge bg-primary me-2">Soru/Başlık</span>
-          <a href="{% url 'question_detail' item.object.id %}" class="fw-bold">
+          <a href="{% url 'question_detail' item.object.slug %}" class="fw-bold">
             {{ item.object.question_text|truncatechars:80 }}
           </a>
           <div class="text-muted small mt-1">

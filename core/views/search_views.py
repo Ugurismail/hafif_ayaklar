@@ -1,7 +1,6 @@
 import re
 import unicodedata
 
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Count
@@ -108,7 +107,6 @@ def load_more_questions(request):
     })
 
 
-@login_required
 def search(request):
     is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest' or request.GET.get('ajax') == '1'
     if is_ajax:
@@ -251,7 +249,6 @@ def search(request):
     return render(request, 'core/search_results.html', context)
 
 
-@login_required
 def load_more_search_results(request):
     q_param = request.GET.get('q', '').strip()
     username = request.GET.get('username', '').strip()
