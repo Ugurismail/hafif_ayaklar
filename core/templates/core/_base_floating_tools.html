@@ -229,6 +229,31 @@
     border-bottom: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
 }
 
+.online-chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.online-chat-close-btn {
+    display: none;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--button-background-color) 26%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--button-background-color) 10%, var(--content-background-color) 90%);
+    color: var(--text-color);
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.online-chat-close-btn:hover {
+    background: color-mix(in srgb, var(--button-background-color) 16%, var(--content-background-color) 84%);
+    color: var(--text-color);
+}
+
 .online-chat-panel .offcanvas-body {
     display: flex;
     flex-direction: column;
@@ -327,6 +352,10 @@ body.online-chat-open .floating-tools {
         width: 100vw;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
+    }
+
+    .online-chat-close-btn {
+        display: inline-flex;
     }
 
     .floating-tools {
@@ -490,7 +519,13 @@ body.online-chat-open .floating-tools {
       <h5 class="offcanvas-title" id="onlineChatPanelLabel">Online Sohbet</h5>
       <small class="text-muted" id="onlineChatMeta">Çevrimiçi kullanıcılar yükleniyor...</small>
     </div>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Kapat"></button>
+    <div class="online-chat-header-actions">
+      <button type="button" class="online-chat-close-btn" data-bs-dismiss="offcanvas" aria-label="Sohbeti kapat">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+        <span>Kapat</span>
+      </button>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Kapat"></button>
+    </div>
   </div>
   <div class="offcanvas-body">
     <div class="online-chat-layout">
