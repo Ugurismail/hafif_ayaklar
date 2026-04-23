@@ -24,7 +24,7 @@ else:
 
 # Static asset cache-busting version (keep stable so browser caching works).
 # Bump this (or set env var) when you deploy new static files.
-STATIC_ASSET_VERSION = os.environ.get('STATIC_ASSET_VERSION', '1')
+STATIC_ASSET_VERSION = os.environ.get('STATIC_ASSET_VERSION', '2')
 GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID', 'G-7JSG99BCHT').strip()
 
 # Hardcoded ALLOWED_HOSTS to ensure all domains are always included
