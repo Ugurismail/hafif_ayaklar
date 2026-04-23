@@ -57,6 +57,12 @@ def _redirect_back_with_writer_warning(request):
     return redirect("user_homepage")
 
 
+def _normalize_answer_text(value: str) -> str:
+    if not isinstance(value, str):
+        return ""
+    return value.replace("\r\n", "\n").replace("\r", "\n")
+
+
 def question_detail(request, slug):
     followed_param = request.GET.get('followed', '0')
     show_followed_only = followed_param == '1'
@@ -257,7 +263,7 @@ def add_question(request):
             StartingQuestion.objects.create(user=request.user, question=question)
 
             definition_text = request.POST.get('definition_text', '').strip()
-            answer_text = form.cleaned_data.get('answer_text', '').strip()
+            answer_text = _normalize_answer_text(form.cleaned_data.get('answer_text', ''))
 
             answer = Answer.objects.create(
                 question=question,
@@ -418,7 +424,7 @@ def add_question_from_search(request):
             question.users.add(request.user)
 
             definition_text = request.POST.get('definition_text', '').strip()
-            answer_text = answer_form.cleaned_data.get('answer_text', '').strip()
+            answer_text = _normalize_answer_text(answer_form.cleaned_data.get('answer_text', ''))
 
             answer = answer_form.save(commit=False)
             answer.user = request.user
@@ -476,7 +482,7 @@ def add_starting_question(request):
             StartingQuestion.objects.create(user=request.user, question=question)
 
             definition_text = request.POST.get('definition_text', '').strip()
-            answer_text = form.cleaned_data['answer_text'].strip()
+            answer_text = _normalize_answer_text(form.cleaned_data['answer_text'])
 
             Answer.objects.create(
                 question=question,

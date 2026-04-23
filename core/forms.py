@@ -80,6 +80,7 @@ class InvitationForm(forms.ModelForm):
 
 class QuestionForm(forms.ModelForm):
     answer_text = forms.CharField(
+        strip=False,
         widget=forms.Textarea(attrs={
             'class': 'form-control auto-expand',
             'rows': 4,
@@ -108,6 +109,7 @@ class QuestionForm(forms.ModelForm):
 class StartingQuestionForm(forms.ModelForm):
     answer_text = forms.CharField(
         label='',
+        strip=False,
         widget=forms.Textarea(attrs={
             'class': 'form-control auto-expand',
             'rows': 4,
@@ -134,19 +136,19 @@ class StartingQuestionForm(forms.ModelForm):
         self.fields['question_text'].widget.attrs.update({'class': 'form-control '})
 
 class AnswerForm(forms.ModelForm):
+    answer_text = forms.CharField(
+        strip=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control auto-expand',
+            'rows': 2,
+            'placeholder': 'Yanıtınızı buraya yazın'
+        }),
+        label=''
+    )
+
     class Meta:
         model = Answer
         fields = ['answer_text']
-        widgets = {
-            'answer_text': forms.Textarea(attrs={
-                'class': 'form-control auto-expand',
-                'rows': 2,
-                'placeholder': 'Yanıtınızı buraya yazın'
-            }),
-        }
-        labels = {
-            'answer_text': ''
-        }
 
 class MessageForm(forms.ModelForm):
     class Meta:
