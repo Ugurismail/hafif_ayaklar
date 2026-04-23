@@ -154,6 +154,82 @@ document.addEventListener('DOMContentLoaded', function() {
 
   initAnswerLivePreview();
 
+  function createToolbarButton(className, title, label, iconClass, dataset) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = className;
+    button.title = title;
+
+    if (dataset) {
+      Object.keys(dataset).forEach(function(key) {
+        button.dataset[key] = dataset[key];
+      });
+    }
+
+    if (iconClass) {
+      var icon = document.createElement('i');
+      icon.className = iconClass;
+      button.appendChild(icon);
+      if (label) {
+        button.appendChild(document.createTextNode(' ' + label));
+      }
+    } else {
+      button.textContent = label;
+    }
+
+    return button;
+  }
+
+  function ensureExtendedFormattingButtons() {
+    document.querySelectorAll('.btn-toolbar').forEach(function(toolbar) {
+      if (toolbar.querySelector('[data-format="heading-large"]')) {
+        return;
+      }
+
+      var insertionAnchor = toolbar.querySelector('.insert-link-btn');
+      var buttonClass = 'btn btn-sm btn-outline-theme-secondary me-2';
+
+      var largeHeadingBtn = createToolbarButton(
+        buttonClass + ' format-btn',
+        'Büyük başlık',
+        'H1',
+        null,
+        { format: 'heading-large' }
+      );
+      var mediumHeadingBtn = createToolbarButton(
+        buttonClass + ' format-btn',
+        'Alt başlık',
+        'H2',
+        null,
+        { format: 'heading-medium' }
+      );
+      var ruleBtn = createToolbarButton(
+        buttonClass + ' format-btn',
+        'Yatay çizgi',
+        'Çizgi',
+        'bi bi-dash-lg',
+        { format: 'rule' }
+      );
+      var indentBtn = createToolbarButton(
+        buttonClass + ' format-btn',
+        'Paragraf başı',
+        'Paragraf',
+        'bi bi-text-indent-left',
+        { format: 'indent' }
+      );
+
+      [largeHeadingBtn, mediumHeadingBtn, ruleBtn, indentBtn].forEach(function(button) {
+        if (insertionAnchor) {
+          toolbar.insertBefore(button, insertionAnchor);
+        } else {
+          toolbar.appendChild(button);
+        }
+      });
+    });
+  }
+
+  ensureExtendedFormattingButtons();
+
   //==================================================================
   // A) METİN BİÇİMLENDİRME BUTONLARI (BOLD, ITALIC)
   //==================================================================
@@ -179,12 +255,101 @@ document.addEventListener('DOMContentLoaded', function() {
           formattedText = '**' + selectedText + '**';
       } else if (format === 'italic') {
           formattedText = '*' + selectedText + '*';
+      } else if (format === 'heading-large') {
+          applySetextHeading(textarea, '=');
+          return;
+      } else if (format === 'heading-medium') {
+          applySetextHeading(textarea, '-');
+          return;
+      } else if (format === 'rule') {
+          insertHorizontalRule(textarea);
+          return;
+      } else if (format === 'indent') {
+          indentParagraph(textarea);
+          return;
       }
 
       textarea.value = before + formattedText + after;
       // Seçili alanı yeniden belirle
       textarea.selectionStart = start;
       textarea.selectionEnd   = start + formattedText.length;
+      textarea.focus({ preventScroll: true });
+      dispatchAnswerTextChanged(textarea);
+  }
+
+  function applySetextHeading(textarea, underlineChar) {
+      var value = textarea.value || '';
+      var start = textarea.selectionStart;
+      var end = textarea.selectionEnd;
+      var replaceStart = start;
+      var replaceEnd = end;
+      var headingText = value.substring(start, end).replace(/\r?\n+/g, ' ').trim();
+
+      if (!headingText) {
+          var lineStart = value.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
+          var nextBreak = value.indexOf('\n', end);
+          var lineEnd = nextBreak === -1 ? value.length : nextBreak;
+          replaceStart = lineStart;
+          replaceEnd = lineEnd;
+          headingText = value.substring(lineStart, lineEnd).replace(/\r?\n+/g, ' ').trim() || 'Başlık';
+      }
+
+      var marker = underlineChar === '=' ? '== ' : '-- ';
+      var replacement = marker + headingText;
+
+      textarea.value = value.substring(0, replaceStart) + replacement + value.substring(replaceEnd);
+      textarea.selectionStart = replaceStart;
+      textarea.selectionEnd = replaceStart + replacement.length;
+      textarea.focus({ preventScroll: true });
+      dispatchAnswerTextChanged(textarea);
+  }
+
+  function insertHorizontalRule(textarea) {
+      var value = textarea.value || '';
+      var start = textarea.selectionStart;
+      var end = textarea.selectionEnd;
+      var before = value.substring(0, start).replace(/[ \t]+$/, '');
+      var after = value.substring(end).replace(/^[ \t]+/, '');
+
+      var prefix = '';
+      var suffix = '';
+
+      if (before && !before.endsWith('\n\n')) {
+          prefix = before.endsWith('\n') ? '\n' : '\n\n';
+      }
+      if (after && !after.startsWith('\n\n')) {
+          suffix = after.startsWith('\n') ? '\n' : '\n\n';
+      }
+
+      var insertion = prefix + '---' + suffix;
+      textarea.value = before + insertion + after;
+
+      var cursorStart = before.length + prefix.length;
+      textarea.selectionStart = cursorStart;
+      textarea.selectionEnd = cursorStart + 3;
+      textarea.focus({ preventScroll: true });
+      dispatchAnswerTextChanged(textarea);
+  }
+
+  function indentParagraph(textarea) {
+      var value = textarea.value || '';
+      var start = textarea.selectionStart;
+      var end = textarea.selectionEnd;
+      var indent = '\u2003\u2003';
+      var lineStart = value.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
+      var lineEndIndex = value.indexOf('\n', end);
+      var lineEnd = lineEndIndex === -1 ? value.length : lineEndIndex;
+      var selectedBlock = value.substring(lineStart, lineEnd);
+      var lines = selectedBlock.split('\n');
+      var indented = lines.map(function(line) {
+          if (!line.trim()) return line;
+          if (line.startsWith(indent)) return line;
+          return indent + line;
+      }).join('\n');
+
+      textarea.value = value.substring(0, lineStart) + indented + value.substring(lineEnd);
+      textarea.selectionStart = lineStart;
+      textarea.selectionEnd = lineStart + indented.length;
       textarea.focus({ preventScroll: true });
       dispatchAnswerTextChanged(textarea);
   }

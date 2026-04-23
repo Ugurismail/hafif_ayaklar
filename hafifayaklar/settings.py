@@ -85,7 +85,7 @@ MARKDOWNIFY = {
         "WHITELIST_TAGS": [
             'a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
             'em', 'i', 'li', 'ol', 'strong', 'ul', 'p', 'mark',
-            'pre', 'img', 'br',
+            'pre', 'img', 'br', 'hr', 'h1', 'h2', 'h3',
         ],
         "WHITELIST_ATTRS": ['href', 'src', 'alt'],
         "WHITELIST_PROTOCOLS": ['http', 'https'],

@@ -379,6 +379,9 @@ def safe_markdownify(text, arg='default'):
 
     text_with_placeholders = text
     hashtag_map = {}
+    spacer_map = {}
+    block_map = {}
+    indent_map = {}
 
     # Protect TeX blocks so Markdown doesn't eat backslashes like `\\` (align/matrix).
     # We restore as HTML-escaped text so BLEACH safety is preserved.
@@ -424,6 +427,44 @@ def safe_markdownify(text, arg='default'):
         hashtag_map[placeholder] = _build_hashtag_link(hashtag_name)
         return f"{prefix}{placeholder}"
 
+    def _store_spacer(match):
+        newline_count = match.group(0).count('\n')
+        extra_breaks = max(1, newline_count - 2)
+        placeholder = f"SPACER_{uuid.uuid4().hex[:10]}_END"
+        spacer_map[placeholder] = '<br>' * extra_breaks
+        return f"\n\n{placeholder}\n\n"
+
+    def _store_block(tag_name, content=''):
+        placeholder = f"BLOCK_{uuid.uuid4().hex[:10]}_END"
+        if tag_name == 'hr':
+            block_map[placeholder] = '<hr>'
+        else:
+            block_map[placeholder] = f'<{tag_name}>{escape(content.strip())}</{tag_name}>'
+        return placeholder
+
+    def _store_indent(match):
+        prefix = match.group(1)
+        placeholder = f"INDENT_{uuid.uuid4().hex[:10]}_END"
+        indent_map[placeholder] = '<span class="answer-paragraph-indent" aria-hidden="true"></span>'
+        return f"{prefix}{placeholder}"
+
+    def _replace_custom_block_markers(raw_text):
+        lines = raw_text.splitlines()
+        transformed = []
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith('== '):
+                transformed.append(_store_block('h1', stripped[3:]))
+                continue
+            if stripped.startswith('-- '):
+                transformed.append(_store_block('h2', stripped[3:]))
+                continue
+            if stripped in {'---', '***'}:
+                transformed.append(_store_block('hr'))
+                continue
+            transformed.append(line)
+        return '\n'.join(transformed)
+
     def _replace_display(match):
         raw = match.group(0)
         return _store_math_block(raw)
@@ -437,6 +478,10 @@ def safe_markdownify(text, arg='default'):
     # Protect plain-text hashtags before markdown so `#etiket` line starts
     # are not interpreted as markdown headings.
     text_with_placeholders = HASHTAG_PATTERN.sub(_store_hashtag, text_with_placeholders)
+    text_with_placeholders = re.sub(r'(^|(?:\r?\n))(\u2003{1,})(?=\S)', _store_indent, text_with_placeholders)
+    text_with_placeholders = _replace_custom_block_markers(text_with_placeholders)
+    # Preserve user-authored extra blank lines beyond the normal paragraph break.
+    text_with_placeholders = re.sub(r'(?:\r?\n){3,}', _store_spacer, text_with_placeholders)
 
     # Apply markdown
     markdown_result = original_markdownify(text_with_placeholders, arg)
@@ -486,6 +531,17 @@ def safe_markdownify(text, arg='default'):
         processed_parts.append(HASHTAG_PATTERN.sub(replace_hashtag, part))
 
     markdown_result = ''.join(processed_parts)
+
+    for placeholder, spacer_html in spacer_map.items():
+        markdown_result = markdown_result.replace(f'<p>{placeholder}</p>', spacer_html)
+        markdown_result = markdown_result.replace(placeholder, spacer_html)
+
+    for placeholder, block_html in block_map.items():
+        markdown_result = markdown_result.replace(f'<p>{placeholder}</p>', block_html)
+        markdown_result = markdown_result.replace(placeholder, block_html)
+
+    for placeholder, indent_html in indent_map.items():
+        markdown_result = markdown_result.replace(placeholder, indent_html)
 
     # Restore pre-protected hashtags after markdown rendering.
     for placeholder, hashtag_html in hashtag_map.items():
