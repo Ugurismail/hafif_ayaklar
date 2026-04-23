@@ -392,27 +392,41 @@ document.addEventListener('DOMContentLoaded', function() {
      * Checks for unread notifications and updates the badge
      */
     function updateNotificationBadge() {
+        const badge = document.getElementById('notification-badge');
+        if (!badge) {
+            return;
+        }
+
         fetch('/notifications/unread-count/')
-            .then(response => response.json())
+            .then(response => {
+                const contentType = response.headers.get('content-type') || '';
+                if (!response.ok || !contentType.includes('application/json')) {
+                    return null;
+                }
+                return response.json();
+            })
             .then(data => {
-                const badge = document.getElementById('notification-badge');
-                if (badge) {
-                    if (data.count > 0) {
-                        badge.textContent = data.count;
-                        badge.style.display = 'inline-block';
-                    } else {
-                        badge.style.display = 'none';
-                    }
+                if (!data) {
+                    return;
+                }
+
+                if (data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
                 }
             })
             .catch(error => console.error('Bildirim badge güncellenemedi:', error));
     }
 
-    // İlk yüklemede kontrol et
-    updateNotificationBadge();
+    if (document.getElementById('notification-badge')) {
+        // İlk yüklemede kontrol et
+        updateNotificationBadge();
 
-    // Her 60 saniyede bir kontrol et (performans için)
-setInterval(updateNotificationBadge, 60000);
+        // Her 60 saniyede bir kontrol et (performans için)
+	    setInterval(updateNotificationBadge, 60000);
+    }
 });
 
 document.addEventListener('DOMContentLoaded', function() {
