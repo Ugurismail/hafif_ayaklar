@@ -209,8 +209,6 @@
 }
 
 .online-chat-mobile-close {
-    display: inline-flex;
-    justify-content: center;
     white-space: nowrap;
 }
 
@@ -551,7 +549,7 @@ body.online-chat-open .floating-tools {
   </div>
   <div class="offcanvas-body">
     <div class="online-chat-layout">
-      <aside class="online-chat-sidebar">
+      <aside class="online-chat-sidebar d-none d-lg-block">
         <div class="online-chat-sidebar-title">Çevrimiçi Kullanıcılar</div>
         <div id="onlineChatUsers" class="online-chat-user-list">
           <div class="online-chat-empty">Yükleniyor...</div>
@@ -570,7 +568,7 @@ body.online-chat-open .floating-tools {
                       placeholder="Tüm online kullanıcılara mesaj yaz..."></textarea>
           </div>
           <div class="online-chat-form-actions">
-            <button type="button" class="btn btn-outline-theme-secondary online-chat-mobile-close" data-bs-dismiss="offcanvas">
+            <button type="button" class="btn btn-outline-theme-secondary online-chat-mobile-close d-inline-flex d-lg-none" data-bs-dismiss="offcanvas">
               Kapat
             </button>
             <button type="submit" class="btn btn-theme-primary">Gönder</button>
