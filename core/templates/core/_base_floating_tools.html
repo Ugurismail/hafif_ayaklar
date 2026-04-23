@@ -201,6 +201,18 @@
     margin-top: 1rem;
 }
 
+.online-chat-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex: 0 0 auto;
+}
+
+.online-chat-mobile-close {
+    display: none;
+    white-space: nowrap;
+}
+
 .online-chat-form textarea {
     min-height: 72px;
     resize: vertical;
@@ -388,6 +400,19 @@ body.online-chat-open .floating-tools {
         align-items: stretch;
     }
 
+    .online-chat-form-actions {
+        width: 100%;
+    }
+
+    .online-chat-form-actions .btn {
+        flex: 1 1 0;
+    }
+
+    .online-chat-mobile-close {
+        display: inline-flex;
+        justify-content: center;
+    }
+
     body.online-chat-open .floating-tools {
         opacity: 0;
         pointer-events: none;
@@ -551,7 +576,12 @@ body.online-chat-open .floating-tools {
                       rows="2"
                       placeholder="Tüm online kullanıcılara mesaj yaz..."></textarea>
           </div>
-          <button type="submit" class="btn btn-theme-primary">Gönder</button>
+          <div class="online-chat-form-actions">
+            <button type="button" class="btn btn-outline-theme-secondary online-chat-mobile-close" data-bs-dismiss="offcanvas">
+              Kapat
+            </button>
+            <button type="submit" class="btn btn-theme-primary">Gönder</button>
+          </div>
         </form>
       </section>
     </div>
