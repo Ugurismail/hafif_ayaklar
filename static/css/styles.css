@@ -527,6 +527,9 @@ mark{
 
 .answer-text {
     text-align: justify;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: normal;
 }
 
 /* Paragraph spacing for answer text */
@@ -536,6 +539,30 @@ mark{
 
 .answer-text p:last-child {
     margin-bottom: 0;
+}
+
+.answer-text a,
+.answer-text code,
+.answer-text pre,
+.answer-text blockquote,
+.answer-text table {
+    max-width: 100%;
+}
+
+.answer-text a {
+    overflow-wrap: anywhere;
+}
+
+.answer-text blockquote {
+    margin: 1rem 0;
+    padding: 0.35rem 0 0.35rem 1rem;
+    border-left: 3px solid color-mix(in srgb, var(--button-background-color) 45%, transparent);
+}
+
+.answer-text table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .answer-text h1,
@@ -577,6 +604,30 @@ mark{
 .answer-paragraph-indent {
     display: inline-block;
     width: 2.2em;
+}
+
+@media (max-width: 700px) {
+    .answer-text {
+        text-align: left;
+        hyphens: auto;
+    }
+
+    .answer-text p,
+    .answer-text li {
+        text-align: left;
+    }
+
+    .answer-text h1 {
+        font-size: clamp(1.7rem, 8vw, 2.1rem);
+    }
+
+    .answer-text h2 {
+        font-size: clamp(1.35rem, 6.5vw, 1.75rem);
+    }
+
+    .answer-paragraph-indent {
+        width: 1.6em;
+    }
 }
 
 .answer-revision-badge {
@@ -1862,7 +1913,7 @@ a.hashtag-link:hover {
 .answer-image-toggle {
     display: inline-block;
     margin: 0.35rem 0;
-    max-width: min(760px, 95vw);
+    max-width: min(760px, 100%);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background-color: color-mix(in srgb, var(--text-color) 2%, transparent);
@@ -1932,7 +1983,7 @@ a.hashtag-link:hover {
 
 .answer-image-content img {
     display: block;
-    max-width: min(720px, 92vw);
+    max-width: min(720px, 100%);
     max-height: 640px;
     width: auto;
     height: auto;
@@ -1949,10 +2000,25 @@ a.hashtag-link:hover {
     display: block;
     clear: both;
     margin: 0.55rem 0;
-    max-width: min(720px, 92vw);
+    max-width: min(720px, 100%);
     max-height: 640px;
     width: auto;
     height: auto;
+}
+
+@media (max-width: 700px) {
+    .answer-image-toggle {
+        display: block;
+        width: 100%;
+    }
+
+    .answer-image-summary {
+        min-width: 0;
+    }
+
+    .answer-image-summary-name {
+        max-width: calc(100vw - 150px);
+    }
 }
 
 /* Modal image preview (full-size view) */
