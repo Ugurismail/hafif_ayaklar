@@ -24,6 +24,14 @@ document.addEventListener('DOMContentLoaded', function () {
         loading: false,
     };
 
+    function isMobileViewport() {
+        return window.matchMedia && window.matchMedia('(max-width: 991.98px)').matches;
+    }
+
+    function canPoll() {
+        return !document.hidden && navigator.onLine !== false;
+    }
+
     function escapeHtml(value) {
         return String(value)
             .replace(/&/g, '&amp;')
@@ -123,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function fetchChat(append = false, quiet = false) {
-        if (state.loading) return;
+        if (state.loading || !canPoll()) return;
         state.loading = true;
         try {
             const url = append && state.lastMessageId
@@ -150,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function refreshUsersOnly() {
+        if (!canPoll()) return;
         try {
             const response = await fetch('/online-chat/messages/', {
                 headers: {
@@ -205,7 +214,11 @@ document.addEventListener('DOMContentLoaded', function () {
     panelEl.addEventListener('shown.bs.offcanvas', function () {
         state.panelOpen = true;
         document.body.classList.add('online-chat-open');
-        localStorage.setItem(panelStateKey, '1');
+        if (isMobileViewport()) {
+            localStorage.removeItem(panelStateKey);
+        } else {
+            localStorage.setItem(panelStateKey, '1');
+        }
         fetchChat(false);
         if (state.pollTimer) {
             window.clearInterval(state.pollTimer);
@@ -237,7 +250,19 @@ document.addEventListener('DOMContentLoaded', function () {
     state.usersTimer = window.setInterval(refreshUsersOnly, 30000);
     refreshUsersOnly();
 
-    if (localStorage.getItem(panelStateKey) === '1') {
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden && state.panelOpen) {
+            fetchChat(true, true);
+        }
+    });
+
+    window.addEventListener('resize', function () {
+        if (isMobileViewport()) {
+            localStorage.removeItem(panelStateKey);
+        }
+    });
+
+    if (!isMobileViewport() && localStorage.getItem(panelStateKey) === '1') {
         panel.show();
     }
 });

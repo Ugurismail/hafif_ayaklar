@@ -396,6 +396,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!badge) {
             return;
         }
+        if (document.hidden || navigator.onLine === false) {
+            return;
+        }
 
         fetch('/notifications/unread-count/')
             .then(response => {
@@ -417,7 +420,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     badge.style.display = 'none';
                 }
             })
-            .catch(error => console.error('Bildirim badge güncellenemedi:', error));
+            .catch(() => {
+                // Network interruptions should not spam the console on mobile/local reloads.
+            });
     }
 
     if (document.getElementById('notification-badge')) {
@@ -426,6 +431,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Her 60 saniyede bir kontrol et (performans için)
 	    setInterval(updateNotificationBadge, 60000);
+
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateNotificationBadge();
+            }
+        });
     }
 });
 

@@ -349,6 +349,7 @@
     padding-top: 0.45rem;
     border-top: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
     background: var(--content-background-color, #fff);
+    flex-shrink: 0;
 }
 
 .online-chat-panel .online-chat-form textarea {
@@ -364,9 +365,18 @@ body.online-chat-open .floating-tools {
     .online-chat-panel {
         top: 0;
         height: 100vh;
+        height: 100dvh;
         width: 100vw;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
+    }
+
+    .online-chat-panel .offcanvas-header {
+        padding-top: calc(0.65rem + env(safe-area-inset-top));
+    }
+
+    .online-chat-panel .offcanvas-body {
+        padding-bottom: calc(0.55rem + env(safe-area-inset-bottom));
     }
 
     .online-chat-close-btn {
@@ -394,6 +404,10 @@ body.online-chat-open .floating-tools {
     .online-chat-form {
         flex-direction: column;
         align-items: stretch;
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+        padding-bottom: env(safe-area-inset-bottom);
     }
 
     .online-chat-form-actions {
