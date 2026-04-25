@@ -33,9 +33,9 @@
 
           <h6 class="mb-2">Filtrele</h6>
           <div class="d-flex flex-wrap gap-2 mb-3">
-            <a href="{% url 'saved_collections_home' %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" class="btn btn-sm {% if not selected_collection_id %}btn-theme-primary{% else %}btn-outline-theme-secondary{% endif %}">Tümü</a>
+            <a href="{{ all_collections_url }}" class="btn btn-sm {% if not selected_collection_id %}btn-theme-primary{% else %}btn-outline-theme-secondary{% endif %}">Tümü</a>
             {% for collection in collections %}
-              <a href="{% url 'saved_collections_home' %}?collection={{ collection.id }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}" class="btn btn-sm {% if selected_collection_id == collection.id %}btn-theme-primary{% else %}btn-outline-theme-secondary{% endif %}">
+              <a href="{{ collection.filter_url }}" class="btn btn-sm {% if selected_collection_id == collection.id %}btn-theme-primary{% else %}btn-outline-theme-secondary{% endif %}">
                 {{ collection.name }} <span class="opacity-75">{{ collection.item_count }}</span>
               </a>
             {% empty %}
@@ -73,9 +73,21 @@
             {% if selected_collection_id %}
               <input type="hidden" name="collection" value="{{ selected_collection_id }}">
             {% endif %}
+            {% if selected_item_type != 'all' %}
+              <input type="hidden" name="type" value="{{ selected_item_type }}">
+            {% endif %}
             <input type="text" class="form-control" name="q" value="{{ search_query }}" placeholder="Kaydedilenlerde ara...">
             <button type="submit" class="btn btn-theme-primary">Ara</button>
           </form>
+
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <span class="small text-muted me-1">İçerik türü</span>
+            {% for filter in saved_type_filters %}
+              <a href="{{ filter.url }}" class="btn btn-sm {% if filter.active %}btn-theme-primary{% else %}btn-outline-theme-secondary{% endif %}">
+                {{ filter.label }}
+              </a>
+            {% endfor %}
+          </div>
 
           <div class="d-flex flex-column gap-3">
             {% for item in saved_items %}
@@ -86,7 +98,9 @@
                       <div class="small text-muted mb-1">Soru</div>
                       <a href="{{ item.detail_url }}" class="text-decoration-none fw-semibold">{{ item.object.question_text }}</a>
                     {% else %}
-                      <div class="small text-muted mb-1">Yanıt</div>
+                      <div class="small text-muted mb-1">
+                        Yanıt{% if item.has_sources %} · Kaynaklı{% endif %}
+                      </div>
                       <a href="{{ item.detail_url }}" class="text-decoration-none fw-semibold">{{ item.object.question.question_text }}</a>
                       <div class="mt-2 text-body">{{ item.object.answer_text|truncatewords:28 }}</div>
                     {% endif %}

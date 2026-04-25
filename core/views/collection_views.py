@@ -5,8 +5,17 @@ from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from urllib.parse import urlencode
 
 from ..models import Answer, Question, SavedCollection, SavedCollectionItem, SavedItem
+
+
+SAVED_ITEM_TYPE_FILTERS = (
+    ('all', 'Tümü'),
+    ('question', 'Sorular'),
+    ('answer', 'Yanıtlar'),
+    ('source', 'Kaynaklı'),
+)
 
 
 def _serialize_collections(user):
@@ -84,6 +93,10 @@ def saved_item_collection_options(request):
 def saved_collections_home(request):
     q = request.GET.get('q', '').strip()
     collection_id = request.GET.get('collection', '').strip()
+    item_type = request.GET.get('type', 'all').strip()
+    valid_item_types = {value for value, _label in SAVED_ITEM_TYPE_FILTERS}
+    if item_type not in valid_item_types:
+        item_type = 'all'
 
     question_ct = ContentType.objects.get_for_model(Question)
     answer_ct = ContentType.objects.get_for_model(Answer)
@@ -91,6 +104,10 @@ def saved_collections_home(request):
     saved_items_qs = SavedItem.objects.filter(user=request.user).select_related('content_type').prefetch_related('collection_links__collection').order_by('-saved_at')
     if collection_id.isdigit():
         saved_items_qs = saved_items_qs.filter(collection_links__collection_id=int(collection_id), collection_links__collection__user=request.user)
+    if item_type == 'question':
+        saved_items_qs = saved_items_qs.filter(content_type=question_ct)
+    elif item_type in {'answer', 'source'}:
+        saved_items_qs = saved_items_qs.filter(content_type=answer_ct)
 
     saved_items = list(saved_items_qs)
     question_ids = [item.object_id for item in saved_items if item.content_type_id == question_ct.id]
@@ -120,12 +137,17 @@ def saved_collections_home(request):
             obj = answer_map.get(item.object_id)
             if not obj:
                 continue
+            answer_text_lower = obj.answer_text.lower()
+            has_sources = '(kaynak:' in answer_text_lower or '(k:' in answer_text_lower
+            if item_type == 'source' and not has_sources:
+                continue
             search_blob = f"{obj.question.question_text}\n{obj.answer_text}".lower()
             if q and query_lower not in search_blob:
                 continue
             rendered_items.append({
                 'saved_item': item,
                 'type': 'answer',
+                'has_sources': has_sources,
                 'object': obj,
                 'text': obj.answer_text,
                 'detail_url': reverse('single_answer', args=[obj.question.slug, obj.id]),
@@ -133,10 +155,36 @@ def saved_collections_home(request):
                 'collections': [link.collection for link in item.collection_links.all()],
             })
 
+    def build_filter_url(next_collection_id=None, next_type=item_type):
+        params = {}
+        if next_collection_id:
+            params['collection'] = next_collection_id
+        if q:
+            params['q'] = q
+        if next_type and next_type != 'all':
+            params['type'] = next_type
+        query = urlencode(params)
+        return reverse('saved_collections_home') + (f'?{query}' if query else '')
+
+    collections = _serialize_collections(request.user)
+    for collection in collections:
+        collection['filter_url'] = build_filter_url(collection['id'])
+
     context = {
-        'collections': _serialize_collections(request.user),
+        'collections': collections,
         'saved_items': rendered_items,
         'selected_collection_id': int(collection_id) if collection_id.isdigit() else None,
+        'selected_item_type': item_type,
+        'all_collections_url': build_filter_url(None),
+        'saved_type_filters': [
+            {
+                'value': value,
+                'label': label,
+                'active': item_type == value,
+                'url': build_filter_url(int(collection_id) if collection_id.isdigit() else None, value),
+            }
+            for value, label in SAVED_ITEM_TYPE_FILTERS
+        ],
         'search_query': q,
     }
     return render(request, 'core/saved_collections.html', context)
