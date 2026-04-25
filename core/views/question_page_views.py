@@ -26,6 +26,7 @@ from ..models import (
     Question,
     QuestionFollow,
     QuestionRelationship,
+    HashtagUsage,
     SavedItem,
     StartingQuestion,
     UserProfile,
@@ -201,6 +202,36 @@ def question_detail(request, slug):
         for parent, users in parents_map.items()
     ]
 
+    question_tag_ids = list(
+        question.hashtags.values_list('hashtag_id', flat=True)
+    )
+    related_questions = []
+    if question_tag_ids:
+        related_rows = list(
+            HashtagUsage.objects.filter(
+                hashtag_id__in=question_tag_ids,
+                question__isnull=False,
+            )
+            .exclude(question=question)
+            .values('question_id')
+            .annotate(shared_count=Count('hashtag_id', distinct=True))
+            .order_by('-shared_count', '-question_id')[:5]
+        )
+        related_question_map = {
+            item.id: item
+            for item in Question.objects.filter(
+                id__in=[row['question_id'] for row in related_rows]
+            ).select_related('user')
+        }
+        related_questions = [
+            {
+                'question': related_question_map[row['question_id']],
+                'shared_count': row['shared_count'],
+            }
+            for row in related_rows
+            if row['question_id'] in related_question_map
+        ]
+
     user_is_following_question = False
     followed_answer_ids = []
     if request.user.is_authenticated:
@@ -243,6 +274,7 @@ def question_detail(request, slug):
         'followed_answer_ids': followed_answer_ids,
         'subquestions_list': subquestions_list,
         'parents_list': parents_list,
+        'related_questions': related_questions,
         'draft_content': draft_content,
     }
     return render(request, 'core/question_detail.html', context)
