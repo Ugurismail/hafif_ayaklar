@@ -274,6 +274,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     formEl.addEventListener('submit', submitMessage);
     inputEl.addEventListener('input', updateDraftState);
+    inputEl.addEventListener('keydown', function (event) {
+        if (event.key !== 'Enter' || event.shiftKey || event.isComposing) {
+            return;
+        }
+        event.preventDefault();
+        formEl.requestSubmit();
+    });
 
     const savedDraft = localStorage.getItem(draftStateKey);
     if (savedDraft) {
