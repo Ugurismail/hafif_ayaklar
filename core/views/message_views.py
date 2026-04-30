@@ -217,6 +217,9 @@ def check_new_messages(request):
 def send_message_from_user(request, user_id):
     recipient = get_object_or_404(User, id=user_id)
 
+    if request.method == 'GET':
+        return redirect('message_detail', username=recipient.username)
+
     if request.method == 'POST':
         form = MessageForm(request.POST)
         if form.is_valid():
@@ -225,8 +228,6 @@ def send_message_from_user(request, user_id):
             message.recipient = recipient
             message.save()
             return redirect('message_detail', username=recipient.username)
-    else:
-        form = MessageForm()
 
     context = {
         'form': form,
