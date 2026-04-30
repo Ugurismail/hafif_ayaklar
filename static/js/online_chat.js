@@ -14,12 +14,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     const panelStateKey = 'onlineChatPanelOpen';
     const draftStateKey = 'onlineChatDraft';
+    const unreadCountKey = 'onlineChatUnreadCount';
+    const lastMessageIdKey = 'onlineChatLastMessageId';
     const closedPanelPollInterval = 7000;
     const panel = bootstrap.Offcanvas.getOrCreateInstance(panelEl);
 
     const state = {
-        lastMessageId: null,
-        unreadCount: 0,
+        lastMessageId: Number(localStorage.getItem(lastMessageIdKey) || 0) || null,
+        unreadCount: Number(localStorage.getItem(unreadCountKey) || 0) || 0,
         pollTimer: null,
         usersTimer: null,
         panelOpen: false,
@@ -99,11 +101,22 @@ document.addEventListener('DOMContentLoaded', function () {
             countEl.textContent = '0';
             countEl.style.display = 'none';
             countEl.setAttribute('aria-label', 'Yeni sohbet mesajı yok');
+            localStorage.removeItem(unreadCountKey);
             return;
         }
         countEl.textContent = state.unreadCount > 9 ? '9+' : String(state.unreadCount);
         countEl.style.display = 'inline-flex';
         countEl.setAttribute('aria-label', `${state.unreadCount} yeni sohbet mesajı`);
+        localStorage.setItem(unreadCountKey, String(state.unreadCount));
+    }
+
+    function rememberLastMessageId(messageId) {
+        const numericId = Number(messageId);
+        if (!numericId) {
+            return;
+        }
+        state.lastMessageId = numericId;
+        localStorage.setItem(lastMessageIdKey, String(numericId));
     }
 
     function setMessages(messages, append) {
@@ -126,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const last = messages[messages.length - 1];
         if (last && last.id) {
-            state.lastMessageId = last.id;
+            rememberLastMessageId(last.id);
         }
         messagesEl.scrollTop = messagesEl.scrollHeight;
     }
@@ -187,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }).length;
             const last = messages[messages.length - 1];
             if (last && last.id) {
-                state.lastMessageId = last.id;
+                rememberLastMessageId(last.id);
             }
             if (hadBaseline && incomingMessageCount > 0) {
                 setUnreadCount(state.unreadCount + incomingMessageCount);
@@ -266,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (savedDraft) {
         inputEl.value = savedDraft;
     }
+    setUnreadCount(state.unreadCount);
 
     state.usersTimer = window.setInterval(refreshClosedPanelState, closedPanelPollInterval);
     refreshClosedPanelState();
