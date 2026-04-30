@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!users || users.length === 0) {
             usersEl.innerHTML = '<div class="online-chat-empty">Şu an aktif kullanıcı görünmüyor.</div>';
             metaEl.textContent = 'Şu an çevrimiçi kullanıcı görünmüyor.';
-            countEl.style.display = 'none';
             return;
         }
 
@@ -56,15 +55,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (otherUsers.length === 0) {
             metaEl.textContent = 'Şu an yalnızsın.';
-            countEl.style.display = 'none';
         } else if (otherUsers.length === 1) {
             metaEl.textContent = '1 başka kullanıcı çevrimiçi.';
-            countEl.textContent = '1';
-            countEl.style.display = 'inline-flex';
         } else {
             metaEl.textContent = otherUsers.length + ' başka kullanıcı çevrimiçi.';
-            countEl.textContent = String(otherUsers.length);
-            countEl.style.display = 'inline-flex';
         }
 
         usersEl.innerHTML = users.map(function (user) {
@@ -95,6 +89,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             </div>
         `;
+    }
+
+    function setUnreadIndicator(visible) {
+        countEl.style.display = visible ? 'inline-flex' : 'none';
     }
 
     function setMessages(messages, append) {
@@ -140,6 +138,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await response.json();
             renderUsers(data.online_users || []);
             setMessages(data.messages || [], append);
+            if (!append) {
+                setUnreadIndicator(false);
+            }
         } catch (error) {
             if (!quiet && typeof showToast === 'function') {
                 showToast(error.message || 'Online sohbet yüklenemedi.', 'error');
@@ -149,9 +150,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    async function refreshUsersOnly() {
+    async function refreshClosedPanelState() {
+        if (state.panelOpen || state.loading) {
+            return;
+        }
         try {
-            const response = await fetch('/online-chat/messages/', {
+            const url = state.lastMessageId
+                ? `/online-chat/messages/?after=${state.lastMessageId}`
+                : '/online-chat/messages/';
+            const response = await fetch(url, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
@@ -159,6 +166,21 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!response.ok) return;
             const data = await response.json();
             renderUsers(data.online_users || []);
+            const messages = data.messages || [];
+            if (!messages.length) {
+                return;
+            }
+            const hadBaseline = Boolean(state.lastMessageId);
+            const hasIncomingMessage = messages.some(function (message) {
+                return !message.is_own;
+            });
+            const last = messages[messages.length - 1];
+            if (last && last.id) {
+                state.lastMessageId = last.id;
+            }
+            if (hadBaseline && hasIncomingMessage) {
+                setUnreadIndicator(true);
+            }
         } catch (error) {
             // silent
         }
@@ -206,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
         state.panelOpen = true;
         document.body.classList.add('online-chat-open');
         localStorage.setItem(panelStateKey, '1');
+        setUnreadIndicator(false);
         fetchChat(false);
         if (state.pollTimer) {
             window.clearInterval(state.pollTimer);
@@ -219,7 +242,6 @@ document.addEventListener('DOMContentLoaded', function () {
         state.panelOpen = false;
         document.body.classList.remove('online-chat-open');
         localStorage.removeItem(panelStateKey);
-        state.lastMessageId = null;
         if (state.pollTimer) {
             window.clearInterval(state.pollTimer);
             state.pollTimer = null;
@@ -234,8 +256,8 @@ document.addEventListener('DOMContentLoaded', function () {
         inputEl.value = savedDraft;
     }
 
-    state.usersTimer = window.setInterval(refreshUsersOnly, 30000);
-    refreshUsersOnly();
+    state.usersTimer = window.setInterval(refreshClosedPanelState, 30000);
+    refreshClosedPanelState();
 
     if (localStorage.getItem(panelStateKey) === '1') {
         panel.show();

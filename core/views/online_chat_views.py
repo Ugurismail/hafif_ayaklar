@@ -6,6 +6,7 @@ Online chat views
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.http import JsonResponse
 from django.templatetags.static import static
 from django.utils import timezone
@@ -17,11 +18,24 @@ CHAT_RATE_LIMIT_WINDOW = timedelta(minutes=1)
 CHAT_RATE_LIMIT_COUNT = 12
 RECENT_MESSAGES_LIMIT = 60
 MAX_CHAT_MESSAGE_LENGTH = 500
+CHAT_RETENTION_WINDOW = timedelta(days=7)
+CHAT_CLEANUP_INTERVAL = timedelta(hours=1)
+CHAT_CLEANUP_CACHE_KEY = 'online_chat_last_cleanup'
+
+
+def cleanup_old_online_chat_messages(now):
+    if cache.get(CHAT_CLEANUP_CACHE_KEY):
+        return
+    OnlineChatMessage.objects.filter(
+        created_at__lt=now - CHAT_RETENTION_WINDOW,
+    ).delete()
+    cache.set(CHAT_CLEANUP_CACHE_KEY, True, int(CHAT_CLEANUP_INTERVAL.total_seconds()))
 
 
 @login_required
 def online_chat_messages(request):
     now = timezone.now()
+    cleanup_old_online_chat_messages(now)
 
     def serialize_message(message):
         profile = getattr(message.user, 'userprofile', None)
