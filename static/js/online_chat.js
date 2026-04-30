@@ -14,10 +14,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     const panelStateKey = 'onlineChatPanelOpen';
     const draftStateKey = 'onlineChatDraft';
+    const closedPanelPollInterval = 7000;
     const panel = bootstrap.Offcanvas.getOrCreateInstance(panelEl);
 
     const state = {
         lastMessageId: null,
+        unreadCount: 0,
         pollTimer: null,
         usersTimer: null,
         panelOpen: false,
@@ -91,8 +93,17 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
     }
 
-    function setUnreadIndicator(visible) {
-        countEl.style.display = visible ? 'inline-flex' : 'none';
+    function setUnreadCount(count) {
+        state.unreadCount = Math.max(0, count);
+        if (state.unreadCount <= 0) {
+            countEl.textContent = '0';
+            countEl.style.display = 'none';
+            countEl.setAttribute('aria-label', 'Yeni sohbet mesajı yok');
+            return;
+        }
+        countEl.textContent = state.unreadCount > 9 ? '9+' : String(state.unreadCount);
+        countEl.style.display = 'inline-flex';
+        countEl.setAttribute('aria-label', `${state.unreadCount} yeni sohbet mesajı`);
     }
 
     function setMessages(messages, append) {
@@ -139,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function () {
             renderUsers(data.online_users || []);
             setMessages(data.messages || [], append);
             if (!append) {
-                setUnreadIndicator(false);
+                setUnreadCount(0);
             }
         } catch (error) {
             if (!quiet && typeof showToast === 'function') {
@@ -171,15 +182,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
             const hadBaseline = Boolean(state.lastMessageId);
-            const hasIncomingMessage = messages.some(function (message) {
+            const incomingMessageCount = messages.filter(function (message) {
                 return !message.is_own;
-            });
+            }).length;
             const last = messages[messages.length - 1];
             if (last && last.id) {
                 state.lastMessageId = last.id;
             }
-            if (hadBaseline && hasIncomingMessage) {
-                setUnreadIndicator(true);
+            if (hadBaseline && incomingMessageCount > 0) {
+                setUnreadCount(state.unreadCount + incomingMessageCount);
             }
         } catch (error) {
             // silent
@@ -228,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
         state.panelOpen = true;
         document.body.classList.add('online-chat-open');
         localStorage.setItem(panelStateKey, '1');
-        setUnreadIndicator(false);
+        setUnreadCount(0);
         fetchChat(false);
         if (state.pollTimer) {
             window.clearInterval(state.pollTimer);
@@ -256,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function () {
         inputEl.value = savedDraft;
     }
 
-    state.usersTimer = window.setInterval(refreshClosedPanelState, 30000);
+    state.usersTimer = window.setInterval(refreshClosedPanelState, closedPanelPollInterval);
     refreshClosedPanelState();
 
     if (localStorage.getItem(panelStateKey) === '1') {

@@ -53,12 +53,17 @@
     position: absolute;
     top: -6px;
     right: -6px;
-    width: 13px;
-    height: 13px;
-    padding: 0;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
     border-radius: 999px;
     background: var(--button-background-color, #007bff);
+    color: var(--button-text-color, #fff);
+    font-size: 12px;
+    font-weight: 700;
     border: 2px solid var(--content-background-color, #fff);
+    align-items: center;
+    justify-content: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.18);
 }
 
@@ -415,7 +420,7 @@ body.online-chat-open .floating-tools {
                 data-bs-target="#onlineChatPanel"
                 title="Online Sohbet">
             <i class="bi bi-chat-dots"></i>
-            <span class="floating-chat-count" id="onlineChatCount" style="display:none;" aria-label="Yeni sohbet mesajı"></span>
+            <span class="floating-chat-count" id="onlineChatCount" style="display:none;" aria-label="Yeni sohbet mesajı">0</span>
         </button>
         <div class="floating-help-btn" id="help-btn">?</div>
     </div>
