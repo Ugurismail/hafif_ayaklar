@@ -59,6 +59,55 @@ class LastSeenMiddleware:
     THROTTLE_DELTA = timedelta(minutes=1)
     VISIT_INACTIVITY_DELTA = timedelta(minutes=30)
     VISIT_COOKIE_MAX_AGE = 60 * 60 * 24 * 30
+    EXCLUDED_VISITOR_PATH_PREFIXES = (
+        "/admin/",
+        "/statistics/",
+        "/static/",
+        "/media/",
+        "/.well-known/",
+    )
+    EXCLUDED_VISITOR_PATHS = {
+        "/favicon.ico",
+        "/robots.txt",
+        "/sitemap.xml",
+    }
+    BOT_USER_AGENT_MARKERS = (
+        "bot",
+        "crawler",
+        "spider",
+        "slurp",
+        "baiduspider",
+        "yandex",
+        "duckduckbot",
+        "bingpreview",
+        "facebookexternalhit",
+        "twitterbot",
+        "linkedinbot",
+        "telegrambot",
+        "discordbot",
+        "whatsapp",
+        "bytespider",
+        "gptbot",
+        "chatgpt-user",
+        "claudebot",
+        "claude-web",
+        "anthropic-ai",
+        "perplexitybot",
+        "ccbot",
+        "applebot",
+        "google-extended",
+        "headlesschrome",
+        "phantomjs",
+        "playwright",
+        "python-requests",
+        "httpx",
+        "aiohttp",
+        "curl",
+        "wget",
+        "go-http-client",
+        "node-fetch",
+        "scrapy",
+    )
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -225,12 +274,25 @@ class LastSeenMiddleware:
             return False
 
         path = (request.path or "").lower()
-        if path.startswith("/static/") or path.startswith("/media/"):
+        if path in LastSeenMiddleware.EXCLUDED_VISITOR_PATHS:
             return False
-        if path == "/favicon.ico" or path.startswith("/.well-known/"):
+        if any(path.startswith(prefix) for prefix in LastSeenMiddleware.EXCLUDED_VISITOR_PATH_PREFIXES):
             return False
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return False
+
+        user_agent = (request.META.get("HTTP_USER_AGENT") or "").strip().lower()
+        if not user_agent or LastSeenMiddleware._is_probable_bot_user_agent(user_agent):
+            return False
+
+        purpose_headers = (
+            request.META.get("HTTP_PURPOSE") or "",
+            request.META.get("HTTP_SEC_PURPOSE") or "",
+            request.META.get("HTTP_SEC_FETCH_PURPOSE") or "",
+            request.META.get("HTTP_X_PURPOSE") or "",
+        )
+        if any("prefetch" in value.lower() or "prerender" in value.lower() for value in purpose_headers):
             return False
 
         sec_fetch_dest = (request.META.get("HTTP_SEC_FETCH_DEST") or "").lower()
@@ -242,6 +304,11 @@ class LastSeenMiddleware:
             return False
 
         return True
+
+    @staticmethod
+    def _is_probable_bot_user_agent(user_agent):
+        normalized = (user_agent or "").lower()
+        return any(marker in normalized for marker in LastSeenMiddleware.BOT_USER_AGENT_MARKERS)
 
     @staticmethod
     def _build_daily_visitor_hash(request, day):
@@ -256,23 +323,28 @@ class LastSeenMiddleware:
 
     @staticmethod
     def _get_client_ip(request):
+        candidates = [
+            request.META.get("HTTP_CF_CONNECTING_IP"),
+            request.META.get("HTTP_TRUE_CLIENT_IP"),
+            request.META.get("HTTP_X_REAL_IP"),
+        ]
+
         forwarded = (request.META.get("HTTP_X_FORWARDED_FOR") or "").strip()
         if forwarded:
-            raw_ip = forwarded.split(",")[0].strip()
-        else:
-            raw_ip = (
-                (request.META.get("HTTP_X_REAL_IP") or "").strip()
-                or (request.META.get("REMOTE_ADDR") or "").strip()
-            )
+            candidates.extend(part.strip() for part in forwarded.split(","))
 
-        if not raw_ip:
-            return None
+        candidates.append(request.META.get("REMOTE_ADDR"))
 
-        try:
-            ipaddress.ip_address(raw_ip)
-        except ValueError:
-            return None
-        return raw_ip
+        for raw_ip in candidates:
+            raw_ip = (raw_ip or "").strip()
+            if not raw_ip:
+                continue
+            try:
+                ipaddress.ip_address(raw_ip)
+            except ValueError:
+                continue
+            return raw_ip
+        return None
 
     @staticmethod
     def _anonymize_ip(raw_ip):

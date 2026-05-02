@@ -114,9 +114,9 @@
                 <div class="col-md-3 mb-3">
                     <div class="card">
                         <div class="card-body text-center">
-                            <h5 class="card-title">Bugünkü Ziyaret</h5>
+                            <h5 class="card-title">Bugünkü Yerel Ziyaret</h5>
                             <p class="display-4">{{ today_visit_sessions }}</p>
-                            <small class="text-muted">30 dk hareketsizlikle ayrılan yerel oturum</small>
+                            <small class="text-muted">Bot filtreli, 30 dk hareketsizlikle ayrılan yerel oturum</small>
                         </div>
                     </div>
                 </div>
@@ -153,7 +153,10 @@
 
         <!-- Ziyaretçi Trendi Tab -->
         <div class="tab-pane fade {% if active_tab == 'visitor-trend' %}show active{% endif %}" id="visitor-trend" role="tabpanel" aria-labelledby="visitor-trend-tab">
-            <h3 class="mt-3">Ziyaretçi Trendi</h3>
+            <h3 class="mt-3">Yerel Ziyaretçi Trendi</h3>
+            <div class="alert alert-warning py-2">
+                Bu grafik Google Analytics değildir; bot filtreli yerel günlük tekil izleri gösterir. GA, yalnızca etiketi çalıştıran tarayıcıları ve kendi bot filtrelerinden geçen trafiği ölçer.
+            </div>
             <form method="get" action="{% url 'site_statistics' %}" class="row g-3 align-items-end mb-3">
                 <input type="hidden" name="tab" value="visitor-trend">
                 <div class="col-md-4">
@@ -183,7 +186,7 @@
                 <div class="col-md-4 mb-3">
                     <div class="card">
                         <div class="card-body text-center">
-                            <h5 class="card-title">Toplam (Seçili Dönem)</h5>
+                            <h5 class="card-title">Günlük Tekil Toplamı</h5>
                             <p class="display-6 mb-0">{{ visitor_total_unique }}</p>
                         </div>
                     </div>
@@ -191,7 +194,7 @@
                 <div class="col-md-4 mb-3">
                     <div class="card">
                         <div class="card-body text-center">
-                            <h5 class="card-title">Tepe Değer</h5>
+                            <h5 class="card-title">Günlük Tepe Değer</h5>
                             <p class="display-6 mb-0">{{ visitor_peak_unique }}</p>
                         </div>
                     </div>
@@ -417,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Tekil ziyaretçi',
+                        label: 'Yerel günlük tekil iz',
                         data: values,
                         borderColor: '#2f7f68',
                         backgroundColor: 'rgba(47, 127, 104, 0.14)',

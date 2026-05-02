@@ -8,7 +8,6 @@ from itertools import chain
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db import DatabaseError
 from django.db.models import Q, Count, Max, F
 from django.db.models.functions import TruncWeek, TruncMonth
 from django.http import JsonResponse
@@ -17,7 +16,6 @@ from django.views.decorators.http import require_POST
 from django.utils.timezone import now
 
 from ..answer_git import attach_answer_revision_metadata
-from ..middleware import LastSeenMiddleware
 from ..models import Answer, DailyVisitor, Question, QuestionRelationship, Reference, StartingQuestion, UserProfile, VisitSession, Vote
 from ..querysets import get_active_left_frame_pin_q, get_today_questions_queryset
 from ..services import VoteSaveService
@@ -102,14 +100,6 @@ def user_homepage(request):
 def site_statistics(request):
     today = now().date()
     active_tab = request.GET.get('tab', 'word-analysis')
-
-    if LastSeenMiddleware._should_track_unique_visitor(request):
-        visitor_hash = LastSeenMiddleware._build_daily_visitor_hash(request, today)
-        if visitor_hash:
-            try:
-                DailyVisitor.objects.get_or_create(date=today, visitor_hash=visitor_hash)
-            except DatabaseError:
-                pass
 
     today_unique_visitors = DailyVisitor.objects.filter(date=today).count()
     today_visit_sessions = VisitSession.objects.filter(date=today).count()
