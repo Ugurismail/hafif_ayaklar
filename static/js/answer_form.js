@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var normalizedUrl = new URL(result.file_url, window.location.origin).href;
         var safeAlt = altValue.replace(/\]/g, '\\]');
         var imageMarkdown = '![' + safeAlt + '](' + normalizedUrl + ')';
-        var imageBlock = imageMarkdown;
+        var imageBlock = imageMarkdown + '\n\n';
 
         var start = textarea.selectionStart;
         var end = textarea.selectionEnd;
@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var hasTextAfter = after.trim().length > 0;
 
         if (hasTextBefore || hasTextAfter) {
-          imageBlock = (hasTextBefore ? '\n\n' : '') + imageMarkdown + (hasTextAfter ? '\n\n' : '');
+          imageBlock = (hasTextBefore ? '\n\n' : '') + imageMarkdown + '\n\n';
         }
 
         textarea.value = before + imageBlock + after;

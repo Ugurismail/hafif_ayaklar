@@ -1860,12 +1860,17 @@ a.hashtag-link:hover {
 
 /* Compact collapsible images inside answers */
 .answer-image-toggle {
-    display: inline-block;
-    margin: 0.35rem 0;
+    display: block;
+    clear: both;
+    margin: 1.25rem 0 1.75rem;
     max-width: min(760px, 95vw);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background-color: color-mix(in srgb, var(--text-color) 2%, transparent);
+}
+
+.answer-image-toggle + p {
+    margin-top: 1.2rem;
 }
 
 .answer-image-summary {
