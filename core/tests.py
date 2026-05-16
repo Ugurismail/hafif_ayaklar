@@ -1,6 +1,7 @@
 from django.test import RequestFactory, SimpleTestCase
 
 from core.middleware import LastSeenMiddleware
+from core.templatetags.custom_tags import safe_markdownify
 
 
 class VisitorTrackingTests(SimpleTestCase):
@@ -49,3 +50,19 @@ class VisitorTrackingTests(SimpleTestCase):
         )
 
         self.assertEqual(LastSeenMiddleware._get_client_ip(request), "198.51.100.10")
+
+
+class MarkdownRenderingTests(SimpleTestCase):
+    def test_multi_digit_leading_ordinal_renders_as_text(self):
+        rendered = str(safe_markdownify("16. yüzyılda gerçekleşen olay"))
+
+        self.assertIn("16. yüzyılda gerçekleşen olay", rendered)
+        self.assertNotIn("<ol>", rendered)
+        self.assertNotIn("<li>", rendered)
+
+    def test_single_digit_ordered_lists_still_render_as_lists(self):
+        rendered = str(safe_markdownify("1. Bir\n2. İki"))
+
+        self.assertIn("<ol>", rendered)
+        self.assertIn("<li>Bir</li>", rendered)
+        self.assertIn("<li>İki</li>", rendered)

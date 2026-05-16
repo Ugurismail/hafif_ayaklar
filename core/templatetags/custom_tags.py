@@ -465,6 +465,11 @@ def safe_markdownify(text, arg='default'):
             transformed.append(line)
         return '\n'.join(transformed)
 
+    def _protect_leading_multi_digit_ordinals(raw_text):
+        # Markdown treats "16. yuzyil" as an ordered list and renders it as "1.".
+        # Keep two-or-more digit sentence starts as prose while preserving 1./2. lists.
+        return re.sub(r'(?m)^(\s*)(\d{2,4})\.(?=\s+\S)', r'\1\2\\.', raw_text)
+
     def _replace_display(match):
         raw = match.group(0)
         return _store_math_block(raw)
@@ -480,6 +485,7 @@ def safe_markdownify(text, arg='default'):
     text_with_placeholders = HASHTAG_PATTERN.sub(_store_hashtag, text_with_placeholders)
     text_with_placeholders = re.sub(r'(^|(?:\r?\n))(\u2003{1,})(?=\S)', _store_indent, text_with_placeholders)
     text_with_placeholders = _replace_custom_block_markers(text_with_placeholders)
+    text_with_placeholders = _protect_leading_multi_digit_ordinals(text_with_placeholders)
     # Preserve user-authored extra blank lines beyond the normal paragraph break.
     text_with_placeholders = re.sub(r'(?:\r?\n){3,}', _store_spacer, text_with_placeholders)
 
