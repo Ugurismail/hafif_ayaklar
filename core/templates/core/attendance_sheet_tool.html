@@ -1,0 +1,709 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Personel Devam Cetveli{% endblock %}
+{% block meta_description %}Personel günlük devam cetveli doldurma ve yazdırma aracı.{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --attendance-paper: #fffdf8;
+        --attendance-ink: #151515;
+        --attendance-line: #222;
+        --attendance-muted: #d8d8d8;
+        --attendance-accent: #b68d4f;
+    }
+
+    .attendance-tool {
+        max-width: 1280px;
+        margin: 110px auto 60px;
+        padding: 0 18px;
+        color: var(--attendance-ink);
+    }
+
+    .attendance-controls {
+        position: sticky;
+        top: 82px;
+        z-index: 50;
+        display: grid;
+        grid-template-columns: minmax(140px, 0.75fr) minmax(270px, 1.1fr) minmax(430px, 1.5fr) auto;
+        gap: 12px;
+        align-items: end;
+        padding: 14px;
+        margin-bottom: 22px;
+        background: rgba(255, 250, 241, 0.96);
+        border: 1px solid rgba(182, 141, 79, 0.35);
+        border-radius: 16px;
+        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.08);
+        backdrop-filter: blur(8px);
+    }
+
+    .attendance-control-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #6c5d47;
+    }
+
+    .attendance-control-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+    }
+
+    .attendance-control-row input[type="date"],
+    .attendance-control-row input[type="text"],
+    .attendance-control-row select {
+        min-height: 38px;
+        padding: 6px 10px;
+        border: 1px solid rgba(21, 21, 21, 0.25);
+        border-radius: 9px;
+        background: #fff;
+        font: inherit;
+    }
+
+    .attendance-mode-btn,
+    .attendance-person-add-btn,
+    .attendance-print-btn {
+        min-height: 38px;
+        padding: 7px 12px;
+        border: 1px solid var(--attendance-accent);
+        border-radius: 999px;
+        background: #fffaf1;
+        color: #583d18;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .attendance-person-edit {
+        display: grid;
+        grid-template-columns: minmax(130px, 0.8fr) minmax(180px, 1fr) auto;
+        gap: 7px;
+        width: 100%;
+    }
+
+    .attendance-person-add-btn {
+        border-radius: 10px;
+        background: #fffaf1;
+    }
+
+    .attendance-person-name {
+        display: inline-block;
+        max-width: calc(100% - 28px);
+        vertical-align: middle;
+    }
+
+    .attendance-remove-person {
+        float: right;
+        width: 20px;
+        height: 20px;
+        margin-left: 5px;
+        padding: 0;
+        border: 1px solid rgba(142, 52, 28, 0.45);
+        border-radius: 999px;
+        background: #fff8f2;
+        color: #8e341c;
+        font: 700 13px/1 Arial, sans-serif;
+        cursor: pointer;
+    }
+
+    .attendance-remove-person:hover {
+        background: #8e341c;
+        color: #fff;
+    }
+
+    .attendance-mode-btn.is-active {
+        background: var(--attendance-accent);
+        color: #fff;
+    }
+
+    .attendance-print-btn {
+        border-radius: 10px;
+        background: #183327;
+        color: #fff;
+        border-color: #183327;
+        min-width: 92px;
+        white-space: nowrap;
+    }
+
+    .attendance-pages {
+        display: grid;
+        gap: 26px;
+    }
+
+    .attendance-sheet {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+        padding: 17mm 19mm 16mm;
+        background: var(--attendance-paper);
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        box-shadow: 0 22px 50px rgba(0, 0, 0, 0.12);
+        font-family: "Times New Roman", Times, serif;
+        color: var(--attendance-ink);
+    }
+
+    .attendance-sheet-header {
+        display: grid;
+        grid-template-columns: 1.1fr 1.4fr 1fr;
+        align-items: start;
+        gap: 8px;
+        margin-bottom: 4mm;
+    }
+
+    .attendance-office {
+        font-size: 8.5pt;
+        line-height: 1.15;
+        font-weight: 700;
+    }
+
+    .attendance-title {
+        text-align: center;
+        font-size: 12.5pt;
+        line-height: 1.15;
+        font-weight: 700;
+    }
+
+    .attendance-date-line {
+        text-align: right;
+        font-size: 10.5pt;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .attendance-date-text {
+        display: inline-block;
+        min-width: 32mm;
+        padding-bottom: 1px;
+        border-bottom: 1px solid var(--attendance-line);
+        text-align: center;
+        font-size: 11.5pt;
+        font-weight: 700;
+    }
+
+    .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        border: 2px solid var(--attendance-line);
+        font-size: 10pt;
+    }
+
+    .attendance-table th,
+    .attendance-table td {
+        border: 1px solid var(--attendance-line);
+        height: 8.2mm;
+        padding: 1mm 1.5mm;
+    }
+
+    .attendance-table th {
+        text-align: center;
+        font-weight: 700;
+        line-height: 1.05;
+    }
+
+    .attendance-name-col {
+        width: 37%;
+    }
+
+    .attendance-name-cell {
+        font-weight: 700;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .attendance-mark-cell {
+        width: 15.75%;
+        text-align: center;
+        font-size: 15pt;
+        font-weight: 700;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .attendance-name-cell:hover,
+    .attendance-mark-cell:hover {
+        background: #fff2d6;
+    }
+
+    .attendance-section-row td {
+        height: 9mm;
+        padding: 0;
+        background: var(--attendance-muted);
+        text-align: center;
+        font-size: 17pt;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+    }
+
+    .attendance-empty-row td {
+        color: transparent;
+    }
+
+    .attendance-control-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        margin-top: 9mm;
+        border: 2px solid var(--attendance-line);
+        font-size: 10pt;
+    }
+
+    .attendance-control-table td {
+        border: 1px solid var(--attendance-line);
+        height: 8mm;
+        text-align: center;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+    }
+
+    .attendance-footnote {
+        margin-top: 5mm;
+        font-size: 8.5pt;
+        line-height: 1.2;
+        font-weight: 700;
+    }
+
+    @media (max-width: 980px) {
+        .attendance-controls {
+            position: static;
+            grid-template-columns: 1fr;
+        }
+
+        .attendance-person-edit {
+            grid-template-columns: 1fr;
+        }
+
+        .attendance-pages {
+            overflow-x: auto;
+            padding-bottom: 14px;
+        }
+
+        .attendance-sheet {
+            width: 210mm;
+            min-width: 210mm;
+            min-height: 297mm;
+            padding: 14mm 10mm;
+        }
+    }
+
+    @media print {
+        @page {
+            size: A4 portrait;
+            margin: 6mm;
+        }
+
+        html,
+        body {
+            background: #fff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            overflow: visible !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        #mainNavbar,
+        .mobile-navbar-backdrop,
+        .attendance-controls,
+        .attendance-edit-only,
+        .attendance-remove-person,
+        .floating-tools,
+        .floating-buttons,
+        .floating-help-btn,
+        .floating-chat-btn,
+        .global-chat-panel,
+        .global-chat-toggle,
+        .online-chat-panel,
+        #onlineChatPanel,
+        #online-chat-btn,
+        .help-button,
+        #help-btn,
+        footer {
+            display: none !important;
+        }
+
+        .attendance-tool {
+            max-width: none;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        .attendance-pages {
+            display: block;
+            overflow: visible;
+            padding: 0;
+        }
+
+        .attendance-sheet {
+            box-sizing: border-box;
+            width: 100%;
+            min-width: 0;
+            min-height: 0;
+            margin: 0;
+            padding: 5mm 6mm 3mm;
+            border: 0;
+            box-shadow: none;
+            page-break-after: always;
+            break-after: page;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .attendance-sheet-header {
+            grid-template-columns: 1fr 1.15fr 0.9fr;
+            gap: 4mm;
+            margin-bottom: 2.5mm;
+        }
+
+        .attendance-office {
+            font-size: 7.7pt;
+            line-height: 1.05;
+        }
+
+        .attendance-title {
+            font-size: 11.5pt;
+            line-height: 1.05;
+        }
+
+        .attendance-date-line {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 2mm;
+            font-size: 10pt;
+        }
+
+        .attendance-date-text {
+            min-width: 30mm;
+            font-size: 12pt;
+            line-height: 1.05;
+            border-bottom-width: 1.5px;
+        }
+
+        .attendance-table {
+            font-size: 8.8pt;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            height: 6.25mm;
+            padding: 0.35mm 1mm;
+        }
+
+        .attendance-table th {
+            line-height: 1;
+        }
+
+        .attendance-section-row td {
+            height: 6.8mm;
+            font-size: 15pt;
+        }
+
+        .attendance-mark-cell {
+            font-size: 13pt;
+        }
+
+        .attendance-control-table {
+            margin-top: 5mm;
+            font-size: 8.8pt;
+        }
+
+        .attendance-control-table td {
+            height: 6.2mm;
+        }
+
+        .attendance-footnote {
+            margin-top: 3mm;
+            font-size: 7.4pt;
+            line-height: 1.08;
+        }
+
+        .attendance-sheet:last-child {
+            page-break-after: auto;
+            break-after: auto;
+        }
+
+        .attendance-name-cell,
+        .attendance-mark-cell {
+            cursor: default;
+        }
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<main class="attendance-tool" data-attendance-tool>
+    <section class="attendance-controls" aria-label="Devam cetveli kontrolleri">
+        <div class="attendance-control-group">
+            <label for="attendanceDate">Tarih</label>
+            <div class="attendance-control-row">
+                <input type="date" id="attendanceDate" data-attendance-date>
+            </div>
+        </div>
+        <div class="attendance-control-group">
+            <label>İşaret</label>
+            <div class="attendance-control-row" role="group" aria-label="İşaret seçimi">
+                <button type="button" class="attendance-mode-btn is-active" data-marker="İ">İzinli: İ</button>
+                <button type="button" class="attendance-mode-btn" data-marker="G">Görevli: G</button>
+                <button type="button" class="attendance-mode-btn" data-marker="R">Raporlu: R</button>
+                <button type="button" class="attendance-mode-btn" data-marker="">Temizle</button>
+            </div>
+        </div>
+        <div class="attendance-control-group attendance-edit-only">
+            <label for="attendancePersonName">Kişi ekle / çıkar</label>
+            <div class="attendance-control-row attendance-person-edit">
+                <select id="attendancePersonSection" data-person-section aria-label="Eklenecek bölüm">
+                    {% for sheet in sheets %}
+                        {% for section in sheet.sections %}
+                            <option value="{{ sheet.page }}-{{ section.code }}">Sayfa {{ sheet.page }} - {{ section.code }}</option>
+                        {% endfor %}
+                    {% endfor %}
+                </select>
+                <input type="text" id="attendancePersonName" data-person-name placeholder="Ad soyad">
+                <button type="button" class="attendance-person-add-btn" data-add-person>Ekle</button>
+            </div>
+        </div>
+        <button type="button" class="attendance-print-btn" data-print-attendance>Yazdır</button>
+    </section>
+
+    <section class="attendance-pages">
+        {% for sheet in sheets %}
+            <article class="attendance-sheet" aria-label="Personel günlük devam cetveli sayfa {{ sheet.page }}">
+                <header class="attendance-sheet-header">
+                    <div class="attendance-office">
+                        KARAYOLLARI GENEL MÜDÜRLÜĞÜ<br>
+                        Personel ve Atama Şubesi Müdürlüğü
+                    </div>
+                    <div class="attendance-title">
+                        PERSONEL GÜNLÜK DEVAM<br>
+                        CETVELİ
+                    </div>
+                    <div class="attendance-date-line">
+                        Tarih <span class="attendance-date-text" data-date-output></span>
+                    </div>
+                </header>
+
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="3" class="attendance-name-col">ADI VE SOYADI</th>
+                            <th colspan="4">İ M Z A L A R</th>
+                        </tr>
+                        <tr>
+                            <th colspan="2">SABAH</th>
+                            <th colspan="2">ÖĞLE</th>
+                        </tr>
+                        <tr>
+                            <th>GİRİŞ</th>
+                            <th>ÇIKIŞ</th>
+                            <th>GİRİŞ</th>
+                            <th>ÇIKIŞ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for section in sheet.sections %}
+                            <tr class="attendance-section-row" data-section-key="{{ sheet.page }}-{{ section.code }}">
+                                <td colspan="5">- {{ section.code }} -</td>
+                            </tr>
+                            {% for person in section.people %}
+                                <tr class="attendance-person-row" data-person-row>
+                                    <td class="attendance-name-cell" data-fill-row>
+                                        <span class="attendance-person-name">{{ person }}</span>
+                                        <button type="button" class="attendance-remove-person attendance-edit-only" data-remove-person aria-label="{{ person }} kişisini çıkar">×</button>
+                                    </td>
+                                    <td class="attendance-mark-cell" data-slot="morning-in"></td>
+                                    <td class="attendance-mark-cell" data-slot="morning-out"></td>
+                                    <td class="attendance-mark-cell" data-slot="noon-in"></td>
+                                    <td class="attendance-mark-cell" data-slot="noon-out"></td>
+                                </tr>
+                            {% endfor %}
+                            {% if section.people|length < 3 %}
+                                <tr class="attendance-empty-row" data-empty-row><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <table class="attendance-control-table" aria-label="Kontrol alanı">
+                    <tr>
+                        <td style="width: 30%;">KONTROL</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
+
+                <div class="attendance-footnote">
+                    a - Günlük ya da senelik izin alanların imza hanesine ( İ ),<br>
+                    b - Görevli olanların imza hanesine ( G ),<br>
+                    c - Hastalığı nedeniyle raporlu olanların imza hanesine ( R ),<br>
+                    d - Yukarıda belirtilenlerin dışında imzası bulunmayanların imza hanesine ( X ) işaretleri konulacaktır.
+                </div>
+            </article>
+        {% endfor %}
+    </section>
+</main>
+
+<script>
+(function () {
+    const root = document.querySelector('[data-attendance-tool]');
+    if (!root) return;
+
+    const slots = ['morning-in', 'morning-out', 'noon-in', 'noon-out'];
+    let selectedMarker = 'İ';
+
+    function setActive(buttons, activeButton) {
+        buttons.forEach((button) => button.classList.toggle('is-active', button === activeButton));
+    }
+
+    function escapeHtml(value) {
+        const div = document.createElement('div');
+        div.textContent = value;
+        return div.innerHTML;
+    }
+
+    root.querySelectorAll('[data-marker]').forEach((button) => {
+        button.addEventListener('click', () => {
+            selectedMarker = button.dataset.marker || '';
+            setActive(root.querySelectorAll('[data-marker]'), button);
+        });
+    });
+
+    function fillCell(cell) {
+        cell.textContent = selectedMarker;
+    }
+
+    function fillRow(row) {
+        slots.forEach((slot) => {
+            const cell = row.querySelector(`[data-slot="${slot}"]`);
+            if (cell) fillCell(cell);
+        });
+    }
+
+    function bindPersonRow(row) {
+        if (!row || row.dataset.bound === '1') return;
+        row.dataset.bound = '1';
+
+        const nameCell = row.querySelector('[data-fill-row]');
+        if (nameCell) {
+            nameCell.addEventListener('click', () => fillRow(row));
+        }
+
+        row.querySelectorAll('[data-slot]').forEach((cell) => {
+            cell.addEventListener('click', () => fillCell(cell));
+        });
+
+        const removeButton = row.querySelector('[data-remove-person]');
+        if (removeButton) {
+            removeButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                row.remove();
+            });
+        }
+    }
+
+    function createPersonRow(name) {
+        const row = document.createElement('tr');
+        row.className = 'attendance-person-row';
+        row.setAttribute('data-person-row', '');
+        row.innerHTML = `
+            <td class="attendance-name-cell" data-fill-row>
+                <span class="attendance-person-name">${escapeHtml(name)}</span>
+                <button type="button" class="attendance-remove-person attendance-edit-only" data-remove-person aria-label="${escapeHtml(name)} kişisini çıkar">×</button>
+            </td>
+            <td class="attendance-mark-cell" data-slot="morning-in"></td>
+            <td class="attendance-mark-cell" data-slot="morning-out"></td>
+            <td class="attendance-mark-cell" data-slot="noon-in"></td>
+            <td class="attendance-mark-cell" data-slot="noon-out"></td>
+        `;
+        bindPersonRow(row);
+        return row;
+    }
+
+    function findSectionRows(sectionRow) {
+        const rows = [];
+        let next = sectionRow.nextElementSibling;
+        while (next && !next.classList.contains('attendance-section-row')) {
+            rows.push(next);
+            next = next.nextElementSibling;
+        }
+        return { rows, nextSection: next };
+    }
+
+    function addPerson() {
+        const sectionSelect = root.querySelector('[data-person-section]');
+        const nameInput = root.querySelector('[data-person-name]');
+        if (!sectionSelect || !nameInput) return;
+
+        const name = nameInput.value.trim();
+        if (!name) {
+            nameInput.focus();
+            return;
+        }
+
+        const sectionRow = root.querySelector(`.attendance-section-row[data-section-key="${sectionSelect.value}"]`);
+        if (!sectionRow) return;
+
+        const { rows, nextSection } = findSectionRows(sectionRow);
+        const insertBeforeRow = rows.find((row) => row.classList.contains('attendance-empty-row')) || nextSection;
+        const newRow = createPersonRow(name);
+        sectionRow.parentNode.insertBefore(newRow, insertBeforeRow);
+        nameInput.value = '';
+        nameInput.focus();
+    }
+
+    root.querySelectorAll('[data-person-row]').forEach(bindPersonRow);
+
+    const addPersonButton = root.querySelector('[data-add-person]');
+    if (addPersonButton) {
+        addPersonButton.addEventListener('click', addPerson);
+    }
+
+    const personNameInput = root.querySelector('[data-person-name]');
+    if (personNameInput) {
+        personNameInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addPerson();
+            }
+        });
+    }
+
+    function formatDate(value) {
+        if (!value) return '';
+        const [year, month, day] = value.split('-');
+        if (!year || !month || !day) return '';
+        return `${Number(day)}.${Number(month)}.${year}`;
+    }
+
+    const dateInput = root.querySelector('[data-attendance-date]');
+    const dateOutputs = root.querySelectorAll('[data-date-output]');
+    function updateDate() {
+        const formatted = formatDate(dateInput.value);
+        dateOutputs.forEach((output) => { output.textContent = formatted; });
+    }
+
+    if (dateInput) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        dateInput.value = `${yyyy}-${mm}-${dd}`;
+        dateInput.addEventListener('change', updateDate);
+        updateDate();
+    }
+
+    const printButton = root.querySelector('[data-print-attendance]');
+    if (printButton) {
+        printButton.addEventListener('click', () => window.print());
+    }
+})();
+</script>
+{% endblock content %}

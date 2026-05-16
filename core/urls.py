@@ -4,6 +4,7 @@ from django.conf import settings
 from .views.answer_page_views import add_answer, delete_answer, edit_answer, single_answer
 from .views.answer_profile_views import get_root_questions, get_user_answers
 from .views.answer_revision_views import answer_git_history, answer_live_preview, answer_revision_approve, answer_revision_reject, answer_suggest_edit, answer_suggestion_accept, answer_suggestion_detail, answer_suggestion_reject
+from .views.attendance_views import attendance_sheet_tool
 from .views.auth_views import create_invitation, send_invitation, signup, user_login, user_logout
 from .views.cikis_test_views import cikis_dogru_sik_sec, cikis_dogrusu_ayarla, cikis_sik_edit, cikis_sik_ekle, cikis_sonuc_sil, cikis_soru_edit, cikis_soru_ekle, cikis_soru_sil, cikis_test_coz, cikis_test_list, cikis_testi_coz, cikis_testi_create, cikis_testi_detail, cikis_testi_sil, cikis_testi_sonuc_list, cikis_testleri_list
 from .views.collection_views import create_saved_collection, delete_saved_collection, saved_collections_home, saved_item_collection_options, update_saved_item_collections
@@ -117,6 +118,7 @@ urlpatterns = [
     path('map/', question_map, name='question_map'),
     path('map-data/', map_data_view, name='map_data'),
     path('map/schema/', question_schema, name='question_schema'),
+    path('devam-cetveli/', attendance_sheet_tool, name='attendance_sheet_tool'),
     path('map/schema/search/', question_schema_search, name='question_schema_search'),
     path('map/schema/<int:question_id>/children/', question_schema_children, name='question_schema_children'),
     path('map/schema/<int:question_id>/content/', question_schema_content, name='question_schema_content'),

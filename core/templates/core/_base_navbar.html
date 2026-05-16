@@ -90,6 +90,11 @@
                                 <a class="dropdown-item" href="{% url 'ethics_atlas' %}">
                                     <i class="bi bi-diagram-2"></i> Etik Atlası
                                 </a>
+                                {% if user.is_staff or user.userprofile.is_dj %}
+                                <a class="dropdown-item" href="{% url 'attendance_sheet_tool' %}">
+                                    <i class="bi bi-clipboard2-check"></i> Devam Cetveli
+                                </a>
+                                {% endif %}
                             </li>
                             <li><h6 class="dropdown-header"><i class="bi bi-people me-2"></i>Topluluk</h6></li>
                             <li class="dropdown-branch-group">
@@ -205,6 +210,12 @@
                                         <i class="bi bi-diagram-2"></i>
                                         <span class="ms-1">Etik Atlası</span>
                                     </a>
+                                    {% if user.is_staff or user.userprofile.is_dj %}
+                                    <a class="nav-link mobile-branch-link" href="{% url 'attendance_sheet_tool' %}" title="Devam Cetveli">
+                                        <i class="bi bi-clipboard2-check"></i>
+                                        <span class="ms-1">Devam Cetveli</span>
+                                    </a>
+                                    {% endif %}
                                 </div>
                                 <div class="mobile-branch-group">
                                     <div class="mobile-branch-label">Topluluk</div>
