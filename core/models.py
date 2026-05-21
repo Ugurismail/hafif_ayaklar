@@ -154,6 +154,55 @@ class VisitSession(models.Model):
         return f"{self.date} - {self.visit_token}"
 
 
+class AttendanceSheetConfig(models.Model):
+    """
+    Stores the editable personnel layout for the printable attendance sheet.
+    """
+
+    key = models.CharField(max_length=32, unique=True, default="default")
+    sheets = models.JSONField(default=list)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="updated_attendance_sheet_configs",
+    )
+
+    class Meta:
+        ordering = ["key"]
+
+    def __str__(self):
+        return f"Attendance sheet config: {self.key}"
+
+
+class AttendanceDayState(models.Model):
+    """
+    Stores daily I/G/R marks separately from the reusable personnel layout.
+    """
+
+    date = models.DateField(unique=True)
+    marks = models.JSONField(default=dict)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="updated_attendance_day_states",
+    )
+
+    class Meta:
+        ordering = ["-date"]
+        indexes = [
+            models.Index(fields=["date"]),
+        ]
+
+    def __str__(self):
+        return f"Attendance marks: {self.date}"
+
+
 class Question(models.Model):
     question_text = models.CharField(max_length=255)
     slug = models.SlugField(max_length=300, unique=True, blank=True)  # SEO-friendly URL

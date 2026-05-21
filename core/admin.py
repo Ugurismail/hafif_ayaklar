@@ -17,7 +17,8 @@ from core.models import (
     Entry, RandomSentence, Message, Definition, Reference,CikisTesti,
     CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy,
     QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage, OnlineChatMessage,
-    LibraryFile, DailyVisitor, VisitSession, SavedCollection, SavedCollectionItem, ContentReport
+    LibraryFile, DailyVisitor, VisitSession, AttendanceSheetConfig, AttendanceDayState,
+    SavedCollection, SavedCollectionItem, ContentReport
 )
 
 # =============================================================================
@@ -75,6 +76,21 @@ class VisitSessionAdmin(admin.ModelAdmin):
     search_fields = ("visit_token", "visitor_hash", "user__username")
     ordering = ("-started_at",)
     readonly_fields = ("date", "visit_token", "visitor_hash", "started_at", "last_seen_at")
+
+
+@admin.register(AttendanceSheetConfig)
+class AttendanceSheetConfigAdmin(admin.ModelAdmin):
+    list_display = ("key", "updated_at", "updated_by")
+    search_fields = ("key", "updated_by__username")
+    readonly_fields = ("updated_at",)
+
+
+@admin.register(AttendanceDayState)
+class AttendanceDayStateAdmin(admin.ModelAdmin):
+    list_display = ("date", "updated_at", "updated_by")
+    list_filter = ("date",)
+    search_fields = ("updated_by__username",)
+    readonly_fields = ("updated_at",)
 
 # =============================================================================
 # 2) Kullanıcı Admin – Mesaj Gönderme, Grupların Gösterimi ve Filtrelenmesi

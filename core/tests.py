@@ -2,6 +2,7 @@ from django.test import RequestFactory, SimpleTestCase
 
 from core.middleware import LastSeenMiddleware
 from core.templatetags.custom_tags import safe_markdownify
+from core.views.attendance_views import _normalize_marks, _normalize_sheets
 
 
 class VisitorTrackingTests(SimpleTestCase):
@@ -66,3 +67,45 @@ class MarkdownRenderingTests(SimpleTestCase):
         self.assertIn("<ol>", rendered)
         self.assertIn("<li>Bir</li>", rendered)
         self.assertIn("<li>İki</li>", rendered)
+
+
+class AttendanceSheetTests(SimpleTestCase):
+    def test_normalize_sheets_keeps_blank_rows_and_order(self):
+        raw_sheets = [{
+            "page": 1,
+            "sections": [{
+                "code": "120",
+                "people": [
+                    {"id": "blank-row", "name": "", "is_blank": True},
+                    {"id": "person-a", "name": "A KISI", "is_blank": False},
+                    {"id": "person-b", "name": "B KISI", "is_blank": False},
+                ],
+            }],
+        }]
+
+        sheets = _normalize_sheets(raw_sheets)
+        people = sheets[0]["sections"][0]["people"]
+
+        self.assertEqual([person["id"] for person in people[:3]], ["blank-row", "person-a", "person-b"])
+        self.assertTrue(people[0]["is_blank"])
+        self.assertEqual(people[0]["name"], "")
+
+    def test_normalize_marks_ignores_blank_rows(self):
+        sheets = _normalize_sheets([{
+            "page": 1,
+            "sections": [{
+                "code": "120",
+                "people": [
+                    {"id": "blank-row", "name": "", "is_blank": True},
+                    {"id": "person-a", "name": "A KISI", "is_blank": False},
+                ],
+            }],
+        }])
+
+        marks = _normalize_marks({
+            "blank-row": {"morning-in": "İ"},
+            "person-a": {"morning-in": "G", "morning-out": "H", "noon-out": "R"},
+        }, sheets)
+
+        self.assertNotIn("blank-row", marks)
+        self.assertEqual(marks["person-a"], {"morning-in": "G", "morning-out": "H", "noon-out": "R"})
