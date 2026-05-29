@@ -454,10 +454,16 @@ def safe_markdownify(text, arg='default'):
         for line in lines:
             stripped = line.strip()
             if stripped.startswith('== '):
-                transformed.append(_store_block('h1', stripped[3:]))
+                transformed.append(_store_block('h2', stripped[3:]))
                 continue
             if stripped.startswith('-- '):
                 transformed.append(_store_block('h2', stripped[3:]))
+                continue
+            if stripped.startswith('---- '):
+                transformed.append(_store_block('h4', stripped[5:]))
+                continue
+            if stripped.startswith('------ '):
+                transformed.append(_store_block('h6', stripped[7:]))
                 continue
             if stripped in {'---', '***'}:
                 transformed.append(_store_block('hr'))

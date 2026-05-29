@@ -182,27 +182,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function ensureExtendedFormattingButtons() {
     document.querySelectorAll('.btn-toolbar').forEach(function(toolbar) {
-      if (toolbar.querySelector('[data-format="heading-large"]')) {
+      if (toolbar.querySelector('[data-heading-menu="true"]')) {
         return;
       }
 
       var insertionAnchor = toolbar.querySelector('.insert-link-btn');
       var buttonClass = 'btn btn-sm btn-outline-theme-secondary me-2';
 
-      var largeHeadingBtn = createToolbarButton(
-        buttonClass + ' format-btn',
-        'Büyük başlık',
-        'H1',
+      var headingGroup = document.createElement('div');
+      headingGroup.className = 'btn-group me-2';
+      headingGroup.dataset.headingMenu = 'true';
+
+      var headingToggle = createToolbarButton(
+        'btn btn-sm btn-outline-theme-secondary dropdown-toggle',
+        'Başlık',
+        'Başlık',
         null,
-        { format: 'heading-large' }
+        null
       );
-      var mediumHeadingBtn = createToolbarButton(
-        buttonClass + ' format-btn',
-        'Alt başlık',
-        'H2',
-        null,
-        { format: 'heading-medium' }
-      );
+      headingToggle.type = 'button';
+      headingToggle.dataset.bsToggle = 'dropdown';
+      headingToggle.setAttribute('aria-expanded', 'false');
+
+      var headingMenu = document.createElement('ul');
+      headingMenu.className = 'dropdown-menu';
+
+      [
+        ['heading-level-1', 'Seviye 1', 'H2 başlık'],
+        ['heading-level-2', 'Seviye 2', 'H4 başlık'],
+        ['heading-level-3', 'Seviye 3', 'H6 başlık']
+      ].forEach(function(item) {
+        var li = document.createElement('li');
+        var menuButton = createToolbarButton(
+          'dropdown-item format-btn',
+          item[2],
+          item[1],
+          null,
+          { format: item[0] }
+        );
+        menuButton.type = 'button';
+        li.appendChild(menuButton);
+        headingMenu.appendChild(li);
+      });
+
+      headingGroup.appendChild(headingToggle);
+      headingGroup.appendChild(headingMenu);
+
       var ruleBtn = createToolbarButton(
         buttonClass + ' format-btn',
         'Yatay çizgi',
@@ -218,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
         { format: 'indent' }
       );
 
-      [largeHeadingBtn, mediumHeadingBtn, ruleBtn, indentBtn].forEach(function(button) {
+      [headingGroup, ruleBtn, indentBtn].forEach(function(button) {
         if (insertionAnchor) {
           toolbar.insertBefore(button, insertionAnchor);
         } else {
@@ -255,11 +280,14 @@ document.addEventListener('DOMContentLoaded', function() {
           formattedText = '**' + selectedText + '**';
       } else if (format === 'italic') {
           formattedText = '*' + selectedText + '*';
-      } else if (format === 'heading-large') {
-          applySetextHeading(textarea, '=');
+      } else if (format === 'heading-level-1') {
+          applyCustomHeading(textarea, '-- ');
           return;
-      } else if (format === 'heading-medium') {
-          applySetextHeading(textarea, '-');
+      } else if (format === 'heading-level-2') {
+          applyCustomHeading(textarea, '---- ');
+          return;
+      } else if (format === 'heading-level-3') {
+          applyCustomHeading(textarea, '------ ');
           return;
       } else if (format === 'rule') {
           insertHorizontalRule(textarea);
@@ -277,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
       dispatchAnswerTextChanged(textarea);
   }
 
-  function applySetextHeading(textarea, underlineChar) {
+  function applyCustomHeading(textarea, marker) {
       var value = textarea.value || '';
       var start = textarea.selectionStart;
       var end = textarea.selectionEnd;
@@ -294,7 +322,6 @@ document.addEventListener('DOMContentLoaded', function() {
           headingText = value.substring(lineStart, lineEnd).replace(/\r?\n+/g, ' ').trim() || 'Başlık';
       }
 
-      var marker = underlineChar === '=' ? '== ' : '-- ';
       var replacement = marker + headingText;
 
       textarea.value = value.substring(0, replaceStart) + replacement + value.substring(replaceEnd);

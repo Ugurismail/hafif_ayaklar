@@ -36,6 +36,7 @@ def cleanup_old_online_chat_messages(now):
 def online_chat_messages(request):
     now = timezone.now()
     cleanup_old_online_chat_messages(now)
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
     def serialize_message(message):
         profile = getattr(message.user, 'userprofile', None)
@@ -58,6 +59,16 @@ def online_chat_messages(request):
             'is_self': profile.user_id == request.user.id,
         }
 
+    def unread_count_for_user():
+        last_read_at = profile.online_chat_last_read_at
+        if not last_read_at:
+            UserProfile.objects.filter(pk=profile.pk).update(online_chat_last_read_at=now)
+            profile.online_chat_last_read_at = now
+            return 0
+        return OnlineChatMessage.objects.filter(
+            created_at__gt=last_read_at,
+        ).exclude(user=request.user).count()
+
     if request.method == 'POST':
         body = request.POST.get('body', '').strip()
         if not body:
@@ -76,7 +87,8 @@ def online_chat_messages(request):
             user=request.user,
             body=body,
         )
-        return JsonResponse({'message': serialize_message(message)}, status=201)
+        UserProfile.objects.filter(pk=profile.pk).update(online_chat_last_read_at=now)
+        return JsonResponse({'message': serialize_message(message), 'unread_count': 0}, status=201)
 
     after = request.GET.get('after')
     if after and after.isdigit():
@@ -97,9 +109,15 @@ def online_chat_messages(request):
         .select_related('user')
         .order_by('-last_seen', 'user__username')
     )
+    mark_read = request.GET.get('mark_read') == '1'
+    unread_count = 0 if mark_read else unread_count_for_user()
+    if mark_read:
+        UserProfile.objects.filter(pk=profile.pk).update(online_chat_last_read_at=now)
+        profile.online_chat_last_read_at = now
 
     return JsonResponse({
         'messages': [serialize_message(message) for message in messages],
         'online_users': [serialize_online_user(profile) for profile in online_profiles],
         'online_count': online_profiles.count(),
+        'unread_count': unread_count,
     })

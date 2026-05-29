@@ -538,33 +538,42 @@ mark{
     margin-bottom: 0;
 }
 
-.answer-text h1,
 .answer-text h2,
-.answer-text h3 {
-    margin-top: 2rem;
-    margin-bottom: 1rem;
+.answer-text h4,
+.answer-text h6 {
+    margin-top: 1.1rem;
+    margin-bottom: 0.35rem;
     text-align: left;
     line-height: 1.15;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
     color: color-mix(in srgb, var(--link-color) 86%, var(--text-color) 14%);
 }
 
-.answer-text h1:first-child,
 .answer-text h2:first-child,
-.answer-text h3:first-child {
+.answer-text h4:first-child,
+.answer-text h6:first-child {
     margin-top: 0;
 }
 
-.answer-text h1 {
-    font-size: clamp(2rem, 2.2vw, 2.4rem);
-}
-
 .answer-text h2 {
-    font-size: clamp(1.55rem, 1.8vw, 1.95rem);
+    font-size: 1.95rem;
 }
 
-.answer-text h3 {
-    font-size: clamp(1.3rem, 1.5vw, 1.6rem);
+.answer-text h4 {
+    font-size: 1.55rem;
+}
+
+.answer-text h6 {
+    font-size: 1.2rem;
+}
+
+.answer-text h2 + h4,
+.answer-text h2 + h6,
+.answer-text h4 + h6,
+.answer-text h4 + h2,
+.answer-text h6 + h2,
+.answer-text h6 + h4 {
+    margin-top: 0.7rem;
 }
 
 .answer-text hr {

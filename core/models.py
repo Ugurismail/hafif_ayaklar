@@ -40,6 +40,7 @@ class UserProfile(models.Model):
 
     # Last active timestamp (updated by middleware while user is browsing)
     last_seen = models.DateTimeField(null=True, blank=True)
+    online_chat_last_read_at = models.DateTimeField(null=True, blank=True)
 
     # Radyo DJ yetkisi
     is_dj = models.BooleanField(default=False, verbose_name='DJ Yetkisi')

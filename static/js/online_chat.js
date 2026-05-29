@@ -119,6 +119,18 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem(lastMessageIdKey, String(numericId));
     }
 
+    function buildMessagesUrl(options) {
+        const params = new URLSearchParams();
+        if (options.append && state.lastMessageId) {
+            params.set('after', state.lastMessageId);
+        }
+        if (options.markRead) {
+            params.set('mark_read', '1');
+        }
+        const query = params.toString();
+        return '/online-chat/messages/' + (query ? `?${query}` : '');
+    }
+
     function setMessages(messages, append) {
         if (!messages || messages.length === 0) {
             if (!append && !messagesEl.children.length) {
@@ -148,9 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (state.loading) return;
         state.loading = true;
         try {
-            const url = append && state.lastMessageId
-                ? `/online-chat/messages/?after=${state.lastMessageId}`
-                : '/online-chat/messages/';
+            const url = buildMessagesUrl({ append: append, markRead: state.panelOpen });
             const response = await fetch(url, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -162,9 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await response.json();
             renderUsers(data.online_users || []);
             setMessages(data.messages || [], append);
-            if (!append) {
-                setUnreadCount(0);
-            }
+            setUnreadCount(Number(data.unread_count || 0));
         } catch (error) {
             if (!quiet && typeof showToast === 'function') {
                 showToast(error.message || 'Online sohbet yüklenemedi.', 'error');
@@ -179,9 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         try {
-            const url = state.lastMessageId
-                ? `/online-chat/messages/?after=${state.lastMessageId}`
-                : '/online-chat/messages/';
+            const url = buildMessagesUrl({ append: true, markRead: false });
             const response = await fetch(url, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -190,20 +196,14 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!response.ok) return;
             const data = await response.json();
             renderUsers(data.online_users || []);
+            setUnreadCount(Number(data.unread_count || 0));
             const messages = data.messages || [];
             if (!messages.length) {
                 return;
             }
-            const hadBaseline = Boolean(state.lastMessageId);
-            const incomingMessageCount = messages.filter(function (message) {
-                return !message.is_own;
-            }).length;
             const last = messages[messages.length - 1];
             if (last && last.id) {
                 rememberLastMessageId(last.id);
-            }
-            if (hadBaseline && incomingMessageCount > 0) {
-                setUnreadCount(state.unreadCount + incomingMessageCount);
             }
         } catch (error) {
             // silent
@@ -239,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 node.remove();
             });
             setMessages([data.message], true);
+            setUnreadCount(Number(data.unread_count || 0));
             inputEl.value = '';
             localStorage.removeItem(draftStateKey);
         } catch (error) {
