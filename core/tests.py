@@ -1,7 +1,7 @@
 from django.test import RequestFactory, SimpleTestCase
 
 from core.middleware import LastSeenMiddleware
-from core.templatetags.custom_tags import safe_markdownify
+from core.templatetags.custom_tags import bkz_link, safe_markdownify
 from core.views.attendance_views import _normalize_marks, _normalize_sheets
 
 
@@ -67,6 +67,23 @@ class MarkdownRenderingTests(SimpleTestCase):
         self.assertIn("<ol>", rendered)
         self.assertIn("<li>Bir</li>", rendered)
         self.assertIn("<li>İki</li>", rendered)
+
+    def test_math_text_is_not_rewritten_by_bkz_filter(self):
+        rendered = str(bkz_link(safe_markdownify(r"$\text{(bkz: test)} + x$")))
+
+        self.assertIn(r"$\text{(bkz: test)} + x$", rendered)
+        self.assertNotIn("<a ", rendered)
+
+    def test_existing_matrix_row_break_is_not_over_normalized(self):
+        rendered = str(safe_markdownify(r"$$\begin{pmatrix}1 & 2\\ 3 & 4\end{pmatrix}$$"))
+
+        self.assertIn(r"\\ 3", rendered)
+        self.assertNotIn(r"\\\ 3", rendered)
+
+    def test_single_backslash_before_matrix_row_is_normalized(self):
+        rendered = str(safe_markdownify(r"$$\begin{pmatrix}1 & 2\3 & 4\end{pmatrix}$$"))
+
+        self.assertIn(r"\\ 3", rendered)
 
 
 class AttendanceSheetTests(SimpleTestCase):

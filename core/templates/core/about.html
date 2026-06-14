@@ -76,8 +76,35 @@
          role="tabpanel"
          aria-labelledby="matematik-tab">
       <h2>Matematik Modülü</h2>
-      <p class="mb-2">Yanıtların içinde TeX/LaTeX yazarak matematik formüllerini otomatik render edebilirsin.</p>
-      <p class="text-muted small mb-4">Not: Bu sayfa detaylıdır. Hızlı başlamak istersen yalnızca “Hızlı Başlangıç” bölümüne bak, sonra “Temel Kurallar” ile devam et.</p>
+      <p class="mb-2">Yanıtların içinde TeX/LaTeX yazarak matematik formüllerini düzgün formül görünümüne çevirebilirsin.</p>
+      <p class="text-muted small mb-4">Hiç bilmiyorsan önce şu mantığı akılda tut: normal yazı normal kalır, <code>$...$</code> arasına aldığın kısa formül satır içinde görünür, <code>$$...$$</code> arasına aldığın büyük formül ayrı satırda görünür.</p>
+
+      <div class="row g-3 mb-4">
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h3 class="h6">1. Yaz</h3>
+              <p class="mb-0">Formülü metne ham TeX olarak yazarsın: <code>$x^2+1$</code> gibi.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h3 class="h6">2. Kaydet</h3>
+              <p class="mb-0">Site metni güvenli HTML'e çevirir; matematik bölümlerini bu sırada bozmadan korur.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h3 class="h6">3. Gör</h3>
+              <p class="mb-0">Sayfa açılınca MathJax ham TeX'i okur ve formül olarak gösterir.</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div class="accordion" id="mathDocsAccordion">
         <!-- Hızlı Başlangıç -->
@@ -115,12 +142,17 @@
           </h2>
           <div id="mathDocHow" class="accordion-collapse collapse" aria-labelledby="mathDocHeadingHow" data-bs-parent="#mathDocsAccordion">
             <div class="accordion-body">
-              <ol class="mb-0">
-                <li>Sen metni yazarsın. Metinde normal yazı + işaretlemeler (ör. <code>*italik*</code>, <code>**kalın**</code>) + matematik (ör. <code>$...$</code>) birlikte olabilir.</li>
-                <li>Önce metin Markdown kurallarıyla HTML’ye çevrilir (kalın/italik, paragraflar, listeler, linkler).</li>
-                <li>Sonra matematik blokları taranır ve MathJax tarafından render edilir (TeX/LaTeX → düzgün formül görünümü).</li>
-                <li>Özet/kısaltılmış kartlarda formül bloklarının ortasından kesilmemesi için sistem matematiği “güvenli” şekilde kısaltır.</li>
+              <p class="mb-3">Sistem formülü hesaplamaz; yazdığın TeX'i tarayıcıda okunaklı formül görünümüne çevirir. İşleyiş şu sırayla olur:</p>
+              <ol class="mb-3">
+                <li>Metindeki <code>$...$</code> ve <code>$$...$$</code> matematik parçaları önce geçici olarak korunur.</li>
+                <li>Geri kalan normal metin Markdown kurallarıyla HTML'ye çevrilir: kalın, italik, liste, link, paragraf gibi.</li>
+                <li><code>(bkz: ...)</code>, <code>(k:1)</code>, mention ve spoiler gibi site özellikleri uygulanır; matematik parçalarının içi bu dönüşümlerden korunur.</li>
+                <li>Matematik parçaları tekrar metne yerleştirilir ve sayfa açılınca MathJax bunları formül olarak render eder.</li>
+                <li>Özet/kısaltılmış kartlarda formülün ortadan kesilmemesi için sistem kesme noktasını matematik dışına taşır.</li>
               </ol>
+              <div class="alert alert-secondary mb-0">
+                <strong>Kısaca:</strong> Sen yalnızca doğru sınırları koyarsın. Kısa formül için <code>$...$</code>, büyük formül için <code>$$...$$</code>. Geri kalanını site ve MathJax halleder.
+              </div>
             </div>
           </div>
         </div>
@@ -522,4 +554,36 @@ $$</div>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const tabButtons = document.querySelectorAll('#infoTabs [data-bs-toggle="tab"]');
+  const showTabFromHash = function () {
+    const hash = window.location.hash;
+    if (!hash) return;
+    const allowedHashes = ['#hakkinda', '#matematik', '#kurallar', '#iletisim'];
+    if (!allowedHashes.includes(hash)) return;
+    const trigger = document.querySelector(`#infoTabs [data-bs-target="${hash}"]`);
+    if (trigger && window.bootstrap) {
+      bootstrap.Tab.getOrCreateInstance(trigger).show();
+    }
+  };
+
+  tabButtons.forEach(function (button) {
+    button.addEventListener('shown.bs.tab', function (event) {
+      const target = event.target.getAttribute('data-bs-target');
+      if (target) {
+        window.history.replaceState(null, '', target);
+      }
+      if (target === '#matematik' && typeof window.hafifAyaklarRenderMath === 'function') {
+        window.hafifAyaklarRenderMath(document.getElementById('matematik'));
+      }
+    });
+  });
+
+  showTabFromHash();
+});
+</script>
 {% endblock %}

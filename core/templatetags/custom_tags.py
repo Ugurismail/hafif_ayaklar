@@ -19,6 +19,24 @@ HASHTAG_CHARS = r'A-Za-z0-9_ğüşöçıİĞÜŞÖÇ'
 HASHTAG_PATTERN = re.compile(
     rf'(^|[\s(\[{{>"\'“‘,;:!?])#([{HASHTAG_CHARS}]+)'
 )
+MATH_SEGMENT_PATTERN = re.compile(
+    r'(?<!\\)\$\$(.+?)(?<!\\)\$\$|(?<!\\)\$(?!\$)(.+?)(?<!\\)\$(?!\$)',
+    re.DOTALL,
+)
+
+
+def _apply_outside_math(text, transform):
+    if not text:
+        return ""
+
+    result = []
+    last_end = 0
+    for match in MATH_SEGMENT_PATTERN.finditer(str(text)):
+        result.append(transform(str(text)[last_end:match.start()]))
+        result.append(match.group(0))
+        last_end = match.end()
+    result.append(transform(str(text)[last_end:]))
+    return ''.join(result)
 
 
 def _build_hashtag_link(hashtag_name):
@@ -43,7 +61,7 @@ def bkz_link(text):
         url = reverse('bkz', args=[query])
         return f'(bkz: <a href="{url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">{escape(query)}</a>)'
 
-    return mark_safe(re.sub(pattern, replace, text))
+    return mark_safe(_apply_outside_math(text, lambda chunk: re.sub(pattern, replace, chunk)))
 
 
 @register.filter
@@ -64,8 +82,7 @@ def ref_link(text):
         create_url = reverse('add_question_from_search') + f'?q={quote_plus(ref_text)}'
         return f'<a href="{create_url}" target="_blank" style="text-decoration: none;">{escape(ref_text)}</a>'
 
-    # Sonucu mark_safe() ile işaretleyerek HTML'nin render edilmesini sağlıyoruz.
-    return mark_safe(re.sub(pattern, replace_ref, text))
+    return mark_safe(_apply_outside_math(text, lambda chunk: re.sub(pattern, replace_ref, chunk)))
 
 @register.filter
 def user_has_voted(options, user):
@@ -135,7 +152,7 @@ def tanim_link(text):
         return escape(question_word)
 
     # text içinde tüm (tanim:word:id) kalıplarını replacer ile değiştir.
-    new_text = pattern.sub(replacer, text)
+    new_text = _apply_outside_math(text, lambda chunk: pattern.sub(replacer, chunk))
 
     return mark_safe(new_text)
 
@@ -206,13 +223,15 @@ def reference_link(text):
 
     # HTML etiketlerinin/attribute'larının içini değiştirmeyelim.
     # Aksi halde data-bs-content gibi attribute'larda HTML kırılabilir.
-    chunks = re.split(r'(<[^>]+>)', text)
-    for i, chunk in enumerate(chunks):
-        if chunk.startswith('<') and chunk.endswith('>'):
-            continue
-        chunks[i] = pattern.sub(replace_reference, chunk)
+    def transform_chunk(chunk):
+        chunks = re.split(r'(<[^>]+>)', chunk)
+        for i, subchunk in enumerate(chunks):
+            if subchunk.startswith('<') and subchunk.endswith('>'):
+                continue
+            chunks[i] = pattern.sub(replace_reference, subchunk)
+        return ''.join(chunks)
 
-    new_text = ''.join(chunks)
+    new_text = _apply_outside_math(text, transform_chunk)
     return mark_safe(new_text)
 
 @register.filter
@@ -267,7 +286,7 @@ def mention_link(text):
         # hiçbiri yoksa düz metin döndür
         return f'@{escape(candidate)}'
 
-    result = re.sub(pattern, replace, text)
+    result = _apply_outside_math(text, lambda chunk: re.sub(pattern, replace, chunk))
     return mark_safe(result)
 
 @register.filter
@@ -407,7 +426,8 @@ def safe_markdownify(text, arg='default'):
         # Convert accidental double-escaped commands (\\int -> \int) without touching line breaks.
         content = re.sub(r'\\\\([A-Za-z])', r'\\\1', content)
         # Fix accidental single backslash row breaks like "\3" or "\ 3" -> "\\ 3".
-        content = re.sub(r'\\\s*(\d)', lambda m: "\\\\ " + m.group(1), content)
+        # Already-correct row breaks such as "\\ 3" must be left untouched.
+        content = re.sub(r'(?<!\\)\\\s*(\d)', lambda m: "\\\\ " + m.group(1), content)
         return f"{delim}{content}{delim}"
 
     def _store_math_block(raw_block: str) -> str:
