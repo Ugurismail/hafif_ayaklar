@@ -588,6 +588,44 @@ mark{
     width: 2.2em;
 }
 
+.answer-outline-list {
+    margin: 0.75rem 0 1rem;
+    text-align: left;
+}
+
+.answer-outline-item {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    column-gap: 0.45rem;
+    align-items: start;
+    line-height: 1.45;
+    margin: 0.18rem 0;
+}
+
+.answer-outline-level-1 {
+    margin-left: 1.4rem;
+}
+
+.answer-outline-level-2 {
+    margin-left: 3.2rem;
+}
+
+.answer-outline-level-3 {
+    margin-left: 5rem;
+}
+
+.answer-outline-level-4 {
+    margin-left: 6.8rem;
+}
+
+.answer-outline-marker {
+    white-space: nowrap;
+}
+
+.answer-outline-content {
+    min-width: 0;
+}
+
 .answer-revision-badge {
     display: inline-flex;
     align-items: center;

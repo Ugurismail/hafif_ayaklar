@@ -401,6 +401,7 @@ def safe_markdownify(text, arg='default'):
     spacer_map = {}
     block_map = {}
     indent_map = {}
+    outline_map = {}
 
     # Protect TeX blocks so Markdown doesn't eat backslashes like `\\` (align/matrix).
     # We restore as HTML-escaped text so BLEACH safety is preserved.
@@ -468,6 +469,53 @@ def safe_markdownify(text, arg='default'):
         indent_map[placeholder] = '<span class="answer-paragraph-indent" aria-hidden="true"></span>'
         return f"{prefix}{placeholder}"
 
+    def _store_outline_block(lines):
+        placeholder = f"OUTLINE_{uuid.uuid4().hex[:10]}_END"
+        items = []
+        for marker, content in lines:
+            level = min(4, marker.rstrip('.').count('.') + 1)
+            items.append(
+                '<div class="answer-outline-item '
+                f'answer-outline-level-{level}">'
+                f'<span class="answer-outline-marker">{escape(marker)}</span>'
+                f'<span class="answer-outline-content">{escape(content.strip())}</span>'
+                '</div>'
+            )
+        outline_map[placeholder] = '<div class="answer-outline-list">' + ''.join(items) + '</div>'
+        return placeholder
+
+    def _replace_numbered_outline_blocks(raw_text):
+        line_pattern = re.compile(r'^\s*((?:\d+\.){1,4})\s+(.+)$')
+        lines = raw_text.splitlines()
+        transformed = []
+        index = 0
+
+        while index < len(lines):
+            match = line_pattern.match(lines[index])
+            if not match:
+                transformed.append(lines[index])
+                index += 1
+                continue
+
+            block = []
+            has_nested_marker = False
+            while index < len(lines):
+                line_match = line_pattern.match(lines[index])
+                if not line_match:
+                    break
+                marker = line_match.group(1)
+                content = line_match.group(2)
+                has_nested_marker = has_nested_marker or marker.rstrip('.').count('.') >= 1
+                block.append((marker, content))
+                index += 1
+
+            if has_nested_marker:
+                transformed.append(_store_outline_block(block))
+            else:
+                transformed.extend([f"{marker} {content}" for marker, content in block])
+
+        return '\n'.join(transformed)
+
     def _replace_custom_block_markers(raw_text):
         lines = raw_text.splitlines()
         transformed = []
@@ -511,6 +559,7 @@ def safe_markdownify(text, arg='default'):
     text_with_placeholders = HASHTAG_PATTERN.sub(_store_hashtag, text_with_placeholders)
     text_with_placeholders = re.sub(r'(^|(?:\r?\n))(\u2003{1,})(?=\S)', _store_indent, text_with_placeholders)
     text_with_placeholders = _replace_custom_block_markers(text_with_placeholders)
+    text_with_placeholders = _replace_numbered_outline_blocks(text_with_placeholders)
     text_with_placeholders = _protect_leading_multi_digit_ordinals(text_with_placeholders)
     # Preserve user-authored extra blank lines beyond the normal paragraph break.
     text_with_placeholders = re.sub(r'(?:\r?\n){3,}', _store_spacer, text_with_placeholders)
@@ -571,6 +620,10 @@ def safe_markdownify(text, arg='default'):
     for placeholder, block_html in block_map.items():
         markdown_result = markdown_result.replace(f'<p>{placeholder}</p>', block_html)
         markdown_result = markdown_result.replace(placeholder, block_html)
+
+    for placeholder, outline_html in outline_map.items():
+        markdown_result = markdown_result.replace(f'<p>{placeholder}</p>', outline_html)
+        markdown_result = markdown_result.replace(placeholder, outline_html)
 
     for placeholder, indent_html in indent_map.items():
         markdown_result = markdown_result.replace(placeholder, indent_html)

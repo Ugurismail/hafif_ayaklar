@@ -68,6 +68,21 @@ class MarkdownRenderingTests(SimpleTestCase):
         self.assertIn("<li>Bir</li>", rendered)
         self.assertIn("<li>İki</li>", rendered)
 
+    def test_dotted_outline_renders_up_to_four_levels(self):
+        rendered = str(safe_markdownify(
+            "1. Bir\n"
+            "1.1. İki\n"
+            "1.1.1. Üç\n"
+            "1.1.1.1. Dört"
+        ))
+
+        self.assertIn('class="answer-outline-list"', rendered)
+        self.assertIn('class="answer-outline-item answer-outline-level-1"', rendered)
+        self.assertIn('class="answer-outline-item answer-outline-level-2"', rendered)
+        self.assertIn('class="answer-outline-item answer-outline-level-3"', rendered)
+        self.assertIn('class="answer-outline-item answer-outline-level-4"', rendered)
+        self.assertIn('<span class="answer-outline-marker">1.1.1.1.</span>', rendered)
+
     def test_math_text_is_not_rewritten_by_bkz_filter(self):
         rendered = str(bkz_link(safe_markdownify(r"$\text{(bkz: test)} + x$")))
 
