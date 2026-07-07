@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const unreadCountKey = 'onlineChatUnreadCount';
     const lastMessageIdKey = 'onlineChatLastMessageId';
     const closedPanelPollInterval = 30000;
-    const closedPanelInitialDelay = 2500;
     const panel = bootstrap.Offcanvas.getOrCreateInstance(panelEl);
 
     const state = {
@@ -281,7 +280,6 @@ document.addEventListener('DOMContentLoaded', function () {
     setUnreadCount(state.unreadCount);
 
     state.usersTimer = window.setInterval(refreshClosedPanelState, closedPanelPollInterval);
-    window.setTimeout(refreshClosedPanelState, closedPanelInitialDelay);
 
     document.addEventListener('visibilitychange', function () {
         if (document.visibilityState === 'visible') {
