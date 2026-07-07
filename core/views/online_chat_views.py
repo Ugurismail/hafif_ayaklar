@@ -32,6 +32,26 @@ def cleanup_old_online_chat_messages(now):
     cache.set(CHAT_CLEANUP_CACHE_KEY, True, int(CHAT_CLEANUP_INTERVAL.total_seconds()))
 
 
+def online_chat_unread_count_for_user(profile, user, now):
+    last_read_at = profile.online_chat_last_read_at
+    if not last_read_at:
+        UserProfile.objects.filter(pk=profile.pk).update(online_chat_last_read_at=now)
+        profile.online_chat_last_read_at = now
+        return 0
+    return OnlineChatMessage.objects.filter(
+        created_at__gt=last_read_at,
+    ).exclude(user=user).count()
+
+
+@login_required
+def online_chat_unread_count(request):
+    now = timezone.now()
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    return JsonResponse({
+        'unread_count': online_chat_unread_count_for_user(profile, request.user, now),
+    })
+
+
 @login_required
 def online_chat_messages(request):
     now = timezone.now()
@@ -58,16 +78,6 @@ def online_chat_messages(request):
             'last_seen': timezone.localtime(profile.last_seen).strftime('%H:%M') if profile.last_seen else '',
             'is_self': profile.user_id == request.user.id,
         }
-
-    def unread_count_for_user():
-        last_read_at = profile.online_chat_last_read_at
-        if not last_read_at:
-            UserProfile.objects.filter(pk=profile.pk).update(online_chat_last_read_at=now)
-            profile.online_chat_last_read_at = now
-            return 0
-        return OnlineChatMessage.objects.filter(
-            created_at__gt=last_read_at,
-        ).exclude(user=request.user).count()
 
     if request.method == 'POST':
         body = request.POST.get('body', '').strip()
@@ -110,7 +120,7 @@ def online_chat_messages(request):
         .order_by('-last_seen', 'user__username')
     )
     mark_read = request.GET.get('mark_read') == '1'
-    unread_count = 0 if mark_read else unread_count_for_user()
+    unread_count = 0 if mark_read else online_chat_unread_count_for_user(profile, request.user, now)
     if mark_read:
         UserProfile.objects.filter(pk=profile.pk).update(online_chat_last_read_at=now)
         profile.online_chat_last_read_at = now

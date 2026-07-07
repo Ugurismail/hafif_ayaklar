@@ -1,6 +1,11 @@
-from django.test import RequestFactory, SimpleTestCase
+from datetime import timedelta
+
+from django.contrib.auth.models import User
+from django.test import RequestFactory, SimpleTestCase, TestCase
+from django.utils import timezone
 
 from core.middleware import LastSeenMiddleware
+from core.models import OnlineChatMessage, UserProfile
 from core.templatetags.custom_tags import bkz_link, safe_markdownify
 from core.views.attendance_views import _normalize_marks, _normalize_sheets
 
@@ -88,6 +93,28 @@ class MarkdownRenderingTests(SimpleTestCase):
 
         self.assertIn(r"$\text{(bkz: test)} + x$", rendered)
         self.assertNotIn("<a ", rendered)
+
+
+class OnlineChatUnreadCountTests(TestCase):
+    def test_unread_count_endpoint_returns_lightweight_payload(self):
+        viewer = User.objects.create_user(username="viewer", password="pass")
+        sender = User.objects.create_user(username="sender", password="pass")
+        profile, _ = UserProfile.objects.get_or_create(user=viewer)
+        profile.online_chat_last_read_at = timezone.now() - timedelta(minutes=5)
+        profile.save(update_fields=["online_chat_last_read_at"])
+        OnlineChatMessage.objects.create(user=sender, body="selam")
+
+        self.client.force_login(viewer)
+        response = self.client.get(
+            "/online-chat/unread-count/",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["unread_count"], 1)
+        self.assertNotIn("messages", payload)
+        self.assertNotIn("online_users", payload)
 
     def test_existing_matrix_row_break_is_not_over_normalized(self):
         rendered = str(safe_markdownify(r"$$\begin{pmatrix}1 & 2\\ 3 & 4\end{pmatrix}$$"))

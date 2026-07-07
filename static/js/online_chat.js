@@ -16,7 +16,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const draftStateKey = 'onlineChatDraft';
     const unreadCountKey = 'onlineChatUnreadCount';
     const lastMessageIdKey = 'onlineChatLastMessageId';
-    const closedPanelPollInterval = 7000;
+    const closedPanelPollInterval = 30000;
+    const closedPanelInitialDelay = 2500;
     const panel = bootstrap.Offcanvas.getOrCreateInstance(panelEl);
 
     const state = {
@@ -183,28 +184,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     async function refreshClosedPanelState() {
-        if (state.panelOpen || state.loading) {
+        if (state.panelOpen || state.loading || document.visibilityState === 'hidden') {
             return;
         }
         try {
-            const url = buildMessagesUrl({ append: true, markRead: false });
-            const response = await fetch(url, {
+            const response = await fetch('/online-chat/unread-count/', {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             });
             if (!response.ok) return;
             const data = await response.json();
-            renderUsers(data.online_users || []);
             setUnreadCount(Number(data.unread_count || 0));
-            const messages = data.messages || [];
-            if (!messages.length) {
-                return;
-            }
-            const last = messages[messages.length - 1];
-            if (last && last.id) {
-                rememberLastMessageId(last.id);
-            }
         } catch (error) {
             // silent
         }
@@ -290,7 +281,13 @@ document.addEventListener('DOMContentLoaded', function () {
     setUnreadCount(state.unreadCount);
 
     state.usersTimer = window.setInterval(refreshClosedPanelState, closedPanelPollInterval);
-    refreshClosedPanelState();
+    window.setTimeout(refreshClosedPanelState, closedPanelInitialDelay);
+
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') {
+            refreshClosedPanelState();
+        }
+    });
 
     if (localStorage.getItem(panelStateKey) === '1') {
         panel.show();
