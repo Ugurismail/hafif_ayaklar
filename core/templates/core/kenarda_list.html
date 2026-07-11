@@ -57,7 +57,6 @@
               <div class="d-flex gap-2 mt-auto">
                   <button class="btn btn-sm btn-theme-primary yukle-btn flex-fill"
                           data-taslak-id="{{ t.id }}"
-                          data-taslak-content="{{ t.content }}"
                           data-question-slug="{% if t.question %}{{ t.question.slug }}{% endif %}"
                           data-answer-id="{% if t.answer %}{{ t.answer.id }}{% endif %}"
                           data-draft-source="{{ t.draft_source }}"
@@ -69,7 +68,6 @@
                   <button class="btn btn-sm btn-theme-third gonder-btn flex-fill"
                           data-taslak-id="{{ t.id }}"
                           data-question-slug="{{ t.question.slug }}"
-                          data-taslak-content="{{ t.content }}"
                           title="Doğrudan gönder">
                     <i class="bi bi-send-fill"></i>
                   </button>

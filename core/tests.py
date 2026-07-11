@@ -1,11 +1,12 @@
 from datetime import timedelta
+import json
 
 from django.contrib.auth.models import User
 from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.utils import timezone
 
 from core.middleware import LastSeenMiddleware
-from core.models import OnlineChatMessage, UserProfile
+from core.models import Kenarda, OnlineChatMessage, Question, UserProfile
 from core.templatetags.custom_tags import bkz_link, safe_markdownify
 from core.views.attendance_views import _normalize_marks, _normalize_sheets
 
@@ -126,6 +127,43 @@ class OnlineChatUnreadCountTests(TestCase):
         rendered = str(safe_markdownify(r"$$\begin{pmatrix}1 & 2\3 & 4\end{pmatrix}$$"))
 
         self.assertIn(r"\\ 3", rendered)
+
+
+class KenardaDraftTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="draft-user", password="pass")
+        self.question = Question.objects.create(
+            question_text="Uzun taslak testi",
+            user=self.user,
+        )
+        self.client.force_login(self.user)
+
+    def test_save_accepts_draft_longer_than_50000_characters(self):
+        content = "uzun taslak " * 5000
+
+        response = self.client.post(
+            "/kenarda/save/",
+            data=json.dumps({"question_id": self.question.id, "content": content}),
+            content_type="application/json",
+            HTTP_HOST="127.0.0.1:8000",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "ok")
+
+        draft = Kenarda.objects.get(user=self.user, question=self.question, is_sent=False)
+        self.assertEqual(draft.content, content)
+        self.assertGreater(len(draft.content), 50000)
+
+    def test_draft_list_does_not_embed_full_content_in_button_attributes(self):
+        content = "uzun taslak " * 700
+        Kenarda.objects.create(user=self.user, question=self.question, content=content)
+
+        response = self.client.get("/kenarda/", HTTP_HOST="127.0.0.1:8000")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "data-taslak-content")
+        self.assertNotContains(response, content)
 
 
 class AttendanceSheetTests(SimpleTestCase):
