@@ -26,6 +26,7 @@ from ..answer_git import (
     reject_revision_review,
     render_answer_content_html,
 )
+from ..content_limits import EDITOR_CONTENT_MAX_LENGTH
 from ..forms import AnswerForm
 from ..models import Answer, AnswerRevision, AnswerSuggestion
 
@@ -146,8 +147,14 @@ def answer_live_preview(request):
     question_text = (data.get('question_text') or '').strip()
     question_slug = (data.get('question_slug') or '').strip()
 
-    if len(content) > 50000:
-        return JsonResponse({'status': 'fail', 'error': 'İçerik çok uzun (max 50000 karakter).'}, status=400)
+    if len(content) > EDITOR_CONTENT_MAX_LENGTH:
+        return JsonResponse(
+            {
+                'status': 'fail',
+                'error': f'İçerik çok uzun (max {EDITOR_CONTENT_MAX_LENGTH} karakter).',
+            },
+            status=400,
+        )
 
     html = render_to_string(
         'core/_answer_preview_card.html',

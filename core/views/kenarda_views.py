@@ -19,11 +19,11 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from ..answer_git import create_answer_revision
+from ..content_limits import EDITOR_CONTENT_MAX_LENGTH
 from ..models import Kenarda, Question, Answer
 
 UNICODE_ESCAPE_RE = re.compile(r'\\u([0-9a-fA-F]{4})')
 HEX_ESCAPE_RE = re.compile(r'\\x([0-9a-fA-F]{2})')
-DRAFT_CONTENT_MAX_LENGTH = 250000
 
 
 def _decode_legacy_js_escapes(value: str) -> str:
@@ -41,7 +41,7 @@ def _decode_legacy_js_escapes(value: str) -> str:
 
 def _content_too_long_response():
     return JsonResponse(
-        {"status": "fail", "error": f"İçerik çok uzun (max {DRAFT_CONTENT_MAX_LENGTH} karakter)"},
+        {"status": "fail", "error": f"İçerik çok uzun (max {EDITOR_CONTENT_MAX_LENGTH} karakter)"},
         status=400,
     )
 
@@ -60,7 +60,7 @@ def kenarda_save(request):
         title = _decode_legacy_js_escapes((data.get("title") or "").strip())  # Yeni başlıklar için başlık metni
         draft_source = data.get("draft_source")  # Taslağın kaynağı
 
-        if len(content) > DRAFT_CONTENT_MAX_LENGTH:
+        if len(content) > EDITOR_CONTENT_MAX_LENGTH:
             return _content_too_long_response()
 
         # En az bir bağlam bilgisi olmalı; aksi halde taslak "başlangıç sorusu" gibi yanlış yerde açılabilir.
@@ -160,7 +160,7 @@ def kenarda_preview(request):
     content = (data.get("content") or "")
     title = _decode_legacy_js_escapes((data.get("title") or "").strip())
 
-    if len(content) > DRAFT_CONTENT_MAX_LENGTH:
+    if len(content) > EDITOR_CONTENT_MAX_LENGTH:
         return _content_too_long_response()
 
     if not answer_id and not question_id and not title:

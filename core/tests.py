@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.utils import timezone
 
+from core.content_limits import EDITOR_CONTENT_MAX_LENGTH
 from core.middleware import LastSeenMiddleware
 from core.models import Kenarda, OnlineChatMessage, Question, UserProfile
 from core.templatetags.custom_tags import bkz_link, safe_markdownify
@@ -154,6 +155,46 @@ class KenardaDraftTests(TestCase):
         draft = Kenarda.objects.get(user=self.user, question=self.question, is_sent=False)
         self.assertEqual(draft.content, content)
         self.assertGreater(len(draft.content), 50000)
+
+    def test_live_preview_accepts_draft_longer_than_50000_characters(self):
+        content = "uzun önizleme " * 5000
+
+        response = self.client.post(
+            "/answer/preview/",
+            data=json.dumps(
+                {
+                    "content": content,
+                    "question_text": self.question.question_text,
+                    "question_slug": self.question.slug,
+                }
+            ),
+            content_type="application/json",
+            HTTP_HOST="127.0.0.1:8000",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "ok")
+        self.assertIn("uzun önizleme", response.json()["html"])
+        self.assertGreater(len(content), 50000)
+
+    def test_save_and_live_preview_share_the_same_maximum_length(self):
+        content = "x" * (EDITOR_CONTENT_MAX_LENGTH + 1)
+        payloads = (
+            ("/kenarda/save/", {"question_id": self.question.id, "content": content}),
+            ("/answer/preview/", {"content": content}),
+        )
+
+        for path, payload in payloads:
+            with self.subTest(path=path):
+                response = self.client.post(
+                    path,
+                    data=json.dumps(payload),
+                    content_type="application/json",
+                    HTTP_HOST="127.0.0.1:8000",
+                )
+
+                self.assertEqual(response.status_code, 400)
+                self.assertIn(str(EDITOR_CONTENT_MAX_LENGTH), response.json()["error"])
 
     def test_draft_list_does_not_embed_full_content_in_button_attributes(self):
         content = "uzun taslak " * 700
