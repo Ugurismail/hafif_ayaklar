@@ -15,7 +15,7 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Inches, Pt, RGBColor
 from lxml import etree
 
-from .models import QuestionRelationship, Reference
+from .models import Definition, QuestionRelationship, Reference
 
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -36,9 +36,16 @@ CITATION_RE = re.compile(
     r"(?:\s*,?\s*(?:sayfa|s)\s*:\s*(?P<page>[^)]+?))?\s*\)",
     re.IGNORECASE,
 )
-SPOILER_RE = re.compile(
-    r"-g-\s*(?P<new>.*?)\s*-g-|--gizli--(?P<old>.*?)--gizli--",
+ANNOTATION_RE = re.compile(
+    r"(?P<spoiler>-g-\s*(?P<new>.*?)\s*-g-"
+    r"|--gizli--(?P<old>.*?)--gizli--)"
+    r"|(?P<definition>\((?:tanim|t):(?P<definition_label>[^:\n()]+):"
+    r"(?P<definition_id>\d+)\))",
     re.IGNORECASE | re.DOTALL,
+)
+DEFINITION_RE = re.compile(
+    r"\((?:tanim|t):(?P<label>[^:\n()]+):(?P<definition_id>\d+)\)",
+    re.IGNORECASE,
 )
 CUSTOM_HEADING_RE = re.compile(
     r"^\s*(?P<marker>------|----|--|==)\s+(?P<title>.+?)\s*$"
@@ -56,6 +63,7 @@ CUSTOM_HEADING_OFFSETS = {
 INLINE_RE = re.compile(
     r"(?P<footnote>\[\[PAPER_FOOTNOTE_\d+\]\])"
     r"|(?P<link>\[(?P<link_text>[^\]]+)\]\((?P<link_url>https?://[^)]+)\))"
+    r"|(?P<bold_italic>\*\*\*(?P<bold_italic_text>.+?)\*\*\*)"
     r"|(?P<bold>\*\*(?P<bold_text>.+?)\*\*)"
     r"|(?P<italic>(?<!\*)\*(?P<italic_text>[^*\n]+?)\*(?!\*))"
 )
@@ -329,7 +337,7 @@ def _add_hyperlink(paragraph, text, url):
     run = OxmlElement("w:r")
     run_properties = OxmlElement("w:rPr")
     color = OxmlElement("w:color")
-    color.set(qn("w:val"), "1F4E79")
+    color.set(qn("w:val"), "0563C1")
     underline = OxmlElement("w:u")
     underline.set(qn("w:val"), "single")
     run_properties.append(color)
@@ -392,6 +400,9 @@ def _add_inline_text(paragraph, text):
             _set_run_font(run)
         elif match.group("link"):
             _add_hyperlink(paragraph, match.group("link_text"), match.group("link_url"))
+        elif match.group("bold_italic"):
+            run = paragraph.add_run(match.group("bold_italic_text"))
+            _set_run_font(run, bold=True, italic=True)
         elif match.group("bold"):
             run = paragraph.add_run(match.group("bold_text"))
             _set_run_font(run, bold=True)
@@ -743,13 +754,35 @@ def _question_levels(answers, target_user, root_question_id=None):
 class PaperTextRenderer:
     def __init__(self, answers):
         all_text = "\n".join(answer.answer_text or "" for answer in answers)
+        definition_ids = {
+            int(match.group("definition_id"))
+            for match in DEFINITION_RE.finditer(all_text)
+        }
+        self.definitions = Definition.objects.in_bulk(definition_ids)
+        definition_text = "\n".join(
+            definition.definition_text or ""
+            for definition in self.definitions.values()
+        )
         reference_ids = {
             int(match.group("reference_id"))
-            for match in CITATION_RE.finditer(all_text)
+            for match in CITATION_RE.finditer(f"{all_text}\n{definition_text}")
         }
         self.references = Reference.objects.in_bulk(reference_ids)
         self.used_reference_ids = set(reference_ids)
         self.notes = []
+
+    def _add_note(self, text):
+        note_id = len(self.notes) + 1
+        marker = f"[[PAPER_FOOTNOTE_{note_id}]]"
+        self.notes.append(
+            {
+                "id": note_id,
+                "marker": marker,
+                "mark": "*" * (((note_id - 1) % 3) + 1),
+                "text": self._clean_footnote_text(text),
+            }
+        )
+        return marker
 
     def _replace_citation(self, match):
         reference_id = int(match.group("reference_id"))
@@ -767,30 +800,30 @@ class PaperTextRenderer:
     def _clean_footnote_text(self, text):
         text = CITATION_RE.sub(self._replace_citation, text or "")
         text = re.sub(r"\[([^\]]+)\]\((https?://[^)]+)\)", r"\1 (\2)", text)
+        text = re.sub(r"\*\*\*(.+?)\*\*\*", r"\1", text, flags=re.DOTALL)
         text = re.sub(r"\*\*(.+?)\*\*", r"\1", text, flags=re.DOTALL)
         text = re.sub(r"(?<!\*)\*([^*]+?)\*(?!\*)", r"\1", text, flags=re.DOTALL)
         return re.sub(r"\s+", " ", text).strip()
 
     def prepare_text(self, text):
-        def replace_spoiler(match):
+        def replace_annotation(match):
+            if match.group("definition"):
+                label = match.group("definition_label").strip()
+                definition = self.definitions.get(
+                    int(match.group("definition_id"))
+                )
+                if definition is None:
+                    return label
+                return f"{label}{self._add_note(definition.definition_text)}"
+
             note_text = (
                 match.group("new")
                 if match.group("new") is not None
                 else match.group("old")
             )
-            note_id = len(self.notes) + 1
-            marker = f"[[PAPER_FOOTNOTE_{note_id}]]"
-            self.notes.append(
-                {
-                    "id": note_id,
-                    "marker": marker,
-                    "mark": "*" * (((note_id - 1) % 3) + 1),
-                    "text": self._clean_footnote_text(note_text),
-                }
-            )
-            return marker
+            return self._add_note(note_text)
 
-        prepared = SPOILER_RE.sub(replace_spoiler, str(text or ""))
+        prepared = ANNOTATION_RE.sub(replace_annotation, str(text or ""))
         prepared = re.sub(
             r"[ \t]+(?=\[\[PAPER_FOOTNOTE_\d+\]\])",
             "\u00a0",
