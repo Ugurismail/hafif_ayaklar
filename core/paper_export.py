@@ -6,7 +6,11 @@ import re
 import zipfile
 from collections import deque
 from io import BytesIO
+from pathlib import PurePosixPath
+from urllib.parse import unquote, urlparse
 
+from django.conf import settings
+from django.core.files.storage import default_storage
 from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_LINE_SPACING
@@ -14,6 +18,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Inches, Pt, RGBColor
 from lxml import etree
+from PIL import Image, ImageOps, UnidentifiedImageError
 
 from .models import Definition, QuestionRelationship, Reference
 
@@ -51,6 +56,9 @@ CUSTOM_HEADING_RE = re.compile(
     r"^\s*(?P<marker>------|----|--|==)\s+(?P<title>.+?)\s*$"
 )
 MARKDOWN_HEADING_RE = re.compile(r"^\s*(?P<marker>#{1,6})\s+(?P<title>.+?)\s*#*\s*$")
+IMAGE_RE = re.compile(
+    r"^\s*!\[(?P<alt>[^\]]*)\]\((?P<url>[^)]+)\)\s*$"
+)
 NUMBERED_ITEM_RE = re.compile(
     r"^\s*(?P<marker>(?:\d+\.){1,4})\s+(?P<content>.+?)\s*$"
 )
@@ -72,6 +80,9 @@ TURKISH_SORT_ORDER = {
     character: index
     for index, character in enumerate(TURKISH_ALPHABET)
 }
+MAX_PAPER_IMAGE_BYTES = 8 * 1024 * 1024
+MAX_PAPER_IMAGE_WIDTH_CM = 14.5
+MAX_PAPER_IMAGE_HEIGHT_CM = 19.5
 
 
 def _word_tag(local_name):
@@ -431,6 +442,96 @@ def _add_horizontal_rule(document):
     properties.append(borders)
 
 
+def _media_storage_name(image_url):
+    image_path = unquote(urlparse((image_url or "").strip()).path)
+    media_path = urlparse(settings.MEDIA_URL or "/media/").path or "/media/"
+    media_path = f"/{media_path.strip('/')}/"
+    if not image_path.startswith(media_path):
+        return None
+
+    storage_name = image_path[len(media_path):].lstrip("/")
+    if not storage_name or ".." in PurePosixPath(storage_name).parts:
+        return None
+    return storage_name
+
+
+def _paper_image_data(image_url):
+    storage_name = _media_storage_name(image_url)
+    if not storage_name or not default_storage.exists(storage_name):
+        return None
+
+    with default_storage.open(storage_name, "rb") as image_file:
+        raw_image = image_file.read(MAX_PAPER_IMAGE_BYTES + 1)
+    if len(raw_image) > MAX_PAPER_IMAGE_BYTES:
+        return None
+
+    try:
+        with Image.open(BytesIO(raw_image)) as source_image:
+            source_image.seek(0)
+            source_format = (source_image.format or "").upper()
+            orientation = source_image.getexif().get(274, 1)
+            width_px, height_px = source_image.size
+            source_image.load()
+            if width_px < 1 or height_px < 1:
+                return None
+            if source_format in {"PNG", "JPEG"} and orientation in {None, 1}:
+                return raw_image, width_px, height_px
+
+            image = ImageOps.exif_transpose(source_image)
+            image.load()
+            width_px, height_px = image.size
+            has_alpha = image.mode in {"RGBA", "LA"} or "transparency" in image.info
+            image = image.convert("RGBA" if has_alpha else "RGB")
+            output = BytesIO()
+            image.save(output, format="PNG")
+    except (
+        Image.DecompressionBombError,
+        UnidentifiedImageError,
+        OSError,
+        ValueError,
+    ):
+        return None
+
+    if width_px < 1 or height_px < 1:
+        return None
+    return output.getvalue(), width_px, height_px
+
+
+def _add_paper_image(document, image_url, alt_text):
+    image_data = _paper_image_data(image_url)
+    if image_data is None:
+        paragraph = document.add_paragraph(style="Paper Image Note")
+        label = alt_text.strip() or "Görsel"
+        run = paragraph.add_run(f"{label}: ")
+        _set_run_font(run, size=10, italic=True)
+        if image_url.startswith(("http://", "https://")):
+            _add_hyperlink(paragraph, image_url, image_url)
+        else:
+            run = paragraph.add_run(image_url)
+            _set_run_font(run, size=10, italic=True)
+        return
+
+    image_bytes, width_px, height_px = image_data
+    natural_width_cm = width_px * 2.54 / 96
+    natural_height_cm = height_px * 2.54 / 96
+    scale = min(
+        1,
+        MAX_PAPER_IMAGE_WIDTH_CM / natural_width_cm,
+        MAX_PAPER_IMAGE_HEIGHT_CM / natural_height_cm,
+    )
+
+    paragraph = document.add_paragraph(style="Paper Image")
+    run = paragraph.add_run()
+    inline_shape = run.add_picture(
+        BytesIO(image_bytes),
+        width=Cm(natural_width_cm * scale),
+    )
+    inline_shape._inline.docPr.set(
+        "descr",
+        alt_text.strip() or "Entry görseli",
+    )
+
+
 def _answer_heading(line, question_level):
     custom_match = CUSTOM_HEADING_RE.fullmatch(line)
     if custom_match:
@@ -456,12 +557,25 @@ def _answer_blocks(text, question_level):
 
     for line in str(text or "").splitlines():
         heading = _answer_heading(line, question_level)
+        image = IMAGE_RE.fullmatch(line)
         numbered_item = NUMBERED_ITEM_RE.fullmatch(line)
         stripped = line.strip()
         if heading:
             flush_paragraph()
             active_numbered_item = None
             blocks.append(("heading", heading))
+        elif image:
+            flush_paragraph()
+            active_numbered_item = None
+            blocks.append(
+                (
+                    "image",
+                    {
+                        "alt": image.group("alt"),
+                        "url": image.group("url").strip(),
+                    },
+                )
+            )
         elif stripped in {"--", "---", "***"}:
             flush_paragraph()
             active_numbered_item = None
@@ -529,6 +643,10 @@ def _add_answer_body(
                     outline_item["bookmark_name"],
                 )
             heading_index += 1
+            continue
+
+        if kind == "image":
+            _add_paper_image(document, value["url"], value["alt"])
             continue
 
         if kind == "numbered":
@@ -632,6 +750,26 @@ def _configure_document(document):
     numbered_item._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
     numbered_item.font.size = Pt(12)
     numbered_item.paragraph_format.space_after = Pt(6)
+
+    image = document.styles.add_style("Paper Image", WD_STYLE_TYPE.PARAGRAPH)
+    image.base_style = normal
+    image.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    image.paragraph_format.space_before = Pt(8)
+    image.paragraph_format.space_after = Pt(10)
+    image.paragraph_format.keep_together = True
+
+    image_note = document.styles.add_style(
+        "Paper Image Note",
+        WD_STYLE_TYPE.PARAGRAPH,
+    )
+    image_note.base_style = normal
+    image_note.font.name = "Times New Roman"
+    image_note._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
+    image_note.font.size = Pt(10)
+    image_note.font.italic = True
+    image_note.font.color.rgb = RGBColor(100, 100, 100)
+    image_note.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    image_note.paragraph_format.space_after = Pt(8)
 
     heading_sizes = {
         1: 16,

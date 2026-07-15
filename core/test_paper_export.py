@@ -1,10 +1,14 @@
 from io import BytesIO
+import tempfile
 import zipfile
 
 from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.test import TestCase
 from docx import Document
 from lxml import etree
+from PIL import Image
 
 from core.models import Answer, Definition, Question, QuestionRelationship, Reference
 
@@ -235,6 +239,46 @@ class PaperExportTests(TestCase):
         self.assertFalse(italic_run.xpath("./w:rPr/w:b", namespaces=NS))
         self.assertTrue(bold_italic_run.xpath("./w:rPr/w:b", namespaces=NS))
         self.assertTrue(bold_italic_run.xpath("./w:rPr/w:i", namespaces=NS))
+
+    def test_paper_export_embeds_uploaded_images(self):
+        with tempfile.TemporaryDirectory() as media_root:
+            with self.settings(MEDIA_ROOT=media_root, MEDIA_URL="/media/"):
+                image_buffer = BytesIO()
+                Image.new("RGB", (1200, 800), color=(52, 111, 82)).save(
+                    image_buffer,
+                    format="JPEG",
+                )
+                image_path = default_storage.save(
+                    "editor_images/paper-test.jpg",
+                    ContentFile(image_buffer.getvalue()),
+                )
+                self.root_answer.answer_text = (
+                    "![Örnek görsel](http://127.0.0.1:8000/media/"
+                    f"{image_path})\n\n{self.root_answer.answer_text}"
+                )
+                self.root_answer.save(update_fields=["answer_text"])
+
+                response = self.download()
+
+        with zipfile.ZipFile(BytesIO(response.content)) as archive:
+            document_root = etree.fromstring(archive.read("word/document.xml"))
+            media_files = [
+                name
+                for name in archive.namelist()
+                if name.startswith("word/media/")
+            ]
+
+        self.assertEqual(len(media_files), 1)
+        self.assertRegex(media_files[0], r"\.(?:jpe?g|png)$")
+        self.assertTrue(document_root.xpath(".//w:drawing", namespaces=NS))
+        self.assertEqual(
+            document_root.xpath("string(.//*[local-name()='docPr']/@descr)"),
+            "Örnek görsel",
+        )
+        document_text = "".join(
+            document_root.xpath(".//w:body//w:t/text()", namespaces=NS)
+        )
+        self.assertNotIn("![Örnek görsel]", document_text)
 
     def test_paper_export_indents_body_paragraphs_and_four_outline_levels(self):
         response = self.download()
