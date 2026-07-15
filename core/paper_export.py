@@ -44,6 +44,9 @@ CUSTOM_HEADING_RE = re.compile(
     r"^\s*(?P<marker>------|----|--|==)\s+(?P<title>.+?)\s*$"
 )
 MARKDOWN_HEADING_RE = re.compile(r"^\s*(?P<marker>#{1,6})\s+(?P<title>.+?)\s*#*\s*$")
+NUMBERED_ITEM_RE = re.compile(
+    r"^\s*(?P<marker>(?:\d+\.){1,4})\s+(?P<content>.+?)\s*$"
+)
 CUSTOM_HEADING_OFFSETS = {
     "==": 1,
     "--": 1,
@@ -433,6 +436,7 @@ def _answer_heading(line, question_level):
 def _answer_blocks(text, question_level):
     blocks = []
     paragraph_lines = []
+    active_numbered_item = None
 
     def flush_paragraph():
         if paragraph_lines:
@@ -441,15 +445,30 @@ def _answer_blocks(text, question_level):
 
     for line in str(text or "").splitlines():
         heading = _answer_heading(line, question_level)
+        numbered_item = NUMBERED_ITEM_RE.fullmatch(line)
         stripped = line.strip()
         if heading:
             flush_paragraph()
+            active_numbered_item = None
             blocks.append(("heading", heading))
         elif stripped in {"--", "---", "***"}:
             flush_paragraph()
+            active_numbered_item = None
             blocks.append(("rule", None))
+        elif numbered_item:
+            flush_paragraph()
+            marker = numbered_item.group("marker")
+            active_numbered_item = {
+                "marker": marker,
+                "level": len(marker.rstrip(".").split(".")),
+                "lines": [numbered_item.group("content")],
+            }
+            blocks.append(("numbered", active_numbered_item))
         elif not stripped:
             flush_paragraph()
+            active_numbered_item = None
+        elif active_numbered_item is not None:
+            active_numbered_item["lines"].append(line)
         else:
             paragraph_lines.append(line)
     flush_paragraph()
@@ -501,7 +520,24 @@ def _add_answer_body(
             heading_index += 1
             continue
 
-        paragraph = document.add_paragraph()
+        if kind == "numbered":
+            paragraph = document.add_paragraph(style="Paper Numbered Item")
+            marker_width = Cm(1.1)
+            item_start = Cm((value["level"] - 1) * 0.75)
+            content_start = item_start + marker_width
+            paragraph.paragraph_format.left_indent = content_start
+            paragraph.paragraph_format.first_line_indent = -marker_width
+            paragraph.paragraph_format.tab_stops.add_tab_stop(content_start)
+
+            marker_run = paragraph.add_run(f'{value["marker"]}\t')
+            _set_run_font(marker_run)
+            for index, line in enumerate(value["lines"]):
+                _add_inline_text(paragraph, line)
+                if index < len(value["lines"]) - 1:
+                    paragraph.add_run().add_break(WD_BREAK.LINE)
+            continue
+
+        paragraph = document.add_paragraph(style="Paper Body")
         lines = value
         if all(line.lstrip().startswith(">") for line in lines):
             paragraph.paragraph_format.left_indent = Cm(0.75)
@@ -568,6 +604,23 @@ def _configure_document(document):
     normal.paragraph_format.line_spacing_rule = WD_LINE_SPACING.ONE_POINT_FIVE
     normal.paragraph_format.space_after = Pt(6)
     normal.paragraph_format.widow_control = True
+
+    body = document.styles.add_style("Paper Body", WD_STYLE_TYPE.PARAGRAPH)
+    body.base_style = normal
+    body.font.name = "Times New Roman"
+    body._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
+    body.font.size = Pt(12)
+    body.paragraph_format.first_line_indent = Cm(1.25)
+
+    numbered_item = document.styles.add_style(
+        "Paper Numbered Item",
+        WD_STYLE_TYPE.PARAGRAPH,
+    )
+    numbered_item.base_style = normal
+    numbered_item.font.name = "Times New Roman"
+    numbered_item._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
+    numbered_item.font.size = Pt(12)
+    numbered_item.paragraph_format.space_after = Pt(6)
 
     heading_sizes = {
         1: 16,

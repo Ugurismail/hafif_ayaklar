@@ -77,7 +77,11 @@ class PaperExportTests(TestCase):
                 "---- İkinci Bölüm\n"
                 "İkinci bölüm metni.\n"
                 "------ Üçüncü Bölüm\n"
-                "Üçüncü bölüm metni."
+                "Üçüncü bölüm metni.\n\n"
+                "1. Birinci düzey\n"
+                "1.2. İkinci düzey\n"
+                "1.2.1. Üçüncü düzey\n"
+                "1.2.1.1. Dördüncü düzey"
             ),
         )
         self.child_answer = Answer.objects.create(
@@ -173,6 +177,51 @@ class PaperExportTests(TestCase):
         self.assertTrue(bibliography_texts[0].startswith("Aksoy, Ayşe (2018)."))
         self.assertTrue(bibliography_texts[1].startswith("Öz, Özlem (2019)."))
         self.assertTrue(bibliography_texts[2].startswith("Zengin, Zeynep; Kaya, Kemal (2020)."))
+
+    def test_paper_export_indents_body_paragraphs_and_four_outline_levels(self):
+        response = self.download()
+        document = Document(BytesIO(response.content))
+
+        body_paragraph = next(
+            paragraph
+            for paragraph in document.paragraphs
+            if paragraph.text == "Birinci bölüm metni."
+        )
+        self.assertEqual(body_paragraph.style.name, "Paper Body")
+        self.assertAlmostEqual(
+            body_paragraph.style.paragraph_format.first_line_indent.cm,
+            1.25,
+            places=2,
+        )
+
+        numbered_paragraphs = [
+            paragraph
+            for paragraph in document.paragraphs
+            if paragraph.style.name == "Paper Numbered Item"
+        ]
+        self.assertEqual(
+            [paragraph.text for paragraph in numbered_paragraphs],
+            [
+                "1.\tBirinci düzey",
+                "1.2.\tİkinci düzey",
+                "1.2.1.\tÜçüncü düzey",
+                "1.2.1.1.\tDördüncü düzey",
+            ],
+        )
+        for paragraph, expected_indent in zip(
+            numbered_paragraphs,
+            (1.1, 1.85, 2.6, 3.35),
+        ):
+            self.assertAlmostEqual(
+                paragraph.paragraph_format.left_indent.cm,
+                expected_indent,
+                places=2,
+            )
+            self.assertAlmostEqual(
+                paragraph.paragraph_format.first_line_indent.cm,
+                -1.1,
+                places=2,
+            )
 
     def test_paper_export_contains_toc_and_custom_star_footnotes(self):
         response = self.download()
