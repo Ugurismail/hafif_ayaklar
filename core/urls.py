@@ -12,7 +12,7 @@ from .views.definition_reference_views import create_definition, create_referenc
 from .views.delphoi_views import delphoi_home, delphoi_result
 from .views.ethics_views import ethics_atlas
 from .views.error_views import custom_400_view, custom_403_view, custom_404_view, custom_500_view, custom_502_view, debug_show_400, debug_show_403, debug_show_404, debug_show_500, debug_show_502
-from .views.export_views import download_entries_docx, download_entries_json, download_entries_pdf, download_entries_xlsx, filter_answers
+from .views.export_views import download_entries_docx, download_entries_json, download_entries_paper, download_entries_pdf, download_entries_xlsx, filter_answers
 from .views.german_views import german_course_home, german_lesson_detail, german_level_test
 from .views.hashtag_views import all_hashtags, hashtag_view, search_hashtags, trending_hashtags
 from .views.iat_views import game_of_life, iat_result, iat_result_page, iat_start, iat_test
@@ -169,6 +169,7 @@ urlpatterns = [
     path('profile/<str:username>/download_entries_json/', download_entries_json, name='download_entries_json'),
     path('profile/<str:username>/download_entries_xlsx/', download_entries_xlsx, name='download_entries_xlsx'),
     path('profile/<str:username>/download_entries_docx/', download_entries_docx, name='download_entries_docx'),
+    path('profile/<str:username>/download_entries_paper/', download_entries_paper, name='download_entries_paper'),
     path('profile/<str:username>/download_entries_pdf/', download_entries_pdf, name='download_entries_pdf'),
     path('question/<int:question_id>/filter_answers/', filter_answers, name='filter_answers'),
 

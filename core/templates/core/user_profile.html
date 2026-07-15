@@ -915,6 +915,9 @@
               <input type="radio" class="btn-check" name="format" id="formatWord" value="docx">
               <label class="btn btn-outline-theme-secondary" for="formatWord">Word</label>
 
+              <input type="radio" class="btn-check" name="format" id="formatPaper" value="paper">
+              <label class="btn btn-outline-theme-secondary" for="formatPaper">Paper</label>
+
               <input type="radio" class="btn-check" name="format" id="formatExcel" value="xlsx">
               <label class="btn btn-outline-theme-secondary" for="formatExcel">Excel</label>
 
@@ -1800,6 +1803,9 @@ function debounce(func, delay) {
         break;
       case 'docx':
         downloadUrl = `/profile/${username}/download_entries_docx/`;
+        break;
+      case 'paper':
+        downloadUrl = `/profile/${username}/download_entries_paper/`;
         break;
       case 'xlsx':
         downloadUrl = `/profile/${username}/download_entries_xlsx/`;

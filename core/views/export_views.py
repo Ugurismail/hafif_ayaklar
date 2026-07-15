@@ -100,7 +100,7 @@ def get_filtered_user_answers(request, target_user):
         order = request.POST.get('order', 'oldest')
         root_question_id = request.POST.get('root_question_id', '')
 
-    user_answers = Answer.objects.filter(user=target_user)
+    user_answers = Answer.objects.filter(user=target_user).select_related('question')
 
     if root_question_id:
         try:
@@ -458,6 +458,36 @@ def download_entries_docx(request, username):
         content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     )
     response['Content-Disposition'] = f'attachment; filename="{target_user.username}_entries.docx"'
+    return response
+
+
+@login_required
+def download_entries_paper(request, username):
+    from ..paper_export import build_paper_docx
+
+    target_user = get_object_or_404(User, username=username)
+    if request.user != target_user and not request.user.is_superuser:
+        return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
+
+    user_answers = get_filtered_user_answers(request, target_user)
+    root_question_id = request.POST.get('root_question_id') if request.method == 'POST' else None
+    try:
+        root_question_id = int(root_question_id) if root_question_id else None
+    except (TypeError, ValueError):
+        root_question_id = None
+
+    document_bytes = build_paper_docx(
+        user_answers,
+        target_user,
+        root_question_id=root_question_id,
+    )
+    response = HttpResponse(
+        document_bytes,
+        content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    )
+    response['Content-Disposition'] = (
+        f'attachment; filename="{target_user.username}_paper.docx"'
+    )
     return response
 
 

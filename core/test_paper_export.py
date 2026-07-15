@@ -1,0 +1,210 @@
+from io import BytesIO
+import zipfile
+
+from django.contrib.auth.models import User
+from django.test import TestCase
+from docx import Document
+from lxml import etree
+
+from core.models import Answer, Question, QuestionRelationship, Reference
+
+
+W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+NS = {"w": W_NS}
+
+
+class PaperExportTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="paper-user", password="pass")
+        self.other_user = User.objects.create_user(username="other-user", password="pass")
+
+        self.root = Question.objects.create(
+            question_text="Büyük Başlık",
+            user=self.user,
+        )
+        self.child = Question.objects.create(
+            question_text="Alt Başlık",
+            user=self.user,
+        )
+        self.grandchild = Question.objects.create(
+            question_text="İkinci Alt Başlık",
+            user=self.user,
+        )
+        QuestionRelationship.objects.create(
+            parent=self.root,
+            child=self.child,
+            user=self.user,
+        )
+        QuestionRelationship.objects.create(
+            parent=self.child,
+            child=self.grandchild,
+            user=self.user,
+        )
+
+        self.aksoy = Reference.objects.create(
+            author_surname="Aksoy",
+            author_name="Ayşe",
+            year=2018,
+            metin_ismi="Alfabetik Kaynak",
+            rest="Ankara: Örnek Yayınları.",
+            created_by=self.user,
+        )
+        self.zengin = Reference.objects.create(
+            author_surname="Zengin; Kaya",
+            author_name="Zeynep; Kemal",
+            year=2020,
+            metin_ismi="Çok Yazarlı Kaynak",
+            rest="İstanbul: Akademi.",
+            created_by=self.user,
+        )
+        self.oz = Reference.objects.create(
+            author_surname="Öz",
+            author_name="Özlem",
+            year=2019,
+            metin_ismi="Türkçe Alfabetik Sıra",
+            rest="İzmir: Deneme.",
+            created_by=self.user,
+        )
+
+        self.root_answer = Answer.objects.create(
+            question=self.root,
+            user=self.user,
+            answer_text=(
+                f"**Temel sav** (k:{self.zengin.id} s:12). "
+                f"-g- İlk dipnot (kaynak:{self.aksoy.id}, sayfa:44) -g-"
+            ),
+        )
+        self.child_answer = Answer.objects.create(
+            question=self.child,
+            user=self.user,
+            answer_text="Alt bölüm --gizli--İkinci dipnot--gizli-- metni.",
+        )
+        self.grandchild_answer = Answer.objects.create(
+            question=self.grandchild,
+            user=self.user,
+            answer_text=(
+                "[Bağlantı](https://example.com) içeren son bölüm "
+                f"(k:{self.oz.id})."
+            ),
+        )
+        self.client.force_login(self.user)
+
+    def download(self):
+        return self.client.post(
+            f"/profile/{self.user.username}/download_entries_paper/",
+            {
+                "entry_ids": ",".join(
+                    str(answer.id)
+                    for answer in (
+                        self.root_answer,
+                        self.child_answer,
+                        self.grandchild_answer,
+                    )
+                ),
+                "order": "oldest",
+                "root_question_id": str(self.root.id),
+            },
+        )
+
+    def test_paper_export_formats_headings_citations_and_bibliography(self):
+        response = self.download()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        self.assertIn("paper-user_paper.docx", response["Content-Disposition"])
+
+        document = Document(BytesIO(response.content))
+        paragraphs = document.paragraphs
+        combined_text = "\n".join(paragraph.text for paragraph in paragraphs)
+        styles_by_text = {
+            paragraph.text: paragraph.style.name
+            for paragraph in paragraphs
+            if paragraph.text in {
+                self.root.question_text,
+                self.child.question_text,
+                self.grandchild.question_text,
+            }
+        }
+
+        self.assertEqual(styles_by_text[self.root.question_text], "Heading 1")
+        self.assertEqual(styles_by_text[self.child.question_text], "Heading 2")
+        self.assertEqual(styles_by_text[self.grandchild.question_text], "Heading 3")
+        self.assertIn("(Zengin vd., 2020, s. 12)", combined_text)
+        self.assertNotIn("(k:", combined_text)
+        self.assertNotIn("(kaynak:", combined_text)
+        self.assertNotIn("-g-", combined_text)
+        self.assertNotIn("--gizli--", combined_text)
+        self.assertNotIn(self.root_answer.created_at.strftime("%Y-%m-%d"), combined_text)
+
+        bibliography_index = next(
+            index
+            for index, paragraph in enumerate(paragraphs)
+            if paragraph.text == "Kaynakça" and paragraph.style.name == "Heading 1"
+        )
+        bibliography_texts = [
+            paragraph.text
+            for paragraph in paragraphs[bibliography_index + 1:]
+            if paragraph.text.strip()
+        ]
+        self.assertTrue(bibliography_texts[0].startswith("Aksoy, Ayşe (2018)."))
+        self.assertTrue(bibliography_texts[1].startswith("Öz, Özlem (2019)."))
+        self.assertTrue(bibliography_texts[2].startswith("Zengin, Zeynep; Kaya, Kemal (2020)."))
+
+    def test_paper_export_contains_toc_and_custom_star_footnotes(self):
+        response = self.download()
+
+        with zipfile.ZipFile(BytesIO(response.content)) as archive:
+            self.assertIn("word/footnotes.xml", archive.namelist())
+            document_root = etree.fromstring(archive.read("word/document.xml"))
+            footnotes_root = etree.fromstring(archive.read("word/footnotes.xml"))
+
+        references = document_root.xpath(".//w:footnoteReference", namespaces=NS)
+        self.assertEqual(len(references), 2)
+        self.assertTrue(
+            all(
+                reference.get(f"{{{W_NS}}}customMarkFollows") == "1"
+                for reference in references
+            )
+        )
+        body_text_nodes = document_root.xpath(".//w:body//w:t/text()", namespaces=NS)
+        self.assertIn("*", body_text_nodes)
+        self.assertIn("**", body_text_nodes)
+        self.assertNotIn("İçindekiler hazırlanıyor.", body_text_nodes)
+        self.assertEqual(
+            len(document_root.xpath(".//w:bookmarkStart", namespaces=NS)),
+            4,
+        )
+        self.assertEqual(
+            len(document_root.xpath(".//w:hyperlink[@w:anchor]", namespaces=NS)),
+            4,
+        )
+
+        note_text = " ".join(
+            footnote.text
+            for footnote in footnotes_root.xpath(
+                ".//w:footnote[number(@w:id) > 0]//w:t",
+                namespaces=NS,
+            )
+            if footnote.text
+        )
+        self.assertIn("İlk dipnot (Aksoy, 2018, s. 44)", note_text)
+        self.assertIn("İkinci dipnot", note_text)
+
+    def test_paper_export_rejects_another_user(self):
+        self.client.force_login(self.other_user)
+
+        response = self.client.post(
+            f"/profile/{self.user.username}/download_entries_paper/",
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_download_modal_offers_paper_format(self):
+        response = self.client.get(f"/profile/{self.user.username}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="paper"')
+        self.assertContains(response, "download_entries_paper")
