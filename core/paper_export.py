@@ -223,7 +223,9 @@ def _make_footnotes_part(notes):
         reference_properties = etree.SubElement(reference_run, _word_tag("rPr"))
         reference_style = etree.SubElement(reference_properties, _word_tag("rStyle"))
         reference_style.set(_word_tag("val"), "FootnoteReference")
-        etree.SubElement(reference_run, _word_tag("footnoteRef"))
+        # footnoteRef forces Word's automatic number; custom marks stay literal.
+        reference_mark = etree.SubElement(reference_run, _word_tag("t"))
+        reference_mark.text = note["mark"]
         _append_direct_run(paragraph, f" {note['text']}")
 
     return root
@@ -250,23 +252,9 @@ def _replace_footnote_marker(document_root, marker, note_id, mark):
         reference.set(_word_tag("id"), str(note_id))
         reference.set(_word_tag("customMarkFollows"), "1")
         custom_mark = etree.SubElement(reference_run, _word_tag("t"))
-        custom_mark.text = "*"
+        custom_mark.text = mark
         source_index = parent.index(source_run)
         parent.insert(source_index + 1, reference_run)
-        if len(mark) > 1:
-            extra_mark_run = etree.Element(_word_tag("r"))
-            extra_mark_properties = etree.SubElement(
-                extra_mark_run,
-                _word_tag("rPr"),
-            )
-            extra_mark_style = etree.SubElement(
-                extra_mark_properties,
-                _word_tag("rStyle"),
-            )
-            extra_mark_style.set(_word_tag("val"), "FootnoteReference")
-            extra_mark = etree.SubElement(extra_mark_run, _word_tag("t"))
-            extra_mark.text = mark[1:]
-            parent.insert(source_index + 2, extra_mark_run)
         return True
     return False
 

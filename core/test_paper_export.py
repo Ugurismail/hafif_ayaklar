@@ -191,19 +191,13 @@ class PaperExportTests(TestCase):
             )
         )
         body_text_nodes = document_root.xpath(".//w:body//w:t/text()", namespaces=NS)
-        self.assertIn("*", body_text_nodes)
-        visible_marks = []
-        for reference in references:
-            reference_run = reference.getparent()
-            mark = "".join(reference_run.xpath("./w:t/text()", namespaces=NS))
-            following_run = reference_run.getnext()
-            if following_run is not None and following_run.xpath(
-                "./w:rPr/w:rStyle[@w:val='FootnoteReference']",
-                namespaces=NS,
-            ):
-                mark += "".join(following_run.xpath("./w:t/text()", namespaces=NS))
-            visible_marks.append(mark)
-        self.assertEqual(visible_marks, ["*", "**"])
+        self.assertEqual(
+            [
+                "".join(reference.getparent().xpath("./w:t/text()", namespaces=NS))
+                for reference in references
+            ],
+            ["*", "**"],
+        )
         self.assertNotIn("İçindekiler hazırlanıyor.", body_text_nodes)
         self.assertEqual(
             len(document_root.xpath(".//w:bookmarkStart", namespaces=NS)),
@@ -234,21 +228,20 @@ class PaperExportTests(TestCase):
         )
         self.assertIn("İlk dipnot (Aksoy, 2018, s. 44)", note_text)
         self.assertIn("İkinci dipnot", note_text)
+        self.assertEqual(
+            footnotes_root.xpath(
+                ".//w:footnote[number(@w:id) > 0]"
+                "//w:r[w:rPr/w:rStyle[@w:val='FootnoteReference']]"
+                "/w:t/text()",
+                namespaces=NS,
+            ),
+            ["*", "**"],
+        )
         self.assertFalse(
             footnotes_root.xpath(
-                ".//w:footnote[number(@w:id) > 0]//w:t["
-                "text()='*' or text()='**' or text()='***']",
+                ".//w:footnote[number(@w:id) > 0]//w:footnoteRef",
                 namespaces=NS,
             )
-        )
-        self.assertEqual(
-            len(
-                footnotes_root.xpath(
-                    ".//w:footnote[number(@w:id) > 0]//w:footnoteRef",
-                    namespaces=NS,
-                )
-            ),
-            2,
         )
 
     def test_paper_export_rejects_another_user(self):
