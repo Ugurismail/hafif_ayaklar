@@ -40,6 +40,16 @@ SPOILER_RE = re.compile(
     r"-g-\s*(?P<new>.*?)\s*-g-|--gizli--(?P<old>.*?)--gizli--",
     re.IGNORECASE | re.DOTALL,
 )
+CUSTOM_HEADING_RE = re.compile(
+    r"^\s*(?P<marker>------|----|--|==)\s+(?P<title>.+?)\s*$"
+)
+MARKDOWN_HEADING_RE = re.compile(r"^\s*(?P<marker>#{1,6})\s+(?P<title>.+?)\s*#*\s*$")
+CUSTOM_HEADING_OFFSETS = {
+    "==": 1,
+    "--": 1,
+    "----": 3,
+    "------": 5,
+}
 INLINE_RE = re.compile(
     r"(?P<footnote>\[\[PAPER_FOOTNOTE_\d+\]\])"
     r"|(?P<link>\[(?P<link_text>[^\]]+)\]\((?P<link_url>https?://[^)]+)\))"
@@ -214,12 +224,6 @@ def _make_footnotes_part(notes):
         reference_style = etree.SubElement(reference_properties, _word_tag("rStyle"))
         reference_style.set(_word_tag("val"), "FootnoteReference")
         etree.SubElement(reference_run, _word_tag("footnoteRef"))
-        _append_direct_run(
-            paragraph,
-            note["mark"],
-            superscript=True,
-            bold=True,
-        )
         _append_direct_run(paragraph, f" {note['text']}")
 
     return root
@@ -245,24 +249,24 @@ def _replace_footnote_marker(document_root, marker, note_id, mark):
         reference = etree.SubElement(reference_run, _word_tag("footnoteReference"))
         reference.set(_word_tag("id"), str(note_id))
         reference.set(_word_tag("customMarkFollows"), "1")
-
-        custom_marker_run = etree.Element(_word_tag("r"))
-        custom_marker_properties = etree.SubElement(custom_marker_run, _word_tag("rPr"))
-        custom_marker_style = etree.SubElement(custom_marker_properties, _word_tag("rStyle"))
-        custom_marker_style.set(_word_tag("val"), "FootnoteReference")
-        custom_marker = etree.SubElement(custom_marker_run, _word_tag("t"))
-        custom_marker.text = "\u200b"
-
-        visible_mark_run = etree.Element(_word_tag("r"))
-        visible_mark_properties = etree.SubElement(visible_mark_run, _word_tag("rPr"))
-        visible_mark_style = etree.SubElement(visible_mark_properties, _word_tag("rStyle"))
-        visible_mark_style.set(_word_tag("val"), "FootnoteReference")
-        visible_mark = etree.SubElement(visible_mark_run, _word_tag("t"))
-        visible_mark.text = mark
+        custom_mark = etree.SubElement(reference_run, _word_tag("t"))
+        custom_mark.text = "*"
         source_index = parent.index(source_run)
         parent.insert(source_index + 1, reference_run)
-        parent.insert(source_index + 2, custom_marker_run)
-        parent.insert(source_index + 3, visible_mark_run)
+        if len(mark) > 1:
+            extra_mark_run = etree.Element(_word_tag("r"))
+            extra_mark_properties = etree.SubElement(
+                extra_mark_run,
+                _word_tag("rPr"),
+            )
+            extra_mark_style = etree.SubElement(
+                extra_mark_properties,
+                _word_tag("rStyle"),
+            )
+            extra_mark_style.set(_word_tag("val"), "FootnoteReference")
+            extra_mark = etree.SubElement(extra_mark_run, _word_tag("t"))
+            extra_mark.text = mark[1:]
+            parent.insert(source_index + 2, extra_mark_run)
         return True
     return False
 
@@ -425,40 +429,102 @@ def _add_horizontal_rule(document):
     properties.append(borders)
 
 
-def _add_answer_body(document, text, renderer, question_level):
+def _answer_heading(line, question_level):
+    custom_match = CUSTOM_HEADING_RE.fullmatch(line)
+    if custom_match:
+        offset = CUSTOM_HEADING_OFFSETS[custom_match.group("marker")]
+        return custom_match.group("title"), min(question_level + offset, 9)
+
+    markdown_match = MARKDOWN_HEADING_RE.fullmatch(line)
+    if markdown_match:
+        relative_level = max(1, (len(markdown_match.group("marker")) + 1) // 2)
+        return markdown_match.group("title"), min(question_level + relative_level, 9)
+    return None
+
+
+def _answer_blocks(text, question_level):
+    blocks = []
+    paragraph_lines = []
+
+    def flush_paragraph():
+        if paragraph_lines:
+            blocks.append(("paragraph", list(paragraph_lines)))
+            paragraph_lines.clear()
+
+    for line in str(text or "").splitlines():
+        heading = _answer_heading(line, question_level)
+        stripped = line.strip()
+        if heading:
+            flush_paragraph()
+            blocks.append(("heading", heading))
+        elif stripped in {"--", "---", "***"}:
+            flush_paragraph()
+            blocks.append(("rule", None))
+        elif not stripped:
+            flush_paragraph()
+        else:
+            paragraph_lines.append(line)
+    flush_paragraph()
+    return blocks
+
+
+def _plain_heading_text(text):
+    text = re.sub(r"\[([^\]]+)\]\(https?://[^)]+\)", r"\1", text or "")
+    text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)
+    text = re.sub(r"(?<!\*)\*([^*]+?)\*(?!\*)", r"\1", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _answer_heading_outline(text, question_level):
+    return [
+        {"title": _plain_heading_text(value[0]), "level": value[1]}
+        for kind, value in _answer_blocks(text, question_level)
+        if kind == "heading"
+    ]
+
+
+def _add_answer_body(
+    document,
+    text,
+    renderer,
+    question_level,
+    heading_outline=None,
+):
     prepared = renderer.prepare_text(text)
     if not prepared.strip():
         return
 
-    blocks = re.split(r"\n{2,}", prepared.strip())
-    for block in blocks:
-        block = block.strip("\n")
-        if not block.strip():
-            continue
-        if block.strip() in {"--", "---", "***"}:
+    heading_index = 0
+    for kind, value in _answer_blocks(prepared, question_level):
+        if kind == "rule":
             _add_horizontal_rule(document)
             continue
-
-        heading_match = re.fullmatch(r"\s*(#{1,6})\s+(.+?)\s*#*\s*", block)
-        if heading_match:
-            relative_level = max(1, (len(heading_match.group(1)) + 1) // 2)
-            level = min(question_level + relative_level, 9)
+        if kind == "heading":
+            title, level = value
             heading = document.add_heading(level=level)
-            _add_inline_text(heading, heading_match.group(2))
+            _add_inline_text(heading, title)
+            if heading_outline and heading_index < len(heading_outline):
+                outline_item = heading_outline[heading_index]
+                _add_bookmark(
+                    heading,
+                    outline_item["bookmark_id"],
+                    outline_item["bookmark_name"],
+                )
+            heading_index += 1
             continue
 
         paragraph = document.add_paragraph()
-        if all(line.lstrip().startswith(">") for line in block.splitlines()):
+        lines = value
+        if all(line.lstrip().startswith(">") for line in lines):
             paragraph.paragraph_format.left_indent = Cm(0.75)
             paragraph.paragraph_format.right_indent = Cm(0.5)
             paragraph.paragraph_format.first_line_indent = Cm(0)
-            lines = [line.lstrip()[1:].lstrip() for line in block.splitlines()]
-            block = "\n".join(lines)
+            lines = [line.lstrip()[1:].lstrip() for line in lines]
             paragraph.style = document.styles["Paper Quote"]
 
-        for index, line in enumerate(block.split("\n")):
+        for index, line in enumerate(lines):
             _add_inline_text(paragraph, line)
-            if index < len(block.split("\n")) - 1:
+            if index < len(lines) - 1:
                 paragraph.add_run().add_break(WD_BREAK.LINE)
 
 
@@ -730,26 +796,43 @@ def build_paper_docx(answers, target_user, root_question_id=None):
     missing_reference_ids = renderer.missing_reference_ids()
 
     outline = []
-    bookmark_by_question_id = {}
+    question_outline = {}
+    answer_heading_outline = {}
+
+    def add_outline_item(title, level, bookmark_name):
+        item = {
+            "title": title,
+            "level": level,
+            "bookmark_name": bookmark_name,
+            "bookmark_id": len(outline) + 1,
+        }
+        outline.append(item)
+        return item
+
     for answer in answers:
-        if answer.question_id in bookmark_by_question_id:
-            continue
-        bookmark_name = f"paper_heading_{len(bookmark_by_question_id) + 1}"
-        bookmark_by_question_id[answer.question_id] = bookmark_name
-        outline.append(
-            {
-                "title": answer.question.question_text,
-                "level": levels.get(answer.question_id, 1),
-                "bookmark_name": bookmark_name,
-            }
-        )
+        question_level = levels.get(answer.question_id, 1)
+        if answer.question_id not in question_outline:
+            question_outline[answer.question_id] = add_outline_item(
+                answer.question.question_text,
+                question_level,
+                f"paper_question_{answer.question_id}",
+            )
+
+        answer_heading_outline[answer.id] = []
+        for heading in _answer_heading_outline(answer.answer_text, question_level):
+            item = add_outline_item(
+                heading["title"],
+                heading["level"],
+                f"paper_content_{len(outline) + 1}",
+            )
+            answer_heading_outline[answer.id].append(item)
+
+    bibliography_outline = None
     if bibliography or missing_reference_ids:
-        outline.append(
-            {
-                "title": "Kaynakça",
-                "level": 1,
-                "bookmark_name": "paper_bibliography",
-            }
+        bibliography_outline = add_outline_item(
+            "Kaynakça",
+            1,
+            "paper_bibliography",
         )
 
     document.core_properties.title = "Paper"
@@ -763,22 +846,29 @@ def build_paper_docx(answers, target_user, root_question_id=None):
         if answer.question_id != last_question_id:
             heading = document.add_heading(answer.question.question_text, level=level)
             if answer.question_id not in bookmarked_question_ids:
+                outline_item = question_outline[answer.question_id]
                 _add_bookmark(
                     heading,
-                    len(bookmarked_question_ids) + 1,
-                    bookmark_by_question_id[answer.question_id],
+                    outline_item["bookmark_id"],
+                    outline_item["bookmark_name"],
                 )
                 bookmarked_question_ids.add(answer.question_id)
             last_question_id = answer.question_id
-        _add_answer_body(document, answer.answer_text, renderer, level)
+        _add_answer_body(
+            document,
+            answer.answer_text,
+            renderer,
+            level,
+            heading_outline=answer_heading_outline.get(answer.id),
+        )
 
     if bibliography or missing_reference_ids:
         document.add_page_break()
         bibliography_heading = document.add_heading("Kaynakça", level=1)
         _add_bookmark(
             bibliography_heading,
-            len(bookmarked_question_ids) + 1,
-            "paper_bibliography",
+            bibliography_outline["bookmark_id"],
+            bibliography_outline["bookmark_name"],
         )
         for reference in bibliography:
             _add_bibliography_entry(document, reference)

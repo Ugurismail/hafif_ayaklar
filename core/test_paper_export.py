@@ -71,7 +71,13 @@ class PaperExportTests(TestCase):
             user=self.user,
             answer_text=(
                 f"**Temel sav** (k:{self.zengin.id} s:12). "
-                f"-g- İlk dipnot (kaynak:{self.aksoy.id}, sayfa:44) -g-"
+                f"-g- İlk dipnot (kaynak:{self.aksoy.id}, sayfa:44) -g-\n\n"
+                "-- Birinci Bölüm\n\n"
+                "Birinci bölüm metni.\n"
+                "---- İkinci Bölüm\n"
+                "İkinci bölüm metni.\n"
+                "------ Üçüncü Bölüm\n"
+                "Üçüncü bölüm metni."
             ),
         )
         self.child_answer = Answer.objects.create(
@@ -132,6 +138,21 @@ class PaperExportTests(TestCase):
         self.assertEqual(styles_by_text[self.root.question_text], "Heading 1")
         self.assertEqual(styles_by_text[self.child.question_text], "Heading 2")
         self.assertEqual(styles_by_text[self.grandchild.question_text], "Heading 3")
+        content_heading_styles = {
+            paragraph.text: paragraph.style.name
+            for paragraph in paragraphs
+            if paragraph.text in {
+                "Birinci Bölüm",
+                "İkinci Bölüm",
+                "Üçüncü Bölüm",
+            }
+        }
+        self.assertEqual(content_heading_styles["Birinci Bölüm"], "Heading 2")
+        self.assertEqual(content_heading_styles["İkinci Bölüm"], "Heading 4")
+        self.assertEqual(content_heading_styles["Üçüncü Bölüm"], "Heading 6")
+        self.assertNotIn("-- Birinci Bölüm", combined_text)
+        self.assertNotIn("---- İkinci Bölüm", combined_text)
+        self.assertNotIn("------ Üçüncü Bölüm", combined_text)
         self.assertIn("(Zengin vd., 2020, s. 12)", combined_text)
         self.assertNotIn("(k:", combined_text)
         self.assertNotIn("(kaynak:", combined_text)
@@ -171,16 +192,37 @@ class PaperExportTests(TestCase):
         )
         body_text_nodes = document_root.xpath(".//w:body//w:t/text()", namespaces=NS)
         self.assertIn("*", body_text_nodes)
-        self.assertIn("**", body_text_nodes)
+        visible_marks = []
+        for reference in references:
+            reference_run = reference.getparent()
+            mark = "".join(reference_run.xpath("./w:t/text()", namespaces=NS))
+            following_run = reference_run.getnext()
+            if following_run is not None and following_run.xpath(
+                "./w:rPr/w:rStyle[@w:val='FootnoteReference']",
+                namespaces=NS,
+            ):
+                mark += "".join(following_run.xpath("./w:t/text()", namespaces=NS))
+            visible_marks.append(mark)
+        self.assertEqual(visible_marks, ["*", "**"])
         self.assertNotIn("İçindekiler hazırlanıyor.", body_text_nodes)
         self.assertEqual(
             len(document_root.xpath(".//w:bookmarkStart", namespaces=NS)),
-            4,
+            7,
         )
         self.assertEqual(
             len(document_root.xpath(".//w:hyperlink[@w:anchor]", namespaces=NS)),
-            4,
+            7,
         )
+
+        toc_text = " ".join(
+            document_root.xpath(
+                ".//w:body/w:p[w:pPr/w:pStyle[@w:val='PaperTOCEntry']]//w:t/text()",
+                namespaces=NS,
+            )
+        )
+        self.assertIn("Birinci Bölüm", toc_text)
+        self.assertIn("İkinci Bölüm", toc_text)
+        self.assertIn("Üçüncü Bölüm", toc_text)
 
         note_text = " ".join(
             footnote.text
@@ -192,6 +234,22 @@ class PaperExportTests(TestCase):
         )
         self.assertIn("İlk dipnot (Aksoy, 2018, s. 44)", note_text)
         self.assertIn("İkinci dipnot", note_text)
+        self.assertFalse(
+            footnotes_root.xpath(
+                ".//w:footnote[number(@w:id) > 0]//w:t["
+                "text()='*' or text()='**' or text()='***']",
+                namespaces=NS,
+            )
+        )
+        self.assertEqual(
+            len(
+                footnotes_root.xpath(
+                    ".//w:footnote[number(@w:id) > 0]//w:footnoteRef",
+                    namespaces=NS,
+                )
+            ),
+            2,
+        )
 
     def test_paper_export_rejects_another_user(self):
         self.client.force_login(self.other_user)
