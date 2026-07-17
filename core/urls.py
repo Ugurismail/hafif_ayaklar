@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from django.conf import settings
-from .views.answer_page_views import add_answer, delete_answer, edit_answer, single_answer
+from .views.answer_page_views import add_answer, delete_answer, edit_answer, expanded_answer_content, single_answer
 from .views.answer_profile_views import get_root_questions, get_user_answers
 from .views.answer_revision_views import answer_git_history, answer_live_preview, answer_revision_approve, answer_revision_reject, answer_suggest_edit, answer_suggestion_accept, answer_suggestion_detail, answer_suggestion_reject
 from .views.attendance_views import attendance_day_state, attendance_save_state, attendance_sheet_tool
@@ -73,6 +73,11 @@ urlpatterns = [
     path('answer/<int:answer_id>/edit/', edit_answer, name='edit_answer'),
     path('answer/<int:answer_id>/delete/', delete_answer, name='delete_answer'),
     path('answer/<int:answer_id>/history/', answer_git_history, name='answer_git_history'),
+    path(
+        'answer/<int:answer_id>/expand/',
+        expanded_answer_content,
+        name='expanded_answer_content',
+    ),
     path('answer/<int:answer_id>/suggest/', answer_suggest_edit, name='answer_suggest_edit'),
     path('answer/preview/', answer_live_preview, name='answer_live_preview'),
     path('answer/revision/<int:revision_id>/approve/', answer_revision_approve, name='answer_revision_approve'),

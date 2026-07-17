@@ -50,9 +50,25 @@ def user_homepage(request):
 
     all_questions = paginate_queryset(all_questions_qs, request, 'page', 20)
 
-    random_items = list(
-        Answer.objects.select_related('question', 'user', 'user__userprofile').order_by('?')[:20]
+    candidate_answer_ids = list(
+        Answer.objects.order_by('-created_at').values_list('id', flat=True)[:500]
     )
+    selected_answer_ids = random.sample(
+        candidate_answer_ids,
+        min(20, len(candidate_answer_ids)),
+    )
+    answer_map = {
+        answer.id: answer
+        for answer in Answer.objects.filter(id__in=selected_answer_ids).select_related(
+            'question',
+            'user',
+        )
+    }
+    random_items = [
+        answer_map[answer_id]
+        for answer_id in selected_answer_ids
+        if answer_id in answer_map
+    ]
     attach_answer_revision_metadata(random_items, current_user=request.user)
 
     if request.user.is_authenticated:

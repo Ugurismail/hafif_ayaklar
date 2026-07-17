@@ -169,7 +169,6 @@ def answer_live_preview(request):
             'preview_badge': 'Önizleme',
             'preview_show_meta': False,
         },
-        request=request,
     )
     return JsonResponse({'status': 'ok', 'html': html})
 

@@ -168,9 +168,21 @@ def reference_link(text):
 
     reference_map = {}
     current_index = 1
-    reference_cache = {}
 
     pattern = re.compile(r'\((?:kaynak|k):(\d+)(?:(?:,\s*sayfa:([^)]+))|(?:\s*s:([^)]+)))?\)')
+    reference_ids = {
+        int(match.group(1))
+        for match in pattern.finditer(str(text))
+    }
+    reference_cache = Reference.objects.only(
+        'id',
+        'author_surname',
+        'author_name',
+        'year',
+        'metin_ismi',
+        'rest',
+        'abbreviation',
+    ).in_bulk(reference_ids)
 
     def replace_reference(match):
         nonlocal current_index
@@ -185,16 +197,6 @@ def reference_link(text):
         ref_num = reference_map[ref_id]
 
         ref_obj = reference_cache.get(ref_id)
-        if ref_obj is None and ref_id not in reference_cache:
-            ref_obj = (
-                Reference.objects.only(
-                    'id', 'author_surname', 'author_name', 'year',
-                    'metin_ismi', 'rest', 'abbreviation'
-                )
-                .filter(id=ref_id)
-                .first()
-            )
-            reference_cache[ref_id] = ref_obj
 
         if ref_obj is not None:
             # Çoklu yazarları düzgün formatla
@@ -724,11 +726,13 @@ def extract_bibliography(text):
             if page_str not in reference_pages[ref_id]:
                 reference_pages[ref_id].append(page_str)
 
+    references = Reference.objects.in_bulk(reference_map)
+
     # Build the bibliography list
     bibliography = []
     for ref_id, ref_num in sorted(reference_map.items(), key=lambda x: x[1]):
-        try:
-            ref_obj = Reference.objects.get(id=ref_id)
+        ref_obj = references.get(ref_id)
+        if ref_obj is not None:
             pages = reference_pages.get(ref_id, [])
 
             # Çoklu yazarları düzgün formatla
@@ -750,7 +754,7 @@ def extract_bibliography(text):
                 'formatted_authors': formatted_authors,
                 'pages': pages
             })
-        except Reference.DoesNotExist:
+        else:
             bibliography.append({
                 'number': ref_num,
                 'reference': None,

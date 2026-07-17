@@ -52,13 +52,18 @@
                             {{ answer.answer_text|truncate_math_safe:1000|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }} ...
                         </div>
 
-                        <!-- Tam Yanıt (başlangıçta gizli) -->
-                        <div class="answer-text" id="answer-full-{{ answer.id }}" style="display: none;">
-                            {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
-                        </div>
+                        <!-- Tam yanıt ilk açılışta işlenmez; istenince yüklenir. -->
+                        <div class="answer-text"
+                             id="answer-full-{{ answer.id }}"
+                             data-loaded="false"
+                             style="display: none;"></div>
 
                         <!-- "Tümünü göster" / "Tamamını oku" linki -->
-                        <a href="#" class="read-more" data-answer-id="{{ answer.id }}">Tümünü Göster</a>
+                        <a href="{% url 'single_answer' answer.question.slug answer.id %}"
+                           class="read-more"
+                           data-answer-id="{{ answer.id }}"
+                           data-content-url="{% url 'expanded_answer_content' answer.id %}"
+                           aria-expanded="false">Tümünü Göster</a>
                     {% else %}
                         <!-- 500 karakterden kısaysa doğrudan gösteriyoruz -->
                         <div class="answer-text">
@@ -332,6 +337,31 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Okuma (Read More) İşlevi
     const readMoreLinks = document.querySelectorAll('.read-more');
+    function setReadMoreState(summary, fullText, link, expanded) {
+        summary.style.display = expanded ? 'none' : 'block';
+        fullText.style.display = expanded ? 'block' : 'none';
+        link.textContent = expanded ? 'Daha az göster' : 'Tümünü Göster';
+        link.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    }
+
+    function initLoadedAnswerContent(fullText) {
+        if (typeof bootstrap !== 'undefined') {
+            fullText.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(element) {
+                new bootstrap.Tooltip(element, { container: 'body' });
+            });
+            fullText.querySelectorAll('[data-bs-toggle="popover"]').forEach(function(element) {
+                new bootstrap.Popover(element, {
+                    container: 'body',
+                    html: true,
+                    trigger: element.getAttribute('data-bs-trigger') || 'hover focus'
+                });
+            });
+        }
+        if (typeof window.hafifAyaklarRenderMath === 'function') {
+            window.hafifAyaklarRenderMath(fullText);
+        }
+    }
+
     readMoreLinks.forEach(function(link) {
         link.addEventListener('click', function(event) {
             event.preventDefault();
@@ -339,15 +369,47 @@ document.addEventListener('DOMContentLoaded', function() {
             const summary = document.getElementById('answer-summary-' + answerId);
             const fullText = document.getElementById('answer-full-' + answerId);
             if (!summary || !fullText) return;
+
             if (summary.style.display === 'none') {
-                summary.style.display = 'block';
-                fullText.style.display = 'none';
-                this.textContent = 'Tamamını oku';
-            } else {
-                summary.style.display = 'none';
-                fullText.style.display = 'block';
-                this.textContent = 'Daha az göster';
+                setReadMoreState(summary, fullText, this, false);
+                return;
             }
+
+            if (fullText.dataset.loaded === 'true') {
+                setReadMoreState(summary, fullText, this, true);
+                return;
+            }
+            if (this.dataset.loading === 'true') return;
+
+            const link = this;
+            link.dataset.loading = 'true';
+            link.setAttribute('aria-busy', 'true');
+            link.textContent = 'Yükleniyor...';
+
+            fetch(link.dataset.contentUrl, {
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+                .then(function(response) {
+                    const contentType = response.headers.get('content-type') || '';
+                    if (!response.ok || !contentType.includes('application/json')) {
+                        throw new Error('Yanıt içeriği alınamadı.');
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    fullText.innerHTML = data.html || '';
+                    fullText.dataset.loaded = 'true';
+                    initLoadedAnswerContent(fullText);
+                    setReadMoreState(summary, fullText, link, true);
+                })
+                .catch(function() {
+                    window.location.href = link.href;
+                })
+                .finally(function() {
+                    delete link.dataset.loading;
+                    link.removeAttribute('aria-busy');
+                });
         });
     });
 

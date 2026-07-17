@@ -391,12 +391,15 @@ document.addEventListener('DOMContentLoaded', function() {
      * ========== Bildirim Badge Güncellemesi ==========
      * Checks for unread notifications and updates the badge
      */
+    let notificationRequestInFlight = false;
+
     function updateNotificationBadge() {
         const badge = document.getElementById('notification-badge');
-        if (!badge) {
+        if (!badge || document.hidden || notificationRequestInFlight) {
             return;
         }
 
+        notificationRequestInFlight = true;
         fetch('/notifications/unread-count/')
             .then(response => {
                 const contentType = response.headers.get('content-type') || '';
@@ -417,15 +420,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     badge.style.display = 'none';
                 }
             })
-            .catch(error => console.error('Bildirim badge güncellenemedi:', error));
+            .catch(error => console.error('Bildirim badge güncellenemedi:', error))
+            .finally(() => {
+                notificationRequestInFlight = false;
+            });
     }
 
     if (document.getElementById('notification-badge')) {
-        // İlk yüklemede kontrol et
-        updateNotificationBadge();
+        // İlk değer sunucudan geliyor; sayfa açılışında ikinci bir istek atma.
+        setTimeout(updateNotificationBadge, 15000);
 
         // Her 60 saniyede bir kontrol et (performans için)
 	    setInterval(updateNotificationBadge, 60000);
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateNotificationBadge();
+            }
+        });
     }
 });
 

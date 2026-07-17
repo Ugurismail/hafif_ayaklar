@@ -2,12 +2,14 @@ from datetime import timedelta
 import json
 
 from django.contrib.auth.models import User
+from django.db import connection
 from django.test import RequestFactory, SimpleTestCase, TestCase
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from core.content_limits import EDITOR_CONTENT_MAX_LENGTH
 from core.middleware import LastSeenMiddleware
-from core.models import Kenarda, OnlineChatMessage, Question, UserProfile
+from core.models import Answer, Kenarda, OnlineChatMessage, Question, UserProfile
 from core.templatetags.custom_tags import bkz_link, safe_markdownify
 from core.views.attendance_views import _normalize_marks, _normalize_sheets
 
@@ -205,6 +207,44 @@ class KenardaDraftTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "data-taslak-content")
         self.assertNotContains(response, content)
+
+
+class HomepageResponseTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="homepage-user", password="pass")
+        self.question = Question.objects.create(
+            question_text="Ana sayfa performans testi",
+            user=self.user,
+        )
+        self.tail_marker = "FULL-CONTENT-TAIL-MARKER"
+        self.answer = Answer.objects.create(
+            question=self.question,
+            user=self.user,
+            answer_text=("Ana sayfa özeti " + ("uzun içerik " * 150) + self.tail_marker),
+        )
+
+    def test_homepage_defers_full_answer_rendering(self):
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get("/", HTTP_HOST="127.0.0.1:8000")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ana sayfa özeti")
+        self.assertNotContains(response, self.tail_marker)
+        self.assertContains(response, f'/answer/{self.answer.id}/expand/')
+
+        sql = " ".join(query["sql"].upper() for query in queries)
+        self.assertNotIn("RAND()", sql)
+        self.assertNotIn("RANDOM()", sql)
+
+    def test_answer_content_endpoint_loads_full_answer_on_demand(self):
+        response = self.client.get(
+            f"/answer/{self.answer.id}/expand/",
+            HTTP_HOST="127.0.0.1:8000",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.tail_marker, response.json()["html"])
 
 
 class AttendanceSheetTests(SimpleTestCase):

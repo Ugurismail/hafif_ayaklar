@@ -9,9 +9,16 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count, F, Max, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET
 
-from ..answer_git import attach_answer_revision_metadata, create_answer_revision, ensure_initial_revision
+from ..answer_git import (
+    attach_answer_revision_metadata,
+    create_answer_revision,
+    ensure_initial_revision,
+    render_answer_content_html,
+)
 from ..forms import AnswerForm
 from ..models import (
     Answer,
@@ -28,6 +35,12 @@ from ..models import (
 from ..querysets import get_active_left_frame_pin_q, get_today_questions_queryset
 from ..services import VoteSaveService
 from ..utils import paginate_queryset
+
+
+@require_GET
+def expanded_answer_content(request, answer_id):
+    answer = get_object_or_404(Answer.objects.only('answer_text'), id=answer_id)
+    return JsonResponse({'html': render_answer_content_html(answer.answer_text)})
 
 
 @login_required

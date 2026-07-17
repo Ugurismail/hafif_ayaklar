@@ -90,6 +90,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var previewEndpoint = '/answer/preview/';
     var lastRenderedContent = null;
     var debounceTimer = null;
+    var requestInFlight = false;
+    var pendingPreview = false;
 
     preventPreviewNavigation(root);
 
@@ -108,6 +110,13 @@ document.addEventListener('DOMContentLoaded', function() {
       if (content === lastRenderedContent) {
         return;
       }
+      if (requestInFlight) {
+        pendingPreview = true;
+        return;
+      }
+
+      requestInFlight = true;
+      pendingPreview = false;
 
       fetch(previewEndpoint, {
         method: 'POST',
@@ -121,9 +130,21 @@ document.addEventListener('DOMContentLoaded', function() {
           question_slug: root.dataset.previewQuestionSlug || '',
         }),
       })
-        .then(function(response) { return response.json().then(function(data) { return { ok: response.ok, data: data }; }); })
+        .then(function(response) {
+          var contentType = response.headers.get('content-type') || '';
+          if (!contentType.includes('application/json')) {
+            throw new Error('Önizleme yanıtı JSON değil.');
+          }
+          return response.json().then(function(data) {
+            return { ok: response.ok, data: data };
+          });
+        })
         .then(function(result) {
           if (!result.ok || !result.data || result.data.status !== 'ok') {
+            return;
+          }
+          if ((textarea.value || '') !== content) {
+            pendingPreview = true;
             return;
           }
           lastRenderedContent = content;
@@ -136,19 +157,46 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(function() {
           // silent
+        })
+        .finally(function() {
+          requestInFlight = false;
+          var latestContent = textarea.value || '';
+          if (
+            latestContent.trim() &&
+            latestContent !== lastRenderedContent &&
+            (pendingPreview || latestContent !== content)
+          ) {
+            pendingPreview = false;
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(renderPreviewNow, 500);
+          }
         });
     }
 
     function schedulePreview() {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(renderPreviewNow, 320);
+      if (!(textarea.value || '').trim()) {
+        pendingPreview = false;
+        clearPreview();
+        return;
+      }
+      if (document.hidden || requestInFlight) {
+        pendingPreview = true;
+        return;
+      }
+      debounceTimer = setTimeout(renderPreviewNow, 700);
     }
 
     textarea.addEventListener('input', schedulePreview);
     textarea.addEventListener('change', schedulePreview);
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden && pendingPreview) {
+        schedulePreview();
+      }
+    });
 
     if ((textarea.value || '').trim()) {
-      schedulePreview();
+      debounceTimer = setTimeout(renderPreviewNow, 1200);
     }
   }
 
