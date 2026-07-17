@@ -35,8 +35,8 @@
                         <a class="nav-link position-relative navbar-main-link navbar-icon-link" href="{% url 'notification_list' %}" title="Bildirimler">
                             <i class="bi bi-bell"></i>
                             <span class="ms-1 d-lg-none">Bildirimler</span>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="notification-badge" style="background-color: var(--secondary-button-background-color); color: var(--secondary-button-text-color); {% if unread_notification_count == 0 %}display: none;{% endif %}">
-                                {{ unread_notification_count }}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="notification-badge" style="background-color: var(--secondary-button-background-color); color: var(--secondary-button-text-color); {% if not unread_notification_count %}display: none;{% endif %}">
+                                {{ unread_notification_count|default:0 }}
                             </span>
                         </a>
                     </li>
@@ -113,8 +113,8 @@
                     <li class="nav-item mobile-primary-item">
                         <a class="nav-link position-relative navbar-main-link navbar-icon-link" href="{% url 'message_list' %}" title="Mesajlar">
                             <i class="bi bi-envelope" id="message-icon"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="message-badge" style="background-color: var(--secondary-button-background-color); color: var(--secondary-button-text-color); {% if unread_message_count == 0 %}display: none;{% endif %}">
-                                {{ unread_message_count }}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="message-badge" style="background-color: var(--secondary-button-background-color); color: var(--secondary-button-text-color); {% if not unread_message_count %}display: none;{% endif %}">
+                                {{ unread_message_count|default:0 }}
                             </span>
                             <span class="ms-1 d-lg-none">Mesajlar</span>
                         </a>

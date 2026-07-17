@@ -462,6 +462,11 @@ class Message(models.Model):
     related_answer = models.ForeignKey('Answer', on_delete=models.CASCADE, null=True, blank=True)
     related_question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True, blank=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['recipient', 'is_read']),
+        ]
+
     def __str__(self):
         return f"{self.sender.username} -> {self.recipient.username}: {self.body[:20]}"
 

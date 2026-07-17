@@ -135,6 +135,7 @@ _ATTR_TO_MODULE = {
     'mark_notification_read': 'core.views.notification_views',
     'message_detail': 'core.views.message_views',
     'message_list': 'core.views.message_views',
+    'navbar_status': 'core.views.navbar_views',
     'notification_list': 'core.views.notification_views',
     'online_chat_messages': 'core.views.online_chat_views',
     'pin_entry': 'core.views.vote_save_views',

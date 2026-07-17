@@ -16,14 +16,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const draftStateKey = 'onlineChatDraft';
     const unreadCountKey = 'onlineChatUnreadCount';
     const lastMessageIdKey = 'onlineChatLastMessageId';
-    const closedPanelPollInterval = 30000;
     const panel = bootstrap.Offcanvas.getOrCreateInstance(panelEl);
 
     const state = {
         lastMessageId: Number(localStorage.getItem(lastMessageIdKey) || 0) || null,
         unreadCount: Number(localStorage.getItem(unreadCountKey) || 0) || 0,
         pollTimer: null,
-        usersTimer: null,
         panelOpen: false,
         loading: false,
     };
@@ -110,6 +108,12 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem(unreadCountKey, String(state.unreadCount));
     }
 
+    window.hafifAyaklarSetOnlineChatUnreadCount = function (count) {
+        if (!state.panelOpen) {
+            setUnreadCount(Number(count || 0));
+        }
+    };
+
     function rememberLastMessageId(messageId) {
         const numericId = Number(messageId);
         if (!numericId) {
@@ -179,24 +183,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } finally {
             state.loading = false;
-        }
-    }
-
-    async function refreshClosedPanelState() {
-        if (state.panelOpen || state.loading || document.visibilityState === 'hidden') {
-            return;
-        }
-        try {
-            const response = await fetch('/online-chat/unread-count/', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-            if (!response.ok) return;
-            const data = await response.json();
-            setUnreadCount(Number(data.unread_count || 0));
-        } catch (error) {
-            // silent
         }
     }
 
@@ -278,14 +264,6 @@ document.addEventListener('DOMContentLoaded', function () {
         inputEl.value = savedDraft;
     }
     setUnreadCount(state.unreadCount);
-
-    state.usersTimer = window.setInterval(refreshClosedPanelState, closedPanelPollInterval);
-
-    document.addEventListener('visibilitychange', function () {
-        if (document.visibilityState === 'visible') {
-            refreshClosedPanelState();
-        }
-    });
 
     if (localStorage.getItem(panelStateKey) === '1') {
         panel.show();

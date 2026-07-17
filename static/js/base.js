@@ -388,19 +388,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * ========== Bildirim Badge Güncellemesi ==========
-     * Checks for unread notifications and updates the badge
+     * Keep all navbar counters in one request so a single-worker deployment
+     * does not queue three simultaneous polling requests.
      */
-    let notificationRequestInFlight = false;
+    let navbarStatusRequestInFlight = false;
 
-    function updateNotificationBadge() {
-        const badge = document.getElementById('notification-badge');
-        if (!badge || document.hidden || notificationRequestInFlight) {
+    function updateBadge(id, count) {
+        const badge = document.getElementById(id);
+        if (!badge) return;
+
+        const numericCount = Number(count || 0);
+        if (numericCount > 0) {
+            badge.textContent = numericCount > 99 ? '99+' : String(numericCount);
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    function updateNavbarStatus() {
+        if (document.hidden || navbarStatusRequestInFlight) {
             return;
         }
 
-        notificationRequestInFlight = true;
-        fetch('/notifications/unread-count/')
+        navbarStatusRequestInFlight = true;
+        fetch('/navbar/status/', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
             .then(response => {
                 const contentType = response.headers.get('content-type') || '';
                 if (!response.ok || !contentType.includes('application/json')) {
@@ -409,32 +425,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                if (!data) {
-                    return;
-                }
+                if (!data) return;
 
-                if (data.count > 0) {
-                    badge.textContent = data.count;
-                    badge.style.display = 'inline-block';
-                } else {
-                    badge.style.display = 'none';
+                updateBadge('notification-badge', data.notification_count);
+                updateBadge('message-badge', data.message_count);
+                if (typeof window.hafifAyaklarSetOnlineChatUnreadCount === 'function') {
+                    window.hafifAyaklarSetOnlineChatUnreadCount(data.online_chat_count);
                 }
             })
-            .catch(error => console.error('Bildirim badge güncellenemedi:', error))
+            .catch(function() {
+                // Navbar counters are non-critical; retry on the next cycle.
+            })
             .finally(() => {
-                notificationRequestInFlight = false;
+                navbarStatusRequestInFlight = false;
             });
     }
 
-    if (document.getElementById('notification-badge')) {
-        // İlk değer sunucudan geliyor; sayfa açılışında ikinci bir istek atma.
-        setTimeout(updateNotificationBadge, 15000);
-
-        // Her 60 saniyede bir kontrol et (performans için)
-	    setInterval(updateNotificationBadge, 60000);
+    if (document.getElementById('notification-badge') || document.getElementById('message-badge')) {
+        setTimeout(updateNavbarStatus, 5000);
+        setInterval(updateNavbarStatus, 90000);
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden) {
-                updateNotificationBadge();
+                updateNavbarStatus();
             }
         });
     }

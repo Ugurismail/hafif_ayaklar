@@ -19,6 +19,7 @@ from .views.iat_views import game_of_life, iat_result, iat_result_page, iat_star
 from .views.kenarda_views import kenarda_gonder, kenarda_list, kenarda_preview, kenarda_save, kenarda_sil
 from .views.library_views import file_library, file_library_delete, file_library_list, file_library_search, upload_editor_image
 from .views.message_views import check_new_messages, message_detail, message_list, send_message_from_answer, send_message_from_user
+from .views.navbar_views import navbar_status
 from .views.notification_views import follow_answer, follow_question, get_unread_notification_count, mark_all_notifications_read, mark_notification_read, notification_list, unfollow_answer, unfollow_question
 from .views.online_chat_views import online_chat_messages, online_chat_unread_count
 from .views.poll_views import create_poll, delete_poll, edit_poll, poll_detail, poll_popover_content, poll_question_redirect, polls_home, vote_poll, vote_poll_ajax
@@ -91,6 +92,7 @@ urlpatterns = [
     path('messages/<str:username>/', message_detail, name='message_detail'),
     path('send_message/answer/<int:answer_id>/', send_message_from_answer, name='send_message_from_answer'),
     path('check_new_messages/', check_new_messages, name='check_new_messages'),
+    path('navbar/status/', navbar_status, name='navbar_status'),
     path('send_message/user/<int:user_id>/', send_message_from_user, name='send_message_from_user'),
     path('online-chat/messages/', online_chat_messages, name='online_chat_messages'),
     path('online-chat/unread-count/', online_chat_unread_count, name='online_chat_unread_count'),

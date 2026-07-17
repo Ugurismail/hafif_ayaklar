@@ -4,10 +4,22 @@ Reusable queryset generators
 """
 
 from datetime import timedelta
-from django.db.models import Q, Count, Max, F, Case, When, Value, IntegerField
+from django.db.models import (
+    Q,
+    Count,
+    F,
+    Case,
+    When,
+    Value,
+    IntegerField,
+    DateTimeField,
+    Exists,
+    OuterRef,
+    Subquery,
+)
 from django.db.models.functions import Coalesce
 from django.utils.timezone import now
-from .models import Question
+from .models import Answer, Question
 
 
 def get_active_left_frame_pin_q(reference_time=None):
@@ -34,12 +46,32 @@ def get_today_questions_queryset():
     current_time = now()
     active_pin_q = get_active_left_frame_pin_q(current_time)
 
+    answer_rows = Answer.objects.filter(question_id=OuterRef('pk'))
+    answer_counts = (
+        answer_rows.order_by()
+        .values('question_id')
+        .annotate(total=Count('id'))
+        .values('total')[:1]
+    )
+    latest_answer_dates = answer_rows.order_by('-created_at').values('created_at')[:1]
+    recent_answers = answer_rows.filter(created_at__gte=seven_days_ago)
+
+    # Correlated subqueries avoid multiplying every question by all of its
+    # answers before pagination. That join became the dominant homepage query
+    # as the answer table grew.
     queryset = Question.objects.annotate(
-        answers_count=Count('answers', distinct=True),
-        latest_answer_date=Max('answers__created_at')
+        has_recent_answer=Exists(recent_answers),
+        answers_count=Coalesce(
+            Subquery(answer_counts, output_field=IntegerField()),
+            Value(0),
+        ),
+        latest_answer_date=Subquery(
+            latest_answer_dates,
+            output_field=DateTimeField(),
+        ),
     ).filter(
-        Q(created_at__gte=seven_days_ago) | Q(answers__created_at__gte=seven_days_ago) | active_pin_q
-    ).distinct()
+        Q(created_at__gte=seven_days_ago) | Q(has_recent_answer=True) | active_pin_q
+    )
 
     queryset = queryset.annotate(
         sort_date=Coalesce('latest_answer_date', 'created_at'),

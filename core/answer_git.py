@@ -268,8 +268,6 @@ def attach_answer_revision_metadata(answers, current_user=None):
         current_revision = current_revision_map.get(answer.id) or ensure_initial_revision(answer)
         current_revisions.append(current_revision)
 
-    _ensure_revision_approval_snapshots(current_revisions)
-
     approval_rows = list(
         AnswerRevisionApproval.objects.filter(
             revision_id__in=[revision.id for revision in current_revisions if revision]
@@ -279,8 +277,10 @@ def attach_answer_revision_metadata(answers, current_user=None):
     pending_map = defaultdict(list)
     rejected_map = defaultdict(list)
     current_user_approval_map = {}
+    approval_revision_ids = set()
 
     for approval in approval_rows:
+        approval_revision_ids.add(approval.revision_id)
         if current_user is not None and getattr(current_user, 'is_authenticated', False) and approval.user_id == current_user.id:
             current_user_approval_map[approval.revision_id] = approval
         if approval.status == 'approved':
@@ -295,6 +295,8 @@ def attach_answer_revision_metadata(answers, current_user=None):
         approved_users = _sort_users_for_answer(approved_map.get(current_revision.id, []), answer.user_id)
         pending_users = _sort_users_for_answer(pending_map.get(current_revision.id, []), answer.user_id)
         rejected_users = _sort_users_for_answer(rejected_map.get(current_revision.id, []), answer.user_id)
+        if current_revision.id not in approval_revision_ids:
+            approved_users = [answer.user]
         contributor_usernames = [user.username for user in approved_users]
 
         answer.current_revision = current_revision

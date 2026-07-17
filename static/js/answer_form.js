@@ -92,6 +92,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var debounceTimer = null;
     var requestInFlight = false;
     var pendingPreview = false;
+    var activePreviewController = null;
+    var pageIsLeaving = false;
+    var lastInputAt = Date.now();
+    var previewDebounceMs = 1200;
 
     preventPreviewNavigation(root);
 
@@ -117,6 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       requestInFlight = true;
       pendingPreview = false;
+      activePreviewController = typeof AbortController !== 'undefined' ? new AbortController() : null;
 
       fetch(previewEndpoint, {
         method: 'POST',
@@ -129,6 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
           question_text: root.dataset.previewQuestionText || '',
           question_slug: root.dataset.previewQuestionSlug || '',
         }),
+        signal: activePreviewController ? activePreviewController.signal : undefined,
       })
         .then(function(response) {
           var contentType = response.headers.get('content-type') || '';
@@ -160,23 +166,31 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .finally(function() {
           requestInFlight = false;
+          activePreviewController = null;
           var latestContent = textarea.value || '';
           if (
+            !pageIsLeaving &&
             latestContent.trim() &&
             latestContent !== lastRenderedContent &&
             (pendingPreview || latestContent !== content)
           ) {
             pendingPreview = false;
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(renderPreviewNow, 500);
+            var elapsedSinceInput = Date.now() - lastInputAt;
+            debounceTimer = setTimeout(
+              renderPreviewNow,
+              Math.max(0, previewDebounceMs - elapsedSinceInput)
+            );
           }
         });
     }
 
     function schedulePreview() {
+      lastInputAt = Date.now();
       clearTimeout(debounceTimer);
       if (!(textarea.value || '').trim()) {
         pendingPreview = false;
+        if (activePreviewController) activePreviewController.abort();
         clearPreview();
         return;
       }
@@ -184,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
         pendingPreview = true;
         return;
       }
-      debounceTimer = setTimeout(renderPreviewNow, 700);
+      debounceTimer = setTimeout(renderPreviewNow, previewDebounceMs);
     }
 
     textarea.addEventListener('input', schedulePreview);
@@ -194,9 +208,18 @@ document.addEventListener('DOMContentLoaded', function() {
         schedulePreview();
       }
     });
+    window.addEventListener('pagehide', function() {
+      pageIsLeaving = true;
+      clearTimeout(debounceTimer);
+      if (activePreviewController) activePreviewController.abort();
+    });
+    window.addEventListener('pageshow', function() {
+      pageIsLeaving = false;
+      if (pendingPreview) schedulePreview();
+    });
 
     if ((textarea.value || '').trim()) {
-      debounceTimer = setTimeout(renderPreviewNow, 1200);
+      debounceTimer = setTimeout(renderPreviewNow, previewDebounceMs);
     }
   }
 

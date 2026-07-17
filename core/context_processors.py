@@ -1,8 +1,12 @@
 # core/context_processors.py
 
 from django.conf import settings
-from .models import Message, Notification, RadioProgram
+from django.core.cache import cache
+from .models import RadioProgram
 from .radio_utils import expire_live_programs
+
+RADIO_LIVE_CACHE_KEY = 'navbar_radio_is_live'
+RADIO_LIVE_CACHE_SECONDS = 30
 
 def static_asset_version(request):
     return {'STATIC_ASSET_VERSION': getattr(settings, 'STATIC_ASSET_VERSION', '1')}
@@ -21,23 +25,13 @@ def google_analytics(request):
         'GOOGLE_ANALYTICS_ENABLED': enabled,
     }
 
-def unread_message_count(request):
-    if request.user.is_authenticated:
-        count = Message.objects.filter(recipient=request.user, is_read=False).count()
-        return {'unread_message_count': count}
-    else:
-        return {}
-
-def unread_notification_count(request):
-    if request.user.is_authenticated:
-        count = Notification.objects.filter(recipient=request.user, is_read=False).count()
-        return {'unread_notification_count': count}
-    else:
-        return {}
-
 def radio_live_indicator(request):
     if not request.user.is_authenticated:
         return {}
-    expire_live_programs()
-    is_live = RadioProgram.objects.filter(is_live=True, is_finished=False).exists()
+
+    is_live = cache.get(RADIO_LIVE_CACHE_KEY)
+    if is_live is None:
+        expire_live_programs()
+        is_live = RadioProgram.objects.filter(is_live=True, is_finished=False).exists()
+        cache.set(RADIO_LIVE_CACHE_KEY, is_live, RADIO_LIVE_CACHE_SECONDS)
     return {'radio_is_live': is_live}

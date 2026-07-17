@@ -1,7 +1,9 @@
 from datetime import timedelta
 import json
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db import connection
 from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.test.utils import CaptureQueriesContext
@@ -9,7 +11,8 @@ from django.utils import timezone
 
 from core.content_limits import EDITOR_CONTENT_MAX_LENGTH
 from core.middleware import LastSeenMiddleware
-from core.models import Answer, Kenarda, OnlineChatMessage, Question, UserProfile
+from core.models import Answer, Kenarda, Message, Notification, OnlineChatMessage, Question, UserProfile
+from core.querysets import get_today_questions_queryset
 from core.templatetags.custom_tags import bkz_link, safe_markdownify
 from core.views.attendance_views import _normalize_marks, _normalize_sheets
 
@@ -17,6 +20,7 @@ from core.views.attendance_views import _normalize_marks, _normalize_sheets
 class VisitorTrackingTests(SimpleTestCase):
     def setUp(self):
         self.factory = RequestFactory()
+        cache.clear()
 
     def request(self, path="/", **headers):
         defaults = {
@@ -60,6 +64,26 @@ class VisitorTrackingTests(SimpleTestCase):
         )
 
         self.assertEqual(LastSeenMiddleware._get_client_ip(request), "198.51.100.10")
+
+    @patch("core.middleware.DailyVisitor.objects.get_or_create")
+    def test_daily_visitor_cookie_skips_database(self, get_or_create):
+        request = self.request("/")
+        request.COOKIES[LastSeenMiddleware.VISITOR_COOKIE_KEY] = timezone.localdate().isoformat()
+        middleware = LastSeenMiddleware(lambda req: None)
+
+        self.assertIsNone(middleware._track_daily_unique_visitor(request))
+        get_or_create.assert_not_called()
+
+    @patch("core.middleware.VisitSession.objects.filter")
+    def test_recent_visit_cache_skips_database(self, visit_filter):
+        request = self.request("/")
+        token = "4d49b119-73b1-44c7-9617-14bf29467ee5"
+        request.COOKIES[LastSeenMiddleware.VISIT_COOKIE_KEY] = token
+        cache.set(f"visit-session:{token}:0", True, 60)
+        middleware = LastSeenMiddleware(lambda req: None)
+
+        self.assertIsNone(middleware._track_visit_session(request))
+        visit_filter.assert_not_called()
 
 
 class MarkdownRenderingTests(SimpleTestCase):
@@ -119,6 +143,34 @@ class OnlineChatUnreadCountTests(TestCase):
         self.assertEqual(payload["unread_count"], 1)
         self.assertNotIn("messages", payload)
         self.assertNotIn("online_users", payload)
+
+    def test_navbar_status_combines_all_unread_counts(self):
+        viewer = User.objects.create_user(username="navbar-viewer", password="pass")
+        sender = User.objects.create_user(username="navbar-sender", password="pass")
+        profile, _ = UserProfile.objects.get_or_create(user=viewer)
+        profile.online_chat_last_read_at = timezone.now() - timedelta(minutes=5)
+        profile.save(update_fields=["online_chat_last_read_at"])
+        Message.objects.create(sender=sender, recipient=viewer, body="mesaj")
+        Notification.objects.create(
+            recipient=viewer,
+            sender=sender,
+            notification_type="system",
+            message="bildirim",
+        )
+        OnlineChatMessage.objects.create(user=sender, body="sohbet")
+
+        self.client.force_login(viewer)
+        response = self.client.get(
+            "/navbar/status/",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            "notification_count": 1,
+            "message_count": 1,
+            "online_chat_count": 1,
+        })
 
     def test_existing_matrix_row_break_is_not_over_normalized(self):
         rendered = str(safe_markdownify(r"$$\begin{pmatrix}1 & 2\\ 3 & 4\end{pmatrix}$$"))
@@ -235,6 +287,8 @@ class HomepageResponseTests(TestCase):
         sql = " ".join(query["sql"].upper() for query in queries)
         self.assertNotIn("RAND()", sql)
         self.assertNotIn("RANDOM()", sql)
+        self.assertNotIn("INSERT INTO \"CORE_ANSWERREVISIONAPPROVAL\"", sql)
+        self.assertNotContains(response, "[tex]/ams")
 
     def test_answer_content_endpoint_loads_full_answer_on_demand(self):
         response = self.client.get(
@@ -245,6 +299,38 @@ class HomepageResponseTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(self.tail_marker, response.json()["html"])
+
+
+class TodayQuestionsQuerysetTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="question-list-user", password="pass")
+        self.old_date = timezone.now() - timedelta(days=10)
+
+    def create_question(self, text, *, created_at=None, **kwargs):
+        question = Question.objects.create(question_text=text, user=self.user, **kwargs)
+        if created_at is not None:
+            Question.objects.filter(pk=question.pk).update(created_at=created_at)
+            question.refresh_from_db()
+        return question
+
+    def test_recent_answer_filter_preserves_counts_without_join_multiplication(self):
+        recent_question = self.create_question("Yakın zamanda yanıtlanan", created_at=self.old_date)
+        old_question = self.create_question("Eski ve pasif", created_at=self.old_date)
+        new_question = self.create_question("Yeni başlık")
+
+        Answer.objects.create(question=recent_question, user=self.user, answer_text="Bir")
+        Answer.objects.create(question=recent_question, user=self.user, answer_text="İki")
+        old_answer = Answer.objects.create(question=old_question, user=self.user, answer_text="Eski")
+        Answer.objects.filter(pk=old_answer.pk).update(created_at=self.old_date)
+
+        questions = list(get_today_questions_queryset())
+        question_map = {question.id: question for question in questions}
+
+        self.assertIn(recent_question.id, question_map)
+        self.assertIn(new_question.id, question_map)
+        self.assertNotIn(old_question.id, question_map)
+        self.assertEqual(question_map[recent_question.id].answers_count, 2)
+        self.assertNotIn("LEFT OUTER JOIN", str(get_today_questions_queryset().query).upper())
 
 
 class AttendanceSheetTests(SimpleTestCase):

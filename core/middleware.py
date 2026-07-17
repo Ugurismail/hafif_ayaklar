@@ -5,6 +5,7 @@ import ipaddress
 from datetime import timedelta
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db import DatabaseError
 from django.http import Http404
 from django.shortcuts import render
@@ -53,7 +54,6 @@ class LastSeenMiddleware:
     - Updates are throttled to avoid a DB write on every request.
     """
 
-    SESSION_KEY = "_last_seen_update_ts"
     VISITOR_COOKIE_KEY = "_daily_visitor_seen"
     VISIT_COOKIE_KEY = "_visit_token"
     THROTTLE_DELTA = timedelta(minutes=1)
@@ -151,37 +151,17 @@ class LastSeenMiddleware:
         if not user or not user.is_authenticated:
             return
 
-        now = timezone.now()
-
-        try:
-            last_update_iso = request.session.get(self.SESSION_KEY)
-        except Exception:
-            last_update_iso = None
-
-        if last_update_iso:
-            try:
-                last_update = timezone.datetime.fromisoformat(last_update_iso)
-                if timezone.is_naive(last_update):
-                    last_update = timezone.make_aware(last_update, timezone.get_current_timezone())
-            except Exception:
-                last_update = None
-        else:
-            last_update = None
-
-        if last_update and (now - last_update) < self.THROTTLE_DELTA:
+        throttle_seconds = int(self.THROTTLE_DELTA.total_seconds())
+        if not cache.add(f"last-seen:{user.id}", True, throttle_seconds):
             return
 
+        now = timezone.now()
         try:
             updated = UserProfile.objects.filter(user_id=user.id).update(last_seen=now)
             if updated == 0:
                 UserProfile.objects.get_or_create(user_id=user.id, defaults={"last_seen": now})
         except DatabaseError:
             return
-
-        try:
-            request.session[self.SESSION_KEY] = now.isoformat()
-        except Exception:
-            pass
 
     def _track_daily_unique_visitor(self, request):
         if not self._should_track_unique_visitor(request):
@@ -190,15 +170,15 @@ class LastSeenMiddleware:
         today = timezone.localdate()
         today_marker = today.isoformat()
 
+        if request.COOKIES.get(self.VISITOR_COOKIE_KEY) == today_marker:
+            return None
+
         visitor_hash = self._build_daily_visitor_hash(request, today)
         if visitor_hash:
             try:
                 DailyVisitor.objects.get_or_create(date=today, visitor_hash=visitor_hash)
             except DatabaseError:
                 return None
-
-        if request.COOKIES.get(self.VISITOR_COOKIE_KEY) == today_marker:
-            return None
 
         return today_marker
 
@@ -210,6 +190,13 @@ class LastSeenMiddleware:
         today = timezone.localdate()
         visitor_hash = self._build_daily_visitor_hash(request, today) or ""
         visit_token = (request.COOKIES.get(self.VISIT_COOKIE_KEY) or "").strip()
+        user = getattr(request, "user", None)
+        user_id = user.id if user and user.is_authenticated else None
+        throttle_key = f"visit-session:{visit_token}:{user_id or 0}" if visit_token else ""
+
+        if throttle_key and cache.get(throttle_key):
+            return None
+
         active_visit = None
 
         if visit_token:
@@ -233,9 +220,6 @@ class LastSeenMiddleware:
                 .first()
             )
 
-        user = getattr(request, "user", None)
-        user_id = user.id if user and user.is_authenticated else None
-
         if active_visit:
             update_fields = {}
             if (current_time - active_visit.last_seen_at) >= self.THROTTLE_DELTA:
@@ -247,6 +231,11 @@ class LastSeenMiddleware:
                     VisitSession.objects.filter(pk=active_visit.pk).update(**update_fields)
                 except DatabaseError:
                     pass
+            cache.set(
+                f"visit-session:{active_visit.visit_token}:{user_id or 0}",
+                True,
+                int(self.THROTTLE_DELTA.total_seconds()),
+            )
             if str(active_visit.visit_token) != visit_token:
                 return str(active_visit.visit_token)
             return None
@@ -260,6 +249,11 @@ class LastSeenMiddleware:
         except DatabaseError:
             return None
 
+        cache.set(
+            f"visit-session:{new_visit.visit_token}:{user_id or 0}",
+            True,
+            int(self.THROTTLE_DELTA.total_seconds()),
+        )
         return str(new_visit.visit_token)
 
     @staticmethod

@@ -24,7 +24,7 @@ else:
 
 # Static asset cache-busting version (keep stable so browser caching works).
 # Bump this (or set env var) when you deploy new static files.
-STATIC_ASSET_VERSION = os.environ.get('STATIC_ASSET_VERSION', '5')
+STATIC_ASSET_VERSION = os.environ.get('STATIC_ASSET_VERSION', '6')
 GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID', 'G-7JSG99BCHT').strip()
 
 # Hardcoded ALLOWED_HOSTS to ensure all domains are always included
@@ -123,8 +123,6 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             'core.context_processors.static_asset_version',
             'core.context_processors.google_analytics',
-            'core.context_processors.unread_message_count',
-            'core.context_processors.unread_notification_count',
             'core.context_processors.radio_live_indicator',
             ],
         },
@@ -151,8 +149,9 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL)
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=60)
     }
+    DATABASES['default']['CONN_HEALTH_CHECKS'] = True
 else:
     DATABASES = {
         'default': {
