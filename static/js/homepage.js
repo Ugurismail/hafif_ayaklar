@@ -55,6 +55,14 @@
         }
     }
 
+    function clearStoredQuestions() {
+        try {
+            window.sessionStorage.removeItem(SHUFFLED_QUESTIONS_KEY);
+        } catch (error) {
+            console.warn('Saklanan başlık listesi temizlenemedi.', error);
+        }
+    }
+
     function renderQuestions(questions) {
         const questionsList = document.getElementById('questions-list');
         if (!questionsList) {
@@ -103,9 +111,21 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        const questionsList = document.getElementById('questions-list');
+        const latestQuestionsMarkup = questionsList ? questionsList.innerHTML : '';
+        const latestQuestionsBtn = document.getElementById('latest-questions-btn');
+
+        function setShuffledMode(active) {
+            if (!latestQuestionsBtn) {
+                return;
+            }
+            latestQuestionsBtn.hidden = !active;
+            latestQuestionsBtn.classList.toggle('d-none', !active);
+        }
+
         const storedQuestions = readStoredQuestions();
         if (storedQuestions.length > 0) {
-            renderQuestions(storedQuestions);
+            setShuffledMode(renderQuestions(storedQuestions));
         }
 
         const randomQuestionBtn = document.getElementById('random-question-btn');
@@ -125,6 +145,7 @@
                             return;
                         }
                         storeQuestions(questions);
+                        setShuffledMode(true);
                     })
                     .catch(function(error) {
                         console.error('Shuffle error:', error);
@@ -133,6 +154,17 @@
                     .finally(function() {
                         randomQuestionBtn.removeAttribute('aria-busy');
                     });
+            });
+        }
+
+        if (latestQuestionsBtn) {
+            latestQuestionsBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                clearStoredQuestions();
+                if (questionsList) {
+                    questionsList.innerHTML = latestQuestionsMarkup;
+                }
+                setShuffledMode(false);
             });
         }
 
