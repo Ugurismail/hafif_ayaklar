@@ -8,6 +8,13 @@ from django.contrib.auth.models import User
 from urllib.parse import quote_plus, urlparse, unquote
 from html import unescape as html_unescape
 
+from core.content_link_preload import (
+    get_preloaded_definition,
+    get_preloaded_question,
+    get_preloaded_reference,
+    get_preloaded_user,
+)
+
 
 
 register = template.Library()
@@ -74,7 +81,9 @@ def ref_link(text):
         cache_key = ref_text.casefold()
         q = question_cache.get(cache_key)
         if q is None and cache_key not in question_cache:
-            q = Question.objects.only('slug').filter(question_text__iexact=ref_text).first()
+            is_preloaded, q = get_preloaded_question(ref_text)
+            if not is_preloaded:
+                q = Question.objects.only('slug').filter(question_text__iexact=ref_text).first()
             question_cache[cache_key] = q
         if q is not None:
             url = reverse('question_detail', args=[q.slug])
@@ -119,12 +128,14 @@ def tanim_link(text):
         def_id_str    = match.group(2).strip()  # "42"
         definition = definition_cache.get(def_id_str)
         if definition is None and def_id_str not in definition_cache:
-            definition = (
-                Definition.objects.select_related('user')
-                .only('id', 'definition_text', 'user__username')
-                .filter(id=def_id_str)
-                .first()
-            )
+            is_preloaded, definition = get_preloaded_definition(def_id_str)
+            if not is_preloaded:
+                definition = (
+                    Definition.objects.select_related('user')
+                    .only('id', 'definition_text', 'user__username')
+                    .filter(id=def_id_str)
+                    .first()
+                )
             definition_cache[def_id_str] = definition
         if definition is not None:
             # Tanım metni
@@ -174,15 +185,24 @@ def reference_link(text):
         int(match.group(1))
         for match in pattern.finditer(str(text))
     }
-    reference_cache = Reference.objects.only(
-        'id',
-        'author_surname',
-        'author_name',
-        'year',
-        'metin_ismi',
-        'rest',
-        'abbreviation',
-    ).in_bulk(reference_ids)
+    reference_cache = {}
+    missing_reference_ids = set()
+    for reference_id in reference_ids:
+        is_preloaded, reference = get_preloaded_reference(reference_id)
+        if is_preloaded:
+            reference_cache[reference_id] = reference
+        else:
+            missing_reference_ids.add(reference_id)
+    if missing_reference_ids:
+        reference_cache.update(Reference.objects.only(
+            'id',
+            'author_surname',
+            'author_name',
+            'year',
+            'metin_ismi',
+            'rest',
+            'abbreviation',
+        ).in_bulk(missing_reference_ids))
 
     def replace_reference(match):
         nonlocal current_index
@@ -275,7 +295,9 @@ def mention_link(text):
             cache_key = username.casefold()
             user = user_cache.get(cache_key)
             if user is None and cache_key not in user_cache:
-                user = User.objects.only('username').filter(username__iexact=username).first()
+                is_preloaded, user = get_preloaded_user(username)
+                if not is_preloaded:
+                    user = User.objects.only('username').filter(username__iexact=username).first()
                 user_cache[cache_key] = user
             if user is not None:
                 url = reverse('user_profile', args=[user.username])

@@ -97,6 +97,7 @@ MARKDOWNIFY = {
 }
 
 MIDDLEWARE = [
+    'core.middleware.ServerTimingMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

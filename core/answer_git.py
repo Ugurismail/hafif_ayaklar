@@ -5,8 +5,9 @@ from html import escape
 import re
 import textwrap
 
-from django.db.models import Count
+from django.db.models import Count, IntegerField, OuterRef, Prefetch, Subquery, Value
 from django.db import transaction
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
@@ -245,34 +246,76 @@ def attach_answer_revision_metadata(answers, current_user=None):
 
     answer_ids = [answer.id for answer in answers]
 
-    current_revision_map = {
-        revision.answer_id: revision
-        for revision in AnswerRevision.objects.filter(
+    revision_counts = (
+        AnswerRevision.objects.filter(answer_id=OuterRef('answer_id'))
+        .order_by()
+        .values('answer_id')
+        .annotate(total=Count('id'))
+        .values('total')[:1]
+    )
+    open_suggestion_counts = (
+        AnswerSuggestion.objects.filter(
+            answer_id=OuterRef('answer_id'),
+            status='open',
+        )
+        .order_by()
+        .values('answer_id')
+        .annotate(total=Count('id'))
+        .values('total')[:1]
+    )
+    current_revisions = list(
+        AnswerRevision.objects.filter(
             answer_id__in=answer_ids,
             is_current=True,
-        ).select_related('created_by')
+        )
+        .select_related('created_by')
+        .annotate(
+            answer_revision_count=Coalesce(
+                Subquery(revision_counts, output_field=IntegerField()),
+                Value(0),
+            ),
+            answer_open_suggestion_count=Coalesce(
+                Subquery(open_suggestion_counts, output_field=IntegerField()),
+                Value(0),
+            ),
+        )
+        .prefetch_related(
+            Prefetch(
+                'approvals',
+                queryset=AnswerRevisionApproval.objects.select_related('user'),
+                to_attr='_metadata_approvals',
+            )
+        )
+    )
+    current_revision_map = {
+        revision.answer_id: revision
+        for revision in current_revisions
     }
-    revision_count_map = dict(
-        AnswerRevision.objects.filter(answer_id__in=answer_ids)
-        .values_list('answer_id')
-        .annotate(total=Count('id'))
-    )
-    open_suggestion_map = dict(
-        AnswerSuggestion.objects.filter(answer_id__in=answer_ids, status='open')
-        .values_list('answer_id')
-        .annotate(total=Count('id'))
-    )
+    revision_count_map = {
+        revision.answer_id: revision.answer_revision_count
+        for revision in current_revisions
+    }
+    open_suggestion_map = {
+        revision.answer_id: revision.answer_open_suggestion_count
+        for revision in current_revisions
+    }
 
     current_revisions = []
     for answer in answers:
-        current_revision = current_revision_map.get(answer.id) or ensure_initial_revision(answer)
+        current_revision = current_revision_map.get(answer.id)
+        if current_revision is None:
+            current_revision = ensure_initial_revision(answer)
+            current_revision._metadata_approvals = []
+            current_revision_map[answer.id] = current_revision
+            revision_count_map[answer.id] = 1
+            open_suggestion_map[answer.id] = 0
         current_revisions.append(current_revision)
 
-    approval_rows = list(
-        AnswerRevisionApproval.objects.filter(
-            revision_id__in=[revision.id for revision in current_revisions if revision]
-        ).select_related('user')
-    )
+    approval_rows = [
+        approval
+        for revision in current_revisions
+        for approval in getattr(revision, '_metadata_approvals', [])
+    ]
     approved_map = defaultdict(list)
     pending_map = defaultdict(list)
     rejected_map = defaultdict(list)
@@ -291,7 +334,7 @@ def attach_answer_revision_metadata(answers, current_user=None):
             pending_map[approval.revision_id].append(approval.user)
 
     for answer in answers:
-        current_revision = current_revision_map.get(answer.id) or ensure_initial_revision(answer)
+        current_revision = current_revision_map[answer.id]
         approved_users = _sort_users_for_answer(approved_map.get(current_revision.id, []), answer.user_id)
         pending_users = _sort_users_for_answer(pending_map.get(current_revision.id, []), answer.user_id)
         rejected_users = _sort_users_for_answer(rejected_map.get(current_revision.id, []), answer.user_id)

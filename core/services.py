@@ -4,7 +4,7 @@ Business logic extracted from views for reusability
 """
 
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Count
+from django.db.models import Case, Count, IntegerField, Max, Value, When
 from .models import Vote, SavedItem
 
 
@@ -76,23 +76,31 @@ class VoteSaveService:
         content_type = ContentType.objects.get_for_model(model_class)
         item_ids = [item.id for item in items]
 
-        # Get IDs of items saved by current user
-        if user.is_authenticated:
-            saved_ids = set(SavedItem.objects.filter(
-                user=user,
-                content_type=content_type,
-                object_id__in=item_ids
-            ).values_list('object_id', flat=True))
-        else:
-            saved_ids = set()
-
-        # Get total save counts for all items
         save_counts = SavedItem.objects.filter(
             content_type=content_type,
             object_id__in=item_ids
         ).values('object_id').annotate(count=Count('id'))
 
-        save_dict = {item['object_id']: item['count'] for item in save_counts}
+        if user.is_authenticated:
+            save_counts = save_counts.annotate(
+                saved_by_current_user=Max(
+                    Case(
+                        When(user=user, then=Value(1)),
+                        default=Value(0),
+                        output_field=IntegerField(),
+                    )
+                )
+            )
+        else:
+            save_counts = save_counts.annotate(saved_by_current_user=Value(0))
+
+        save_rows = list(save_counts)
+        saved_ids = {
+            item['object_id']
+            for item in save_rows
+            if item['saved_by_current_user']
+        }
+        save_dict = {item['object_id']: item['count'] for item in save_rows}
 
         return saved_ids, save_dict
 

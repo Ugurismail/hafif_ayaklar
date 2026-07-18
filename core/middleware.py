@@ -2,16 +2,51 @@ from __future__ import annotations
 
 import hashlib
 import ipaddress
+import time
 from datetime import timedelta
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db import DatabaseError
+from django.db import DatabaseError, connection
 from django.http import Http404
 from django.shortcuts import render
 from django.utils import timezone
 
 from .models import DailyVisitor, UserProfile, VisitSession
+
+
+class ServerTimingMiddleware:
+    """Expose aggregate application and database timing without SQL details."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        query_count = 0
+        database_seconds = 0.0
+
+        def measure_query(execute, sql, params, many, context):
+            nonlocal query_count, database_seconds
+            started_at = time.perf_counter()
+            try:
+                return execute(sql, params, many, context)
+            finally:
+                query_count += 1
+                database_seconds += time.perf_counter() - started_at
+
+        started_at = time.perf_counter()
+        with connection.execute_wrapper(measure_query):
+            response = self.get_response(request)
+
+        total_ms = (time.perf_counter() - started_at) * 1000
+        database_ms = database_seconds * 1000
+        application_ms = max(0.0, total_ms - database_ms)
+        response['Server-Timing'] = (
+            f'app;dur={total_ms:.1f}, '
+            f'db;dur={database_ms:.1f};desc="{query_count} queries", '
+            f'python;dur={application_ms:.1f}'
+        )
+        return response
 
 
 class CustomErrorPagesMiddleware:

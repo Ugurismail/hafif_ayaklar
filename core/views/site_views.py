@@ -8,26 +8,73 @@ from itertools import chain
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db.models import Q, Count, Max, F
 from django.db.models.functions import TruncWeek, TruncMonth
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
 from django.utils.timezone import now
 
-from ..answer_git import attach_answer_revision_metadata
+from ..answer_git import attach_answer_revision_metadata, render_answer_content_html
+from ..content_link_preload import preload_content_links
 from ..models import Answer, DailyVisitor, Question, QuestionRelationship, Reference, StartingQuestion, UserProfile, VisitSession, Vote
 from ..querysets import get_active_left_frame_pin_q, get_today_questions_queryset
 from ..services import VoteSaveService
+from ..templatetags.custom_tags import truncate_math_safe
 from ..utils import build_reference_usage_counts, paginate_queryset
 
 WORD_PATTERN = re.compile(r'\b\w+\b', re.UNICODE)
+HOMEPAGE_ANSWER_CACHE_SECONDS = 120
+HOMEPAGE_ANSWER_CACHE_VERSION = '2'
+RECENT_ANSWER_IDS_CACHE_KEY = 'homepage:recent-answer-ids:v1'
+RECENT_ANSWER_IDS_CACHE_SECONDS = 30
 
 
 def get_today_questions_page(request, per_page=25):
     """Helper for paginating today's questions."""
     queryset = get_today_questions_queryset()
     return paginate_queryset(queryset, request, 'page', per_page)
+
+
+def _attach_homepage_answer_content(answers):
+    render_items = []
+    cache_keys = []
+    for answer in answers:
+        is_truncated = len(answer.answer_text or '') > 1000
+        source_text = (
+            truncate_math_safe(answer.answer_text, 1000)
+            if is_truncated
+            else (answer.answer_text or '')
+        )
+        updated_token = answer.updated_at.strftime('%Y%m%d%H%M%S%f')
+        cache_key = (
+            f'homepage:answer-html:{HOMEPAGE_ANSWER_CACHE_VERSION}:'
+            f'{answer.id}:{updated_token}:{int(is_truncated)}'
+        )
+        answer.card_content_is_truncated = is_truncated
+        render_items.append((answer, source_text, cache_key))
+        cache_keys.append(cache_key)
+
+    cached_content = cache.get_many(cache_keys)
+    missing_items = []
+    for answer, source_text, cache_key in render_items:
+        if cache_key in cached_content:
+            answer.card_rendered_html = mark_safe(cached_content[cache_key])
+        else:
+            missing_items.append((answer, source_text, cache_key))
+
+    if not missing_items:
+        return
+
+    new_cache_entries = {}
+    with preload_content_links(source_text for _, source_text, _ in missing_items):
+        for answer, source_text, cache_key in missing_items:
+            rendered_html = render_answer_content_html(source_text)
+            answer.card_rendered_html = mark_safe(rendered_html)
+            new_cache_entries[cache_key] = rendered_html
+    cache.set_many(new_cache_entries, HOMEPAGE_ANSWER_CACHE_SECONDS)
 
 
 def user_homepage(request):
@@ -50,9 +97,16 @@ def user_homepage(request):
 
     all_questions = paginate_queryset(all_questions_qs, request, 'page', 20)
 
-    candidate_answer_ids = list(
-        Answer.objects.order_by('-created_at').values_list('id', flat=True)[:500]
-    )
+    candidate_answer_ids = cache.get(RECENT_ANSWER_IDS_CACHE_KEY)
+    if candidate_answer_ids is None:
+        candidate_answer_ids = list(
+            Answer.objects.order_by('-created_at').values_list('id', flat=True)[:500]
+        )
+        cache.set(
+            RECENT_ANSWER_IDS_CACHE_KEY,
+            candidate_answer_ids,
+            RECENT_ANSWER_IDS_CACHE_SECONDS,
+        )
     selected_answer_ids = random.sample(
         candidate_answer_ids,
         min(20, len(candidate_answer_ids)),
@@ -70,6 +124,7 @@ def user_homepage(request):
         if answer_id in answer_map
     ]
     attach_answer_revision_metadata(random_items, current_user=request.user)
+    _attach_homepage_answer_content(random_items)
 
     if request.user.is_authenticated:
         user_child_ids = QuestionRelationship.objects.filter(user=request.user).values_list('child_id', flat=True).distinct()

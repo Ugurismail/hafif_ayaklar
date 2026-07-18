@@ -46,10 +46,10 @@
                     </div>
                     <!-- Answer Content -->
                     <div class="card-body">
-                        {% if answer.answer_text|length > 1000 %}
+                        {% if answer.card_content_is_truncated %}
                         <!-- Kısaltılmış Yanıt -->
                         <div class="answer-text" id="answer-summary-{{ answer.id }}">
-                            {{ answer.answer_text|truncate_math_safe:1000|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }} ...
+                            {{ answer.card_rendered_html }} ...
                         </div>
 
                         <!-- Tam yanıt ilk açılışta işlenmez; istenince yüklenir. -->
@@ -67,7 +67,7 @@
                     {% else %}
                         <!-- 500 karakterden kısaysa doğrudan gösteriyoruz -->
                         <div class="answer-text">
-                            {{ answer.answer_text|safe_markdownify:"default"|spoiler_link|bkz_link|tanim_link|reference_link|ref_link|mention_link|collapsible_images }}
+                            {{ answer.card_rendered_html }}
                         </div>
                     {% endif %}
                         <!-- Actions and User Info -->
