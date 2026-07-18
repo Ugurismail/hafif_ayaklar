@@ -1,72 +1,157 @@
 /**
- * Homepage specific JavaScript
- * Handles random question shuffling and navigation
+ * Shared left-frame navigation behavior.
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Shuffle butonu (sol frame'i random doldurur)
-    const randomQuestionBtn = document.getElementById('random-question-btn');
-    if (randomQuestionBtn) {
-        randomQuestionBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            fetch('/shuffle_questions/')
-            .then(response => response.json())
-            .then(data => {
-                const questionsList = document.getElementById('questions-list');
-                if (!questionsList) {
-                    showToast('Soruları listeleyecek alan bulunamadı!', 'error');
-                    return;
-                }
-                questionsList.innerHTML = '';
-                data.questions.forEach(function(q) {
-                    const link = `/${q.slug}/`;
-                    const li = document.createElement('li');
-                    li.className = 'tbas-color baslik d-flex justify-content-between align-items-center mt-2';
+(function() {
+    'use strict';
 
-                    const a = document.createElement('a');
-                    a.href = link;
-                    a.className = 'tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100';
+    const SHUFFLED_QUESTIONS_KEY = 'hafifayaklar:left-frame-shuffled-questions:v1';
 
-                    const title = document.createElement('span');
-                    title.textContent = q.text;
+    function notify(message, type) {
+        if (typeof window.showToast === 'function') {
+            window.showToast(message, type);
+            return;
+        }
+        console.warn(message);
+    }
 
-                    const count = document.createElement('small');
-                    count.className = 'text-muted ms-2';
-                    count.style.minWidth = '20px';
-                    count.style.textAlign = 'right';
-                    count.textContent = String(q.answers_count);
+    function normalizeQuestions(questions) {
+        if (!Array.isArray(questions)) {
+            return [];
+        }
 
-                    a.appendChild(title);
-                    a.appendChild(count);
-                    li.appendChild(a);
-                    questionsList.appendChild(li);
-                });
-            })
-            .catch(error => {
-                console.error('Shuffle error:', error);
-                showToast('Başlıklar yüklenirken hata oluştu', 'error');
-            });
+        return questions
+            .filter(question => question && typeof question.slug === 'string' && typeof question.text === 'string')
+            .slice(0, 20)
+            .map(question => ({
+                id: question.id,
+                slug: question.slug,
+                text: question.text,
+                answers_count: Number.isFinite(Number(question.answers_count))
+                    ? Number(question.answers_count)
+                    : 0
+            }));
+    }
+
+    function readStoredQuestions() {
+        try {
+            const stored = JSON.parse(window.sessionStorage.getItem(SHUFFLED_QUESTIONS_KEY));
+            if (!stored) {
+                return [];
+            }
+            return normalizeQuestions(stored.questions);
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function storeQuestions(questions) {
+        try {
+            window.sessionStorage.setItem(SHUFFLED_QUESTIONS_KEY, JSON.stringify({
+                questions: questions
+            }));
+        } catch (error) {
+            console.warn('Başlık listesi tarayıcı oturumunda saklanamadı.', error);
+        }
+    }
+
+    function renderQuestions(questions) {
+        const questionsList = document.getElementById('questions-list');
+        if (!questionsList) {
+            return false;
+        }
+
+        const fragment = document.createDocumentFragment();
+        questions.forEach(function(question) {
+            const li = document.createElement('li');
+            li.className = 'tbas-color baslik d-flex justify-content-between align-items-center mt-2';
+
+            const link = document.createElement('a');
+            link.href = `/${encodeURIComponent(question.slug)}/`;
+            link.className = 'tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100';
+
+            const title = document.createElement('span');
+            title.textContent = question.text;
+
+            const count = document.createElement('small');
+            count.className = 'text-muted ms-2';
+            count.style.minWidth = '20px';
+            count.style.textAlign = 'right';
+            count.textContent = String(question.answers_count);
+
+            link.appendChild(title);
+            link.appendChild(count);
+            li.appendChild(link);
+            fragment.appendChild(li);
+        });
+
+        questionsList.replaceChildren(fragment);
+        return true;
+    }
+
+    function fetchQuestions() {
+        return window.fetch('/shuffle_questions/', {
+            headers: {'Accept': 'application/json'}
+        }).then(function(response) {
+            if (!response.ok) {
+                throw new Error(`Başlık isteği ${response.status} durumuyla sonuçlandı.`);
+            }
+            return response.json();
+        }).then(function(data) {
+            return normalizeQuestions(data.questions);
         });
     }
 
-    // Rastgele başlığa git butonu
-    const shuffleBtn = document.getElementById('shuffle-btn');
-    if (shuffleBtn) {
-        shuffleBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            fetch('/shuffle_questions/')
-            .then(response => response.json())
-            .then(data => {
-                if (data.questions && data.questions.length > 0) {
-                    const q = data.questions[Math.floor(Math.random() * data.questions.length)];
-                    const link = `/${q.slug}/`;
-                    window.location.href = link;
-                }
-            })
-            .catch(error => {
-                console.error('Shuffle error:', error);
-                showToast('Başlık yüklenirken hata oluştu', 'error');
+    document.addEventListener('DOMContentLoaded', function() {
+        const storedQuestions = readStoredQuestions();
+        if (storedQuestions.length > 0) {
+            renderQuestions(storedQuestions);
+        }
+
+        const randomQuestionBtn = document.getElementById('random-question-btn');
+        if (randomQuestionBtn) {
+            randomQuestionBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                randomQuestionBtn.setAttribute('aria-busy', 'true');
+
+                fetchQuestions()
+                    .then(function(questions) {
+                        if (questions.length === 0) {
+                            notify('Gösterilecek başlık bulunamadı', 'warning');
+                            return;
+                        }
+                        if (!renderQuestions(questions)) {
+                            notify('Başlıkları listeleyecek alan bulunamadı', 'error');
+                            return;
+                        }
+                        storeQuestions(questions);
+                    })
+                    .catch(function(error) {
+                        console.error('Shuffle error:', error);
+                        notify('Başlıklar yüklenirken hata oluştu', 'error');
+                    })
+                    .finally(function() {
+                        randomQuestionBtn.removeAttribute('aria-busy');
+                    });
             });
-        });
-    }
-});
+        }
+
+        const shuffleBtn = document.getElementById('shuffle-btn');
+        if (shuffleBtn) {
+            shuffleBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                fetchQuestions()
+                    .then(function(questions) {
+                        if (questions.length > 0) {
+                            const question = questions[Math.floor(Math.random() * questions.length)];
+                            window.location.href = `/${encodeURIComponent(question.slug)}/`;
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Shuffle error:', error);
+                        notify('Başlık yüklenirken hata oluştu', 'error');
+                    });
+            });
+        }
+    });
+})();
