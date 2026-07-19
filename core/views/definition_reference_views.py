@@ -21,7 +21,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Case, IntegerField, Q, Value, When
 from django.db.models.functions import Lower
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -312,7 +312,30 @@ def get_references(request):
             Q(metin_ismi__icontains=q) |
             Q(year__iexact=q)
         )
-    if reference_sort == 'year':
+    if reference_sort == 'relevance' and q:
+        relevance_rules = [
+            When(abbreviation__iexact=q, then=Value(0)),
+            When(metin_ismi__iexact=q, then=Value(1)),
+            When(author_surname__iexact=q, then=Value(2)),
+            When(author_name__iexact=q, then=Value(3)),
+            When(abbreviation__istartswith=q, then=Value(4)),
+            When(metin_ismi__istartswith=q, then=Value(5)),
+            When(author_surname__istartswith=q, then=Value(6)),
+            When(author_name__istartswith=q, then=Value(7)),
+            When(rest__istartswith=q, then=Value(8)),
+        ]
+        if q.isdigit():
+            relevance_rules.insert(4, When(year=int(q), then=Value(4)))
+
+        references = references.annotate(
+            search_rank=Case(
+                *relevance_rules,
+                default=Value(10),
+                output_field=IntegerField(),
+            )
+        ).order_by('search_rank', Lower('author_surname'), 'year', 'id')
+        ref_items = None
+    elif reference_sort == 'year':
         ordering = '-year' if reference_order == 'desc' else 'year'
         references = references.order_by(ordering, Lower('author_surname'), Lower('author_name'))
         ref_items = None
@@ -354,7 +377,7 @@ def get_references(request):
             'abbreviation': ref.abbreviation or '',
             'usage_count': getattr(ref, 'usage_count', page_usage_counts.get(ref.id, 0)),
             'display': str(ref),
-            'entries_url': reverse('reference_entries', args=[ref.id]),
+            'usage_url': reverse('reference_usage_data', args=[ref.id]),
         })
 
     response = {
@@ -368,8 +391,35 @@ def get_references(request):
     return JsonResponse(response, status=200)
 
 
+def _reference_excerpt(answer_text, reference_id):
+    text = answer_text or ''
+    target_match = next(
+        (
+            match for match in REFERENCE_CITATION_PATTERN.finditer(text)
+            if int(match.group('reference_id')) == reference_id
+        ),
+        None,
+    )
+    if target_match:
+        context_start = max(0, target_match.start() - 360)
+        context_end = min(len(text), target_match.end() + 360)
+        text = text[context_start:context_end]
+        prefix = '... ' if context_start else ''
+        suffix = ' ...' if context_end < len(answer_text or '') else ''
+    else:
+        prefix = suffix = ''
+
+    text = REFERENCE_CITATION_PATTERN.sub('', text)
+    text = re.sub(r'!\[[^\]]*\]\([^)]+\)', '', text)
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
+    text = re.sub(r'\((?:bkz|t|tanim|def):[^)]+\)', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'(?<!\\)[*_]{1,3}', '', text)
+    text = ' '.join(unescape(strip_tags(text)).split())
+    return Truncator(f'{prefix}{text}{suffix}').chars(420)
+
+
 @login_required
-def reference_entries(request, reference_id):
+def reference_usage_data(request, reference_id):
     reference = get_object_or_404(
         Reference.objects.select_related('created_by'),
         id=reference_id,
@@ -396,24 +446,44 @@ def reference_entries(request, reference_id):
             if page and page not in pages:
                 pages.append(page)
 
-        plain_text = REFERENCE_CITATION_PATTERN.sub('', answer.answer_text or '')
-        plain_text = re.sub(r'!\[[^\]]*\]\([^)]+\)', '', plain_text)
-        plain_text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', plain_text)
-        plain_text = re.sub(r'\((?:bkz|t|tanim|def):[^)]+\)', '', plain_text, flags=re.IGNORECASE)
-        plain_text = re.sub(r'(?<!\\)[*_]{1,3}', '', plain_text)
-        plain_text = ' '.join(unescape(strip_tags(plain_text)).split())
-        answer.reference_excerpt = Truncator(plain_text).chars(240)
+        answer.reference_excerpt = _reference_excerpt(answer.answer_text, reference.id)
         answer.reference_pages = pages
         answer.reference_citation_count = len(citations)
         total_citation_count += len(citations)
         entries.append(answer)
 
-    entries_page = Paginator(entries, 20).get_page(request.GET.get('page'))
-    return render(request, 'core/reference_entries.html', {
-        'reference': reference,
-        'entries_page': entries_page,
-        'unique_entry_count': len(entries),
-        'total_citation_count': total_citation_count,
+    entries_page = Paginator(entries, 8).get_page(request.GET.get('page'))
+    entry_data = [
+        {
+            'id': answer.id,
+            'title': answer.question.question_text,
+            'author': answer.user.username,
+            'updated_at': answer.updated_at.isoformat(),
+            'excerpt': answer.reference_excerpt,
+            'pages': answer.reference_pages,
+            'usage_count': answer.reference_citation_count,
+            'url': reverse('single_answer', args=[answer.question.slug, answer.id]),
+        }
+        for answer in entries_page.object_list
+    ]
+    return JsonResponse({
+        'reference': {
+            'id': reference.id,
+            'display': str(reference),
+            'details': reference.rest,
+            'abbreviation': reference.abbreviation or '',
+        },
+        'counts': {
+            'entries': len(entries),
+            'usages': total_citation_count,
+        },
+        'entries': entry_data,
+        'pagination': {
+            'page': entries_page.number,
+            'has_next': entries_page.has_next(),
+            'next_page': entries_page.next_page_number() if entries_page.has_next() else None,
+            'total_pages': entries_page.paginator.num_pages,
+        },
     })
 
 

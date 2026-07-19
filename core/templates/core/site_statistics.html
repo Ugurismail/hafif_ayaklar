@@ -315,10 +315,10 @@
                                 <td>{{ ref.rest }}</td>
                                 <td>
                                     {% if ref.usage_count %}
-                                        <a href="{% url 'reference_entries' ref.id %}" class="reference-usage-link" title="Bu kaynağın kullanıldığı entryleri gör">
+                                        <button type="button" class="reference-usage-link" data-reference-usage-url="{% url 'reference_usage_data' ref.id %}" aria-label="Bu kaynağın kullanıldığı entryleri göster">
                                             <i class="bi bi-journal-text" aria-hidden="true"></i>
                                             <span>{{ ref.usage_count }}</span>
-                                        </a>
+                                        </button>
                                     {% else %}
                                         <span class="text-muted">0</span>
                                     {% endif %}
@@ -369,6 +369,7 @@
         </div>
     </div>
 </div>
+{% include 'core/_reference_usage_modal.html' %}
 {% endblock content %}
 
 {% block extra_js %}
@@ -376,6 +377,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static 'js/answer_form.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>
 <script src="{% static 'js/vote_save.js' %}"></script>
+<script src="{% static 'js/reference_usage_modal.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Sekme seçim ve URL güncelleme
@@ -532,7 +534,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 // Fetch references from backend
-                fetch('{% url "get_references" %}?scope=all&q=' + encodeURIComponent(searchValue) + '&page_size=100')
+                fetch('{% url "get_references" %}?scope=all&sort=relevance&q=' + encodeURIComponent(searchValue) + '&page_size=100')
                     .then(response => response.json())
                     .then(data => {
                         var table = document.querySelector('#references table tbody');
@@ -559,10 +561,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                 var usageCell = row.insertCell(5);
                                 var usageCount = Number(ref.usage_count) || 0;
                                 if (usageCount > 0) {
-                                    var usageLink = document.createElement('a');
-                                    usageLink.href = ref.entries_url;
+                                    var usageLink = document.createElement('button');
+                                    usageLink.type = 'button';
                                     usageLink.className = 'reference-usage-link';
-                                    usageLink.title = 'Bu kaynağın kullanıldığı entryleri gör';
+                                    usageLink.dataset.referenceUsageUrl = ref.usage_url;
+                                    usageLink.setAttribute('aria-label', 'Bu kaynağın kullanıldığı entryleri göster');
                                     usageLink.innerHTML = '<i class="bi bi-journal-text" aria-hidden="true"></i><span></span>';
                                     usageLink.querySelector('span').textContent = usageCount;
                                     usageCell.appendChild(usageLink);

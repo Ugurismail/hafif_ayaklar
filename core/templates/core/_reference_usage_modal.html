@@ -1,0 +1,58 @@
+<div class="modal fade reference-usage-modal" id="referenceUsageModal" tabindex="-1" aria-labelledby="referenceUsageModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <p class="reference-usage-eyebrow">Kaynak kullanımları</p>
+          <h2 class="modal-title" id="referenceUsageModalTitle">Kaynağın geçtiği entryler</h2>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="reference-usage-status" data-reference-usage-loading role="status">
+          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+          <span>Kullanımlar yükleniyor...</span>
+        </div>
+
+        <div class="reference-usage-status reference-usage-error" data-reference-usage-error hidden>
+          <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+          <span>Kullanımlar yüklenemedi.</span>
+          <button type="button" class="btn btn-sm btn-outline-theme-secondary" data-reference-usage-retry>Tekrar dene</button>
+        </div>
+
+        <div data-reference-usage-content hidden>
+          <header class="reference-usage-summary">
+            <div class="reference-usage-source">
+              <h3 data-reference-usage-source></h3>
+              <p data-reference-usage-details></p>
+            </div>
+            <dl class="reference-usage-metrics">
+              <div>
+                <dt>Entry</dt>
+                <dd data-reference-entry-count>0</dd>
+              </div>
+              <div>
+                <dt>Kullanım</dt>
+                <dd data-reference-citation-count>0</dd>
+              </div>
+            </dl>
+          </header>
+
+          <div class="reference-usage-list" data-reference-usage-list></div>
+
+          <div class="reference-usage-status" data-reference-usage-empty hidden>
+            <i class="bi bi-journal-x" aria-hidden="true"></i>
+            <span>Bu kaynak henüz hiçbir entryde kullanılmamış.</span>
+          </div>
+
+          <div class="reference-usage-more" data-reference-usage-more hidden>
+            <button type="button" class="btn btn-sm btn-outline-theme-secondary" data-reference-usage-load-more>
+              Daha fazla göster
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

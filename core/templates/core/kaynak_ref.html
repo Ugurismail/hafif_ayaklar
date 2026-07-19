@@ -135,15 +135,16 @@
             <!-- ARAMA KUTUSU -->
             <div class="mb-3">
               <label for="kaynakAraInput" class="form-label">Arama</label>
-              <input 
-                type="text" 
+              <input
+                type="search"
                 class="form-control" 
                 id="kaynakAraInput" 
-                placeholder="Arama...">
+                placeholder="Yazar, eser, yıl veya kısaltma ara"
+                autocomplete="off">
             </div>
 
             <!-- Arama Sonuçları (List Group) -->
-            <div class="list-group" id="kaynakListesi" style="max-height: 400px; overflow-y: auto;"></div>
+            <div class="list-group reference-picker-list" id="kaynakListesi" aria-live="polite"></div>
 
             <!-- Sayfalama için container -->
             <div id="kaynak-pagination-container"></div>
@@ -179,6 +180,9 @@
     const sayfaInput     = document.getElementById('kaynakSayfaInput');
     const modalId        = 'kaynakRefModal';
     const kaynakRefModal = document.getElementById(modalId);
+    let kaynakSearchTimer = null;
+    let kaynakRequestController = null;
+    let kaynakRequestSequence = 0;
 
     // Aynı partial bir sayfada birden fazla kez render edilirse çift event binding olmasın
     if (kaynakRefModal && kaynakRefModal.dataset.initialized === '1') {
@@ -191,29 +195,68 @@
     // -----------------------
     // Kaynakları AJAX ile getir ve listele
     // -----------------------
-    function kaynaklariListele(searchTerm = '', page = 1, pageSize = 5) {
-        const url = "{% url 'get_references' %}?scope=all&q=" + encodeURIComponent(searchTerm) + "&page=" + page + "&page_size=" + pageSize;
-        fetch(url)
-        .then(response => response.json())
-        .then(data => {
+    async function kaynaklariListele(searchTerm = '', page = 1, pageSize = 5) {
+        if (!kaynakListesi) return;
+
+        if (kaynakRequestController) kaynakRequestController.abort();
+        kaynakRequestController = new AbortController();
+        const controller = kaynakRequestController;
+        const requestSequence = ++kaynakRequestSequence;
+        const params = new URLSearchParams({
+            scope: 'all',
+            q: searchTerm,
+            page: String(page),
+            page_size: String(pageSize),
+            sort: searchTerm ? 'relevance' : 'alpha',
+        });
+
+        kaynakListesi.replaceChildren();
+        const loading = document.createElement('div');
+        loading.className = 'reference-picker-status';
+        loading.textContent = 'Kaynaklar aranıyor...';
+        kaynakListesi.appendChild(loading);
+
+        try {
+            const response = await fetch("{% url 'get_references' %}?" + params.toString(), {
+                signal: controller.signal,
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+            });
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            const data = await response.json();
+            if (requestSequence !== kaynakRequestSequence) return;
+
             kaynakListesi.innerHTML = '';
-            // Kaynaklar
+            if (!data.references.length) {
+                const empty = document.createElement('div');
+                empty.className = 'reference-picker-status';
+                empty.textContent = 'Bu aramayla eşleşen kaynak bulunamadı.';
+                kaynakListesi.appendChild(empty);
+            }
+
             data.references.forEach(ref => {
                 let label = document.createElement('label');
-                label.classList.add('list-group-item');
+                label.className = 'list-group-item reference-picker-option';
                 const input = document.createElement('input');
                 input.type = 'radio';
                 input.name = 'kaynakSecimi';
                 input.value = ref.id;
-                input.className = 'form-check-input me-2';
+                input.className = 'form-check-input';
 
-                const span = document.createElement('span');
-                span.style.whiteSpace = 'normal';
-                span.style.wordBreak = 'break-word';
-                span.textContent = ref.display;
+                const copy = document.createElement('span');
+                copy.className = 'reference-picker-copy';
+                const title = document.createElement('strong');
+                title.className = 'reference-picker-title';
+                title.textContent = ref.display;
+                copy.appendChild(title);
+                if (ref.rest) {
+                    const bibliographicDetails = document.createElement('span');
+                    bibliographicDetails.className = 'reference-picker-details';
+                    bibliographicDetails.textContent = ref.rest;
+                    copy.appendChild(bibliographicDetails);
+                }
 
                 label.appendChild(input);
-                label.appendChild(span);
+                label.appendChild(copy);
                 kaynakListesi.appendChild(label);
             });
 
@@ -272,7 +315,7 @@
                     pagContainer.innerHTML = pagHtml;
 
                     // Pagination click
-                    document.querySelectorAll('#kaynak-pagination .page-link').forEach(el => {
+                    pagContainer.querySelectorAll('#kaynak-pagination .page-link').forEach(el => {
                         el.addEventListener('click', function(e) {
                             e.preventDefault();
                             const gotoPage = parseInt(this.getAttribute('data-page'));
@@ -283,10 +326,14 @@
                     });
                 }
             }
-        })
-        .catch(err => {
-            kaynakListesi.innerHTML = '<div class="text-theme-danger">Kaynaklar yüklenemedi.</div>';
-        });
+        } catch (requestError) {
+            if (requestError.name === 'AbortError' || requestSequence !== kaynakRequestSequence) return;
+            kaynakListesi.replaceChildren();
+            const error = document.createElement('div');
+            error.className = 'reference-picker-status text-theme-danger';
+            error.textContent = 'Kaynaklar yüklenemedi.';
+            kaynakListesi.appendChild(error);
+        }
     }
 
     // -----------------------
@@ -412,7 +459,7 @@
                     // Kaynak Seç sekmesine geç ve kaynakları ilk sayfadan göster
                     if (kaynakSecTab) kaynakSecTab.click();
                     if (kaynakAraInput) kaynakAraInput.value = '';
-                    kaynaklariListele('', 1);
+                    if (!kaynakSecTab) kaynaklariListele('', 1);
                 } else {
                     showToast("Kaynak eklenirken hata:\n" + JSON.stringify(data.errors), 'error');
                 }
@@ -434,9 +481,9 @@
     // -----------------------
     // (2) Kaynak Ara/Seç sekmesi işlevleri
     // -----------------------
-    // Kaynak Seç sekmesine geçilirse (her zaman ilk sayfadan, boş aramayla başlat)
+    // Kaynak Seç sekmesine geçilirse ilk sayfadan başlat.
     if (kaynakSecTab) {
-        kaynakSecTab.addEventListener('click', function() {
+        kaynakSecTab.addEventListener('shown.bs.tab', function() {
             if (kaynakAraInput) kaynakAraInput.value = '';
             kaynaklariListele('', 1);
         });
@@ -455,8 +502,18 @@
     // Arama kutusunda yazdıkça filtrele (her zaman ilk sayfa)
     if (kaynakAraInput) {
         kaynakAraInput.addEventListener('input', function() {
-            let searchTerm = kaynakAraInput.value.trim();
-            kaynaklariListele(searchTerm, 1);
+            const searchTerm = kaynakAraInput.value.trim();
+            clearTimeout(kaynakSearchTimer);
+            kaynakSearchTimer = setTimeout(function() {
+                kaynaklariListele(searchTerm, 1);
+            }, 250);
+        });
+    }
+
+    if (kaynakRefModal) {
+        kaynakRefModal.addEventListener('hidden.bs.modal', function() {
+            clearTimeout(kaynakSearchTimer);
+            if (kaynakRequestController) kaynakRequestController.abort();
         });
     }
 

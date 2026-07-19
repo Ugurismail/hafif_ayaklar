@@ -706,10 +706,10 @@
                           <td>{{ ref.rest }}</td>
                           <td>
                             {% if ref.usage_count %}
-                              <a href="{% url 'reference_entries' ref.id %}" class="reference-usage-link" title="Bu kaynağın kullanıldığı entryleri gör">
+                              <button type="button" class="reference-usage-link" data-reference-usage-url="{% url 'reference_usage_data' ref.id %}" aria-label="Bu kaynağın kullanıldığı entryleri göster">
                                 <i class="bi bi-journal-text" aria-hidden="true"></i>
                                 <span>{{ ref.usage_count }}</span>
-                              </a>
+                              </button>
                             {% else %}
                               <span class="text-muted">0</span>
                             {% endif %}
@@ -1003,6 +1003,7 @@
 {% include 'core/link_modal.html' %}
 {% include 'core/kaynak_ref.html' %}
 {% include 'core/reference_modal.html' %}
+{% include 'core/_reference_usage_modal.html' %}
 
 {% if form and form.errors %}
 <script>
@@ -1018,6 +1019,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{% static 'js/answer_form.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>
 <script src="{% static 'js/vote_save.js' %}"></script>
+<script src="{% static 'js/reference_usage_modal.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>
 
 <script>
   // 1. Ortak debounce fonksiyonu (çalışma sıklığını azaltmak için)
@@ -1076,7 +1078,7 @@ document.addEventListener('DOMContentLoaded', function() {
       $.each(data.references, function(i, ref){
         var usageCount = Number(ref.usage_count) || 0;
         var usageCell = usageCount > 0
-          ? '<a href="'+ ref.entries_url +'" class="reference-usage-link" title="Bu kaynağın kullanıldığı entryleri gör"><i class="bi bi-journal-text" aria-hidden="true"></i><span>'+ usageCount +'</span></a>'
+          ? '<button type="button" class="reference-usage-link" data-reference-usage-url="'+ ref.usage_url +'" aria-label="Bu kaynağın kullanıldığı entryleri göster"><i class="bi bi-journal-text" aria-hidden="true"></i><span>'+ usageCount +'</span></button>'
           : '<span class="text-muted">0</span>';
         var row = '<tr>'+
                     '<td>'+ ref.author_surname +'</td>'+
