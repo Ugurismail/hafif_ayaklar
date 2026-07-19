@@ -4,6 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .models import Answer, Question, Reference
+from .views.definition_reference_views import _reference_context
 
 
 class ReferenceUsageTests(TestCase):
@@ -56,12 +57,50 @@ class ReferenceUsageTests(TestCase):
         first_entry = next(entry for entry in payload['entries'] if entry['id'] == self.first_answer.id)
         self.assertEqual(first_entry['usage_count'], 2)
         self.assertEqual(first_entry['pages'], ['12', '18'])
-        self.assertIn('İlk kullanım', first_entry['excerpt'])
+        self.assertEqual(first_entry['citation_sentence'], 'İlk kullanım.')
+        self.assertEqual(first_entry['context_after'], 'İkinci kullanım.')
         self.assertEqual(
             first_entry['url'],
             reverse('single_answer', args=[self.question.slug, self.first_answer.id]),
         )
         self.assertNotIn(self.decoy_answer.id, {entry['id'] for entry in payload['entries']})
+
+    def test_reference_context_uses_previous_sentence_for_trailing_citation(self):
+        context = _reference_context(
+            (
+                'Başlangıç cümlesi. Kaynağın desteklediği tam cümle. '
+                f'(kaynak:{self.reference.id}, sayfa:44) Sonraki bağlam cümlesi.'
+            ),
+            self.reference.id,
+        )
+
+        self.assertEqual(context['before'], 'Başlangıç cümlesi.')
+        self.assertEqual(context['sentence'], 'Kaynağın desteklediği tam cümle.')
+        self.assertEqual(context['after'], 'Sonraki bağlam cümlesi.')
+
+    def test_reference_context_keeps_long_inline_citation_sentence_complete(self):
+        long_sentence = 'Kaynağın geçtiği ' + ('oldukça uzun bir ifade ' * 40).strip() + '.'
+        context = _reference_context(
+            f'Önceki cümle. {long_sentence[:-1]} (k:{self.reference.id} s:91). Sonraki cümle.',
+            self.reference.id,
+        )
+
+        self.assertEqual(context['sentence'], long_sentence)
+        self.assertEqual(context['before'], 'Önceki cümle.')
+        self.assertEqual(context['after'], 'Sonraki cümle.')
+
+    def test_reference_context_splits_sentences_without_following_space(self):
+        context = _reference_context(
+            (
+                'Önceki cümle bitti.Kaynağın geçtiği cümle burada '
+                f'(kaynak:{self.reference.id}) tamamlandı.Sonraki cümle başladı.'
+            ),
+            self.reference.id,
+        )
+
+        self.assertEqual(context['before'], 'Önceki cümle bitti.')
+        self.assertEqual(context['sentence'], 'Kaynağın geçtiği cümle burada tamamlandı.')
+        self.assertEqual(context['after'], 'Sonraki cümle başladı.')
 
     def test_reference_usage_data_requires_login(self):
         self.client.logout()

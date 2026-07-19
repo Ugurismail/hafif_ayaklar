@@ -229,14 +229,23 @@ button.reference-usage-link {
 }
 
 .reference-usage-excerpt {
-    display: -webkit-box;
+    display: grid;
+    gap: 0.28rem;
     margin: 0.55rem 0 0;
-    overflow: hidden;
-    color: color-mix(in srgb, var(--text-color) 78%, transparent);
     font-size: 0.9rem;
     line-height: 1.45;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+}
+
+.reference-usage-context {
+    color: color-mix(in srgb, var(--text-color) 62%, transparent);
+}
+
+.reference-usage-citation-sentence {
+    display: block;
+    padding-left: 0.65rem;
+    border-left: 2px solid var(--link-color);
+    color: var(--text-color);
+    font-weight: 700;
 }
 
 .reference-usage-citation-meta {

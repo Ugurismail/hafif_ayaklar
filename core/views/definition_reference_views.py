@@ -27,7 +27,6 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.html import strip_tags
-from django.utils.text import Truncator
 from django.views.decorators.http import require_POST
 
 from ..models import Question, Answer, Definition, Reference
@@ -391,7 +390,26 @@ def get_references(request):
     return JsonResponse(response, status=200)
 
 
-def _reference_excerpt(answer_text, reference_id):
+REFERENCE_CONTEXT_MARKER = 'HAFIFAYAKLARREFMARKERZXQ'
+REFERENCE_SENTENCE_BOUNDARY_PATTERN = re.compile(
+    r'(?<=[.!?])\s+|(?<=[a-zçğıöşü0-9][.!?])(?=[A-ZÇĞİÖŞÜ])|\n+'
+)
+
+
+def _clean_reference_context(text):
+    text = REFERENCE_CITATION_PATTERN.sub('', text)
+    text = re.sub(r'!\[[^\]]*\]\([^)]+\)', '', text)
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
+    text = re.sub(r'\((?:bkz|t|tanim|def):[^)]+\)', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'(?<!\\)[*_]{1,3}', '', text)
+    text = unescape(strip_tags(text)).replace('\r\n', '\n').replace('\r', '\n')
+    text = re.sub(r'[ \t]+', ' ', text)
+    text = re.sub(r' *\n+ *', '\n', text)
+    text = re.sub(r'\s+([,.;:!?])', r'\1', text)
+    return text.strip()
+
+
+def _reference_context(answer_text, reference_id):
     text = answer_text or ''
     target_match = next(
         (
@@ -400,22 +418,67 @@ def _reference_excerpt(answer_text, reference_id):
         ),
         None,
     )
-    if target_match:
-        context_start = max(0, target_match.start() - 360)
-        context_end = min(len(text), target_match.end() + 360)
-        text = text[context_start:context_end]
-        prefix = '... ' if context_start else ''
-        suffix = ' ...' if context_end < len(answer_text or '') else ''
-    else:
-        prefix = suffix = ''
+    if not target_match:
+        return {'before': '', 'sentence': '', 'after': ''}
 
-    text = REFERENCE_CITATION_PATTERN.sub('', text)
-    text = re.sub(r'!\[[^\]]*\]\([^)]+\)', '', text)
-    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
-    text = re.sub(r'\((?:bkz|t|tanim|def):[^)]+\)', '', text, flags=re.IGNORECASE)
-    text = re.sub(r'(?<!\\)[*_]{1,3}', '', text)
-    text = ' '.join(unescape(strip_tags(text)).split())
-    return Truncator(f'{prefix}{text}{suffix}').chars(420)
+    marked_text = (
+        text[:target_match.start()]
+        + f' {REFERENCE_CONTEXT_MARKER} '
+        + text[target_match.end():]
+    )
+    cleaned_text = _clean_reference_context(marked_text)
+    sentences = [
+        sentence.strip()
+        for sentence in REFERENCE_SENTENCE_BOUNDARY_PATTERN.split(cleaned_text)
+        if sentence.strip()
+    ]
+    marker_index = next(
+        (index for index, sentence in enumerate(sentences) if REFERENCE_CONTEXT_MARKER in sentence),
+        None,
+    )
+    if marker_index is None:
+        return {'before': '', 'sentence': '', 'after': ''}
+
+    marker_sentence = sentences[marker_index]
+    marker_position = marker_sentence.index(REFERENCE_CONTEXT_MARKER)
+    text_before_marker = marker_sentence[:marker_position]
+
+    def without_marker(sentence):
+        value = sentence.replace(REFERENCE_CONTEXT_MARKER, '').strip()
+        value = re.sub(r'\s+', ' ', value)
+        value = re.sub(r'\s+([,.;:!?])', r'\1', value)
+        return value if re.search(r'\w', value, flags=re.UNICODE) else ''
+
+    primary_index = marker_index
+    if not re.search(r'\w', text_before_marker, flags=re.UNICODE):
+        previous_index = marker_index - 1
+        while previous_index >= 0 and not without_marker(sentences[previous_index]):
+            previous_index -= 1
+        if previous_index >= 0:
+            primary_index = previous_index
+
+    citation_sentence = without_marker(sentences[primary_index])
+    if not citation_sentence:
+        citation_sentence = without_marker(marker_sentence)
+        primary_index = marker_index
+
+    before = ''
+    for index in range(primary_index - 1, -1, -1):
+        before = without_marker(sentences[index])
+        if before:
+            break
+
+    after = ''
+    for index in range(primary_index + 1, len(sentences)):
+        after = without_marker(sentences[index])
+        if after:
+            break
+
+    return {
+        'before': before,
+        'sentence': citation_sentence,
+        'after': after,
+    }
 
 
 @login_required
@@ -446,7 +509,7 @@ def reference_usage_data(request, reference_id):
             if page and page not in pages:
                 pages.append(page)
 
-        answer.reference_excerpt = _reference_excerpt(answer.answer_text, reference.id)
+        answer.reference_context = _reference_context(answer.answer_text, reference.id)
         answer.reference_pages = pages
         answer.reference_citation_count = len(citations)
         total_citation_count += len(citations)
@@ -459,7 +522,9 @@ def reference_usage_data(request, reference_id):
             'title': answer.question.question_text,
             'author': answer.user.username,
             'updated_at': answer.updated_at.isoformat(),
-            'excerpt': answer.reference_excerpt,
+            'context_before': answer.reference_context['before'],
+            'citation_sentence': answer.reference_context['sentence'],
+            'context_after': answer.reference_context['after'],
             'pages': answer.reference_pages,
             'usage_count': answer.reference_citation_count,
             'url': reverse('single_answer', args=[answer.question.slug, answer.id]),

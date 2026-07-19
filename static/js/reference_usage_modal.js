@@ -83,7 +83,18 @@
             addMetaItem(meta, 'bi-person', entry.author);
             addMetaItem(meta, 'bi-calendar3', formatDate(entry.updated_at));
 
-            const excerpt = createElement('p', 'reference-usage-excerpt', entry.excerpt || 'Bu entry için kısa bir metin özeti bulunamadı.');
+            const excerpt = createElement('div', 'reference-usage-excerpt');
+            if (entry.context_before) {
+                excerpt.appendChild(createElement('span', 'reference-usage-context', entry.context_before));
+            }
+            excerpt.appendChild(createElement(
+                'span',
+                'reference-usage-citation-sentence',
+                entry.citation_sentence || 'Kaynağın geçtiği cümle belirlenemedi.'
+            ));
+            if (entry.context_after) {
+                excerpt.appendChild(createElement('span', 'reference-usage-context', entry.context_after));
+            }
             main.append(title, meta, excerpt);
 
             const citationMeta = createElement('div', 'reference-usage-citation-meta');
