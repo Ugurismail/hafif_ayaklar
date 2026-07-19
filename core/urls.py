@@ -8,7 +8,7 @@ from .views.attendance_views import attendance_day_state, attendance_save_state,
 from .views.auth_views import create_invitation, send_invitation, signup, user_login, user_logout
 from .views.cikis_test_views import cikis_dogru_sik_sec, cikis_dogrusu_ayarla, cikis_sik_edit, cikis_sik_ekle, cikis_sonuc_sil, cikis_soru_edit, cikis_soru_ekle, cikis_soru_sil, cikis_test_coz, cikis_test_list, cikis_testi_coz, cikis_testi_create, cikis_testi_detail, cikis_testi_sil, cikis_testi_sonuc_list, cikis_testleri_list
 from .views.collection_views import create_saved_collection, delete_saved_collection, saved_collections_home, saved_item_collection_options, update_saved_item_collections
-from .views.definition_reference_views import create_definition, create_reference, delete_definition, delete_reference, edit_definition, edit_reference, get_all_definitions, get_references, get_user_definitions
+from .views.definition_reference_views import create_definition, create_reference, delete_definition, delete_reference, edit_definition, edit_reference, get_all_definitions, get_references, get_user_definitions, reference_entries
 from .views.delphoi_views import delphoi_home, delphoi_result
 from .views.ethics_views import ethics_atlas
 from .views.error_views import custom_400_view, custom_403_view, custom_404_view, custom_500_view, custom_502_view, debug_show_400, debug_show_403, debug_show_404, debug_show_500, debug_show_502
@@ -170,6 +170,7 @@ urlpatterns = [
     path('get-all-definitions/', get_all_definitions, name='get_all_definitions'),
     path('create-reference/', create_reference, name='create_reference'),
     path('get-references/', get_references, name='get_references'),
+    path('reference/<int:reference_id>/entries/', reference_entries, name='reference_entries'),
     path('reference/<int:reference_id>/edit/', edit_reference, name='edit_reference'),
     path('reference/<int:reference_id>/delete/', delete_reference, name='delete_reference'),
     # path('profile/<str:username>/download_entries/', download_entries, name='download_entries'),

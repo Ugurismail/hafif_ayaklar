@@ -313,7 +313,16 @@
                                 <td>{{ ref.year }}</td>
                                 <td>{{ ref.metin_ismi|default:"-" }}</td>
                                 <td>{{ ref.rest }}</td>
-                                <td>{{ ref.usage_count }}</td>
+                                <td>
+                                    {% if ref.usage_count %}
+                                        <a href="{% url 'reference_entries' ref.id %}" class="reference-usage-link" title="Bu kaynağın kullanıldığı entryleri gör">
+                                            <i class="bi bi-journal-text" aria-hidden="true"></i>
+                                            <span>{{ ref.usage_count }}</span>
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">0</span>
+                                    {% endif %}
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -547,7 +556,20 @@ document.addEventListener('DOMContentLoaded', function() {
                                 row.insertCell(2).textContent = ref.year;
                                 row.insertCell(3).textContent = ref.metin_ismi || '-';
                                 row.insertCell(4).textContent = ref.rest;
-                                row.insertCell(5).textContent = ref.usage_count;
+                                var usageCell = row.insertCell(5);
+                                var usageCount = Number(ref.usage_count) || 0;
+                                if (usageCount > 0) {
+                                    var usageLink = document.createElement('a');
+                                    usageLink.href = ref.entries_url;
+                                    usageLink.className = 'reference-usage-link';
+                                    usageLink.title = 'Bu kaynağın kullanıldığı entryleri gör';
+                                    usageLink.innerHTML = '<i class="bi bi-journal-text" aria-hidden="true"></i><span></span>';
+                                    usageLink.querySelector('span').textContent = usageCount;
+                                    usageCell.appendChild(usageLink);
+                                } else {
+                                    usageCell.textContent = '0';
+                                    usageCell.classList.add('text-muted');
+                                }
                             });
                         }
 

@@ -9,7 +9,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Notification, Hashtag, HashtagUsage, Answer
 
 REFERENCE_CITATION_PATTERN = re.compile(
-    r'\((?:kaynak|k)\s*:\s*(\d+)(?:(?:\s*,?\s*(?:sayfa|s)\s*:[^)]+))?\)',
+    r'\((?:kaynak|k)\s*:\s*(?P<reference_id>\d+)'
+    r'(?:(?:\s*,?\s*(?:sayfa|s)\s*:\s*(?P<page>[^)]+)))?\)',
     re.IGNORECASE,
 )
 REFERENCE_USAGE_CACHE_KEY = 'reference_usage_counts_all'
@@ -220,3 +221,18 @@ def build_reference_usage_counts(answer_texts=None, reference_ids=None, use_cach
             if requested_ids is None or ref_id in requested_ids:
                 counts[ref_id] += 1
     return counts
+
+
+def extract_reference_citations(text, reference_id=None):
+    """Return citation IDs and optional page values found in an answer."""
+    expected_id = int(reference_id) if reference_id is not None else None
+    citations = []
+    for match in REFERENCE_CITATION_PATTERN.finditer(text or ''):
+        matched_id = int(match.group('reference_id'))
+        if expected_id is not None and matched_id != expected_id:
+            continue
+        citations.append({
+            'reference_id': matched_id,
+            'page': (match.group('page') or '').strip(),
+        })
+    return citations

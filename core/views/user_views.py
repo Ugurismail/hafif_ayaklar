@@ -36,6 +36,7 @@ from ..models import (
     AnswerRevision, AnswerSuggestion,
 )
 from ..forms import ProfilePhotoForm
+from ..utils import build_reference_usage_counts
 
 
 def _redirect_profile_login(request):
@@ -255,8 +256,9 @@ def user_profile(request, username):
             ref_items = None
         elif reference_sort == 'usage':
             ref_items = list(user_references)
+            usage_counts = build_reference_usage_counts(reference_ids=[ref.id for ref in ref_items])
             for ref in ref_items:
-                ref.usage_count = ref.get_usage_count()
+                ref.usage_count = usage_counts.get(ref.id, 0)
             ref_items.sort(
                 key=lambda r: (r.usage_count, r.id),
                 reverse=(reference_order != 'asc'),
@@ -272,10 +274,17 @@ def user_profile(request, username):
         except (PageNotAnInteger, EmptyPage):
             references_page = ref_paginator.page(1)
 
-        # Avoid re-calculating usage count in templates
-        for ref in references_page.object_list:
-            if not hasattr(ref, 'usage_count'):
-                ref.usage_count = ref.get_usage_count()
+        # Avoid one answer scan per source on the profile page.
+        references_without_count = [
+            ref for ref in references_page.object_list
+            if not hasattr(ref, 'usage_count')
+        ]
+        if references_without_count:
+            page_usage_counts = build_reference_usage_counts(
+                reference_ids=[ref.id for ref in references_without_count]
+            )
+            for ref in references_without_count:
+                ref.usage_count = page_usage_counts.get(ref.id, 0)
 
         context['references_page'] = references_page
 

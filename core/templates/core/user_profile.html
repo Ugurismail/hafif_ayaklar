@@ -704,7 +704,16 @@
                           <td>{{ ref.year }}</td>
                           <td>{{ ref.metin_ismi|default:"-" }}</td>
                           <td>{{ ref.rest }}</td>
-                          <td>{{ ref.usage_count }}</td>
+                          <td>
+                            {% if ref.usage_count %}
+                              <a href="{% url 'reference_entries' ref.id %}" class="reference-usage-link" title="Bu kaynağın kullanıldığı entryleri gör">
+                                <i class="bi bi-journal-text" aria-hidden="true"></i>
+                                <span>{{ ref.usage_count }}</span>
+                              </a>
+                            {% else %}
+                              <span class="text-muted">0</span>
+                            {% endif %}
+                          </td>
                           <td>
                             {% if ref.created_by == user %}
                             <a href="{% url 'edit_reference' ref.id %}?tab=kaynaklarim&sort={{ reference_sort|default:'alpha' }}&order={{ reference_order|default:'asc' }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}{% if request.GET.r_page %}&r_page={{ request.GET.r_page|urlencode }}{% endif %}" class="btn btn-sm btn-theme-primary" title="Düzenle">
@@ -1065,13 +1074,17 @@ document.addEventListener('DOMContentLoaded', function() {
   function renderReferences(data, container) {
     if(data.references && data.references.length > 0) {
       $.each(data.references, function(i, ref){
+        var usageCount = Number(ref.usage_count) || 0;
+        var usageCell = usageCount > 0
+          ? '<a href="'+ ref.entries_url +'" class="reference-usage-link" title="Bu kaynağın kullanıldığı entryleri gör"><i class="bi bi-journal-text" aria-hidden="true"></i><span>'+ usageCount +'</span></a>'
+          : '<span class="text-muted">0</span>';
         var row = '<tr>'+
                     '<td>'+ ref.author_surname +'</td>'+
                     '<td>'+ ref.author_name +'</td>'+
                     '<td>'+ ref.year +'</td>'+
                     '<td>'+ (ref.metin_ismi || '-') +'</td>'+
                     '<td>'+ ref.rest +'</td>'+
-                    '<td>'+(ref.usage_count || 0)+'</td>'+
+                    '<td>'+ usageCell +'</td>'+
                     '<td>'+
                       '<a href="/reference/'+ ref.id + '/edit/?tab=kaynaklarim" class="btn btn-sm btn-theme-primary" title="Düzenle"><i class="bi bi-pencil-square"></i></a> '+
                       '<a href="/reference/'+ ref.id + '/delete/?tab=kaynaklarim" class="btn btn-sm btn-theme-secondary" title="Sil"><i class="bi bi-trash"></i></a>'+

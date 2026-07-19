@@ -12,6 +12,8 @@ Definition and reference views
 """
 
 import json
+import re
+from html import unescape
 from urllib.parse import urlencode
 
 from django.contrib import messages
@@ -24,11 +26,13 @@ from django.db.models.functions import Lower
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.utils.html import strip_tags
+from django.utils.text import Truncator
 from django.views.decorators.http import require_POST
 
 from ..models import Question, Answer, Definition, Reference
 from ..forms import DefinitionForm, ReferenceForm
-from ..utils import build_reference_usage_counts
+from ..utils import REFERENCE_CITATION_PATTERN, build_reference_usage_counts, extract_reference_citations
 
 
 @login_required
@@ -350,6 +354,7 @@ def get_references(request):
             'abbreviation': ref.abbreviation or '',
             'usage_count': getattr(ref, 'usage_count', page_usage_counts.get(ref.id, 0)),
             'display': str(ref),
+            'entries_url': reverse('reference_entries', args=[ref.id]),
         })
 
     response = {
@@ -361,6 +366,55 @@ def get_references(request):
         'total_count': paginator.count,
     }
     return JsonResponse(response, status=200)
+
+
+@login_required
+def reference_entries(request, reference_id):
+    reference = get_object_or_404(
+        Reference.objects.select_related('created_by'),
+        id=reference_id,
+    )
+    candidate_answers = (
+        Answer.objects.filter(
+            Q(answer_text__icontains='(kaynak') | Q(answer_text__icontains='(k')
+        )
+        .filter(answer_text__icontains=str(reference.id))
+        .select_related('question', 'user')
+        .order_by('-updated_at', '-id')
+    )
+
+    entries = []
+    total_citation_count = 0
+    for answer in candidate_answers:
+        citations = extract_reference_citations(answer.answer_text, reference.id)
+        if not citations:
+            continue
+
+        pages = []
+        for citation in citations:
+            page = citation['page']
+            if page and page not in pages:
+                pages.append(page)
+
+        plain_text = REFERENCE_CITATION_PATTERN.sub('', answer.answer_text or '')
+        plain_text = re.sub(r'!\[[^\]]*\]\([^)]+\)', '', plain_text)
+        plain_text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', plain_text)
+        plain_text = re.sub(r'\((?:bkz|t|tanim|def):[^)]+\)', '', plain_text, flags=re.IGNORECASE)
+        plain_text = re.sub(r'(?<!\\)[*_]{1,3}', '', plain_text)
+        plain_text = ' '.join(unescape(strip_tags(plain_text)).split())
+        answer.reference_excerpt = Truncator(plain_text).chars(240)
+        answer.reference_pages = pages
+        answer.reference_citation_count = len(citations)
+        total_citation_count += len(citations)
+        entries.append(answer)
+
+    entries_page = Paginator(entries, 20).get_page(request.GET.get('page'))
+    return render(request, 'core/reference_entries.html', {
+        'reference': reference,
+        'entries_page': entries_page,
+        'unique_entry_count': len(entries),
+        'total_citation_count': total_citation_count,
+    })
 
 
 @login_required
