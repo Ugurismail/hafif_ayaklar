@@ -87,6 +87,7 @@ def get_user_answers(request):
             'detail_url': reverse('single_answer', args=[answer.question.slug, answer.id]),
             'question_url': reverse('question_detail', args=[answer.question.slug]),
             'created_at': answer.created_at.strftime("%d %b %Y %H:%M"),
+            'created_at_iso': answer.created_at.isoformat(),
         })
 
     return JsonResponse({

@@ -48,7 +48,7 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/profile.css' %}?v={{ STATIC_ASSET_VERSION }}-entryselector2">
+<link rel="stylesheet" href="{% static 'css/profile.css' %}?v={{ STATIC_ASSET_VERSION }}-entryselector3">
 {% endblock %}
 
 {% block content %}
@@ -1050,6 +1050,40 @@
                 <span class="entry-selected-count" id="selectedCount">0</span>
               </div>
 
+              <div class="entry-selected-tools" id="selectedOrderingTools" hidden>
+                <div class="entry-selected-search">
+                  <i class="bi bi-search" aria-hidden="true"></i>
+                  <input
+                    type="search"
+                    id="selectedEntriesSearch"
+                    placeholder="Seçilenlerde ara"
+                    autocomplete="off"
+                    aria-label="Seçilen entry'lerde ara"
+                  >
+                  <button
+                    type="button"
+                    id="clearSelectedSearch"
+                    aria-label="Seçilenler aramasını temizle"
+                    title="Aramayı temizle"
+                    hidden
+                  >
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                  </button>
+                </div>
+                <div class="entry-selected-quick-sort" role="group" aria-label="Seçilen entry'leri hızlı sırala">
+                  <button type="button" data-selected-sort="title" title="Başlığa göre sırala">
+                    <i class="bi bi-sort-alpha-down" aria-hidden="true"></i><span>A-Z</span>
+                  </button>
+                  <button type="button" data-selected-sort="oldest" title="Eskiden yeniye sırala">
+                    <i class="bi bi-calendar2-minus" aria-hidden="true"></i><span>Eski</span>
+                  </button>
+                  <button type="button" data-selected-sort="newest" title="Yeniden eskiye sırala">
+                    <i class="bi bi-calendar2-plus" aria-hidden="true"></i><span>Yeni</span>
+                  </button>
+                </div>
+                <span class="entry-selected-filter-status" id="selectedFilterStatus"></span>
+              </div>
+
               <div class="entry-selected-list" id="selectedEntriesList">
                 <div class="entry-selected-empty">
                   <i class="bi bi-inbox" aria-hidden="true"></i>
@@ -1065,7 +1099,7 @@
                   <option value="newest">Yeniden eskiye</option>
                   <option value="custom" id="customOrderOption">Özel sıra</option>
                 </select>
-                <small id="customOrderHint">Özel sırada seçilen entry'leri sürükleyebilirsin.</small>
+                <small id="customOrderHint">Sürükle, okları kullan veya sıra numarasını doğrudan yaz.</small>
               </div>
             </aside>
           </section>
@@ -1548,6 +1582,10 @@ function debounce(func, delay) {
   const searchEntriesInput = document.getElementById('searchEntriesInput');
   const clearSearchEntries = document.getElementById('clearSearchEntries');
   const selectedEntriesList = document.getElementById('selectedEntriesList');
+  const selectedOrderingTools = document.getElementById('selectedOrderingTools');
+  const selectedEntriesSearch = document.getElementById('selectedEntriesSearch');
+  const clearSelectedSearch = document.getElementById('clearSelectedSearch');
+  const selectedFilterStatus = document.getElementById('selectedFilterStatus');
   const selectionNotice = document.getElementById('downloadSelectionNotice');
 
   let userEntries = [];
@@ -1558,6 +1596,7 @@ function debounce(func, delay) {
   let hasMore = false;
   let totalEntries = 0;
   let currentSearchTerm = '';
+  let selectedSearchTerm = '';
   let modalInitialized = false;
   let entriesRequestId = 0;
 
@@ -1586,7 +1625,10 @@ function debounce(func, delay) {
       selectedEntryOrder = [];
       entryById = new Map();
       currentSearchTerm = '';
+      selectedSearchTerm = '';
       searchEntriesInput.value = '';
+      selectedEntriesSearch.value = '';
+      clearSelectedSearch.hidden = true;
       document.getElementById('rootQuestionSelect').value = '';
       loadRootQuestions();
       loadUserEntries();
@@ -1697,6 +1739,7 @@ function debounce(func, delay) {
           question: answer.question_text,
           preview: answer.answer_text,
           date: answer.created_at,
+          createdAt: answer.created_at_iso,
           detailUrl: answer.detail_url
         }));
 
@@ -1849,14 +1892,81 @@ function debounce(func, delay) {
     updateSelectedCount();
   }
 
+  function normalizeSelectedSearch(value) {
+    return String(value || '').toLocaleLowerCase('tr-TR');
+  }
+
+  function sortSelectedEntryOrder(mode) {
+    const collator = new Intl.Collator('tr', {
+      sensitivity: 'base',
+      numeric: true
+    });
+
+    selectedEntryOrder.sort((firstId, secondId) => {
+      const firstEntry = entryById.get(firstId);
+      const secondEntry = entryById.get(secondId);
+
+      if (mode === 'title') {
+        return collator.compare(firstEntry?.question || '', secondEntry?.question || '');
+      }
+
+      const firstTime = Date.parse(firstEntry?.createdAt || '') || 0;
+      const secondTime = Date.parse(secondEntry?.createdAt || '') || 0;
+      const dateDifference = mode === 'newest'
+        ? secondTime - firstTime
+        : firstTime - secondTime;
+
+      return dateDifference || collator.compare(
+        firstEntry?.question || '',
+        secondEntry?.question || ''
+      );
+    });
+  }
+
+  function activateCustomOrder() {
+    if (selectedEntryIds.size >= 2) {
+      orderSelect.value = 'custom';
+    }
+  }
+
+  function moveSelectedEntry(entryId, targetIndex) {
+    const currentIndex = selectedEntryOrder.indexOf(entryId);
+    const boundedIndex = Math.max(
+      0,
+      Math.min(targetIndex, selectedEntryOrder.length - 1)
+    );
+
+    if (currentIndex < 0 || currentIndex === boundedIndex) {
+      renderSelectedEntries();
+      return;
+    }
+
+    selectedEntryOrder.splice(currentIndex, 1);
+    selectedEntryOrder.splice(boundedIndex, 0, entryId);
+    activateCustomOrder();
+    renderSelectedEntries();
+  }
+
   function renderSelectedEntries() {
     selectedEntryOrder = selectedEntryOrder.filter(id => selectedEntryIds.has(id));
     if (selectedEntryOrder.length < 2 && orderSelect.value === 'custom') {
       orderSelect.value = 'oldest';
     }
-    const isCustomOrder = orderSelect.value === 'custom';
+    if (orderSelect.value !== 'custom') {
+      sortSelectedEntryOrder(orderSelect.value);
+    }
 
-    if (selectedEntryOrder.length === 0) {
+    const selectedCount = selectedEntryOrder.length;
+    selectedOrderingTools.hidden = selectedCount === 0;
+    selectedOrderingTools.querySelectorAll('[data-selected-sort]').forEach(button => {
+      button.disabled = selectedCount < 2;
+    });
+
+    if (selectedCount === 0) {
+      selectedSearchTerm = '';
+      selectedEntriesSearch.value = '';
+      clearSelectedSearch.hidden = true;
+      selectedFilterStatus.textContent = '';
       selectedEntriesList.innerHTML = `
         <div class="entry-selected-empty">
           <i class="bi bi-inbox" aria-hidden="true"></i>
@@ -1868,27 +1978,94 @@ function debounce(func, delay) {
       return;
     }
 
-    selectedEntriesList.innerHTML = selectedEntryOrder.map(entryId => {
+    const normalizedSearch = normalizeSelectedSearch(selectedSearchTerm);
+    const visibleEntryIds = selectedEntryOrder.filter(entryId => {
       const entry = entryById.get(entryId);
-      if (!entry) return '';
+      if (!entry || !normalizedSearch) return Boolean(entry);
+      return normalizeSelectedSearch(`${entry.question} ${entry.preview}`).includes(normalizedSearch);
+    });
+
+    selectedFilterStatus.textContent = normalizedSearch
+      ? `${visibleEntryIds.length} / ${selectedCount} gösteriliyor`
+      : `${selectedCount} entry sıralamada`;
+
+    if (visibleEntryIds.length === 0) {
+      selectedEntriesList.innerHTML = `
+        <div class="entry-selected-empty">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <strong>Eşleşme bulunamadı</strong>
+          <span>Seçimlerin korunuyor. Arama ifadesini değiştirerek yeniden deneyebilirsin.</span>
+        </div>
+      `;
+      updateSelectedCount();
+      return;
+    }
+
+    const canDrag = selectedCount > 1 && !normalizedSearch;
+    selectedEntriesList.innerHTML = visibleEntryIds.map(entryId => {
+      const entry = entryById.get(entryId);
+      const actualIndex = selectedEntryOrder.indexOf(entryId);
+      const escapedTitle = escapeHtml(entry.question);
       return `
-        <div class="entry-selected-item" data-entry-id="${entryId}" draggable="${isCustomOrder ? 'true' : 'false'}">
-          <span class="entry-selected-drag" title="${isCustomOrder ? 'Sürükleyerek sırala' : 'Özel sırayı seçerek taşı'}">
-            <i class="bi bi-grip-vertical" aria-hidden="true"></i>
-          </span>
+        <div class="entry-selected-item" data-entry-id="${entryId}">
+          <div class="entry-selected-rank">
+            <span
+              class="entry-selected-drag"
+              draggable="${canDrag ? 'true' : 'false'}"
+              title="${canDrag ? 'Sürükleyerek sırala' : 'Arama açıkken sürükleme kullanılamaz'}"
+            >
+              <i class="bi bi-grip-vertical" aria-hidden="true"></i>
+            </span>
+            <label class="visually-hidden" for="selectedPosition${entryId}">${escapedTitle} sıra numarası</label>
+            <input
+              type="number"
+              class="entry-selected-position"
+              id="selectedPosition${entryId}"
+              data-position-entry="${entryId}"
+              min="1"
+              max="${selectedCount}"
+              value="${actualIndex + 1}"
+              inputmode="numeric"
+              aria-label="${escapedTitle} sıra numarası"
+            >
+          </div>
           <div class="entry-selected-copy">
-            <strong title="${escapeHtml(entry.question)}">${escapeHtml(entry.question)}</strong>
+            <strong title="${escapedTitle}">${escapedTitle}</strong>
             <span>${escapeHtml(entry.date)}</span>
           </div>
-          <button
-            type="button"
-            class="entry-selected-remove"
-            data-remove-entry="${entryId}"
-            aria-label="${escapeHtml(entry.question)} seçimini kaldır"
-            title="Seçimi kaldır"
-          >
-            <i class="bi bi-x-lg" aria-hidden="true"></i>
-          </button>
+          <div class="entry-selected-actions">
+            <button
+              type="button"
+              class="entry-selected-move"
+              data-move-entry="${entryId}"
+              data-direction="-1"
+              aria-label="${escapedTitle} entry'sini yukarı taşı"
+              title="Yukarı taşı"
+              ${actualIndex === 0 ? 'disabled' : ''}
+            >
+              <i class="bi bi-chevron-up" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              class="entry-selected-move"
+              data-move-entry="${entryId}"
+              data-direction="1"
+              aria-label="${escapedTitle} entry'sini aşağı taşı"
+              title="Aşağı taşı"
+              ${actualIndex === selectedCount - 1 ? 'disabled' : ''}
+            >
+              <i class="bi bi-chevron-down" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              class="entry-selected-remove"
+              data-remove-entry="${entryId}"
+              aria-label="${escapedTitle} seçimini kaldır"
+              title="Seçimi kaldır"
+            >
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
       `;
     }).join('');
@@ -1899,38 +2076,83 @@ function debounce(func, delay) {
       });
     });
 
+    selectedEntriesList.querySelectorAll('[data-move-entry]').forEach(button => {
+      button.addEventListener('click', function() {
+        const entryId = button.dataset.moveEntry;
+        const direction = Number(button.dataset.direction);
+        moveSelectedEntry(entryId, selectedEntryOrder.indexOf(entryId) + direction);
+      });
+    });
+
+    selectedEntriesList.querySelectorAll('[data-position-entry]').forEach(input => {
+      const applyPosition = function() {
+        const targetPosition = Number.parseInt(input.value, 10);
+        if (!Number.isFinite(targetPosition)) {
+          renderSelectedEntries();
+          return;
+        }
+        moveSelectedEntry(input.dataset.positionEntry, targetPosition - 1);
+      };
+
+      input.addEventListener('change', applyPosition);
+      input.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          applyPosition();
+        }
+      });
+    });
+
     initDragAndDrop();
     updateSelectedCount();
   }
 
   function syncSelectedEntryOrderFromDOM() {
-    selectedEntryOrder = Array.from(
+    if (selectedSearchTerm) {
+      return;
+    }
+
+    const domOrder = Array.from(
       selectedEntriesList.querySelectorAll('.entry-selected-item')
     ).map(item => item.dataset.entryId);
+    const renderedIds = new Set(domOrder);
+    selectedEntryOrder = domOrder.concat(
+      selectedEntryOrder.filter(entryId => !renderedIds.has(entryId))
+    );
   }
 
   function initDragAndDrop() {
-    if (orderSelect.value !== 'custom') {
+    if (selectedSearchTerm || selectedEntryOrder.length < 2) {
       return;
     }
 
     const items = selectedEntriesList.querySelectorAll('.entry-selected-item');
+    const handles = selectedEntriesList.querySelectorAll('.entry-selected-drag[draggable="true"]');
     let draggedElement = null;
 
-    items.forEach(item => {
-      item.addEventListener('dragstart', function() {
-        draggedElement = this;
-        this.classList.add('is-dragging');
+    handles.forEach(handle => {
+      handle.addEventListener('dragstart', function(event) {
+        draggedElement = this.closest('.entry-selected-item');
+        draggedElement.classList.add('is-dragging');
+        activateCustomOrder();
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', draggedElement.dataset.entryId);
       });
 
-      item.addEventListener('dragend', function() {
-        this.classList.remove('is-dragging');
+      handle.addEventListener('dragend', function() {
+        if (draggedElement) {
+          draggedElement.classList.remove('is-dragging');
+        }
         syncSelectedEntryOrderFromDOM();
+        draggedElement = null;
+        renderSelectedEntries();
       });
+    });
 
+    items.forEach(item => {
       item.addEventListener('dragover', function(event) {
         event.preventDefault();
-        if (this !== draggedElement) {
+        if (draggedElement && this !== draggedElement) {
           const rect = this.getBoundingClientRect();
           const midpoint = rect.top + rect.height / 2;
           if (event.clientY < midpoint) {
@@ -2060,6 +2282,28 @@ function debounce(func, delay) {
     searchEntriesInput.focus();
   });
 
+  selectedEntriesSearch.addEventListener('input', function(event) {
+    selectedSearchTerm = event.target.value.trim();
+    clearSelectedSearch.hidden = selectedSearchTerm.length === 0;
+    renderSelectedEntries();
+  });
+
+  clearSelectedSearch.addEventListener('click', function() {
+    selectedSearchTerm = '';
+    selectedEntriesSearch.value = '';
+    clearSelectedSearch.hidden = true;
+    renderSelectedEntries();
+    selectedEntriesSearch.focus();
+  });
+
+  selectedOrderingTools.querySelectorAll('[data-selected-sort]').forEach(button => {
+    button.addEventListener('click', function() {
+      sortSelectedEntryOrder(button.dataset.selectedSort);
+      activateCustomOrder();
+      renderSelectedEntries();
+    });
+  });
+
   orderSelect.addEventListener('change', function() {
     renderSelectedEntries();
     updateSelectedCount();
@@ -2072,7 +2316,7 @@ function debounce(func, delay) {
     const downloadAll = downloadAllCheckbox.checked;
     const rootQuestionId = document.getElementById('rootQuestionSelect').value;
 
-    if (order === 'custom') {
+    if (order === 'custom' && !selectedSearchTerm) {
       syncSelectedEntryOrderFromDOM();
     }
 

@@ -47,6 +47,10 @@ class EntryDownloadSelectorTests(TestCase):
 
         self.assertEqual(filtered.status_code, 200)
         self.assertEqual(
+            filtered.json()["answers"][0]["created_at_iso"],
+            self.first_answer.created_at.isoformat(),
+        )
+        self.assertEqual(
             [answer["id"] for answer in filtered.json()["answers"]],
             [self.first_answer.id],
         )
@@ -86,6 +90,9 @@ class EntryDownloadSelectorTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="selectedEntriesList"')
+        self.assertContains(response, 'id="selectedEntriesSearch"')
+        self.assertContains(response, 'data-selected-sort="title"')
+        self.assertContains(response, 'data-position-entry="${entryId}"')
         self.assertContains(response, "Arama değişse de seçimlerin korunur.")
         self.assertContains(response, "selectedEntryOrder.filter")
 
