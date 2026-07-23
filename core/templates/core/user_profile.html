@@ -48,7 +48,7 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/profile.css' %}?v={{ STATIC_ASSET_VERSION }}">
+<link rel="stylesheet" href="{% static 'css/profile.css' %}?v={{ STATIC_ASSET_VERSION }}-entryselector2">
 {% endblock %}
 
 {% block content %}
@@ -903,98 +903,186 @@
 </div>
 
 <!-- Entry'leri İndir Modal -->
-<div class="modal fade" id="downloadEntriesModal" tabindex="-1" aria-labelledby="downloadEntriesModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+<div
+  class="modal fade entry-download-modal"
+  id="downloadEntriesModal"
+  tabindex="-1"
+  aria-labelledby="downloadEntriesModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-md-down">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="downloadEntriesModalLabel">Entry'lerimi İndir</h5>
+      <div class="modal-header entry-download-header">
+        <div class="entry-download-title">
+          <span class="entry-download-title-icon" aria-hidden="true"><i class="bi bi-archive"></i></span>
+          <div>
+            <h5 class="modal-title" id="downloadEntriesModalLabel">Entry arşivi oluştur</h5>
+            <p>İndirmek istediğin entry'leri bul, seç ve sırasını belirle.</p>
+          </div>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
       </div>
+
       <div class="modal-body">
         <form id="downloadEntriesForm">
           {% csrf_token %}
 
-          <!-- Format Seçimi -->
-          <div class="mb-4">
-            <label class="form-label fw-bold">İndirme Formatı</label>
-            <div class="btn-group w-100" role="group">
-              <input type="radio" class="btn-check" name="format" id="formatPDF" value="pdf" checked>
-              <label class="btn btn-outline-theme-secondary" for="formatPDF">PDF</label>
+          <div class="entry-download-options">
+            <fieldset class="entry-download-format">
+              <legend>Dosya biçimi</legend>
+              <div class="entry-format-options" role="radiogroup" aria-label="Dosya biçimi">
+                <input type="radio" class="btn-check" name="format" id="formatPDF" value="pdf" checked>
+                <label class="entry-format-option" for="formatPDF">
+                  <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i><span>PDF</span>
+                </label>
 
-              <input type="radio" class="btn-check" name="format" id="formatWord" value="docx">
-              <label class="btn btn-outline-theme-secondary" for="formatWord">Word</label>
+                <input type="radio" class="btn-check" name="format" id="formatWord" value="docx">
+                <label class="entry-format-option" for="formatWord">
+                  <i class="bi bi-file-earmark-word" aria-hidden="true"></i><span>Word</span>
+                </label>
 
-              <input type="radio" class="btn-check" name="format" id="formatPaper" value="paper">
-              <label class="btn btn-outline-theme-secondary" for="formatPaper">Paper</label>
+                <input type="radio" class="btn-check" name="format" id="formatPaper" value="paper">
+                <label class="entry-format-option" for="formatPaper">
+                  <i class="bi bi-journal-richtext" aria-hidden="true"></i><span>Paper</span>
+                </label>
 
-              <input type="radio" class="btn-check" name="format" id="formatExcel" value="xlsx">
-              <label class="btn btn-outline-theme-secondary" for="formatExcel">Excel</label>
+                <input type="radio" class="btn-check" name="format" id="formatExcel" value="xlsx">
+                <label class="entry-format-option" for="formatExcel">
+                  <i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i><span>Excel</span>
+                </label>
 
-              <input type="radio" class="btn-check" name="format" id="formatJSON" value="json">
-              <label class="btn btn-outline-theme-secondary" for="formatJSON">JSON</label>
-            </div>
-          </div>
+                <input type="radio" class="btn-check" name="format" id="formatJSON" value="json">
+                <label class="entry-format-option" for="formatJSON">
+                  <i class="bi bi-braces" aria-hidden="true"></i><span>JSON</span>
+                </label>
+              </div>
+            </fieldset>
 
-          <!-- Tümünü İndir Checkbox -->
-          <div class="mb-4">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="downloadAllCheckbox">
-              <label class="form-check-label fw-bold" for="downloadAllCheckbox">
-                Tüm entry'lerimi indir (seçim yapmadan hepsini indir)
-              </label>
-            </div>
-          </div>
-
-          <!-- Başlangıç Soruları Seçimi -->
-          <div class="mb-4" id="rootQuestionSection">
-            <label class="form-label fw-bold">Başlangıç Sorusuna Göre İndir</label>
-            <p class="text-muted small mb-2">Bir başlangıç sorusu seçerek o soruya ve tüm alt sorularına yazdığınız entry'leri indirebilirsiniz.</p>
-            <select class="form-select mb-2" id="rootQuestionSelect">
-              <option value="">-- Başlangıç sorusu seçin (opsiyonel) --</option>
-            </select>
-            <small class="text-muted">Yükleniyor...</small>
-          </div>
-
-          <!-- Entry Seçimi (sadece "tümünü indir" seçili DEĞİLse göster) -->
-          <div class="mb-4" id="entrySelectionSection">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <label class="form-label fw-bold mb-0">Entry Seçimi</label>
-              <div>
-                <button type="button" class="btn btn-sm btn-outline-theme-secondary" id="selectAllEntries">Tümünü Seç</button>
-                <button type="button" class="btn btn-sm btn-outline-theme-secondary" id="deselectAllEntries">Hiçbirini Seçme</button>
+            <div class="entry-download-scope">
+              <div class="entry-download-scope-copy">
+                <span class="entry-download-option-label">Kapsam</span>
+                <strong>Tüm arşivi indir</strong>
+                <small>Tek tek seçim yapmak istemiyorsan bütün entry'lerini dahil eder.</small>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="downloadAllCheckbox">
+                <label class="visually-hidden" for="downloadAllCheckbox">Tüm entry'lerimi indir</label>
               </div>
             </div>
-            <!-- Arama -->
-            <div class="mb-2">
-              <input type="text" class="form-control form-control-sm" id="searchEntriesInput" placeholder="Entry'lerde ara (başlık veya metin)...">
-            </div>
-            <div id="entriesContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.25rem; padding: 1rem;">
-              <p class="text-muted">Yükleniyor...</p>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mt-2">
-              <small class="text-muted">Gösterilen: <span id="visibleCount">0</span> / Seçili: <span id="selectedCount">0</span></small>
-              <button type="button" class="btn btn-sm btn-outline-theme-secondary" id="loadMoreButton" style="display: none;">
-                Daha Fazla Yükle
-              </button>
+          </div>
+
+          <div class="entry-download-all-summary" id="downloadAllSummary" hidden>
+            <i class="bi bi-check2-circle" aria-hidden="true"></i>
+            <div>
+              <strong>Bütün entry'lerin arşive dahil edilecek.</strong>
+              <span>Tek tek yaptığın seçimler korunur; bu seçeneği kapattığında kaldığın yerden devam edebilirsin.</span>
             </div>
           </div>
 
-          <!-- Sıralama -->
-          <div class="mb-3">
-            <label class="form-label fw-bold">Sıralama</label>
-            <select class="form-select" name="order" id="orderSelect">
-              <option value="oldest">En Eskiden En Yeniye</option>
-              <option value="newest">En Yeniden En Eskiye</option>
-              <option value="custom">Özel Sıralama (Sürükle-Bırak Sırasına Göre)</option>
-            </select>
-          </div>
+          <section class="entry-download-workspace" id="entrySelectionSection" aria-label="Entry seçimi">
+            <div class="entry-results-pane">
+              <div class="entry-pane-heading">
+                <div>
+                  <span class="entry-download-option-label">Entry'lerini bul</span>
+                  <strong id="entryResultsTitle">Tüm entry'ler</strong>
+                </div>
+                <span class="entry-results-count"><span id="visibleCount">0</span> / <span id="totalEntriesCount">0</span></span>
+              </div>
+
+              <div class="entry-filter-grid">
+                <div class="entry-search-field">
+                  <i class="bi bi-search" aria-hidden="true"></i>
+                  <input
+                    type="search"
+                    class="form-control"
+                    id="searchEntriesInput"
+                    placeholder="Başlıkta veya entry metninde ara"
+                    autocomplete="off"
+                  >
+                  <button type="button" class="entry-search-clear" id="clearSearchEntries" aria-label="Aramayı temizle" title="Aramayı temizle" hidden>
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                  </button>
+                </div>
+
+                <div id="rootQuestionSection">
+                  <label class="visually-hidden" for="rootQuestionSelect">Başlangıç başlığı</label>
+                  <select class="form-select" id="rootQuestionSelect">
+                    <option value="">Bütün başlıklarda ara</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="entry-results-actions">
+                <span id="rootQuestionStatus" aria-live="polite">Başlıklar yükleniyor...</span>
+                <div>
+                  <button type="button" class="btn btn-sm btn-outline-theme-secondary" id="selectAllEntries">
+                    <i class="bi bi-check2-square" aria-hidden="true"></i> Görünenleri seç
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-theme-secondary" id="deselectAllEntries">
+                    <i class="bi bi-eraser" aria-hidden="true"></i> Seçimi temizle
+                  </button>
+                </div>
+              </div>
+
+              <div class="entry-download-notice" id="downloadSelectionNotice" role="alert" hidden></div>
+
+              <div id="entriesContainer" class="entry-results-list" aria-live="polite" aria-busy="true">
+                <div class="entry-loading-state">
+                  <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                  <span>Entry'ler yükleniyor...</span>
+                </div>
+              </div>
+
+              <div class="entry-results-footer">
+                <span>Arama değişse de seçimlerin korunur.</span>
+                <button type="button" class="btn btn-sm btn-outline-theme-secondary" id="loadMoreButton" hidden>
+                  Daha fazla göster <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+
+            <aside class="entry-selected-pane" aria-labelledby="selectedEntriesTitle">
+              <div class="entry-pane-heading">
+                <div>
+                  <span class="entry-download-option-label">Arşive eklenecekler</span>
+                  <strong id="selectedEntriesTitle">Seçilen entry'ler</strong>
+                </div>
+                <span class="entry-selected-count" id="selectedCount">0</span>
+              </div>
+
+              <div class="entry-selected-list" id="selectedEntriesList">
+                <div class="entry-selected-empty">
+                  <i class="bi bi-inbox" aria-hidden="true"></i>
+                  <strong>Henüz seçim yok</strong>
+                  <span>Soldaki listeden entry seçtiğinde burada görünecek.</span>
+                </div>
+              </div>
+
+              <div class="entry-order-control">
+                <label for="orderSelect">Sıralama</label>
+                <select class="form-select" name="order" id="orderSelect">
+                  <option value="oldest">Eskiden yeniye</option>
+                  <option value="newest">Yeniden eskiye</option>
+                  <option value="custom" id="customOrderOption">Özel sıra</option>
+                </select>
+                <small id="customOrderHint">Özel sırada seçilen entry'leri sürükleyebilirsin.</small>
+              </div>
+            </aside>
+          </section>
         </form>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-theme-primary" data-bs-dismiss="modal">İptal</button>
-        <button type="button" class="btn btn-theme-primary" id="downloadButton">
-          <i class="bi bi-download"></i> İndir
-        </button>
+
+      <div class="modal-footer entry-download-footer">
+        <div class="entry-download-summary" id="downloadScopeSummary">
+          İndirmek için en az bir entry seç.
+        </div>
+        <div class="entry-download-footer-actions">
+          <button type="button" class="btn btn-outline-theme-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="button" class="btn btn-theme-primary" id="downloadButton">
+            <i class="bi bi-download" aria-hidden="true"></i>
+            <span id="downloadButtonLabel">İndir</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1454,53 +1542,72 @@ function debounce(func, delay) {
   const downloadModal = document.getElementById('downloadEntriesModal');
   const downloadAllCheckbox = document.getElementById('downloadAllCheckbox');
   const entrySelectionSection = document.getElementById('entrySelectionSection');
+  const downloadAllSummary = document.getElementById('downloadAllSummary');
   const loadMoreButton = document.getElementById('loadMoreButton');
   const orderSelect = document.getElementById('orderSelect');
+  const searchEntriesInput = document.getElementById('searchEntriesInput');
+  const clearSearchEntries = document.getElementById('clearSearchEntries');
+  const selectedEntriesList = document.getElementById('selectedEntriesList');
+  const selectionNotice = document.getElementById('downloadSelectionNotice');
 
   let userEntries = [];
   let selectedEntryIds = new Set();
+  let selectedEntryOrder = [];
+  let entryById = new Map();
   let currentPage = 1;
   let hasMore = false;
   let totalEntries = 0;
   let currentSearchTerm = '';
+  let modalInitialized = false;
+  let entriesRequestId = 0;
 
   // "Tümünü İndir" checkbox değişikliğini dinle
   downloadAllCheckbox.addEventListener('change', function() {
-    if (this.checked) {
-      // Tümünü indir modunda: entry seçim bölümünü gizle
-      entrySelectionSection.style.display = 'none';
-    } else {
-      // Seçerek indir modunda: entry seçim bölümünü göster
-      entrySelectionSection.style.display = 'block';
-    }
+    entrySelectionSection.hidden = this.checked;
+    downloadAllSummary.hidden = !this.checked;
+    hideSelectionNotice();
+    updateSelectedCount();
   });
 
   // Modal açıldığında
   downloadModal.addEventListener('show.bs.modal', function() {
-    // Reset
-    downloadAllCheckbox.checked = false;
-    entrySelectionSection.style.display = 'block';
-    currentPage = 1;
-    userEntries = [];
-    selectedEntryIds = new Set();
-    currentSearchTerm = '';
-    document.getElementById('searchEntriesInput').value = '';
-    document.getElementById('rootQuestionSelect').value = '';
+    document.body.classList.add('entry-download-open');
+    const modalBody = downloadModal.querySelector('.modal-body');
+    if (modalBody) modalBody.scrollTop = 0;
 
-    // Başlangıç sorularını yükle
-    loadRootQuestions();
+    if (!modalInitialized) {
+      modalInitialized = true;
+      downloadAllCheckbox.checked = false;
+      entrySelectionSection.hidden = false;
+      downloadAllSummary.hidden = true;
+      currentPage = 1;
+      userEntries = [];
+      selectedEntryIds = new Set();
+      selectedEntryOrder = [];
+      entryById = new Map();
+      currentSearchTerm = '';
+      searchEntriesInput.value = '';
+      document.getElementById('rootQuestionSelect').value = '';
+      loadRootQuestions();
+      loadUserEntries();
+    } else {
+      renderEntries();
+      renderSelectedEntries();
+    }
+    hideSelectionNotice();
+    updateSelectedCount();
+  });
 
-    // İlk sayfayı yükle
-    loadUserEntries();
+  downloadModal.addEventListener('hidden.bs.modal', function() {
+    document.body.classList.remove('entry-download-open');
   });
 
   // Başlangıç sorularını yükle
   function loadRootQuestions() {
     const rootQuestionSelect = document.getElementById('rootQuestionSelect');
-    const statusText = document.querySelector('#rootQuestionSection small');
+    const statusText = document.getElementById('rootQuestionStatus');
 
-    statusText.textContent = 'Yükleniyor...';
-    statusText.className = 'text-muted';
+    statusText.textContent = 'Başlıklar yükleniyor...';
 
     // Başlangıç sorularını al (parent_question__isnull=True olan sorular)
     fetch(`/get-root-questions/?username={{ profile_user.username }}`)
@@ -1512,7 +1619,7 @@ function debounce(func, delay) {
       })
       .then(data => {
         // Dropdown'ı temizle (ilk option hariç)
-        rootQuestionSelect.innerHTML = '<option value="">-- Başlangıç sorusu seçin (opsiyonel) --</option>';
+        rootQuestionSelect.innerHTML = '<option value="">Bütün başlıklarda ara</option>';
 
         // Başlangıç sorularını ekle
         data.root_questions.forEach(question => {
@@ -1522,13 +1629,11 @@ function debounce(func, delay) {
           rootQuestionSelect.appendChild(option);
         });
 
-        statusText.textContent = `${data.root_questions.length} başlangıç sorusu bulundu.`;
-        statusText.className = 'text-success';
+        statusText.textContent = `${data.root_questions.length} başlangıç başlığı kullanılabilir.`;
       })
       .catch(error => {
         console.error('Başlangıç soruları yüklenirken hata:', error);
-        statusText.textContent = 'Başlangıç soruları yüklenirken hata oluştu.';
-        statusText.className = 'text-danger';
+        statusText.textContent = 'Başlık filtresi yüklenemedi.';
       });
   }
 
@@ -1536,7 +1641,7 @@ function debounce(func, delay) {
   document.getElementById('rootQuestionSelect').addEventListener('change', function() {
     currentPage = 1;
     userEntries = [];
-    selectedEntryIds = new Set();
+    hideSelectionNotice();
     loadUserEntries();
   });
 
@@ -1552,15 +1657,22 @@ function debounce(func, delay) {
 
 	  function loadUserEntries(append = false) {
 	    const container = document.getElementById('entriesContainer');
+    const requestId = ++entriesRequestId;
 
+    container.setAttribute('aria-busy', 'true');
+    loadMoreButton.disabled = true;
     if (!append) {
-      container.innerHTML = '<p class="text-muted">Yükleniyor...</p>';
+      container.innerHTML = `
+        <div class="entry-loading-state">
+          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+          <span>Entry'ler yükleniyor...</span>
+        </div>
+      `;
     }
 
     const rootQuestionId = document.getElementById('rootQuestionSelect').value;
     let url = `/get-user-answers/?username={{ profile_user.username }}&page=${currentPage}&page_size=50&q=${encodeURIComponent(currentSearchTerm)}`;
 
-    // Eğer başlangıç sorusu seçildiyse, parametreye ekle
     if (rootQuestionId) {
       url += `&root_question_id=${rootQuestionId}`;
     }
@@ -1568,132 +1680,260 @@ function debounce(func, delay) {
     fetch(url)
       .then(response => {
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP ${response.status}`);
         }
         return response.json();
       })
       .then(data => {
-        console.log('Entry yükleme başarılı:', data);
+        if (requestId !== entriesRequestId) {
+          return;
+        }
+
         totalEntries = data.total;
         hasMore = data.has_more;
 
         const newEntries = data.answers.map(answer => ({
-          id: answer.id,
+          id: Number(answer.id),
           question: answer.question_text,
           preview: answer.answer_text,
-          date: answer.created_at
+          date: answer.created_at,
+          detailUrl: answer.detail_url
         }));
 
+        newEntries.forEach(entry => entryById.set(String(entry.id), entry));
+
         if (append) {
-          userEntries = userEntries.concat(newEntries);
+          const knownIds = new Set(userEntries.map(entry => String(entry.id)));
+          userEntries = userEntries.concat(
+            newEntries.filter(entry => !knownIds.has(String(entry.id)))
+          );
         } else {
           userEntries = newEntries;
         }
 
-        if (userEntries.length === 0) {
-          container.innerHTML = '<p class="text-muted">Entry bulunamadı.</p>';
-          loadMoreButton.style.display = 'none';
-          return;
-        }
-
         renderEntries();
-
-        // "Daha Fazla Yükle" butonunu göster/gizle
-        if (hasMore) {
-          loadMoreButton.style.display = 'inline-block';
-        } else {
-          loadMoreButton.style.display = 'none';
-        }
+        renderSelectedEntries();
+        loadMoreButton.hidden = !hasMore;
+        loadMoreButton.disabled = false;
+        container.setAttribute('aria-busy', 'false');
+        updateResultsHeading();
       })
 	      .catch(error => {
+          if (requestId !== entriesRequestId) {
+            return;
+          }
 	        console.error('Entry yükleme hatası:', error);
-	        container.innerHTML = `<p class="text-danger">Entry'ler yüklenirken hata oluştu: ${escapeHtml(error.message)}</p>`;
+          if (append && userEntries.length > 0) {
+            currentPage = Math.max(1, currentPage - 1);
+            renderEntries();
+            showSelectionNotice('Daha fazla entry yüklenemedi. Mevcut seçimlerin korunuyor; yeniden deneyebilirsin.');
+            container.setAttribute('aria-busy', 'false');
+            loadMoreButton.hidden = false;
+            loadMoreButton.disabled = false;
+            return;
+          }
+	        container.innerHTML = `
+            <div class="entry-results-error">
+              <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+              <strong>Entry'ler yüklenemedi</strong>
+              <span>Lütfen yeniden dene.</span>
+            </div>
+          `;
+          container.setAttribute('aria-busy', 'false');
+          loadMoreButton.hidden = true;
+          loadMoreButton.disabled = false;
+          updateResultsHeading();
 	      });
 	  }
 
   // Entry'leri render et
   function renderEntries() {
     const container = document.getElementById('entriesContainer');
-    const isCustomOrder = (orderSelect && orderSelect.value === 'custom');
 
-    // Entry'leri listele
-    let html = '<div class="entry-selection-list" id="sortableEntries">';
-		    userEntries.forEach((entry, index) => {
-          const isChecked = selectedEntryIds.has(String(entry.id));
-		      html += `
-		        <div class="form-check entry-item mb-2 p-2 ${isChecked ? 'bg-light' : ''}" style="border: 1px solid #dee2e6; border-radius: 0.25rem; cursor: ${isCustomOrder ? 'move' : 'pointer'};" data-entry-id="${entry.id}" draggable="true">
-		          <div class="d-flex align-items-start">
-		            <input class="form-check-input me-2 entry-checkbox" type="checkbox" value="${entry.id}" id="entry${entry.id}" ${isChecked ? 'checked' : ''}>
-		            <label class="form-check-label flex-grow-1" for="entry${entry.id}" style="cursor: pointer;">
-		              <strong>${escapeHtml(entry.question)}</strong><br>
-		              <small class="text-muted">${escapeHtml(entry.date)} - ${escapeHtml(entry.preview)}</small>
-		            </label>
-		            <div class="drag-handle" style="padding: 0.25rem;">
-		              <i class="bi bi-grip-vertical"></i>
-		            </div>
-		          </div>
-		        </div>
-		      `;
-		    });
+    if (userEntries.length === 0) {
+      const emptyMessage = currentSearchTerm
+        ? `"${escapeHtml(currentSearchTerm)}" aramasıyla eşleşen entry bulunamadı.`
+        : 'Bu kapsamda gösterilecek entry bulunamadı.';
+      container.innerHTML = `
+        <div class="entry-results-empty">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <strong>Sonuç yok</strong>
+          <span>${emptyMessage}</span>
+        </div>
+      `;
+      container.setAttribute('aria-busy', 'false');
+      updateSelectedCount();
+      return;
+    }
+
+    let html = '<div class="entry-selection-list">';
+    userEntries.forEach(entry => {
+      const entryId = String(entry.id);
+      const isChecked = selectedEntryIds.has(entryId);
+      html += `
+        <article class="entry-item ${isChecked ? 'is-selected' : ''}" data-entry-id="${entry.id}">
+          <span class="entry-item-check">
+            <input
+              class="form-check-input entry-checkbox"
+              type="checkbox"
+              value="${entry.id}"
+              id="entry${entry.id}"
+              aria-label="${escapeHtml(entry.question)} başlıklı entry'yi seç"
+              ${isChecked ? 'checked' : ''}
+            >
+          </span>
+          <label class="entry-item-copy" for="entry${entry.id}">
+            <strong class="entry-item-title">${escapeHtml(entry.question)}</strong>
+            <span class="entry-item-preview">${escapeHtml(entry.preview)}</span>
+            <span class="entry-item-meta"><i class="bi bi-calendar3" aria-hidden="true"></i> ${escapeHtml(entry.date)}</span>
+          </label>
+          <a
+            class="entry-item-link"
+            href="${escapeHtml(entry.detailUrl)}"
+            target="_blank"
+            rel="noopener"
+            aria-label="Entry'yi yeni sekmede aç"
+            title="Entry'yi aç"
+          >
+            <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+          </a>
+        </article>
+      `;
+    });
     html += '</div>';
     container.innerHTML = html;
+    container.setAttribute('aria-busy', 'false');
 
-    // Checkbox değişikliklerini dinle (modal içinde ara)
     const checkboxes = downloadModal.querySelectorAll('.entry-checkbox');
     checkboxes.forEach(cb => {
       cb.addEventListener('change', function() {
-        const item = cb.closest('.entry-item');
-        if (item) {
-          if (cb.checked) item.classList.add('bg-light');
-          else item.classList.remove('bg-light');
-        }
-        if (cb.checked) selectedEntryIds.add(cb.value);
-        else selectedEntryIds.delete(cb.value);
-        updateSelectedCount();
+        setEntrySelected(cb.value, cb.checked);
       });
     });
 
-    // Drag and drop özelliğini etkinleştir
-    initDragAndDrop();
+    downloadModal.querySelectorAll('.entry-item').forEach(item => {
+      item.addEventListener('click', function(event) {
+        if (event.target.closest('a, input, button, label')) {
+          return;
+        }
+        const checkbox = item.querySelector('.entry-checkbox');
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
 
     updateSelectedCount();
   }
 
-  function syncUserEntriesOrderFromDOM() {
-    const ids = Array.from(document.querySelectorAll('#sortableEntries .entry-item'))
-      .map(el => Number(el.dataset.entryId))
-      .filter(n => !Number.isNaN(n));
-    if (ids.length === 0) return;
-    const idx = new Map(ids.map((id, i) => [id, i]));
-    userEntries.sort((a, b) => (idx.get(a.id) ?? 1e9) - (idx.get(b.id) ?? 1e9));
+  function setEntrySelected(entryId, shouldSelect) {
+    const normalizedId = String(entryId);
+    if (shouldSelect) {
+      selectedEntryIds.add(normalizedId);
+      if (!selectedEntryOrder.includes(normalizedId)) {
+        selectedEntryOrder.push(normalizedId);
+      }
+    } else {
+      selectedEntryIds.delete(normalizedId);
+      selectedEntryOrder = selectedEntryOrder.filter(id => id !== normalizedId);
+    }
+
+    const item = downloadModal.querySelector(`.entry-item[data-entry-id="${normalizedId}"]`);
+    if (item) {
+      item.classList.toggle('is-selected', shouldSelect);
+      const checkbox = item.querySelector('.entry-checkbox');
+      if (checkbox) checkbox.checked = shouldSelect;
+    }
+
+    hideSelectionNotice();
+    renderSelectedEntries();
+    updateSelectedCount();
   }
 
-  // Drag and drop özelliği
+  function renderSelectedEntries() {
+    selectedEntryOrder = selectedEntryOrder.filter(id => selectedEntryIds.has(id));
+    if (selectedEntryOrder.length < 2 && orderSelect.value === 'custom') {
+      orderSelect.value = 'oldest';
+    }
+    const isCustomOrder = orderSelect.value === 'custom';
+
+    if (selectedEntryOrder.length === 0) {
+      selectedEntriesList.innerHTML = `
+        <div class="entry-selected-empty">
+          <i class="bi bi-inbox" aria-hidden="true"></i>
+          <strong>Henüz seçim yok</strong>
+          <span>Soldaki listeden entry seçtiğinde burada görünecek.</span>
+        </div>
+      `;
+      updateSelectedCount();
+      return;
+    }
+
+    selectedEntriesList.innerHTML = selectedEntryOrder.map(entryId => {
+      const entry = entryById.get(entryId);
+      if (!entry) return '';
+      return `
+        <div class="entry-selected-item" data-entry-id="${entryId}" draggable="${isCustomOrder ? 'true' : 'false'}">
+          <span class="entry-selected-drag" title="${isCustomOrder ? 'Sürükleyerek sırala' : 'Özel sırayı seçerek taşı'}">
+            <i class="bi bi-grip-vertical" aria-hidden="true"></i>
+          </span>
+          <div class="entry-selected-copy">
+            <strong title="${escapeHtml(entry.question)}">${escapeHtml(entry.question)}</strong>
+            <span>${escapeHtml(entry.date)}</span>
+          </div>
+          <button
+            type="button"
+            class="entry-selected-remove"
+            data-remove-entry="${entryId}"
+            aria-label="${escapeHtml(entry.question)} seçimini kaldır"
+            title="Seçimi kaldır"
+          >
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    selectedEntriesList.querySelectorAll('[data-remove-entry]').forEach(button => {
+      button.addEventListener('click', function() {
+        setEntrySelected(button.dataset.removeEntry, false);
+      });
+    });
+
+    initDragAndDrop();
+    updateSelectedCount();
+  }
+
+  function syncSelectedEntryOrderFromDOM() {
+    selectedEntryOrder = Array.from(
+      selectedEntriesList.querySelectorAll('.entry-selected-item')
+    ).map(item => item.dataset.entryId);
+  }
+
   function initDragAndDrop() {
-    const items = downloadModal.querySelectorAll('.entry-item');
+    if (orderSelect.value !== 'custom') {
+      return;
+    }
+
+    const items = selectedEntriesList.querySelectorAll('.entry-selected-item');
     let draggedElement = null;
 
     items.forEach(item => {
-      item.addEventListener('dragstart', function(e) {
-        // Sürükleme yapılırsa otomatik olarak "custom" sıralamaya geç
-        if (orderSelect && orderSelect.value !== 'custom') {
-          orderSelect.value = 'custom';
-        }
+      item.addEventListener('dragstart', function() {
         draggedElement = this;
-        this.style.opacity = '0.5';
+        this.classList.add('is-dragging');
       });
 
-      item.addEventListener('dragend', function(e) {
-        this.style.opacity = '1';
-        syncUserEntriesOrderFromDOM();
+      item.addEventListener('dragend', function() {
+        this.classList.remove('is-dragging');
+        syncSelectedEntryOrderFromDOM();
       });
 
-      item.addEventListener('dragover', function(e) {
-        e.preventDefault();
+      item.addEventListener('dragover', function(event) {
+        event.preventDefault();
         if (this !== draggedElement) {
           const rect = this.getBoundingClientRect();
           const midpoint = rect.top + rect.height / 2;
-          if (e.clientY < midpoint) {
+          if (event.clientY < midpoint) {
             this.parentNode.insertBefore(draggedElement, this);
           } else {
             this.parentNode.insertBefore(draggedElement, this.nextSibling);
@@ -1705,53 +1945,124 @@ function debounce(func, delay) {
 
   // Tümünü seç (modal içinde ara)
   document.getElementById('selectAllEntries').addEventListener('click', function() {
-    downloadModal.querySelectorAll('.entry-checkbox').forEach(cb => {
-      cb.checked = true;
-      selectedEntryIds.add(cb.value);
-      const item = cb.closest('.entry-item');
-      if (item) item.classList.add('bg-light');
+    userEntries.forEach(entry => {
+      const entryId = String(entry.id);
+      selectedEntryIds.add(entryId);
+      if (!selectedEntryOrder.includes(entryId)) {
+        selectedEntryOrder.push(entryId);
+      }
     });
+    hideSelectionNotice();
+    renderEntries();
+    renderSelectedEntries();
     updateSelectedCount();
   });
 
   // Hiçbirini seçme (modal içinde ara)
   document.getElementById('deselectAllEntries').addEventListener('click', function() {
-    downloadModal.querySelectorAll('.entry-checkbox').forEach(cb => {
-      cb.checked = false;
-      selectedEntryIds.delete(cb.value);
-      const item = cb.closest('.entry-item');
-      if (item) item.classList.remove('bg-light');
-    });
+    selectedEntryIds.clear();
+    selectedEntryOrder = [];
+    hideSelectionNotice();
+    renderEntries();
+    renderSelectedEntries();
     updateSelectedCount();
   });
 
   // Seçili sayıyı güncelle
   function updateSelectedCount() {
     const count = selectedEntryIds.size;
-    // Server-side arama yapıyoruz, görünen = yüklenen
-    const visible = userEntries.length;
     document.getElementById('selectedCount').textContent = count;
-    document.getElementById('visibleCount').textContent = visible;
+    document.getElementById('visibleCount').textContent = userEntries.length;
+    document.getElementById('totalEntriesCount').textContent = totalEntries;
+
+    const rootQuestionSelect = document.getElementById('rootQuestionSelect');
+    const rootQuestionSelected = Boolean(rootQuestionSelect.value);
+    const scopeSummary = document.getElementById('downloadScopeSummary');
+    const buttonLabel = document.getElementById('downloadButtonLabel');
+    const customOrderOption = document.getElementById('customOrderOption');
+    const customOrderHint = document.getElementById('customOrderHint');
+
+    customOrderOption.disabled = count < 2;
+    customOrderHint.hidden = orderSelect.value !== 'custom';
+
+    if (downloadAllCheckbox.checked) {
+      scopeSummary.textContent = 'Bütün entrylerin arşive dahil edilecek.';
+      buttonLabel.textContent = 'Tümünü indir';
+    } else if (count > 0) {
+      scopeSummary.textContent = `${count} entry seçildi. Arama ve filtre değişse de seçim korunur.`;
+      buttonLabel.textContent = `${count} entry indir`;
+    } else if (rootQuestionSelected) {
+      scopeSummary.textContent = 'Seçim yapmazsan bu başlığın bütün entryleri indirilir.';
+      buttonLabel.textContent = 'Başlık ağacını indir';
+    } else {
+      scopeSummary.textContent = 'İndirmek için en az bir entry seç.';
+      buttonLabel.textContent = 'İndir';
+    }
+  }
+
+  function updateResultsHeading() {
+    const rootQuestionSelect = document.getElementById('rootQuestionSelect');
+    const selectedRoot = rootQuestionSelect.options[rootQuestionSelect.selectedIndex];
+    const title = document.getElementById('entryResultsTitle');
+
+    if (currentSearchTerm) {
+      title.textContent = `"${currentSearchTerm}" sonuçları`;
+    } else if (rootQuestionSelect.value && selectedRoot) {
+      title.textContent = selectedRoot.textContent;
+    } else {
+      title.textContent = 'Tüm entryler';
+    }
+
+    document.getElementById('visibleCount').textContent = userEntries.length;
+    document.getElementById('totalEntriesCount').textContent = totalEntries;
+  }
+
+  function showSelectionNotice(message) {
+    selectionNotice.textContent = message;
+    selectionNotice.hidden = false;
+  }
+
+  function hideSelectionNotice() {
+    selectionNotice.hidden = true;
+    selectionNotice.textContent = '';
   }
 
   // "Daha Fazla Yükle" butonu
   loadMoreButton.addEventListener('click', function() {
     currentPage++;
-    loadUserEntries(true); // append = true
+    loadUserEntries(true);
   });
 
   // Entry arama fonksiyonu (server-side)
   let entryDownloadSearchTimeout;
-  document.getElementById('searchEntriesInput').addEventListener('input', function(e) {
+  searchEntriesInput.addEventListener('input', function(e) {
     clearTimeout(entryDownloadSearchTimeout);
     currentSearchTerm = e.target.value.trim();
+    clearSearchEntries.hidden = currentSearchTerm.length === 0;
+    hideSelectionNotice();
 
     entryDownloadSearchTimeout = setTimeout(() => {
       currentPage = 1;
       userEntries = [];
-      selectedEntryIds = new Set();
       loadUserEntries();
-    }, 500); // 500ms debounce
+    }, 300);
+  });
+
+  clearSearchEntries.addEventListener('click', function() {
+    clearTimeout(entryDownloadSearchTimeout);
+    searchEntriesInput.value = '';
+    currentSearchTerm = '';
+    clearSearchEntries.hidden = true;
+    currentPage = 1;
+    userEntries = [];
+    hideSelectionNotice();
+    loadUserEntries();
+    searchEntriesInput.focus();
+  });
+
+  orderSelect.addEventListener('change', function() {
+    renderSelectedEntries();
+    updateSelectedCount();
   });
 
   // İndir butonu
@@ -1761,52 +2072,21 @@ function debounce(func, delay) {
     const downloadAll = downloadAllCheckbox.checked;
     const rootQuestionId = document.getElementById('rootQuestionSelect').value;
 
-    let entryIds = [];
-
-    // Eğer "tümünü indir" veya "başlangıç sorusu" SEÇİLİ DEĞİLSE, seçili entry'leri kontrol et
-    if (!downloadAll && !rootQuestionId) {
-      const selectedCheckboxes = downloadModal.querySelectorAll('.entry-checkbox:checked');
-
-      if (selectedCheckboxes.length === 0) {
-        alert('Lütfen en az bir entry seçin, bir başlangıç sorusu seçin veya "Tüm entry\'lerimi indir" seçeneğini işaretleyin!');
-        return;
-      }
-
-      // Seçili entry ID'lerini al (sıralamaya göre)
-      if (order === 'custom') {
-        // DOM sırasına göre (drag-drop sonrası)
-        const allItems = downloadModal.querySelectorAll('.entry-item');
-        allItems.forEach(item => {
-          const checkbox = item.querySelector('.entry-checkbox');
-          if (checkbox && checkbox.checked) {
-            entryIds.push(checkbox.value);
-          }
-        });
-      } else {
-        // Hepsini al, backend'de sıralar
-        selectedCheckboxes.forEach(cb => entryIds.push(cb.value));
-      }
-    } else if (!downloadAll && rootQuestionId) {
-      // Başlangıç sorusu seçiliyse ama "tümünü indir" değilse
-      // Kullanıcı yine de spesifik entry'ler seçebilir
-      const selectedCheckboxes = downloadModal.querySelectorAll('.entry-checkbox:checked');
-      if (selectedCheckboxes.length > 0) {
-        // Seçili entry'ler varsa sadece onları indir
-        if (order === 'custom') {
-          const allItems = downloadModal.querySelectorAll('.entry-item');
-          allItems.forEach(item => {
-            const checkbox = item.querySelector('.entry-checkbox');
-            if (checkbox && checkbox.checked) {
-              entryIds.push(checkbox.value);
-            }
-          });
-        } else {
-          selectedCheckboxes.forEach(cb => entryIds.push(cb.value));
-        }
-      }
-      // Seçili entry yoksa, rootQuestionId backend'de filtreleme yapacak
+    if (order === 'custom') {
+      syncSelectedEntryOrderFromDOM();
     }
-    // Eğer "tümünü indir" seçiliyse, entry_ids BOŞ kalır (backend tümünü alır)
+
+    const entryIds = downloadAll
+      ? []
+      : selectedEntryOrder.filter(entryId => selectedEntryIds.has(entryId));
+
+    if (!downloadAll && entryIds.length === 0 && !rootQuestionId) {
+      showSelectionNotice(
+        'İndirmek için en az bir entry seç, bir başlangıç başlığı belirle veya tüm arşiv seçeneğini aç.'
+      );
+      searchEntriesInput.focus();
+      return;
+    }
 
     // İndirme URL'ini oluştur
     const username = '{{ profile_user.username }}';
@@ -1830,12 +2110,17 @@ function debounce(func, delay) {
         break;
     }
 
+    if (!downloadUrl) {
+      showSelectionNotice('Dosya biçimi belirlenemedi. Lütfen yeniden seç.');
+      return;
+    }
+
     // POST ile indir (entry ID'leri ve sıralama bilgisi ile)
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = downloadUrl;
 
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfToken = document.querySelector('#downloadEntriesForm [name=csrfmiddlewaretoken]').value;
     const csrfInput = document.createElement('input');
     csrfInput.type = 'hidden';
     csrfInput.name = 'csrfmiddlewaretoken';
@@ -1854,11 +2139,11 @@ function debounce(func, delay) {
     const orderInput = document.createElement('input');
     orderInput.type = 'hidden';
     orderInput.name = 'order';
-    orderInput.value = order;
+    orderInput.value = order === 'custom' && entryIds.length < 2 ? 'oldest' : order;
     form.appendChild(orderInput);
 
-    // Başlangıç sorusu seçildiyse, onu da gönder
-    if (rootQuestionId) {
+    // Açık bir seçim varsa başlık yalnızca arama filtresidir; seçimleri daraltmaz.
+    if (!downloadAll && entryIds.length === 0 && rootQuestionId) {
       const rootQuestionInput = document.createElement('input');
       rootQuestionInput.type = 'hidden';
       rootQuestionInput.name = 'root_question_id';
@@ -1869,7 +2154,6 @@ function debounce(func, delay) {
     document.body.appendChild(form);
     form.submit();
 
-    // Modal'ı kapat
     bootstrap.Modal.getInstance(downloadModal).hide();
   });
 </script>

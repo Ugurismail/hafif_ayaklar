@@ -12,6 +12,19 @@ from django.urls import reverse
 from ..models import Answer, QuestionRelationship, StartingQuestion
 
 
+def _positive_int(value, default, maximum=None):
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
+
+    if parsed < 1:
+        return default
+    if maximum is not None:
+        return min(parsed, maximum)
+    return parsed
+
+
 def get_all_descendant_question_ids(root_question_id, user):
     descendant_ids = set()
     to_process = [root_question_id]
@@ -36,8 +49,8 @@ def get_all_descendant_question_ids(root_question_id, user):
 def get_user_answers(request):
     username = request.GET.get('username')
     q = request.GET.get('q', '').strip()
-    page = int(request.GET.get('page', 1))
-    page_size = int(request.GET.get('page_size', 50))
+    page = _positive_int(request.GET.get('page'), 1)
+    page_size = _positive_int(request.GET.get('page_size'), 50, maximum=100)
     root_question_id = request.GET.get('root_question_id', '').strip()
 
     user = get_object_or_404(User, username=username) if username else request.user
@@ -64,10 +77,13 @@ def get_user_answers(request):
 
     data = []
     for answer in paginated_answers:
+        preview = ' '.join((answer.answer_text or '').split())
+        if len(preview) > 180:
+            preview = preview[:177].rstrip() + '...'
         data.append({
             'id': answer.id,
             'question_text': answer.question.question_text,
-            'answer_text': answer.answer_text[:80] + '...' if len(answer.answer_text) > 80 else answer.answer_text,
+            'answer_text': preview,
             'detail_url': reverse('single_answer', args=[answer.question.slug, answer.id]),
             'question_url': reverse('question_detail', args=[answer.question.slug]),
             'created_at': answer.created_at.strftime("%d %b %Y %H:%M"),
