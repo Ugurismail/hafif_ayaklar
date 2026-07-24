@@ -8,6 +8,7 @@ from urllib.parse import unquote
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
 from django.db.models import Count, F, Max, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -19,6 +20,7 @@ from ..answer_git import (
     ensure_initial_revision,
     render_answer_content_html,
 )
+from ..content_link_preload import preload_content_links
 from ..forms import AnswerForm
 from ..models import (
     Answer,
@@ -37,10 +39,28 @@ from ..services import VoteSaveService
 from ..utils import paginate_queryset
 
 
+EXPANDED_ANSWER_CACHE_SECONDS = 600
+EXPANDED_ANSWER_CACHE_VERSION = '1'
+
+
 @require_GET
 def expanded_answer_content(request, answer_id):
-    answer = get_object_or_404(Answer.objects.only('answer_text'), id=answer_id)
-    return JsonResponse({'html': render_answer_content_html(answer.answer_text)})
+    answer = get_object_or_404(
+        Answer.objects.only('answer_text', 'updated_at'),
+        id=answer_id,
+    )
+    updated_token = answer.updated_at.strftime('%Y%m%d%H%M%S%f')
+    cache_key = (
+        f'expanded-answer-html:{EXPANDED_ANSWER_CACHE_VERSION}:'
+        f'{answer.id}:{updated_token}'
+    )
+    rendered_html = cache.get(cache_key)
+    if rendered_html is None:
+        with preload_content_links([answer.answer_text]):
+            rendered_html = render_answer_content_html(answer.answer_text)
+        cache.set(cache_key, rendered_html, EXPANDED_ANSWER_CACHE_SECONDS)
+
+    return JsonResponse({'html': str(rendered_html)})
 
 
 @login_required
