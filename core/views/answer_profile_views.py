@@ -4,7 +4,7 @@ Answer profile/list helper views.
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Case, IntegerField, Q, Value, When
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -89,6 +89,19 @@ def get_user_answers(request):
     if q:
         answers = answers.filter(
             Q(answer_text__icontains=q) | Q(question__question_text__icontains=q)
+        ).annotate(
+            search_rank=Case(
+                When(question__question_text__iexact=q, then=Value(0)),
+                When(question__question_text__istartswith=q, then=Value(1)),
+                When(question__question_text__icontains=q, then=Value(2)),
+                When(answer_text__icontains=q, then=Value(3)),
+                default=Value(4),
+                output_field=IntegerField(),
+            )
+        ).order_by(
+            'search_rank',
+            'created_at',
+            'id',
         )
 
     total = answers.count()

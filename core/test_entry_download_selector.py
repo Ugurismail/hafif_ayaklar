@@ -83,6 +83,50 @@ class EntryDownloadSelectorTests(TestCase):
         self.assertEqual(oversized.status_code, 200)
         self.assertEqual(oversized.json()["page_size"], 100)
 
+    def test_answer_search_prioritizes_title_matches_over_body_matches(self):
+        body_question = Question.objects.create(
+            question_text="Özgür İrade",
+            user=self.user,
+        )
+        body_match = Answer.objects.create(
+            question=body_question,
+            user=self.user,
+            answer_text="Metinde büyük kelimesi geçiyor.",
+        )
+        contains_question = Question.objects.create(
+            question_text="En Büyük Soru",
+            user=self.user,
+        )
+        contains_title_match = Answer.objects.create(
+            question=contains_question,
+            user=self.user,
+            answer_text="Başlık içi eşleşme.",
+        )
+        prefix_question = Question.objects.create(
+            question_text="Büyük Bilmiyorum",
+            user=self.user,
+        )
+        prefix_title_match = Answer.objects.create(
+            question=prefix_question,
+            user=self.user,
+            answer_text="Başlık başlangıcı eşleşmesi.",
+        )
+
+        response = self.client.get(
+            reverse("get_user_answers"),
+            {"username": self.user.username, "q": "büyük"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [answer["id"] for answer in response.json()["answers"]],
+            [
+                prefix_title_match.id,
+                contains_title_match.id,
+                body_match.id,
+            ],
+        )
+
     def test_profile_renders_persistent_selection_workspace(self):
         response = self.client.get(
             reverse("user_profile", args=[self.user.username]),
