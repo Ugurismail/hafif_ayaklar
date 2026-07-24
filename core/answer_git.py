@@ -56,8 +56,14 @@ def render_answer_content_html(raw_text):
 
 
 def build_answer_render_preview(raw_text, max_chars=700):
+    from .templatetags.custom_tags import truncate_math_safe
+
     raw_text = raw_text or ''
-    preview_text = raw_text if len(raw_text) <= max_chars else raw_text[:max_chars].rsplit(' ', 1)[0] + '...'
+    preview_text = (
+        raw_text
+        if len(raw_text) <= max_chars
+        else truncate_math_safe(raw_text, max_chars) + '...'
+    )
     return render_answer_content_html(preview_text)
 
 

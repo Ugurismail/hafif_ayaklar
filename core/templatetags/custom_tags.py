@@ -1,4 +1,6 @@
 import re
+import unicodedata
+
 from django import template
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -29,6 +31,13 @@ HASHTAG_PATTERN = re.compile(
 MATH_SEGMENT_PATTERN = re.compile(
     r'(?<!\\)\$\$(.+?)(?<!\\)\$\$|(?<!\\)\$(?!\$)(.+?)(?<!\\)\$(?!\$)',
     re.DOTALL,
+)
+MARKDOWN_INLINE_TOKEN_PATTERNS = (
+    re.compile(r'!?\[[^\]\n]*\]\([^\)\n]*\)'),
+    re.compile(
+        r'\((?:kaynak|k|tanim|t|bkz|ref|r):[^\)]*\)',
+        flags=re.IGNORECASE,
+    ),
 )
 
 
@@ -662,12 +671,178 @@ def safe_markdownify(text, arg='default'):
 
     return mark_safe(markdown_result)
 
+
+def _is_escaped_markup(text, index):
+    backslash_count = 0
+    index -= 1
+    while index >= 0 and text[index] == '\\':
+        backslash_count += 1
+        index -= 1
+    return backslash_count % 2 == 1
+
+
+def _is_markdown_punctuation(character):
+    if not character:
+        return False
+    return unicodedata.category(character)[0] in {'P', 'S'}
+
+
+def _delimiter_flanking(text, start, end, marker):
+    previous_character = text[start - 1] if start > 0 else '\n'
+    next_character = text[end] if end < len(text) else '\n'
+    previous_is_whitespace = previous_character.isspace()
+    next_is_whitespace = next_character.isspace()
+    previous_is_punctuation = _is_markdown_punctuation(previous_character)
+    next_is_punctuation = _is_markdown_punctuation(next_character)
+
+    left_flanking = (
+        not next_is_whitespace
+        and (
+            not next_is_punctuation
+            or previous_is_whitespace
+            or previous_is_punctuation
+        )
+    )
+    right_flanking = (
+        not previous_is_whitespace
+        and (
+            not previous_is_punctuation
+            or next_is_whitespace
+            or next_is_punctuation
+        )
+    )
+
+    if marker == '*':
+        return left_flanking, right_flanking
+
+    can_open = left_flanking and (not right_flanking or previous_is_punctuation)
+    can_close = right_flanking and (not left_flanking or next_is_punctuation)
+    return can_open, can_close
+
+
+def _has_closing_delimiter(text, start, marker, *, code=False):
+    marker_character = marker[0]
+    position = text.find(marker, start)
+
+    while position >= 0:
+        end = position + len(marker)
+        is_exact_run = (
+            (position == 0 or text[position - 1] != marker_character)
+            and (end >= len(text) or text[end] != marker_character)
+        )
+        if is_exact_run and not _is_escaped_markup(text, position):
+            if code:
+                return True
+            _, can_close = _delimiter_flanking(
+                text,
+                position,
+                end,
+                marker_character,
+            )
+            if can_close:
+                return True
+
+        position = text.find(marker, position + 1)
+
+    return False
+
+
+def _crossing_markdown_closers(text, cut_at):
+    """Return closing delimiters needed for markup spanning the preview cut."""
+    emphasis_stack = []
+    active_code = None
+    index = 0
+
+    while index < cut_at:
+        character = text[index]
+
+        if character == '`' and not _is_escaped_markup(text, index):
+            end = index + 1
+            while end < len(text) and text[end] == '`':
+                end += 1
+            marker = text[index:end]
+
+            if active_code and active_code[0] == marker:
+                active_code = None
+            elif active_code is None:
+                active_code = (marker, index)
+
+            index = end
+            continue
+
+        if active_code is not None:
+            index += 1
+            continue
+
+        if character not in {'*', '_'} or _is_escaped_markup(text, index):
+            index += 1
+            continue
+
+        end = index + 1
+        while end < len(text) and text[end] == character:
+            end += 1
+        marker = text[index:end]
+
+        # The editor emits one, two, or three-character emphasis delimiters.
+        if len(marker) <= 3:
+            can_open, can_close = _delimiter_flanking(
+                text,
+                index,
+                end,
+                character,
+            )
+            matched_closer = False
+            if (
+                can_close
+                and emphasis_stack
+                and emphasis_stack[-1][0] == marker
+            ):
+                emphasis_stack.pop()
+                matched_closer = True
+
+            if can_open and not matched_closer:
+                emphasis_stack.append((marker, index))
+
+        index = end
+
+    closers = []
+    if (
+        active_code
+        and _has_closing_delimiter(
+            text,
+            cut_at,
+            active_code[0],
+            code=True,
+        )
+    ):
+        marker = active_code[0]
+        closers.append(('\n' if len(marker) >= 3 else '') + marker)
+
+    for marker, _ in reversed(emphasis_stack):
+        if _has_closing_delimiter(text, cut_at, marker):
+            closers.append(marker)
+
+    return ''.join(closers)
+
+
+def _avoid_partial_markup_token(text, cut_at):
+    for pattern in MARKDOWN_INLINE_TOKEN_PATTERNS:
+        for match in pattern.finditer(text):
+            if match.start() < cut_at < match.end():
+                return match.start()
+            if match.start() >= cut_at:
+                break
+    return cut_at
+
+
 @register.filter
 def truncate_math_safe(text, length=1000):
     """
-    Truncate text without cutting inside TeX math blocks ($...$ / $$...$$).
-    This prevents partial math (e.g. an opening $$ without closing $$) from
-    appearing on summary cards (user_homepage, question_detail, etc.).
+    Build a renderable preview without cutting TeX or inline Markdown markup.
+
+    TeX blocks are excluded when the limit falls inside one. Markdown emphasis
+    and code delimiters that close after the limit are closed temporarily in
+    the preview, while the stored answer remains unchanged.
     """
     if not text:
         return ""
@@ -712,7 +887,21 @@ def truncate_math_safe(text, length=1000):
         i += 1
 
     cut_at = last_safe if last_safe > 0 else max_len
-    return text[:cut_at]
+
+    # Prefer a nearby word boundary so the preview never ends mid-word.
+    boundary_start = max(0, cut_at - 120)
+    word_boundary = max(
+        text.rfind(' ', boundary_start, cut_at),
+        text.rfind('\n', boundary_start, cut_at),
+        text.rfind('\t', boundary_start, cut_at),
+    )
+    if word_boundary > boundary_start:
+        cut_at = word_boundary
+
+    cut_at = _avoid_partial_markup_token(text, cut_at)
+    preview = text[:cut_at].rstrip()
+    return preview + _crossing_markdown_closers(text, cut_at)
+
 
 @register.filter
 def extract_bibliography(text):
