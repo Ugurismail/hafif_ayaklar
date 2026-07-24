@@ -146,3 +146,4 @@ class EntryBookApiTests(TestCase):
         self.assertContains(response, 'id="entryBookSelect"')
         self.assertContains(response, 'id="entryBookName"')
         self.assertContains(response, 'id="saveEntryBookButton"')
+        self.assertContains(response, '-entrybooks1')
