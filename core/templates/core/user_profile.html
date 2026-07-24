@@ -927,6 +927,71 @@
         <form id="downloadEntriesForm">
           {% csrf_token %}
 
+          <section
+            class="entry-book-manager"
+            id="entryBookManager"
+            aria-labelledby="entryBookManagerTitle"
+            data-list-url="{% url 'entry_books' %}"
+            data-detail-url-template="{% url 'entry_book_detail' 0 %}"
+          >
+            <div class="entry-book-manager-heading">
+              <span class="entry-book-manager-icon" aria-hidden="true">
+                <i class="bi bi-book"></i>
+              </span>
+              <div>
+                <span class="entry-download-option-label">Kalıcı seçimler</span>
+                <strong id="entryBookManagerTitle">Kitaplarım</strong>
+              </div>
+            </div>
+
+            <div class="entry-book-manager-controls">
+              <label class="visually-hidden" for="entryBookSelect">Kayıtlı kitap</label>
+              <select class="form-select" id="entryBookSelect" disabled>
+                <option value="">Kitaplar yükleniyor...</option>
+              </select>
+
+              <button
+                type="button"
+                class="entry-book-icon-button"
+                id="newEntryBookButton"
+                aria-label="Yeni kitap hazırla"
+                title="Yeni kitap"
+              >
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+              </button>
+
+              <label class="visually-hidden" for="entryBookName">Kitap adı</label>
+              <input
+                type="text"
+                class="form-control"
+                id="entryBookName"
+                maxlength="120"
+                placeholder="Kitap adı"
+                autocomplete="off"
+              >
+
+              <button type="button" class="btn btn-theme-primary" id="saveEntryBookButton" disabled>
+                <i class="bi bi-bookmark-plus" aria-hidden="true"></i>
+                <span>Kitap yap</span>
+              </button>
+
+              <button
+                type="button"
+                class="entry-book-icon-button entry-book-delete"
+                id="deleteEntryBookButton"
+                aria-label="Kitabı sil"
+                title="Kitabı sil"
+                hidden
+              >
+                <i class="bi bi-trash" aria-hidden="true"></i>
+              </button>
+            </div>
+
+            <p class="entry-book-status" id="entryBookStatus" aria-live="polite">
+              Seçtiğin entry'leri adlandırıp daha sonra yeniden açabilirsin.
+            </p>
+          </section>
+
           <div class="entry-download-options">
             <fieldset class="entry-download-format">
               <legend>Dosya biçimi</legend>
@@ -1587,6 +1652,13 @@ function debounce(func, delay) {
   const clearSelectedSearch = document.getElementById('clearSelectedSearch');
   const selectedFilterStatus = document.getElementById('selectedFilterStatus');
   const selectionNotice = document.getElementById('downloadSelectionNotice');
+  const entryBookManager = document.getElementById('entryBookManager');
+  const entryBookSelect = document.getElementById('entryBookSelect');
+  const entryBookName = document.getElementById('entryBookName');
+  const entryBookStatus = document.getElementById('entryBookStatus');
+  const saveEntryBookButton = document.getElementById('saveEntryBookButton');
+  const newEntryBookButton = document.getElementById('newEntryBookButton');
+  const deleteEntryBookButton = document.getElementById('deleteEntryBookButton');
 
   let userEntries = [];
   let selectedEntryIds = new Set();
@@ -1599,6 +1671,380 @@ function debounce(func, delay) {
   let selectedSearchTerm = '';
   let modalInitialized = false;
   let entriesRequestId = 0;
+  let entryBooks = [];
+  let activeEntryBookId = '';
+  let entryBookBusy = false;
+  let entryBookBusyAction = '';
+  let applyingEntryBook = false;
+
+  function entryBookDetailUrl(bookId) {
+    return entryBookManager.dataset.detailUrlTemplate.replace(
+      '/0/',
+      `/${bookId}/`
+    );
+  }
+
+  function entryBookCsrfToken() {
+    return document.querySelector(
+      '#downloadEntriesForm [name=csrfmiddlewaretoken]'
+    ).value;
+  }
+
+  function parseEntryBookResponse(response) {
+    return response.json()
+      .catch(() => ({}))
+      .then(data => {
+        if (!response.ok) {
+          throw new Error(data.error || 'Kitap işlemi tamamlanamadı.');
+        }
+        return data;
+      });
+  }
+
+  function setEntryBookStatus(message, tone = '') {
+    entryBookStatus.textContent = message;
+    if (tone) {
+      entryBookStatus.dataset.tone = tone;
+    } else {
+      delete entryBookStatus.dataset.tone;
+    }
+  }
+
+  function updateEntryBookControls() {
+    const hasName = entryBookName.value.trim().length > 0;
+    const hasSelection = selectedEntryIds.size > 0;
+    const canSave = (
+      !entryBookBusy
+      && !downloadAllCheckbox.checked
+      && hasName
+      && hasSelection
+    );
+
+    saveEntryBookButton.disabled = !canSave;
+    saveEntryBookButton.querySelector('span').textContent = (
+      entryBookBusyAction === 'save'
+        ? 'Kaydediliyor...'
+        : (activeEntryBookId ? 'Kitabı güncelle' : 'Kitap yap')
+    );
+    deleteEntryBookButton.hidden = !activeEntryBookId;
+    entryBookName.disabled = entryBookBusy;
+    entryBookSelect.disabled = entryBookBusy || entryBooks.length === 0;
+    newEntryBookButton.disabled = entryBookBusy;
+    deleteEntryBookButton.disabled = entryBookBusy;
+  }
+
+  function renderEntryBookOptions(preferredBookId = activeEntryBookId) {
+    entryBookSelect.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = entryBooks.length
+      ? 'Kayıtlı kitap seç'
+      : 'Henüz kayıtlı kitap yok';
+    entryBookSelect.appendChild(placeholder);
+
+    entryBooks.forEach(book => {
+      const option = document.createElement('option');
+      option.value = String(book.id);
+      option.textContent = `${book.title} · ${book.item_count} entry`;
+      entryBookSelect.appendChild(option);
+    });
+
+    const preferredValue = preferredBookId ? String(preferredBookId) : '';
+    const preferredExists = entryBooks.some(
+      book => String(book.id) === preferredValue
+    );
+    entryBookSelect.value = preferredExists ? preferredValue : '';
+    if (activeEntryBookId && !preferredExists) {
+      activeEntryBookId = '';
+    }
+    updateEntryBookControls();
+  }
+
+  function upsertEntryBookSummary(book) {
+    entryBooks = [
+      book,
+      ...entryBooks.filter(item => String(item.id) !== String(book.id))
+    ];
+    renderEntryBookOptions(book.id);
+  }
+
+  async function loadEntryBooks(preferredBookId = activeEntryBookId) {
+    entryBookBusy = true;
+    entryBookSelect.disabled = true;
+    setEntryBookStatus('Kitapların yükleniyor...');
+    updateEntryBookControls();
+
+    try {
+      const response = await fetch(entryBookManager.dataset.listUrl, {
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+      const data = await parseEntryBookResponse(response);
+      entryBooks = Array.isArray(data.books) ? data.books : [];
+      renderEntryBookOptions(preferredBookId);
+
+      if (!activeEntryBookId) {
+        setEntryBookStatus(
+          entryBooks.length
+            ? `${entryBooks.length} kayıtlı kitabın var. Açmak için listeden seç.`
+            : 'Seçimini hazırla, bir ad ver ve Kitap yap düğmesine bas.'
+        );
+      }
+    } catch (error) {
+      console.error('Kitaplar yüklenirken hata:', error);
+      entryBooks = [];
+      renderEntryBookOptions();
+      setEntryBookStatus(
+        'Kitaplar yüklenemedi. Modalı yeniden açarak tekrar deneyebilirsin.',
+        'error'
+      );
+    } finally {
+      entryBookBusy = false;
+      updateEntryBookControls();
+    }
+  }
+
+  function normalizeEntryData(answer) {
+    return {
+      id: Number(answer.id),
+      question: answer.question_text,
+      preview: answer.answer_text,
+      date: answer.created_at,
+      createdAt: answer.created_at_iso,
+      detailUrl: answer.detail_url
+    };
+  }
+
+  async function loadEntryBook(bookId) {
+    if (!bookId) {
+      activeEntryBookId = '';
+      entryBookName.value = '';
+      setEntryBookStatus(
+        selectedEntryIds.size
+          ? `${selectedEntryIds.size} seçili entry ile yeni bir kitap oluşturabilirsin.`
+          : 'Seçimini hazırla, bir ad ver ve Kitap yap düğmesine bas.'
+      );
+      updateEntryBookControls();
+      return;
+    }
+
+    const previousBookId = activeEntryBookId;
+    entryBookBusy = true;
+    setEntryBookStatus('Kitap açılıyor...');
+    updateEntryBookControls();
+
+    try {
+      const response = await fetch(entryBookDetailUrl(bookId), {
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+      const data = await parseEntryBookResponse(response);
+      const book = data.book;
+      const entries = Array.isArray(book.entries)
+        ? book.entries.map(normalizeEntryData)
+        : [];
+
+      applyingEntryBook = true;
+      entries.forEach(entry => entryById.set(String(entry.id), entry));
+      selectedEntryIds = new Set(entries.map(entry => String(entry.id)));
+      selectedEntryOrder = entries.map(entry => String(entry.id));
+      selectedSearchTerm = '';
+      selectedEntriesSearch.value = '';
+      clearSelectedSearch.hidden = true;
+      downloadAllCheckbox.checked = false;
+      entrySelectionSection.hidden = false;
+      downloadAllSummary.hidden = true;
+      orderSelect.value = entries.length > 1 ? 'custom' : 'oldest';
+      activeEntryBookId = String(book.id);
+      entryBookName.value = book.title;
+      entryBookSelect.value = activeEntryBookId;
+      renderEntries();
+      renderSelectedEntries();
+      setEntryBookStatus(
+        `${book.item_count} entry içeren “${book.title}” açıldı.`,
+        'success'
+      );
+    } catch (error) {
+      console.error('Kitap açılırken hata:', error);
+      entryBookSelect.value = previousBookId || '';
+      setEntryBookStatus(error.message, 'error');
+    } finally {
+      applyingEntryBook = false;
+      entryBookBusy = false;
+      updateEntryBookControls();
+    }
+  }
+
+  function prepareNewEntryBook() {
+    activeEntryBookId = '';
+    entryBookSelect.value = '';
+    entryBookName.value = '';
+    setEntryBookStatus(
+      selectedEntryIds.size
+        ? `${selectedEntryIds.size} seçili entry hazır. Yeni kitaba bir ad ver.`
+        : 'Önce kitaba eklemek istediğin entryleri seç.'
+    );
+    updateEntryBookControls();
+    entryBookName.focus();
+  }
+
+  function noteEntryBookSelectionChanged() {
+    if (applyingEntryBook) return;
+
+    if (activeEntryBookId) {
+      setEntryBookStatus(
+        'Seçim veya sıra değişti. Kalıcı olması için kitabı güncelle.',
+        'pending'
+      );
+    } else if (selectedEntryIds.size > 0) {
+      setEntryBookStatus(
+        `${selectedEntryIds.size} entry hazır. Kitap adı vererek kaydedebilirsin.`
+      );
+    }
+    updateEntryBookControls();
+  }
+
+  async function saveEntryBook() {
+    if (entryBookBusy) return;
+
+    if (orderSelect.value === 'custom' && !selectedSearchTerm) {
+      syncSelectedEntryOrderFromDOM();
+    } else if (orderSelect.value !== 'custom') {
+      sortSelectedEntryOrder(orderSelect.value);
+    }
+
+    const title = entryBookName.value.trim();
+    const entryIds = selectedEntryOrder.filter(
+      entryId => selectedEntryIds.has(entryId)
+    );
+    if (!title || entryIds.length === 0) {
+      setEntryBookStatus(
+        'Kitap adı ve en az bir seçili entry gerekli.',
+        'error'
+      );
+      updateEntryBookControls();
+      return;
+    }
+
+    entryBookBusy = true;
+    entryBookBusyAction = 'save';
+    updateEntryBookControls();
+
+    try {
+      const isUpdate = Boolean(activeEntryBookId);
+      const response = await fetch(
+        isUpdate
+          ? entryBookDetailUrl(activeEntryBookId)
+          : entryBookManager.dataset.listUrl,
+        {
+          method: isUpdate ? 'PUT' : 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRFToken': entryBookCsrfToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({
+            title: title,
+            entry_ids: entryIds
+          })
+        }
+      );
+      const data = await parseEntryBookResponse(response);
+      activeEntryBookId = String(data.book.id);
+      entryBookName.value = data.book.title;
+      upsertEntryBookSummary(data.book);
+      entryBookSelect.value = activeEntryBookId;
+      setEntryBookStatus(
+        `${data.book.item_count} entry “${data.book.title}” kitabına kaydedildi.`,
+        'success'
+      );
+      if (typeof showToast === 'function') {
+        showToast('Kitap kaydedildi.', 'success');
+      }
+    } catch (error) {
+      console.error('Kitap kaydedilirken hata:', error);
+      setEntryBookStatus(error.message, 'error');
+    } finally {
+      entryBookBusy = false;
+      entryBookBusyAction = '';
+      updateEntryBookControls();
+    }
+  }
+
+  async function deleteEntryBook() {
+    if (!activeEntryBookId || entryBookBusy) return;
+
+    const title = entryBookName.value.trim();
+    const confirmed = typeof showConfirm === 'function'
+      ? await showConfirm(
+          `“${title}” kitabını silmek istediğine emin misin? Entrylerin silinmez.`,
+          'Kitabı Sil',
+          'Sil',
+          'btn-theme-secondary'
+        )
+      : window.confirm(`“${title}” kitabını silmek istediğine emin misin?`);
+    if (!confirmed) return;
+
+    entryBookBusy = true;
+    updateEntryBookControls();
+    try {
+      const response = await fetch(entryBookDetailUrl(activeEntryBookId), {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRFToken': entryBookCsrfToken(),
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+      await parseEntryBookResponse(response);
+      entryBooks = entryBooks.filter(
+        book => String(book.id) !== String(activeEntryBookId)
+      );
+      activeEntryBookId = '';
+      entryBookName.value = '';
+      renderEntryBookOptions();
+      setEntryBookStatus(
+        'Kitap silindi. Ekrandaki entry seçimin korunuyor.',
+        'success'
+      );
+      if (typeof showToast === 'function') {
+        showToast('Kitap silindi.', 'success');
+      }
+    } catch (error) {
+      console.error('Kitap silinirken hata:', error);
+      setEntryBookStatus(error.message, 'error');
+    } finally {
+      entryBookBusy = false;
+      updateEntryBookControls();
+    }
+  }
+
+  entryBookSelect.addEventListener('change', function() {
+    loadEntryBook(this.value);
+  });
+
+  entryBookName.addEventListener('input', function() {
+    if (activeEntryBookId) {
+      setEntryBookStatus(
+        'Kitap adı değişti. Kalıcı olması için kitabı güncelle.',
+        'pending'
+      );
+    }
+    updateEntryBookControls();
+  });
+
+  newEntryBookButton.addEventListener('click', prepareNewEntryBook);
+  saveEntryBookButton.addEventListener('click', saveEntryBook);
+  deleteEntryBookButton.addEventListener('click', deleteEntryBook);
 
   // "Tümünü İndir" checkbox değişikliğini dinle
   downloadAllCheckbox.addEventListener('change', function() {
@@ -1606,6 +2052,7 @@ function debounce(func, delay) {
     downloadAllSummary.hidden = !this.checked;
     hideSelectionNotice();
     updateSelectedCount();
+    updateEntryBookControls();
   });
 
   // Modal açıldığında
@@ -1631,6 +2078,7 @@ function debounce(func, delay) {
       clearSelectedSearch.hidden = true;
       document.getElementById('rootQuestionSelect').value = '';
       loadRootQuestions();
+      loadEntryBooks();
       loadUserEntries();
     } else {
       renderEntries();
@@ -1734,14 +2182,7 @@ function debounce(func, delay) {
         totalEntries = data.total;
         hasMore = data.has_more;
 
-        const newEntries = data.answers.map(answer => ({
-          id: Number(answer.id),
-          question: answer.question_text,
-          preview: answer.answer_text,
-          date: answer.created_at,
-          createdAt: answer.created_at_iso,
-          detailUrl: answer.detail_url
-        }));
+        const newEntries = data.answers.map(normalizeEntryData);
 
         newEntries.forEach(entry => entryById.set(String(entry.id), entry));
 
@@ -1890,6 +2331,7 @@ function debounce(func, delay) {
     hideSelectionNotice();
     renderSelectedEntries();
     updateSelectedCount();
+    noteEntryBookSelectionChanged();
   }
 
   function normalizeSelectedSearch(value) {
@@ -1945,6 +2387,7 @@ function debounce(func, delay) {
     selectedEntryOrder.splice(boundedIndex, 0, entryId);
     activateCustomOrder();
     renderSelectedEntries();
+    noteEntryBookSelectionChanged();
   }
 
   function renderSelectedEntries() {
@@ -2144,6 +2587,7 @@ function debounce(func, delay) {
           draggedElement.classList.remove('is-dragging');
         }
         syncSelectedEntryOrderFromDOM();
+        noteEntryBookSelectionChanged();
         draggedElement = null;
         renderSelectedEntries();
       });
@@ -2178,6 +2622,7 @@ function debounce(func, delay) {
     renderEntries();
     renderSelectedEntries();
     updateSelectedCount();
+    noteEntryBookSelectionChanged();
   });
 
   // Hiçbirini seçme (modal içinde ara)
@@ -2188,6 +2633,7 @@ function debounce(func, delay) {
     renderEntries();
     renderSelectedEntries();
     updateSelectedCount();
+    noteEntryBookSelectionChanged();
   });
 
   // Seçili sayıyı güncelle
@@ -2220,6 +2666,7 @@ function debounce(func, delay) {
       scopeSummary.textContent = 'İndirmek için en az bir entry seç.';
       buttonLabel.textContent = 'İndir';
     }
+    updateEntryBookControls();
   }
 
   function updateResultsHeading() {
@@ -2301,12 +2748,14 @@ function debounce(func, delay) {
       sortSelectedEntryOrder(button.dataset.selectedSort);
       activateCustomOrder();
       renderSelectedEntries();
+      noteEntryBookSelectionChanged();
     });
   });
 
   orderSelect.addEventListener('change', function() {
     renderSelectedEntries();
     updateSelectedCount();
+    noteEntryBookSelectionChanged();
   });
 
   // İndir butonu

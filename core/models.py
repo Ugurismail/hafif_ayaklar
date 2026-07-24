@@ -348,6 +348,71 @@ class Answer(models.Model):
         return self.git_suggestions.filter(status='open').count()
 
 
+class EntryBook(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='entry_books',
+    )
+    title = models.CharField(max_length=120)
+    answers = models.ManyToManyField(
+        Answer,
+        through='EntryBookItem',
+        related_name='entry_books',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at', '-id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'title'],
+                name='unique_entry_book_title_per_user',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['user', '-updated_at']),
+        ]
+
+    def __str__(self):
+        return f'{self.user.username}: {self.title}'
+
+
+class EntryBookItem(models.Model):
+    book = models.ForeignKey(
+        EntryBook,
+        on_delete=models.CASCADE,
+        related_name='items',
+    )
+    answer = models.ForeignKey(
+        Answer,
+        on_delete=models.CASCADE,
+        related_name='book_items',
+    )
+    position = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['position', 'id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['book', 'answer'],
+                name='unique_answer_per_entry_book',
+            ),
+            models.UniqueConstraint(
+                fields=['book', 'position'],
+                name='unique_position_per_entry_book',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['book', 'position']),
+        ]
+
+    def __str__(self):
+        return f'{self.book.title} #{self.position}: {self.answer_id}'
+
+
 class AnswerSuggestion(models.Model):
     STATUS_CHOICES = [
         ('open', 'Open'),

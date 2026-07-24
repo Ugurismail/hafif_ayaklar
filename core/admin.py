@@ -18,7 +18,7 @@ from core.models import (
     CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy,
     QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage, OnlineChatMessage,
     LibraryFile, DailyVisitor, VisitSession, AttendanceSheetConfig, AttendanceDayState,
-    SavedCollection, SavedCollectionItem, ContentReport
+    SavedCollection, SavedCollectionItem, ContentReport, EntryBook, EntryBookItem
 )
 
 # =============================================================================
@@ -50,6 +50,25 @@ admin.site.register(Entry)
 admin.site.register(RandomSentence)
 admin.site.register(OnlineChatMessage)
 admin.site.register(LibraryFile)
+
+
+class EntryBookItemInline(admin.TabularInline):
+    model = EntryBookItem
+    extra = 0
+    ordering = ('position',)
+    readonly_fields = ('created_at',)
+
+
+@admin.register(EntryBook)
+class EntryBookAdmin(admin.ModelAdmin):
+    list_display = ('title', 'user', 'entry_count', 'updated_at')
+    search_fields = ('title', 'user__username')
+    ordering = ('-updated_at',)
+    inlines = [EntryBookItemInline]
+
+    @admin.display(description='Entry sayısı')
+    def entry_count(self, obj):
+        return obj.items.count()
 
 
 @admin.register(ContentReport)

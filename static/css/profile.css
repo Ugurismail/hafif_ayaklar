@@ -559,6 +559,130 @@ h4, h5, h6 {
     line-height: 1.35;
 }
 
+.entry-book-manager {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.45rem 1rem;
+    margin: -0.15rem 0 1rem;
+    padding: 0.85rem 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.entry-book-manager-heading {
+    display: flex;
+    min-width: 150px;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.entry-book-manager-heading > div {
+    min-width: 0;
+}
+
+.entry-book-manager-heading .entry-download-option-label {
+    margin-bottom: 0.08rem;
+}
+
+.entry-book-manager-heading strong {
+    display: block;
+    color: var(--text-color);
+    font-size: 0.94rem;
+}
+
+.entry-book-manager-icon {
+    display: inline-grid;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--link-color) 30%, var(--border-color));
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--link-color) 8%, var(--content-background-color));
+    color: var(--link-color);
+    font-size: 1rem;
+}
+
+.entry-book-manager-controls {
+    display: grid;
+    min-width: 0;
+    grid-template-columns:
+        minmax(170px, 0.72fr)
+        40px
+        minmax(190px, 1fr)
+        auto
+        40px;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.entry-book-manager-controls .form-select,
+.entry-book-manager-controls .form-control,
+.entry-book-manager-controls .btn {
+    min-height: 40px;
+    border-width: 1px;
+    border-radius: 6px;
+    font-size: 0.84rem;
+}
+
+.entry-book-manager-controls .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.entry-book-icon-button {
+    display: inline-grid;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    place-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--content-background-color);
+    color: color-mix(in srgb, var(--text-color) 68%, transparent);
+}
+
+.entry-book-icon-button[hidden] {
+    display: none;
+}
+
+.entry-book-icon-button:hover {
+    border-color: color-mix(in srgb, var(--link-color) 42%, var(--border-color));
+    background: var(--hover-background-color);
+    color: var(--link-color);
+}
+
+.entry-book-delete:hover {
+    border-color: color-mix(in srgb, #a33 42%, var(--border-color));
+    background: color-mix(in srgb, #a33 8%, var(--content-background-color));
+    color: #9d3131;
+}
+
+.entry-book-status {
+    grid-column: 2;
+    min-height: 1.2em;
+    margin: 0;
+    color: color-mix(in srgb, var(--text-color) 56%, transparent);
+    font-size: 0.74rem;
+    line-height: 1.3;
+}
+
+.entry-book-status[data-tone="success"] {
+    color: var(--link-color);
+}
+
+.entry-book-status[data-tone="pending"] {
+    color: var(--button-hover-background-color);
+}
+
+.entry-book-status[data-tone="error"] {
+    color: #9d3131;
+}
+
 .entry-download-options {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(290px, 0.52fr);
@@ -1332,6 +1456,14 @@ h4, h5, h6 {
 }
 
 @media (max-width: 991.98px) {
+    .entry-book-manager {
+        grid-template-columns: 1fr;
+    }
+
+    .entry-book-status {
+        grid-column: 1;
+    }
+
     .entry-download-options {
         grid-template-columns: 1fr;
     }
@@ -1368,6 +1500,23 @@ h4, h5, h6 {
 
     .entry-download-title p {
         display: none;
+    }
+
+    .entry-book-manager {
+        gap: 0.65rem;
+        padding: 0.75rem 0;
+    }
+
+    .entry-book-manager-controls {
+        grid-template-columns: minmax(0, 1fr) 42px 42px;
+    }
+
+    .entry-book-manager-controls #entryBookName {
+        grid-column: 1 / 3;
+    }
+
+    .entry-book-manager-controls #saveEntryBookButton {
+        grid-column: 3;
     }
 
     .entry-download-options {
@@ -1434,6 +1583,31 @@ h4, h5, h6 {
 }
 
 @media (max-width: 480px) {
+    .entry-book-manager-controls {
+        grid-template-columns: minmax(0, 1fr) 42px;
+    }
+
+    .entry-book-manager-controls #entryBookSelect {
+        grid-column: 1;
+    }
+
+    .entry-book-manager-controls #newEntryBookButton {
+        grid-column: 2;
+    }
+
+    .entry-book-manager-controls #entryBookName {
+        grid-column: 1 / -1;
+    }
+
+    .entry-book-manager-controls #saveEntryBookButton {
+        grid-column: 1;
+    }
+
+    .entry-book-manager-controls #deleteEntryBookButton {
+        grid-column: 2;
+        grid-row: 3;
+    }
+
     .entry-format-options {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }

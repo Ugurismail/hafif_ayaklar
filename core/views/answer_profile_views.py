@@ -45,6 +45,27 @@ def get_all_descendant_question_ids(root_question_id, user):
     return list(descendant_ids)
 
 
+def serialize_answer_for_selector(answer):
+    preview = ' '.join((answer.answer_text or '').split())
+    if len(preview) > 180:
+        preview = preview[:177].rstrip() + '...'
+    return {
+        'id': answer.id,
+        'question_text': answer.question.question_text,
+        'answer_text': preview,
+        'detail_url': reverse(
+            'single_answer',
+            args=[answer.question.slug, answer.id],
+        ),
+        'question_url': reverse(
+            'question_detail',
+            args=[answer.question.slug],
+        ),
+        'created_at': answer.created_at.strftime("%d %b %Y %H:%M"),
+        'created_at_iso': answer.created_at.isoformat(),
+    }
+
+
 @login_required
 def get_user_answers(request):
     username = request.GET.get('username')
@@ -75,20 +96,10 @@ def get_user_answers(request):
     end = start + page_size
     paginated_answers = answers[start:end]
 
-    data = []
-    for answer in paginated_answers:
-        preview = ' '.join((answer.answer_text or '').split())
-        if len(preview) > 180:
-            preview = preview[:177].rstrip() + '...'
-        data.append({
-            'id': answer.id,
-            'question_text': answer.question.question_text,
-            'answer_text': preview,
-            'detail_url': reverse('single_answer', args=[answer.question.slug, answer.id]),
-            'question_url': reverse('question_detail', args=[answer.question.slug]),
-            'created_at': answer.created_at.strftime("%d %b %Y %H:%M"),
-            'created_at_iso': answer.created_at.isoformat(),
-        })
+    data = [
+        serialize_answer_for_selector(answer)
+        for answer in paginated_answers
+    ]
 
     return JsonResponse({
         'answers': data,
