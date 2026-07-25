@@ -13,7 +13,7 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from docx import Document
 from docx.enum.style import WD_STYLE_TYPE
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_LINE_SPACING
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Inches, Pt, RGBColor
@@ -83,6 +83,10 @@ TURKISH_SORT_ORDER = {
 MAX_PAPER_IMAGE_BYTES = 8 * 1024 * 1024
 MAX_PAPER_IMAGE_WIDTH_CM = 14.5
 MAX_PAPER_IMAGE_HEIGHT_CM = 19.5
+PAPER_FONT_NAME = "Garamond"
+PAPER_BODY_FONT_SIZE = 12
+PAPER_BIBLIOGRAPHY_FONT_SIZE = 8
+PAPER_LINE_SPACING = 1.15
 
 
 def _word_tag(local_name):
@@ -327,8 +331,9 @@ def _patch_footnotes(docx_bytes, notes):
 
 
 def _set_run_font(run, *, size=None, bold=None, italic=None):
-    run.font.name = "Times New Roman"
-    run._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
+    run.font.name = PAPER_FONT_NAME
+    for attribute in ("ascii", "hAnsi", "eastAsia", "cs"):
+        run._element.rPr.rFonts.set(qn(f"w:{attribute}"), PAPER_FONT_NAME)
     if size is not None:
         run.font.size = Pt(size)
     if bold is not None:
@@ -355,7 +360,7 @@ def _add_hyperlink(paragraph, text, url):
     run_properties.append(underline)
     fonts = OxmlElement("w:rFonts")
     for attribute in ("ascii", "hAnsi", "eastAsia", "cs"):
-        fonts.set(qn(f"w:{attribute}"), "Times New Roman")
+        fonts.set(qn(f"w:{attribute}"), PAPER_FONT_NAME)
     run_properties.append(fonts)
     run.append(run_properties)
     text_node = OxmlElement("w:t")
@@ -373,7 +378,7 @@ def _add_internal_hyperlink(paragraph, text, anchor):
     run_properties = OxmlElement("w:rPr")
     fonts = OxmlElement("w:rFonts")
     for attribute in ("ascii", "hAnsi", "eastAsia", "cs"):
-        fonts.set(qn(f"w:{attribute}"), "Times New Roman")
+        fonts.set(qn(f"w:{attribute}"), PAPER_FONT_NAME)
     run_properties.append(fonts)
     color = OxmlElement("w:color")
     color.set(qn("w:val"), "000000")
@@ -713,6 +718,14 @@ def _add_page_number(section):
     _set_run_font(run, size=10)
 
 
+def _set_style_font(style, *, size=None):
+    style.font.name = PAPER_FONT_NAME
+    for attribute in ("ascii", "hAnsi", "eastAsia", "cs"):
+        style._element.rPr.rFonts.set(qn(f"w:{attribute}"), PAPER_FONT_NAME)
+    if size is not None:
+        style.font.size = Pt(size)
+
+
 def _configure_document(document):
     section = document.sections[0]
     section.page_width = Cm(21)
@@ -725,20 +738,16 @@ def _configure_document(document):
     section.footer_distance = Cm(1.25)
 
     normal = document.styles["Normal"]
-    normal.font.name = "Times New Roman"
-    normal._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
-    normal.font.size = Pt(12)
+    _set_style_font(normal, size=PAPER_BODY_FONT_SIZE)
     normal.font.color.rgb = RGBColor(0, 0, 0)
     normal.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    normal.paragraph_format.line_spacing_rule = WD_LINE_SPACING.ONE_POINT_FIVE
+    normal.paragraph_format.line_spacing = PAPER_LINE_SPACING
     normal.paragraph_format.space_after = Pt(6)
     normal.paragraph_format.widow_control = True
 
     body = document.styles.add_style("Paper Body", WD_STYLE_TYPE.PARAGRAPH)
     body.base_style = normal
-    body.font.name = "Times New Roman"
-    body._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
-    body.font.size = Pt(12)
+    _set_style_font(body, size=PAPER_BODY_FONT_SIZE)
     body.paragraph_format.first_line_indent = Cm(1.25)
 
     numbered_item = document.styles.add_style(
@@ -746,9 +755,7 @@ def _configure_document(document):
         WD_STYLE_TYPE.PARAGRAPH,
     )
     numbered_item.base_style = normal
-    numbered_item.font.name = "Times New Roman"
-    numbered_item._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
-    numbered_item.font.size = Pt(12)
+    _set_style_font(numbered_item, size=PAPER_BODY_FONT_SIZE)
     numbered_item.paragraph_format.space_after = Pt(6)
 
     image = document.styles.add_style("Paper Image", WD_STYLE_TYPE.PARAGRAPH)
@@ -763,9 +770,7 @@ def _configure_document(document):
         WD_STYLE_TYPE.PARAGRAPH,
     )
     image_note.base_style = normal
-    image_note.font.name = "Times New Roman"
-    image_note._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
-    image_note.font.size = Pt(10)
+    _set_style_font(image_note, size=10)
     image_note.font.italic = True
     image_note.font.color.rgb = RGBColor(100, 100, 100)
     image_note.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -784,9 +789,7 @@ def _configure_document(document):
     }
     for level, size in heading_sizes.items():
         style = document.styles[f"Heading {level}"]
-        style.font.name = "Times New Roman"
-        style._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
-        style.font.size = Pt(size)
+        _set_style_font(style, size=size)
         style.font.bold = True
         style.font.color.rgb = RGBColor(0, 0, 0)
         style.paragraph_format.space_before = Pt(16 if level == 1 else 10)
@@ -795,37 +798,31 @@ def _configure_document(document):
         style.paragraph_format.keep_together = True
 
     toc_heading = document.styles.add_style("Paper TOC Heading", WD_STYLE_TYPE.PARAGRAPH)
-    toc_heading.font.name = "Times New Roman"
-    toc_heading._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
-    toc_heading.font.size = Pt(18)
+    _set_style_font(toc_heading, size=18)
     toc_heading.font.bold = True
     toc_heading.font.color.rgb = RGBColor(0, 0, 0)
     toc_heading.paragraph_format.space_after = Pt(16)
 
     toc_entry = document.styles.add_style("Paper TOC Entry", WD_STYLE_TYPE.PARAGRAPH)
-    toc_entry.font.name = "Times New Roman"
-    toc_entry._element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
-    toc_entry.font.size = Pt(12)
+    _set_style_font(toc_entry, size=PAPER_BODY_FONT_SIZE)
     toc_entry.font.color.rgb = RGBColor(0, 0, 0)
     toc_entry.paragraph_format.space_after = Pt(6)
     toc_entry.paragraph_format.keep_together = True
 
     quote = document.styles.add_style("Paper Quote", WD_STYLE_TYPE.PARAGRAPH)
     quote.base_style = normal
-    quote.font.name = "Times New Roman"
-    quote.font.size = Pt(11)
+    _set_style_font(quote, size=11)
     quote.font.italic = True
-    quote.paragraph_format.line_spacing = 1.15
+    quote.paragraph_format.line_spacing = PAPER_LINE_SPACING
     quote.paragraph_format.space_before = Pt(4)
     quote.paragraph_format.space_after = Pt(8)
 
     bibliography = document.styles.add_style("Paper Bibliography", WD_STYLE_TYPE.PARAGRAPH)
     bibliography.base_style = normal
-    bibliography.font.name = "Times New Roman"
-    bibliography.font.size = Pt(11)
+    _set_style_font(bibliography, size=PAPER_BIBLIOGRAPHY_FONT_SIZE)
     bibliography.paragraph_format.left_indent = Cm(1.25)
     bibliography.paragraph_format.first_line_indent = Cm(-1.25)
-    bibliography.paragraph_format.line_spacing = 1.15
+    bibliography.paragraph_format.line_spacing = PAPER_LINE_SPACING
     bibliography.paragraph_format.space_after = Pt(8)
 
     footnote_reference = document.styles.add_style(
@@ -986,15 +983,19 @@ def _add_bibliography_entry(document, reference):
     author_run = paragraph.add_run(
         f"{_bibliography_author(reference)} ({reference.year}). "
     )
-    _set_run_font(author_run, size=11)
+    _set_run_font(author_run, size=PAPER_BIBLIOGRAPHY_FONT_SIZE)
     if reference.metin_ismi:
         title_run = paragraph.add_run(reference.metin_ismi.rstrip(". "))
-        _set_run_font(title_run, size=11, italic=True)
+        _set_run_font(
+            title_run,
+            size=PAPER_BIBLIOGRAPHY_FONT_SIZE,
+            italic=True,
+        )
         punctuation_run = paragraph.add_run(". ")
-        _set_run_font(punctuation_run, size=11)
+        _set_run_font(punctuation_run, size=PAPER_BIBLIOGRAPHY_FONT_SIZE)
     if reference.rest:
         rest_run = paragraph.add_run(reference.rest.strip())
-        _set_run_font(rest_run, size=11)
+        _set_run_font(rest_run, size=PAPER_BIBLIOGRAPHY_FONT_SIZE)
 
 
 def build_paper_docx(answers, target_user, root_question_id=None):
@@ -1087,7 +1088,7 @@ def build_paper_docx(answers, target_user, root_question_id=None):
         for reference_id in missing_reference_ids:
             paragraph = document.add_paragraph(style="Paper Bibliography")
             run = paragraph.add_run(f"Kaynak kaydı bulunamadı (ID: {reference_id}).")
-            _set_run_font(run, size=11)
+            _set_run_font(run, size=PAPER_BIBLIOGRAPHY_FONT_SIZE)
 
     buffer = BytesIO()
     document.save(buffer)

@@ -204,6 +204,45 @@ class PaperExportTests(TestCase):
         self.assertTrue(bibliography_texts[2].startswith("Yalçın, Yasemin (2021)."))
         self.assertTrue(bibliography_texts[3].startswith("Zengin, Zeynep; Kaya, Kemal (2020)."))
 
+    def test_paper_export_uses_garamond_body_and_compact_bibliography(self):
+        response = self.download()
+        document = Document(BytesIO(response.content))
+
+        normal = document.styles["Normal"]
+        self.assertEqual(normal.font.name, "Garamond")
+        self.assertEqual(normal.font.size.pt, 12)
+        self.assertAlmostEqual(
+            normal.paragraph_format.line_spacing,
+            1.15,
+            places=2,
+        )
+
+        body = document.styles["Paper Body"]
+        self.assertEqual(body.font.name, "Garamond")
+        self.assertEqual(body.font.size.pt, 12)
+
+        heading = document.styles["Heading 1"]
+        self.assertEqual(heading.font.name, "Garamond")
+
+        bibliography_style = document.styles["Paper Bibliography"]
+        self.assertEqual(bibliography_style.font.name, "Garamond")
+        self.assertEqual(bibliography_style.font.size.pt, 8)
+        self.assertAlmostEqual(
+            bibliography_style.paragraph_format.line_spacing,
+            1.15,
+            places=2,
+        )
+
+        bibliography_paragraph = next(
+            paragraph
+            for paragraph in document.paragraphs
+            if paragraph.style.name == "Paper Bibliography"
+        )
+        self.assertTrue(bibliography_paragraph.runs)
+        for run in bibliography_paragraph.runs:
+            self.assertEqual(run.font.name, "Garamond")
+            self.assertEqual(run.font.size.pt, 8)
+
     def test_paper_export_preserves_inline_formatting_and_blue_links(self):
         response = self.download()
 
@@ -395,6 +434,21 @@ class PaperExportTests(TestCase):
                 namespaces=NS,
             )
         )
+        footnote_text_runs = footnotes_root.xpath(
+            ".//w:footnote[number(@w:id) > 0]"
+            "//w:r[not(w:rPr/w:rStyle[@w:val='FootnoteReference'])]",
+            namespaces=NS,
+        )
+        self.assertTrue(footnote_text_runs)
+        for run in footnote_text_runs:
+            self.assertEqual(
+                run.xpath("string(./w:rPr/w:rFonts/@w:ascii)", namespaces=NS),
+                "Times New Roman",
+            )
+            self.assertEqual(
+                run.xpath("string(./w:rPr/w:sz/@w:val)", namespaces=NS),
+                "18",
+            )
 
     def test_paper_export_rejects_another_user(self):
         self.client.force_login(self.other_user)
