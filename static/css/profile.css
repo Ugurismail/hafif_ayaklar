@@ -835,7 +835,9 @@ h4, h5, h6 {
 .entry-download-workspace {
     display: grid;
     grid-template-columns: minmax(0, 1.65fr) minmax(290px, 0.72fr);
-    min-height: 440px;
+    height: min(620px, calc(100vh - 270px));
+    height: min(620px, calc(100dvh - 270px));
+    min-height: 360px;
     overflow: hidden;
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -846,7 +848,9 @@ h4, h5, h6 {
 .entry-selected-pane {
     display: flex;
     min-width: 0;
+    min-height: 0;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .entry-results-pane {
@@ -1008,10 +1012,11 @@ h4, h5, h6 {
 }
 
 .entry-results-list {
-    min-height: 300px;
-    max-height: 47vh;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
     overflow-y: auto;
-    overscroll-behavior: contain;
+    overscroll-behavior-y: auto;
     border-top: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
     scrollbar-gutter: stable;
@@ -1021,7 +1026,7 @@ h4, h5, h6 {
 .entry-results-empty,
 .entry-results-error {
     display: grid;
-    min-height: 290px;
+    min-height: 100%;
     place-content: center;
     justify-items: center;
     gap: 0.6rem;
@@ -1248,17 +1253,18 @@ h4, h5, h6 {
 }
 
 .entry-selected-list {
-    min-height: 275px;
-    max-height: 43vh;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
     overflow-y: auto;
-    overscroll-behavior: contain;
+    overscroll-behavior-y: auto;
     padding-right: 0.2rem;
     scrollbar-gutter: stable;
 }
 
 .entry-selected-empty {
     display: grid;
-    min-height: 260px;
+    min-height: 100%;
     place-content: center;
     justify-items: center;
     gap: 0.35rem;
@@ -1534,6 +1540,13 @@ h4, h5, h6 {
 
     .entry-download-workspace {
         display: block;
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .entry-results-pane,
+    .entry-selected-pane {
         overflow: visible;
     }
 
@@ -1561,6 +1574,7 @@ h4, h5, h6 {
 
     .entry-results-list,
     .entry-selected-list {
+        min-height: 300px;
         max-height: 390px;
     }
 
