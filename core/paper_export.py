@@ -201,6 +201,79 @@ def _ensure_footnote_content_type(content_types_root):
     return True
 
 
+def _configure_automatic_footnote_numbering(
+    properties,
+    *,
+    register_separators=False,
+):
+    for child_name in ("numFmt", "numStart", "numRestart"):
+        child = properties.find(_word_tag(child_name))
+        if child is not None:
+            properties.remove(child)
+
+    insertion_index = 1 if properties.find(_word_tag("pos")) is not None else 0
+    number_format = etree.Element(_word_tag("numFmt"))
+    number_format.set(_word_tag("val"), "chicago")
+    properties.insert(insertion_index, number_format)
+
+    restart = etree.Element(_word_tag("numRestart"))
+    restart.set(_word_tag("val"), "eachPage")
+    properties.insert(insertion_index + 1, restart)
+
+    if not register_separators:
+        return
+
+    registered_ids = {
+        footnote.get(_word_tag("id"))
+        for footnote in properties.findall(_word_tag("footnote"))
+    }
+    for note_id in ("-1", "0"):
+        if note_id in registered_ids:
+            continue
+        footnote = etree.SubElement(properties, _word_tag("footnote"))
+        footnote.set(_word_tag("id"), note_id)
+
+
+def _ensure_automatic_footnote_settings(document_root, settings_root):
+    document_properties = settings_root.find(_word_tag("footnotePr"))
+    if document_properties is None:
+        document_properties = etree.Element(_word_tag("footnotePr"))
+        following_names = {
+            "endnotePr",
+            "compat",
+            "docVars",
+            "rsids",
+            "mathPr",
+            "themeFontLang",
+            "clrSchemeMapping",
+        }
+        insertion_index = len(settings_root)
+        for index, child in enumerate(settings_root):
+            if etree.QName(child).localname in following_names:
+                insertion_index = index
+                break
+        settings_root.insert(insertion_index, document_properties)
+    _configure_automatic_footnote_numbering(
+        document_properties,
+        register_separators=True,
+    )
+
+    section_properties = document_root.xpath(".//w:sectPr", namespaces=NS)
+    for section in section_properties:
+        footnote_properties = section.find(_word_tag("footnotePr"))
+        if footnote_properties is None:
+            footnote_properties = etree.Element(_word_tag("footnotePr"))
+            insertion_index = 0
+            while (
+                insertion_index < len(section)
+                and etree.QName(section[insertion_index]).localname
+                in {"headerReference", "footerReference"}
+            ):
+                insertion_index += 1
+            section.insert(insertion_index, footnote_properties)
+        _configure_automatic_footnote_numbering(footnote_properties)
+
+
 def _append_direct_run(paragraph, text, *, superscript=False, bold=False):
     run = etree.SubElement(paragraph, _word_tag("r"))
     run_properties = etree.SubElement(run, _word_tag("rPr"))
@@ -249,15 +322,13 @@ def _make_footnotes_part(notes):
         reference_properties = etree.SubElement(reference_run, _word_tag("rPr"))
         reference_style = etree.SubElement(reference_properties, _word_tag("rStyle"))
         reference_style.set(_word_tag("val"), "FootnoteReference")
-        # footnoteRef forces Word's automatic number; custom marks stay literal.
-        reference_mark = etree.SubElement(reference_run, _word_tag("t"))
-        reference_mark.text = note["mark"]
+        etree.SubElement(reference_run, _word_tag("footnoteRef"))
         _append_direct_run(paragraph, f" {note['text']}")
 
     return root
 
 
-def _replace_footnote_marker(document_root, marker, note_id, mark):
+def _replace_footnote_marker(document_root, marker, note_id):
     for text_element in document_root.xpath(".//w:t", namespaces=NS):
         if marker not in (text_element.text or ""):
             continue
@@ -276,9 +347,6 @@ def _replace_footnote_marker(document_root, marker, note_id, mark):
         reference_style.set(_word_tag("val"), "FootnoteReference")
         reference = etree.SubElement(reference_run, _word_tag("footnoteReference"))
         reference.set(_word_tag("id"), str(note_id))
-        reference.set(_word_tag("customMarkFollows"), "1")
-        custom_mark = etree.SubElement(reference_run, _word_tag("t"))
-        custom_mark.text = mark
         source_index = parent.index(source_run)
         parent.insert(source_index + 1, reference_run)
         return True
@@ -298,10 +366,11 @@ def _patch_footnotes(docx_bytes, notes):
                 document_root,
                 note["marker"],
                 note["id"],
-                note["mark"],
             ):
                 raise ValueError(f"Dipnot işareti belgede bulunamadı: {note['marker']}")
 
+        settings_root = etree.fromstring(source.read("word/settings.xml"))
+        _ensure_automatic_footnote_settings(document_root, settings_root)
         relationships_root = etree.fromstring(
             source.read("word/_rels/document.xml.rels")
         )
@@ -311,6 +380,7 @@ def _patch_footnotes(docx_bytes, notes):
 
         replacements = {
             "word/document.xml": _xml_bytes(document_root),
+            "word/settings.xml": _xml_bytes(settings_root),
             "word/_rels/document.xml.rels": _xml_bytes(relationships_root),
             "[Content_Types].xml": _xml_bytes(content_types_root),
             "word/footnotes.xml": _xml_bytes(_make_footnotes_part(notes)),
@@ -913,7 +983,6 @@ class PaperTextRenderer:
             {
                 "id": note_id,
                 "marker": marker,
-                "mark": "*" * note_id,
                 "text": self._clean_footnote_text(text),
             }
         )

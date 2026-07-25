@@ -364,30 +364,66 @@ class PaperExportTests(TestCase):
                 places=2,
             )
 
-    def test_paper_export_contains_toc_and_custom_star_footnotes(self):
+    def test_paper_export_contains_toc_and_page_restarting_footnotes(self):
         response = self.download()
 
         with zipfile.ZipFile(BytesIO(response.content)) as archive:
             self.assertIn("word/footnotes.xml", archive.namelist())
             document_root = etree.fromstring(archive.read("word/document.xml"))
             footnotes_root = etree.fromstring(archive.read("word/footnotes.xml"))
+            settings_root = etree.fromstring(archive.read("word/settings.xml"))
 
         references = document_root.xpath(".//w:footnoteReference", namespaces=NS)
         self.assertEqual(len(references), 3)
         self.assertTrue(
             all(
-                reference.get(f"{{{W_NS}}}customMarkFollows") == "1"
+                reference.get(f"{{{W_NS}}}customMarkFollows") is None
                 for reference in references
             )
         )
         body_text_nodes = document_root.xpath(".//w:body//w:t/text()", namespaces=NS)
-        self.assertEqual(
+        self.assertFalse(
             [
-                "".join(reference.getparent().xpath("./w:t/text()", namespaces=NS))
+                reference
                 for reference in references
-            ],
-            ["*", "**", "***"],
+                if reference.getparent().xpath("./w:t/text()", namespaces=NS)
+            ]
         )
+        self.assertEqual(
+            settings_root.xpath(
+                "string(./w:footnotePr/w:numFmt/@w:val)",
+                namespaces=NS,
+            ),
+            "chicago",
+        )
+        self.assertEqual(
+            settings_root.xpath(
+                "string(./w:footnotePr/w:numRestart/@w:val)",
+                namespaces=NS,
+            ),
+            "eachPage",
+        )
+        self.assertEqual(
+            settings_root.xpath(
+                "./w:footnotePr/w:footnote/@w:id",
+                namespaces=NS,
+            ),
+            ["-1", "0"],
+        )
+        section_properties = document_root.xpath(
+            ".//w:sectPr/w:footnotePr",
+            namespaces=NS,
+        )
+        self.assertTrue(section_properties)
+        for properties in section_properties:
+            self.assertEqual(
+                properties.xpath("string(./w:numFmt/@w:val)", namespaces=NS),
+                "chicago",
+            )
+            self.assertEqual(
+                properties.xpath("string(./w:numRestart/@w:val)", namespaces=NS),
+                "eachPage",
+            )
         self.assertNotIn("İçindekiler hazırlanıyor.", body_text_nodes)
         self.assertEqual(
             len(document_root.xpath(".//w:bookmarkStart", namespaces=NS)),
@@ -420,17 +456,21 @@ class PaperExportTests(TestCase):
         self.assertIn("Tanım dipnotu (Yalçın, 2021, s. 31)", note_text)
         self.assertIn("İkinci dipnot", note_text)
         self.assertEqual(
-            footnotes_root.xpath(
-                ".//w:footnote[number(@w:id) > 0]"
-                "//w:r[w:rPr/w:rStyle[@w:val='FootnoteReference']]"
-                "/w:t/text()",
-                namespaces=NS,
+            len(
+                footnotes_root.xpath(
+                    ".//w:footnote[number(@w:id) > 0]"
+                    "//w:r[w:rPr/w:rStyle[@w:val='FootnoteReference']]"
+                    "/w:footnoteRef",
+                    namespaces=NS,
+                )
             ),
-            ["*", "**", "***"],
+            3,
         )
         self.assertFalse(
             footnotes_root.xpath(
-                ".//w:footnote[number(@w:id) > 0]//w:footnoteRef",
+                ".//w:footnote[number(@w:id) > 0]"
+                "//w:r[w:rPr/w:rStyle[@w:val='FootnoteReference']]"
+                "/w:t",
                 namespaces=NS,
             )
         )
@@ -450,7 +490,7 @@ class PaperExportTests(TestCase):
                 "18",
             )
 
-    def test_paper_export_does_not_repeat_star_marks_after_third_footnote(self):
+    def test_paper_export_uses_automatic_marks_for_additional_footnotes(self):
         self.root_answer.answer_text += "\n\n-g- Ek dipnot -g-"
         self.root_answer.save(update_fields=["answer_text"])
 
@@ -461,21 +501,23 @@ class PaperExportTests(TestCase):
             footnotes_root = etree.fromstring(archive.read("word/footnotes.xml"))
 
         references = document_root.xpath(".//w:footnoteReference", namespaces=NS)
-        self.assertEqual(
-            [
-                "".join(reference.getparent().xpath("./w:t/text()", namespaces=NS))
+        self.assertEqual(len(references), 4)
+        self.assertTrue(
+            all(
+                reference.get(f"{{{W_NS}}}customMarkFollows") is None
                 for reference in references
-            ],
-            ["*", "**", "***", "****"],
+            )
         )
         self.assertEqual(
-            footnotes_root.xpath(
-                ".//w:footnote[number(@w:id) > 0]"
-                "//w:r[w:rPr/w:rStyle[@w:val='FootnoteReference']]"
-                "/w:t/text()",
-                namespaces=NS,
+            len(
+                footnotes_root.xpath(
+                    ".//w:footnote[number(@w:id) > 0]"
+                    "//w:r[w:rPr/w:rStyle[@w:val='FootnoteReference']]"
+                    "/w:footnoteRef",
+                    namespaces=NS,
+                )
             ),
-            ["*", "**", "***", "****"],
+            4,
         )
 
     def test_paper_export_rejects_another_user(self):
