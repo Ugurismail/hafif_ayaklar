@@ -450,6 +450,34 @@ class PaperExportTests(TestCase):
                 "18",
             )
 
+    def test_paper_export_does_not_repeat_star_marks_after_third_footnote(self):
+        self.root_answer.answer_text += "\n\n-g- Ek dipnot -g-"
+        self.root_answer.save(update_fields=["answer_text"])
+
+        response = self.download()
+
+        with zipfile.ZipFile(BytesIO(response.content)) as archive:
+            document_root = etree.fromstring(archive.read("word/document.xml"))
+            footnotes_root = etree.fromstring(archive.read("word/footnotes.xml"))
+
+        references = document_root.xpath(".//w:footnoteReference", namespaces=NS)
+        self.assertEqual(
+            [
+                "".join(reference.getparent().xpath("./w:t/text()", namespaces=NS))
+                for reference in references
+            ],
+            ["*", "**", "***", "****"],
+        )
+        self.assertEqual(
+            footnotes_root.xpath(
+                ".//w:footnote[number(@w:id) > 0]"
+                "//w:r[w:rPr/w:rStyle[@w:val='FootnoteReference']]"
+                "/w:t/text()",
+                namespaces=NS,
+            ),
+            ["*", "**", "***", "****"],
+        )
+
     def test_paper_export_rejects_another_user(self):
         self.client.force_login(self.other_user)
 

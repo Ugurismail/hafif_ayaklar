@@ -913,7 +913,7 @@ class PaperTextRenderer:
             {
                 "id": note_id,
                 "marker": marker,
-                "mark": "*" * (((note_id - 1) % 3) + 1),
+                "mark": "*" * note_id,
                 "text": self._clean_footnote_text(text),
             }
         )
