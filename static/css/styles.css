@@ -1638,33 +1638,23 @@ small:has(.dropdown.show) {
 }
 
 .entry-book-quick-add-btn {
-    appearance: none;
-    border: 0;
-    background: transparent;
     color: var(--icon-color, var(--text-color));
-    display: inline-grid;
-    place-items: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    padding: 0;
-    line-height: 1;
-    vertical-align: -0.15rem;
-    transition: color 160ms ease, transform 160ms ease;
+    display: inline;
+    line-height: inherit;
+    text-decoration: none;
+    transition: color 160ms ease;
+    vertical-align: baseline;
 }
 
 .entry-book-quick-add-btn:hover,
 .entry-book-quick-add-btn:focus-visible {
     color: var(--link-color);
-    transform: translateY(-1px);
+    text-decoration: none;
 }
 
 .entry-book-quick-add-btn:focus-visible {
-    outline: 2px solid var(--link-color);
-    outline-offset: 3px;
-}
-
-.entry-book-quick-add-btn[data-added="true"] {
-    color: #2c7658;
+    box-shadow: 0 2px 0 currentColor;
+    outline: 0;
 }
 
 .entry-book-quick-modal .modal-dialog {
