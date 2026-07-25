@@ -1,0 +1,93 @@
+<div
+  class="modal fade entry-book-quick-modal"
+  id="entryBookQuickAddModal"
+  tabindex="-1"
+  aria-labelledby="entryBookQuickAddTitle"
+  aria-hidden="true"
+  data-list-url="{% url 'entry_books' %}"
+  data-add-url-template="{% url 'entry_book_add_entry' 0 %}"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="entry-book-quick-heading">
+          <span class="entry-book-quick-heading-icon" aria-hidden="true">
+            <i class="bi bi-journals"></i>
+          </span>
+          <div>
+            <h5 class="modal-title" id="entryBookQuickAddTitle">Kitaba ekle</h5>
+            <p id="entryBookQuickAddContext">Entry için bir kitap seç.</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Kapat"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <label class="entry-book-quick-search" for="entryBookQuickSearch">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <input
+            type="search"
+            id="entryBookQuickSearch"
+            placeholder="Kitap ara"
+            autocomplete="off"
+          >
+        </label>
+
+        <p
+          class="entry-book-quick-status"
+          id="entryBookQuickStatus"
+          role="status"
+          aria-live="polite"
+        ></p>
+
+        <div
+          class="entry-book-quick-list"
+          id="entryBookQuickList"
+          role="group"
+          aria-label="Kitaplarım"
+        ></div>
+
+        <div class="entry-book-quick-empty" id="entryBookQuickEmpty" hidden>
+          <i class="bi bi-journal" aria-hidden="true"></i>
+          <strong>Henüz bir kitap yok</strong>
+          <span>Aşağıdan ilk kitabını oluşturabilirsin.</span>
+        </div>
+
+        <details class="entry-book-quick-create" id="entryBookQuickCreate">
+          <summary>
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            Yeni kitap oluştur
+          </summary>
+          <form id="entryBookQuickCreateForm">
+            <label for="entryBookQuickName">Kitap adı</label>
+            <div class="entry-book-quick-create-row">
+              <input
+                type="text"
+                id="entryBookQuickName"
+                maxlength="120"
+                placeholder="Örneğin: Siyaset Notları"
+                required
+              >
+              <button type="submit" class="btn btn-theme-primary">
+                <i class="bi bi-journal-plus" aria-hidden="true"></i>
+                <span>Oluştur ve ekle</span>
+              </button>
+            </div>
+          </form>
+        </details>
+      </div>
+
+      <div class="modal-footer">
+        <span>Bir entry birden fazla kitaba eklenebilir.</span>
+        <button type="button" class="btn btn-outline-theme-secondary" data-bs-dismiss="modal">
+          Kapat
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -12,7 +12,7 @@ from .views.definition_reference_views import create_definition, create_referenc
 from .views.delphoi_views import delphoi_home, delphoi_result
 from .views.ethics_views import ethics_atlas
 from .views.error_views import custom_400_view, custom_403_view, custom_404_view, custom_500_view, custom_502_view, debug_show_400, debug_show_403, debug_show_404, debug_show_500, debug_show_502
-from .views.entry_book_views import entry_book_detail, entry_books
+from .views.entry_book_views import entry_book_add_entry, entry_book_detail, entry_books
 from .views.export_views import download_entries_docx, download_entries_json, download_entries_paper, download_entries_pdf, download_entries_xlsx, filter_answers
 from .views.german_views import german_course_home, german_lesson_detail, german_level_test
 from .views.hashtag_views import all_hashtags, hashtag_view, search_hashtags, trending_hashtags
@@ -188,6 +188,7 @@ urlpatterns = [
     path('get-root-questions/', get_root_questions, name='get_root_questions'),
     path('entry-books/', entry_books, name='entry_books'),
     path('entry-books/<int:book_id>/', entry_book_detail, name='entry_book_detail'),
+    path('entry-books/<int:book_id>/entries/', entry_book_add_entry, name='entry_book_add_entry'),
     path('get-saved-items/', get_saved_items, name='get_saved_items'),
     path('collections/', saved_collections_home, name='saved_collections_home'),
     path('collections/options/', saved_item_collection_options, name='saved_item_collection_options'),

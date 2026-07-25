@@ -119,6 +119,7 @@
             <a href="{% url 'edit_answer' answer.id %}" class="ms-2 text-secondary" title="Düzenle">
               <i class="bi bi-pencil-square"></i>
             </a>
+            {% include 'core/_entry_book_action.html' with entry=answer %}
             <a href="#" 
                class="ms-2 icon-black-white delete-answer-btn"
                data-answer-id="{{ answer.id }}"

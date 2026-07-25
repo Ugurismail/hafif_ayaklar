@@ -286,6 +286,7 @@
                         <span class="text-muted ms-2 small answer-date">({{ answer.created_at|date:"d M Y H:i" }})</span>
                       </div>
                       {% if answer.user == request.user %}
+                        {% include 'core/_entry_book_action.html' with entry=answer %}
                         <button type="button" class="btn btn-sm btn-outline-theme-secondary delete-answer-btn"
                                 data-answer-id="{{ answer.id }}">
                           Sil

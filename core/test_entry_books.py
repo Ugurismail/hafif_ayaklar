@@ -137,6 +137,68 @@ class EntryBookApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(EntryBook.objects.filter(id=book.id).exists())
 
+    def test_entry_can_be_appended_to_book_without_creating_a_duplicate(self):
+        book = EntryBook.objects.create(user=self.user, title='Büyüyen Kitap')
+        book.items.create(answer=self.first_answer, position=1)
+        url = reverse('entry_book_add_entry', args=[book.id])
+
+        add_response = self._json_request(
+            'post',
+            url,
+            {'entry_id': self.second_answer.id},
+        )
+        duplicate_response = self._json_request(
+            'post',
+            url,
+            {'entry_id': self.second_answer.id},
+        )
+
+        self.assertEqual(add_response.status_code, 200)
+        self.assertTrue(add_response.json()['added'])
+        self.assertEqual(duplicate_response.status_code, 200)
+        self.assertFalse(duplicate_response.json()['added'])
+        self.assertEqual(
+            list(
+                book.items.order_by('position').values_list(
+                    'answer_id',
+                    flat=True,
+                )
+            ),
+            [self.first_answer.id, self.second_answer.id],
+        )
+
+    def test_book_list_marks_books_that_already_contain_the_entry(self):
+        containing_book = EntryBook.objects.create(
+            user=self.user,
+            title='Entry Var',
+        )
+        containing_book.items.create(answer=self.first_answer, position=1)
+        EntryBook.objects.create(user=self.user, title='Entry Yok')
+
+        response = self.client.get(
+            reverse('entry_books'),
+            {'entry_id': self.first_answer.id},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        books = {
+            book['title']: book['contains_entry']
+            for book in response.json()['books']
+        }
+        self.assertEqual(books, {'Entry Yok': False, 'Entry Var': True})
+
+    def test_entry_from_another_user_cannot_be_added_to_book(self):
+        book = EntryBook.objects.create(user=self.user, title='Benim Kitabım')
+
+        response = self._json_request(
+            'post',
+            reverse('entry_book_add_entry', args=[book.id]),
+            {'entry_id': self.other_answer.id},
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(book.items.exists())
+
     def test_profile_contains_entry_book_controls(self):
         response = self.client.get(
             reverse('user_profile', args=[self.user.username]),
@@ -147,3 +209,6 @@ class EntryBookApiTests(TestCase):
         self.assertContains(response, 'id="entryBookName"')
         self.assertContains(response, 'id="saveEntryBookButton"')
         self.assertContains(response, '-entrybooks1')
+        self.assertContains(response, 'data-entry-book-add')
+        self.assertContains(response, 'id="entryBookQuickAddModal"')
+        self.assertContains(response, 'entry_books.js')

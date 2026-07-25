@@ -4,7 +4,7 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
-from django.db.models import Count
+from django.db.models import Count, Exists, Max, OuterRef
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_http_methods
@@ -80,12 +80,15 @@ def _book_summary(book):
     item_count = getattr(book, 'item_count', None)
     if item_count is None:
         item_count = book.items.count()
-    return {
+    summary = {
         'id': book.id,
         'title': book.title,
         'item_count': item_count,
         'updated_at': book.updated_at.isoformat(),
     }
+    if hasattr(book, 'contains_entry'):
+        summary['contains_entry'] = bool(book.contains_entry)
+    return summary
 
 
 def _replace_book_items(book, answers):
@@ -104,8 +107,26 @@ def _replace_book_items(book, answers):
 @require_http_methods(['GET', 'POST'])
 def entry_books(request):
     if request.method == 'GET':
+        books = EntryBook.objects.filter(user=request.user)
+        entry_id = request.GET.get('entry_id')
+        if entry_id:
+            try:
+                entry_id = int(entry_id)
+            except (TypeError, ValueError):
+                return _error('Entry kimliği geçersiz.')
+            if not Answer.objects.filter(id=entry_id, user=request.user).exists():
+                return _error('Entry bulunamadı.', status=404)
+            books = books.annotate(
+                contains_entry=Exists(
+                    EntryBookItem.objects.filter(
+                        book_id=OuterRef('pk'),
+                        answer_id=entry_id,
+                    )
+                )
+            )
+
         books = (
-            EntryBook.objects.filter(user=request.user)
+            books
             .annotate(item_count=Count('items'))
             .order_by('-updated_at', '-id')
         )
@@ -180,3 +201,67 @@ def entry_book_detail(request, book_id):
 
     book.item_count = len(answers)
     return JsonResponse({'book': _book_summary(book)})
+
+
+@login_required
+@require_http_methods(['POST'])
+def entry_book_add_entry(request, book_id):
+    payload = _parse_payload(request)
+    if payload is None:
+        return _error('Geçersiz istek.')
+
+    raw_entry_id = payload.get('entry_id')
+    if isinstance(raw_entry_id, bool):
+        return _error('Entry kimliği geçersiz.')
+    try:
+        entry_id = int(raw_entry_id)
+    except (TypeError, ValueError):
+        return _error('Entry kimliği geçersiz.')
+
+    answer = Answer.objects.filter(
+        id=entry_id,
+        user=request.user,
+    ).first()
+    if answer is None:
+        return _error('Entry bulunamadı.', status=404)
+
+    with transaction.atomic():
+        try:
+            book = EntryBook.objects.select_for_update().get(
+                id=book_id,
+                user=request.user,
+            )
+        except EntryBook.DoesNotExist:
+            return _error('Kitap bulunamadı.', status=404)
+        current_count = book.items.count()
+        if book.items.filter(answer=answer).exists():
+            book.item_count = current_count
+            book.contains_entry = True
+            return JsonResponse({
+                'book': _book_summary(book),
+                'added': False,
+                'message': 'Bu entry zaten kitapta.',
+            })
+        if current_count >= MAX_BOOK_ENTRIES:
+            return _error(
+                f'Bir kitap en fazla {MAX_BOOK_ENTRIES} entry içerebilir.'
+            )
+
+        max_position = (
+            book.items.aggregate(max_position=Max('position'))['max_position']
+            or 0
+        )
+        EntryBookItem.objects.create(
+            book=book,
+            answer=answer,
+            position=max_position + 1,
+        )
+        book.save(update_fields=['updated_at'])
+
+    book.item_count = current_count + 1
+    book.contains_entry = True
+    return JsonResponse({
+        'book': _book_summary(book),
+        'added': True,
+        'message': f'Entry “{book.title}” kitabına eklendi.',
+    })

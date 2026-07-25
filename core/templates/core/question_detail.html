@@ -397,6 +397,7 @@
                               <a href="{% url 'edit_answer' answer.id %}" class="ms-2" title="Yanıtı Düzenle">
                                   <i class="bi bi-pencil-square "></i>
                               </a>
+                          {% include 'core/_entry_book_action.html' with entry=answer %}
                           <a href="#" class="ms-2 delete-answer-btn"
                             data-answer-id="{{ answer.id }}"
                             data-delete-url="{% url 'delete_answer' answer.id %}?next={{ request.path|urlencode }}"
