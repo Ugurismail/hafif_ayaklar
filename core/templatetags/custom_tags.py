@@ -39,6 +39,11 @@ MARKDOWN_INLINE_TOKEN_PATTERNS = (
         flags=re.IGNORECASE,
     ),
 )
+REFERENCE_LINK_PATTERN = re.compile(
+    r'\((?:kaynak|k):(\d+)'
+    r'(?:(?:,\s*sayfa:([^)]+))|(?:\s*s:([^)]+)))?\)',
+    re.IGNORECASE,
+)
 
 
 def _apply_outside_math(text, transform):
@@ -189,7 +194,7 @@ def reference_link(text):
     reference_map = {}
     current_index = 1
 
-    pattern = re.compile(r'\((?:kaynak|k):(\d+)(?:(?:,\s*sayfa:([^)]+))|(?:\s*s:([^)]+)))?\)')
+    pattern = REFERENCE_LINK_PATTERN
     reference_ids = {
         int(match.group(1))
         for match in pattern.finditer(str(text))
@@ -918,7 +923,7 @@ def extract_bibliography(text):
     reference_pages = {}  # Store page numbers for each reference
     current_index = 1
 
-    pattern = re.compile(r'\((?:kaynak|k):(\d+)(?:(?:,\s*sayfa:([^)]+))|(?:\s*s:([^)]+)))?\)')
+    pattern = REFERENCE_LINK_PATTERN
     matches = pattern.finditer(text)
 
     for match in matches:
@@ -985,6 +990,17 @@ def spoiler_link(text):
         # HTML encode to prevent XSS
         from html import escape
         escaped_text = escape(hidden_text)
+        # reference_link runs after this filter. Keep citations in their original
+        # position so its numbering remains aligned with the raw bibliography.
+        reference_markers = ''.join(
+            (
+                '<span class="spoiler-reference-index" '
+                'hidden aria-hidden="true">'
+                f'{escape(reference.group(0))}'
+                '</span>'
+            )
+            for reference in REFERENCE_LINK_PATTERN.finditer(hidden_text)
+        )
 
         # Bu filter'dan sonra bkz/reference/mention filtreleri çalıştığı için,
         # tooltip içeriğindeki özel işaretleri entity'e çevirip ikinci parse'ı engelliyoruz.
@@ -995,7 +1011,11 @@ def spoiler_link(text):
             .replace('@', '&#64;')
         )
 
-        return f'<span class="spoiler-text" data-bs-toggle="tooltip" data-bs-html="false" title="{escaped_text}">*</span>'
+        return (
+            '<span class="spoiler-text" data-bs-toggle="tooltip" '
+            f'data-bs-html="false" title="{escaped_text}">*</span>'
+            f'{reference_markers}'
+        )
 
     # Yeni kısa format: -g- text -g-
     pattern_new = r'-g-\s+(.*?)\s+-g-'
