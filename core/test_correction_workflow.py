@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from .answer_git import (
     create_answer_suggestion,
+    create_answer_revision,
     ensure_initial_revision,
 )
 from .models import Answer, AnswerSuggestion, Notification, Question
@@ -186,6 +187,58 @@ class CorrectionWorkflowTests(TestCase):
         )
         self.assertEqual(result_notification.related_suggestion, suggestion)
         self.assertIn('kabul etti', result_notification.message)
+
+    def test_history_revision_node_opens_its_exact_change_detail(self):
+        suggestion = self.create_suggestion()
+        self.client.force_login(self.owner)
+        self.client.post(
+            reverse('answer_suggestion_accept', args=[suggestion.id]),
+            {'review_note': 'Düzeltme yerinde.'},
+        )
+        suggestion.refresh_from_db()
+        accepted_revision = self.answer.get_current_revision()
+
+        response = self.client.get(
+            reverse('answer_git_history', args=[self.answer.id]),
+            {'revision': accepted_revision.id},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context['selected_revision'].id,
+            accepted_revision.id,
+        )
+        self.assertContains(response, 'Kabul edilen düzeltme')
+        self.assertContains(response, 'Bu metinde küçük bir hata var.')
+        self.assertContains(response, 'Bu metindeki küçük hatayı düzelttim.')
+        self.assertContains(
+            response,
+            reverse('answer_suggestion_detail', args=[suggestion.id]),
+        )
+
+    def test_history_marks_outdated_open_suggestion_as_resolved_branch(self):
+        suggestion = self.create_suggestion()
+        current_revision = self.answer.get_current_revision()
+        create_answer_revision(
+            self.answer,
+            content='Yazar daha sonra metni değiştirdi.',
+            created_by=self.owner,
+            change_summary='Yazar düzenlemesi',
+        )
+
+        self.client.force_login(self.owner)
+        response = self.client.get(
+            reverse('answer_git_history', args=[self.answer.id]),
+        )
+
+        suggestion_node = next(
+            item
+            for item in response.context['suggestions']
+            if item.id == suggestion.id
+        )
+        self.assertNotEqual(current_revision.id, self.answer.get_current_revision().id)
+        self.assertEqual(suggestion_node.filter_status, 'outdated')
+        self.assertEqual(response.context['visible_open_suggestion_count'], 0)
 
     def test_rejecting_suggestion_keeps_entry_and_notifies_proposer(self):
         suggestion = self.create_suggestion()

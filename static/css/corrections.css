@@ -445,7 +445,13 @@
   text-decoration: none;
 }
 
-.correction-detail-header > .btn {
+.correction-detail-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.55rem;
+}
+
+.correction-detail-actions .btn {
   white-space: nowrap;
 }
 
@@ -734,8 +740,12 @@
   }
 
   .correction-compose-header > .btn,
-  .correction-detail-header > .btn {
+  .correction-detail-actions {
     margin-top: 1rem;
+  }
+
+  .correction-detail-actions {
+    flex-wrap: wrap;
   }
 
   .correction-segmented {

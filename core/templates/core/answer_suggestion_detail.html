@@ -29,13 +29,22 @@
         tarafından {{ suggestion.created_at|date:"d M Y H:i" }} tarihinde gönderildi.
       </p>
     </div>
-    <a
-      class="btn btn-outline-theme-secondary"
-      href="{% url 'single_answer' question.slug answer.id %}"
-    >
-      <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-      Yayındaki entry
-    </a>
+    <div class="correction-detail-actions">
+      <a
+        class="btn btn-outline-theme-secondary"
+        href="{% url 'answer_git_history' answer.id %}"
+      >
+        <i class="bi bi-diagram-2" aria-hidden="true"></i>
+        Düzeltme geçmişi
+      </a>
+      <a
+        class="btn btn-outline-theme-secondary"
+        href="{% url 'single_answer' question.slug answer.id %}"
+      >
+        <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+        Yayındaki entry
+      </a>
+    </div>
   </header>
 
   <section class="correction-summary-band" aria-labelledby="correction-summary-title">

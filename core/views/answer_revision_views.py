@@ -16,14 +16,11 @@ from django.views.decorators.http import require_POST
 from ..answer_git import (
     accept_answer_suggestion,
     approve_revision_review,
-    build_answer_diff_html,
-    build_answer_history_graph,
     build_answer_inline_diff_html,
     create_answer_suggestion,
     ensure_initial_revision,
     get_answer_diff_stats,
     get_revision_approval_summary,
-    get_revision_approval_summaries,
     reject_answer_suggestion,
     reject_revision_review,
     render_answer_content_html,
@@ -105,6 +102,11 @@ def _decorate_suggestion(suggestion, perspective):
     else:
         suggestion.display_status = 'Güncelliğini yitirdi'
         suggestion.status_tone = 'stale'
+    suggestion.filter_status = (
+        'outdated'
+        if suggestion.is_stale
+        else suggestion.status
+    )
     return suggestion
 
 
@@ -201,14 +203,13 @@ def answer_git_history(request, answer_id):
             'created_by',
             'accepted_suggestion',
             'accepted_suggestion__proposed_by',
-        )
+        ).order_by('-revision_no', '-created_at')
     )
-    approval_summary_map = get_revision_approval_summaries(revisions, current_user=request.user)
     suggestions_query = answer.git_suggestions.select_related(
         'proposed_by',
         'reviewed_by',
         'base_revision',
-    )
+    ).order_by('-created_at', '-id')
     if request.user.is_authenticated and (
         request.user == answer.user or request.user.is_superuser
     ):
@@ -218,30 +219,94 @@ def answer_git_history(request, answer_id):
     else:
         suggestions_query = suggestions_query.none()
     suggestions = list(suggestions_query)
+
+    perspective = (
+        'incoming'
+        if request.user.is_authenticated
+        and (request.user == answer.user or request.user.is_superuser)
+        else 'outgoing'
+    )
+    suggestions_by_revision = {revision.id: [] for revision in revisions}
+    merged_revision_by_suggestion = {
+        revision.accepted_suggestion_id: revision
+        for revision in revisions
+        if revision.accepted_suggestion_id
+    }
+    for suggestion in suggestions:
+        suggestion.current_revision_id = current_revision.id
+        _decorate_suggestion(suggestion, perspective)
+        suggestion.merged_revision = merged_revision_by_suggestion.get(suggestion.id)
+        suggestions_by_revision.setdefault(
+            suggestion.base_revision_id,
+            [],
+        ).append(suggestion)
+
+    source_labels = {
+        'initial': 'İlk sürüm',
+        'author_edit': 'Yazar düzenlemesi',
+        'suggestion_merge': 'Kabul edilen düzeltme',
+    }
     for index, revision in enumerate(revisions):
         revision.previous_revision = revisions[index + 1] if index + 1 < len(revisions) else None
-        revision.rendered_html = render_answer_content_html(revision.content)
-        revision.previous_rendered_html = (
-            render_answer_content_html(revision.previous_revision.content)
-            if revision.previous_revision else ''
+        revision.visible_suggestions = suggestions_by_revision.get(revision.id, [])
+        revision.open_suggestion_count = sum(
+            suggestion.status == 'open' and not suggestion.is_stale
+            for suggestion in revision.visible_suggestions
         )
-        revision.diff_html = build_answer_diff_html(
-            revision.previous_revision.content if revision.previous_revision else '',
-            revision.content,
+        revision.resolved_suggestion_count = sum(
+            suggestion.status != 'open' or suggestion.is_stale
+            for suggestion in revision.visible_suggestions
         )
-        revision.inline_diff = build_answer_inline_diff_html(
-            revision.previous_revision.content if revision.previous_revision else '',
-            revision.content,
-        )
-        revision.approval_summary = approval_summary_map.get(revision.id) or get_revision_approval_summary(revision, current_user=request.user)
-        revision.current_user_can_review = bool(
-            revision.is_current
-            and revision.approval_summary['current_user_approval']
-            and revision.approval_summary['current_user_approval'].status == 'pending'
+        revision.display_source = source_labels.get(
+            revision.source,
+            revision.get_source_display(),
         )
 
-    current_approval_summary = get_revision_approval_summary(current_revision, current_user=request.user)
-    contributors = current_approval_summary['approved_users']
+    selected_revision_id = (request.GET.get('revision') or '').strip()
+    selected_revision = next(
+        (
+            revision
+            for revision in revisions
+            if str(revision.id) == selected_revision_id
+        ),
+        None,
+    )
+    if selected_revision is None:
+        selected_revision = next(
+            (revision for revision in revisions if revision.id == current_revision.id),
+            revisions[0],
+        )
+
+    selected_revision.is_selected = True
+    selected_revision.rendered_html = render_answer_content_html(
+        selected_revision.content,
+    )
+    selected_revision.previous_rendered_html = (
+        render_answer_content_html(selected_revision.previous_revision.content)
+        if selected_revision.previous_revision
+        else ''
+    )
+    selected_revision.inline_diff = build_answer_inline_diff_html(
+        selected_revision.previous_revision.content
+        if selected_revision.previous_revision
+        else '',
+        selected_revision.content,
+    )
+    selected_revision.diff_stats = get_answer_diff_stats(
+        selected_revision.previous_revision.content
+        if selected_revision.previous_revision
+        else '',
+        selected_revision.content,
+    )
+    selected_revision.approval_summary = get_revision_approval_summary(
+        selected_revision,
+        current_user=request.user,
+    )
+    selected_revision.current_user_can_review = bool(
+        selected_revision.is_current
+        and selected_revision.approval_summary['current_user_approval']
+        and selected_revision.approval_summary['current_user_approval'].status == 'pending'
+    )
 
     return render(
         request,
@@ -251,21 +316,16 @@ def answer_git_history(request, answer_id):
             'question': answer.question,
             'current_revision': current_revision,
             'revisions': revisions,
+            'timeline_revisions': list(reversed(revisions)),
+            'selected_revision': selected_revision,
             'suggestions': suggestions,
             'visible_open_suggestion_count': sum(
-                suggestion.status == 'open'
+                suggestion.status == 'open' and not suggestion.is_stale
                 for suggestion in suggestions
             ),
-            'contributors': contributors,
-            'current_approval_summary': current_approval_summary,
             'can_suggest': request.user.is_authenticated and request.user != answer.user,
             'can_review': request.user.is_authenticated and (
                 request.user == answer.user or request.user.is_superuser
-            ),
-            'history_graph': build_answer_history_graph(
-                answer,
-                approval_summary_map=approval_summary_map,
-                suggestions=suggestions,
             ),
         },
     )
