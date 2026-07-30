@@ -1,129 +1,242 @@
 {% extends 'core/base.html' %}
-{% load custom_tags %}
-{% load markdownify %}
+{% load static %}
 
 {% block title %}Düzeltme Önerisi | Hafif Ayaklar{% endblock %}
 
 {% block extra_css %}
-<style>
-  .suggestion-shell { max-width: 1180px; margin: 2rem auto; }
-  .suggestion-card { border-radius: 20px; border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent); background: color-mix(in srgb, var(--content-background-color) 92%, white 8%); box-shadow: 0 12px 28px color-mix(in srgb, var(--text-color) 8%, transparent); }
-  .suggestion-card + .suggestion-card { margin-top: 1rem; }
-  .suggestion-head, .suggestion-body { padding: 1.2rem 1.3rem; }
-  .suggestion-head { border-bottom: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent); }
-  .suggestion-preview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-  .suggestion-preview-card { border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent); border-radius: 16px; background: color-mix(in srgb, var(--content-background-color) 95%, white 5%); }
-  .suggestion-preview-head { padding: 0.8rem 0.95rem; border-bottom: 1px solid color-mix(in srgb, var(--header-background-color) 8%, transparent); font-weight: 600; }
-  .suggestion-preview-body { padding: 0.95rem; max-height: 320px; overflow: auto; }
-  .suggestion-diff { overflow-x: auto; }
-  .suggestion-diff table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
-  .suggestion-diff td, .suggestion-diff th { padding: 0.4rem 0.5rem; border: 1px solid color-mix(in srgb, var(--header-background-color) 8%, transparent); vertical-align: top; }
-  .suggestion-diff-wrap { max-height: 440px; overflow: auto; }
-  .suggestion-diff .diff_add { background: color-mix(in srgb, #2b8a5a 16%, var(--content-background-color) 84%); color: color-mix(in srgb, #1f5c3d 82%, var(--text-color) 18%); }
-  .suggestion-diff .diff_sub { background: color-mix(in srgb, #b65454 16%, var(--content-background-color) 84%); color: color-mix(in srgb, #7c2d2d 82%, var(--text-color) 18%); }
-  .suggestion-diff .diff_chg { background: color-mix(in srgb, #cf9d24 16%, var(--content-background-color) 84%); color: color-mix(in srgb, #795b10 82%, var(--text-color) 18%); }
-  .suggestion-inline-diff-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1rem; }
-  .suggestion-inline-diff-card { border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent); border-radius: 16px; background: color-mix(in srgb, var(--content-background-color) 95%, white 5%); }
-  .suggestion-inline-diff-head { padding: 0.8rem 0.95rem; border-bottom: 1px solid color-mix(in srgb, var(--header-background-color) 8%, transparent); font-weight: 600; }
-  .suggestion-inline-diff-body { padding: 0.95rem; min-height: 180px; max-height: 320px; overflow: auto; white-space: pre-wrap; word-break: break-word; line-height: 1.75; }
-  .inline-diff-context { color: inherit; }
-  .inline-diff-added { background: color-mix(in srgb, #2b8a5a 18%, var(--content-background-color) 82%); color: color-mix(in srgb, #1f5c3d 84%, var(--text-color) 16%); border-radius: 0.35rem; padding: 0.08rem 0.12rem; box-shadow: inset 0 0 0 1px color-mix(in srgb, #2b8a5a 26%, transparent); }
-  .inline-diff-removed { background: color-mix(in srgb, #b65454 18%, var(--content-background-color) 82%); color: color-mix(in srgb, #7c2d2d 84%, var(--text-color) 16%); border-radius: 0.35rem; padding: 0.08rem 0.12rem; box-shadow: inset 0 0 0 1px color-mix(in srgb, #b65454 26%, transparent); }
-  @media (max-width: 768px) {
-    .suggestion-preview-grid { grid-template-columns: 1fr; }
-    .suggestion-inline-diff-grid { grid-template-columns: 1fr; }
-  }
-</style>
+<link rel="stylesheet" href="{% static 'css/corrections.css' %}?v={{ STATIC_ASSET_VERSION }}">
 {% endblock %}
 
 {% block content %}
-<div class="container suggestion-shell">
-  <div class="suggestion-card">
-    <div class="suggestion-head">
-      <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+<main class="correction-page">
+  <nav class="correction-breadcrumb" aria-label="Düzeltme yolu">
+    <a href="{% url 'correction_inbox' %}?view={{ perspective }}">
+      <i class="bi bi-arrow-left" aria-hidden="true"></i>
+      Düzeltmeler
+    </a>
+    <span aria-hidden="true">/</span>
+    <span>Öneri #{{ suggestion.id }}</span>
+  </nav>
+
+  <header class="correction-detail-header">
+    <div class="correction-detail-title">
+      <span class="correction-status correction-status--{{ suggestion.status_tone }}">
+        {{ suggestion.display_status }}
+      </span>
+      <h1>{{ question.question_text }}</h1>
+      <p>
+        <a href="{% url 'user_profile' suggestion.proposed_by.username %}">{{ suggestion.proposed_by.username }}</a>
+        tarafından {{ suggestion.created_at|date:"d M Y H:i" }} tarihinde gönderildi.
+      </p>
+    </div>
+    <a
+      class="btn btn-outline-theme-secondary"
+      href="{% url 'single_answer' question.slug answer.id %}"
+    >
+      <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+      Yayındaki entry
+    </a>
+  </header>
+
+  <section class="correction-summary-band" aria-labelledby="correction-summary-title">
+    <div>
+      <span class="correction-kicker" id="correction-summary-title">Değişiklik özeti</span>
+      <strong>{{ suggestion.change_summary|default:"Özet belirtilmedi." }}</strong>
+    </div>
+    <dl class="correction-stats" aria-label="Değişiklik sayıları">
+      <div>
+        <dt>Eklenen</dt>
+        <dd>+{{ suggestion.diff_stats.added }}</dd>
+      </div>
+      <div>
+        <dt>Çıkarılan</dt>
+        <dd>-{{ suggestion.diff_stats.removed }}</dd>
+      </div>
+      <div>
+        <dt>Temel sürüm</dt>
+        <dd>v.{{ suggestion.base_revision.revision_no }}</dd>
+      </div>
+    </dl>
+  </section>
+
+  {% if is_outdated %}
+  <div class="correction-notice correction-notice--warning" role="status">
+    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+    <div>
+      <strong>Entry bu öneriden sonra değişti.</strong>
+      <span>Öneri doğrudan kabul edilemez; önce güncel entry ile yeniden karşılaştırılmalı.</span>
+    </div>
+  </div>
+  {% endif %}
+
+  <section class="correction-compare" aria-labelledby="correction-compare-title">
+    <div class="correction-section-heading">
+      <div>
+        <span class="correction-kicker">Karşılaştırma</span>
+        <h2 id="correction-compare-title">Tam olarak ne değişiyor?</h2>
+      </div>
+      <div class="correction-legend" aria-label="Renk açıklaması">
+        <span><i class="correction-legend-swatch correction-legend-swatch--added"></i>Eklenen</span>
+        <span><i class="correction-legend-swatch correction-legend-swatch--removed"></i>Çıkarılan</span>
+      </div>
+    </div>
+
+    <ul class="nav correction-view-tabs" id="correctionViewTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active"
+          id="changes-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#changes-panel"
+          type="button"
+          role="tab"
+          aria-controls="changes-panel"
+          aria-selected="true"
+        >
+          Değişiklikler
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="proposed-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#proposed-panel"
+          type="button"
+          role="tab"
+          aria-controls="proposed-panel"
+          aria-selected="false"
+        >
+          Önerilen son hâl
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="original-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#original-panel"
+          type="button"
+          role="tab"
+          aria-controls="original-panel"
+          aria-selected="false"
+        >
+          Önceki hâl
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content correction-tab-content">
+      <div
+        class="tab-pane fade show active"
+        id="changes-panel"
+        role="tabpanel"
+        aria-labelledby="changes-tab"
+      >
+        <div class="correction-side-by-side">
+          <section aria-labelledby="before-heading">
+            <header id="before-heading">
+              <span>Önce</span>
+              <small>v.{{ suggestion.base_revision.revision_no }}</small>
+            </header>
+            <div class="correction-inline-diff">{{ inline_diff.before_html }}</div>
+          </section>
+          <section aria-labelledby="after-heading">
+            <header id="after-heading">
+              <span>Önerilen</span>
+              <small>Yeni metin</small>
+            </header>
+            <div class="correction-inline-diff">{{ inline_diff.after_html }}</div>
+          </section>
+        </div>
+      </div>
+      <div
+        class="tab-pane fade"
+        id="proposed-panel"
+        role="tabpanel"
+        aria-labelledby="proposed-tab"
+      >
+        <div class="answer-text correction-rendered-text">{{ proposed_rendered_html|safe }}</div>
+      </div>
+      <div
+        class="tab-pane fade"
+        id="original-panel"
+        role="tabpanel"
+        aria-labelledby="original-tab"
+      >
+        <div class="answer-text correction-rendered-text">{{ base_rendered_html|safe }}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="correction-decision" aria-labelledby="correction-decision-title">
+    {% if can_review and suggestion.status == 'open' %}
+      <div class="correction-section-heading">
         <div>
-          <span class="badge rounded-pill text-bg-light">Öneri #{{ suggestion.id }}</span>
-          <h1 class="h3 mt-3 mb-2">{{ question.question_text }}</h1>
-          <div class="text-muted">
-            {{ suggestion.proposed_by.username }} · {{ suggestion.created_at|date:"d M Y H:i" }} · Durum: {{ suggestion.get_status_display }}
-            {% if suggestion.reviewed_by %} · İnceleyen: {{ suggestion.reviewed_by.username }}{% endif %}
-          </div>
-        </div>
-        <div class="d-flex gap-2 flex-wrap">
-          <a href="{% url 'single_answer' question.slug answer.id %}" class="btn btn-outline-theme-secondary btn-sm">Yanıta dön</a>
-          <a href="{% url 'answer_git_history' answer.id %}" class="btn btn-outline-theme-secondary btn-sm">Tüm geçmiş</a>
+          <span class="correction-kicker">Karar</span>
+          <h2 id="correction-decision-title">
+            {% if is_outdated %}Bu öneriyi kapat{% else %}Öneriyi değerlendir{% endif %}
+          </h2>
         </div>
       </div>
-      {% if suggestion.change_summary %}
-        <div class="mt-3">{{ suggestion.change_summary }}</div>
-      {% endif %}
-      {% if suggestion.review_note %}
-        <div class="alert alert-light mt-3 mb-0">{{ suggestion.review_note }}</div>
-      {% endif %}
-      {% if is_outdated %}
-        <div class="alert alert-warning mt-3 mb-0">Bu öneri, yeni bir sürüm yayınlandığı için eski tabana bağlı. Doğrudan kabul edilirse `outdated` olur.</div>
-      {% endif %}
-    </div>
-    <div class="suggestion-body">
-      <h2 class="h5 mb-3">İşlenmiş karşılaştırma</h2>
-      <div class="suggestion-preview-grid mb-3">
-        <div class="suggestion-preview-card">
-          <div class="suggestion-preview-head">Taban sürüm · v.{{ suggestion.base_revision.revision_no }}</div>
-          <div class="suggestion-preview-body answer-text">{{ base_rendered_html|safe }}</div>
+      <form method="post" class="correction-review-form">
+        {% csrf_token %}
+        <label for="review_note">Yanıt notu <span>(isteğe bağlı)</span></label>
+        <textarea
+          class="form-control"
+          id="review_note"
+          name="review_note"
+          rows="2"
+          placeholder="Kararınızın nedenini kısaca yazabilirsiniz"
+        ></textarea>
+        <div class="correction-review-actions">
+          {% if not is_outdated %}
+          <button
+            type="submit"
+            formaction="{% url 'answer_suggestion_accept' suggestion.id %}"
+            class="btn btn-theme-primary"
+          >
+            <i class="bi bi-check2" aria-hidden="true"></i>
+            Kabul et ve yayınla
+          </button>
+          {% endif %}
+          <button
+            type="submit"
+            formaction="{% url 'answer_suggestion_reject' suggestion.id %}"
+            class="btn btn-outline-theme-secondary"
+          >
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+            {% if is_outdated %}Öneriyi kapat{% else %}Reddet{% endif %}
+          </button>
         </div>
-        <div class="suggestion-preview-card">
-          <div class="suggestion-preview-head">Önerilen yeni metin</div>
-          <div class="suggestion-preview-body answer-text">{{ proposed_rendered_html|safe }}</div>
+      </form>
+    {% elif suggestion.status == 'open' %}
+      <div class="correction-waiting-state">
+        <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+        <div>
+          <h2 id="correction-decision-title">Yanıt sahibinin kararı bekleniyor</h2>
+          <p>Sonuçlandığında bildirim alacaksınız.</p>
         </div>
       </div>
-      {% if is_outdated %}
-        <div class="suggestion-preview-card mb-3">
-          <div class="suggestion-preview-head">Güncel yayınlanan sürüm · v.{{ current_revision.revision_no }}</div>
-          <div class="suggestion-preview-body answer-text">{{ current_rendered_html|safe }}</div>
-        </div>
-      {% endif %}
-      <div class="suggestion-inline-diff-grid">
-        <div class="suggestion-inline-diff-card">
-          <div class="suggestion-inline-diff-head">Taban metin · değişen bölümler</div>
-          <div class="suggestion-inline-diff-body">{{ inline_diff.before_html }}</div>
-        </div>
-        <div class="suggestion-inline-diff-card">
-          <div class="suggestion-inline-diff-head">Önerilen metin · değişen bölümler</div>
-          <div class="suggestion-inline-diff-body">{{ inline_diff.after_html }}</div>
+    {% else %}
+      <div class="correction-result-state correction-result-state--{{ suggestion.status_tone }}">
+        <i
+          class="bi {% if suggestion.status == 'accepted' %}bi-check2-circle{% elif suggestion.status == 'rejected' %}bi-x-circle{% else %}bi-clock-history{% endif %}"
+          aria-hidden="true"
+        ></i>
+        <div>
+          <span class="correction-kicker">Sonuç</span>
+          <h2 id="correction-decision-title">{{ suggestion.display_status }}</h2>
+          {% if suggestion.review_note %}<p>{{ suggestion.review_note }}</p>{% endif %}
+          {% if suggestion.reviewed_by %}
+          <small>
+            {{ suggestion.reviewed_by.username }}
+            {% if suggestion.reviewed_at %}· {{ suggestion.reviewed_at|date:"d M Y H:i" }}{% endif %}
+          </small>
+          {% endif %}
         </div>
       </div>
-      <details>
-        <summary>Ham diff görünümü</summary>
-        <div class="suggestion-diff-wrap mt-3">
-          <div class="suggestion-diff">{{ diff_html }}</div>
-        </div>
-      </details>
-    </div>
-  </div>
-
-  <div class="suggestion-card">
-    <div class="suggestion-head">
-      <h2 class="h5 mb-0">İnceleme</h2>
-    </div>
-    <div class="suggestion-body">
-      {% if can_review and suggestion.status == 'open' %}
-        <form method="post" action="{% url 'answer_suggestion_accept' suggestion.id %}" class="mb-3">
-          {% csrf_token %}
-          <label for="accept_note" class="form-label">Kabul notu</label>
-          <textarea class="form-control mb-2" id="accept_note" name="review_note" rows="3" placeholder="Örn: yazım düzeltmesi kabul edildi."></textarea>
-          <button type="submit" class="btn btn-theme-primary">Öneriyi kabul et</button>
-        </form>
-
-        <form method="post" action="{% url 'answer_suggestion_reject' suggestion.id %}">
-          {% csrf_token %}
-          <label for="reject_note" class="form-label">Red notu</label>
-          <textarea class="form-control mb-2" id="reject_note" name="review_note" rows="3" placeholder="Örn: içerik doğru ama üslup uygun değil."></textarea>
-          <button type="submit" class="btn btn-outline-theme-secondary">Öneriyi reddet</button>
-        </form>
-      {% else %}
-        <p class="mb-0 text-muted">Bu öneri için şu an işlem yapılamaz.</p>
-      {% endif %}
-    </div>
-  </div>
-</div>
+    {% endif %}
+  </section>
+</main>
 {% endblock %}

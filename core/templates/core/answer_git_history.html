@@ -89,7 +89,7 @@
             <a href="{% url 'user_profile' answer.user.username %}" class="text-decoration-none">{{ answer.user.username }}</a>
             · Güncel sürüm: v.{{ current_revision.revision_no }}
             · Toplam sürüm: {{ revisions|length }}
-            · Açık öneri: {{ answer.get_open_suggestion_count }}
+            · Görünen açık öneri: {{ visible_open_suggestion_count }}
           </div>
           <div class="answer-git-meta answer-git-contributors mt-2">
             Katkı verenler:

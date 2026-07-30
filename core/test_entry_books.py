@@ -208,7 +208,7 @@ class EntryBookApiTests(TestCase):
         self.assertContains(response, 'id="entryBookSelect"')
         self.assertContains(response, 'id="entryBookName"')
         self.assertContains(response, 'id="saveEntryBookButton"')
-        self.assertContains(response, '-entrybooks1')
+        self.assertContains(response, 'css/profile.css')
         self.assertContains(response, 'data-entry-book-add')
         self.assertContains(response, 'id="entryBookQuickAddModal"')
         self.assertContains(response, 'entry_books.js')

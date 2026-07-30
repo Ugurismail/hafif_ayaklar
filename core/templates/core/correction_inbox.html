@@ -1,0 +1,140 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Düzeltmeler | Hafif Ayaklar{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/corrections.css' %}?v={{ STATIC_ASSET_VERSION }}">
+{% endblock %}
+
+{% block content %}
+<main class="correction-page">
+  <header class="correction-inbox-header">
+    <div>
+      <span class="correction-kicker">Ortak düzenleme</span>
+      <h1>Düzeltmeler</h1>
+      <p>Size gelen önerileri inceleyin veya gönderdiğiniz önerilerin sonucunu takip edin.</p>
+    </div>
+  </header>
+
+  <nav class="correction-segmented" aria-label="Düzeltme kutuları">
+    <a
+      href="?view=incoming&status=pending"
+      class="{% if perspective == 'incoming' %}active{% endif %}"
+      {% if perspective == 'incoming' %}aria-current="page"{% endif %}
+    >
+      <i class="bi bi-inbox" aria-hidden="true"></i>
+      Gelen
+      {% if incoming_pending_count %}
+      <span>{{ incoming_pending_count }}</span>
+      {% endif %}
+    </a>
+    <a
+      href="?view=outgoing&status=pending"
+      class="{% if perspective == 'outgoing' %}active{% endif %}"
+      {% if perspective == 'outgoing' %}aria-current="page"{% endif %}
+    >
+      <i class="bi bi-send" aria-hidden="true"></i>
+      Gönderdiklerim
+      {% if outgoing_pending_count %}
+      <span>{{ outgoing_pending_count }}</span>
+      {% endif %}
+    </a>
+  </nav>
+
+  <section class="correction-inbox-tools" aria-label="Düzeltmeleri filtrele">
+    <form method="get" class="correction-search">
+      <input type="hidden" name="view" value="{{ perspective }}">
+      <input type="hidden" name="status" value="{{ status_filter }}">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <input
+        type="search"
+        name="q"
+        value="{{ search_query }}"
+        placeholder="Başlık, kullanıcı veya değişiklik özeti ara"
+        aria-label="Düzeltmelerde ara"
+      >
+      {% if search_query %}
+      <a
+        href="?view={{ perspective }}&status={{ status_filter }}"
+        title="Aramayı temizle"
+        aria-label="Aramayı temizle"
+      >
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </a>
+      {% endif %}
+    </form>
+
+    <div class="correction-status-filter" aria-label="Durum filtresi">
+      <a href="?view={{ perspective }}&status=pending{% if search_query %}&q={{ search_query|urlencode }}{% endif %}" class="{% if status_filter == 'pending' %}active{% endif %}">Bekleyen</a>
+      <a href="?view={{ perspective }}&status=resolved{% if search_query %}&q={{ search_query|urlencode }}{% endif %}" class="{% if status_filter == 'resolved' %}active{% endif %}">Sonuçlanan</a>
+      <a href="?view={{ perspective }}&status=all{% if search_query %}&q={{ search_query|urlencode }}{% endif %}" class="{% if status_filter == 'all' %}active{% endif %}">Tümü</a>
+    </div>
+  </section>
+
+  <section class="correction-list" aria-live="polite">
+    {% for suggestion in suggestions %}
+    <article class="correction-list-item">
+      <div class="correction-list-main">
+        <div class="correction-list-topline">
+          <span class="correction-status correction-status--{{ suggestion.status_tone }}">
+            {{ suggestion.display_status }}
+          </span>
+          <time datetime="{{ suggestion.created_at|date:'c' }}">{{ suggestion.created_at|date:"d M Y H:i" }}</time>
+        </div>
+        <h2>
+          <a href="{% url 'answer_suggestion_detail' suggestion.id %}">
+            {{ suggestion.answer.question.question_text }}
+          </a>
+        </h2>
+        <p class="correction-list-summary">
+          {{ suggestion.change_summary|default:"Değişiklik özeti belirtilmedi." }}
+        </p>
+        <div class="correction-list-meta">
+          {% if perspective == 'incoming' %}
+          <span>
+            <i class="bi bi-person" aria-hidden="true"></i>
+            {{ suggestion.proposed_by.username }} önerdi
+          </span>
+          {% else %}
+          <span>
+            <i class="bi bi-person" aria-hidden="true"></i>
+            {{ suggestion.answer.user.username }} kullanıcısına
+          </span>
+          {% endif %}
+          <span class="correction-change-count correction-change-count--added">
+            +{{ suggestion.diff_stats.added }}
+          </span>
+          <span class="correction-change-count correction-change-count--removed">
+            -{{ suggestion.diff_stats.removed }}
+          </span>
+        </div>
+      </div>
+      <a class="btn btn-outline-theme-secondary correction-open-button" href="{% url 'answer_suggestion_detail' suggestion.id %}">
+        İncele
+        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+      </a>
+    </article>
+    {% empty %}
+    <div class="correction-empty">
+      <i class="bi bi-check2-circle" aria-hidden="true"></i>
+      {% if search_query %}
+      <h2>Aramanızla eşleşen öneri yok</h2>
+      <p>Başka bir kelime deneyin veya aramayı temizleyin.</p>
+      {% elif status_filter == 'pending' and perspective == 'incoming' %}
+      <h2>Bekleyen düzeltme yok</h2>
+      <p>Yeni bir öneri geldiğinde burada ve bildirimlerde göreceksiniz.</p>
+      {% elif status_filter == 'pending' %}
+      <h2>Yanıt bekleyen öneriniz yok</h2>
+      <p>Gönderdiğiniz yeni öneriler burada görünecek.</p>
+      {% else %}
+      <h2>Bu bölüm henüz boş</h2>
+      <p>Filtreyi değiştirerek diğer önerilere bakabilirsiniz.</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+
+  {% include 'core/pagination.html' with page_obj=suggestions page_param='page' %}
+</main>
+{% endblock %}

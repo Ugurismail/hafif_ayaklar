@@ -369,15 +369,18 @@ def attach_answer_revision_metadata(answers, current_user=None):
     return answers
 
 
-def build_answer_history_graph(answer, approval_summary_map=None):
+def build_answer_history_graph(answer, approval_summary_map=None, suggestions=None):
     revisions = list(
         answer.revisions.select_related('created_by', 'accepted_suggestion', 'accepted_suggestion__proposed_by')
         .order_by('revision_no', 'created_at')
     )
-    suggestions = list(
-        answer.git_suggestions.select_related('base_revision', 'proposed_by', 'reviewed_by')
-        .order_by('base_revision__revision_no', 'created_at', 'id')
-    )
+    if suggestions is None:
+        suggestions = list(
+            answer.git_suggestions.select_related('base_revision', 'proposed_by', 'reviewed_by')
+            .order_by('base_revision__revision_no', 'created_at', 'id')
+        )
+    else:
+        suggestions = list(suggestions)
 
     node_width = 224
     node_height = 86
@@ -570,7 +573,7 @@ def create_answer_suggestion(answer, *, proposed_by, proposed_text, change_summa
         Notification.create_answer_suggestion_notification(
             recipient=answer.user,
             sender=proposed_by,
-            answer=answer,
+            suggestion=suggestion,
         )
     return suggestion
 
@@ -587,6 +590,13 @@ def accept_answer_suggestion(suggestion, *, reviewed_by, review_note=''):
         suggestion.reviewed_at = timezone.now()
         suggestion.review_note = review_note or 'Bu öneri, yeni bir sürüm yayınlandığı için eski kaldı.'
         suggestion.save(update_fields=['status', 'reviewed_by', 'reviewed_at', 'review_note', 'updated_at'])
+        if suggestion.proposed_by_id != reviewed_by.id:
+            Notification.create_suggestion_result_notification(
+                recipient=suggestion.proposed_by,
+                sender=reviewed_by,
+                suggestion=suggestion,
+                result='outdated',
+            )
         return None
 
     revision, created = create_answer_revision(
@@ -603,6 +613,13 @@ def accept_answer_suggestion(suggestion, *, reviewed_by, review_note=''):
         suggestion.reviewed_at = timezone.now()
         suggestion.review_note = review_note or 'Öneri kabul edildi; ancak içerik zaten güncel sürümle aynıydı.'
         suggestion.save(update_fields=['status', 'reviewed_by', 'reviewed_at', 'review_note', 'updated_at'])
+        if suggestion.proposed_by_id != reviewed_by.id:
+            Notification.create_suggestion_result_notification(
+                recipient=suggestion.proposed_by,
+                sender=reviewed_by,
+                suggestion=suggestion,
+                result='accepted',
+            )
         return current
 
     suggestion.status = 'accepted'
@@ -614,8 +631,8 @@ def accept_answer_suggestion(suggestion, *, reviewed_by, review_note=''):
         Notification.create_suggestion_result_notification(
             recipient=suggestion.proposed_by,
             sender=reviewed_by,
-            answer=suggestion.answer,
-            accepted=True,
+            suggestion=suggestion,
+            result='accepted',
         )
     return revision
 
@@ -633,8 +650,8 @@ def reject_answer_suggestion(suggestion, *, reviewed_by, review_note=''):
         Notification.create_suggestion_result_notification(
             recipient=suggestion.proposed_by,
             sender=reviewed_by,
-            answer=suggestion.answer,
-            accepted=False,
+            suggestion=suggestion,
+            result='rejected',
         )
     return suggestion
 
@@ -743,4 +760,24 @@ def build_answer_inline_diff_html(old_text, new_text):
     return {
         'before_html': mark_safe(''.join(before_parts) or '<span class="inline-diff-context"></span>'),
         'after_html': mark_safe(''.join(after_parts) or '<span class="inline-diff-context"></span>'),
+    }
+
+
+def get_answer_diff_stats(old_text, new_text):
+    old_words = re.findall(r'\S+', old_text or '', flags=re.UNICODE)
+    new_words = re.findall(r'\S+', new_text or '', flags=re.UNICODE)
+    matcher = SequenceMatcher(None, old_words, new_words)
+    added = 0
+    removed = 0
+
+    for opcode, i1, i2, j1, j2 in matcher.get_opcodes():
+        if opcode in {'insert', 'replace'}:
+            added += j2 - j1
+        if opcode in {'delete', 'replace'}:
+            removed += i2 - i1
+
+    return {
+        'added': added,
+        'removed': removed,
+        'changed': added + removed,
     }

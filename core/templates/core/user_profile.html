@@ -386,58 +386,16 @@
               {% include 'core/pagination.html' with page_obj=revision_activity page_param='rev_page' active_tab='revizyonlar' %}
             {% endif %}
 
-            <h5 class="mb-3 mt-4">Bu yanıtlara gelen düzeltme önerileri</h5>
-            {% for suggestion in suggestion_activity %}
-              <div class="card mb-3 shadow-subtle border-0">
-                <div class="card-body">
-                  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                    <div>
-                      <a href="{% url 'answer_suggestion_detail' suggestion.id %}" class="fw-bold text-decoration-none question-title">
-                        {{ suggestion.answer.question.question_text }}
-                      </a>
-                      <div class="small text-muted mt-1">
-                        {{ suggestion.proposed_by.username }} önerdi · {{ suggestion.created_at|date:"d M Y H:i" }} · Durum: {{ suggestion.get_status_display }}
-                      </div>
-                    </div>
-                    <a href="{% url 'answer_suggestion_detail' suggestion.id %}" class="btn btn-sm btn-outline-theme-secondary">Öneriyi Aç</a>
-                  </div>
-                  {% if suggestion.change_summary %}
-                    <div class="mt-2 small text-muted">{{ suggestion.change_summary }}</div>
-                  {% endif %}
+            {% if can_view_profile_corrections %}
+              <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mt-4 p-3 border-top border-bottom">
+                <div>
+                  <h5 class="mb-1">Düzeltme önerileri</h5>
+                  <p class="mb-0 text-muted">Gelen ve gönderilen bütün öneriler artık tek bir özel gelen kutusunda tutuluyor.</p>
                 </div>
+                <a href="{% url 'correction_inbox' %}" class="btn btn-outline-theme-secondary">
+                  <i class="bi bi-pencil-square"></i> Düzeltmeleri aç
+                </a>
               </div>
-            {% empty %}
-              <p>Henüz gelen düzeltme önerisi yok.</p>
-            {% endfor %}
-            {% if suggestion_activity %}
-              {% include 'core/pagination.html' with page_obj=suggestion_activity page_param='sug_page' active_tab='revizyonlar' %}
-            {% endif %}
-
-            <h5 class="mb-3 mt-4">Bu kullanıcının yaptığı öneriler</h5>
-            {% for suggestion in suggestions_made %}
-              <div class="card mb-3 shadow-subtle border-0">
-                <div class="card-body">
-                  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                    <div>
-                      <a href="{% url 'answer_suggestion_detail' suggestion.id %}" class="fw-bold text-decoration-none question-title">
-                        {{ suggestion.answer.question.question_text }}
-                      </a>
-                      <div class="small text-muted mt-1">
-                        {{ suggestion.created_at|date:"d M Y H:i" }} · Durum: {{ suggestion.get_status_display }}
-                      </div>
-                    </div>
-                    <a href="{% url 'answer_suggestion_detail' suggestion.id %}" class="btn btn-sm btn-outline-theme-secondary">Öneriyi Aç</a>
-                  </div>
-                  {% if suggestion.change_summary %}
-                    <div class="mt-2 small text-muted">{{ suggestion.change_summary }}</div>
-                  {% endif %}
-                </div>
-              </div>
-            {% empty %}
-              <p>Bu kullanıcı henüz düzeltme önerisi yapmadı.</p>
-            {% endfor %}
-            {% if suggestions_made %}
-              {% include 'core/pagination.html' with page_obj=suggestions_made page_param='made_page' active_tab='revizyonlar' %}
             {% endif %}
           </div>
         </div>

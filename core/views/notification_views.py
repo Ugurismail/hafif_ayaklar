@@ -26,7 +26,12 @@ def notification_list(request):
     # Get all notifications for the current user
     notifications = Notification.objects.filter(
         recipient=request.user
-    ).select_related('sender', 'related_question', 'related_answer')
+    ).select_related(
+        'sender',
+        'related_question',
+        'related_answer',
+        'related_suggestion',
+    )
 
     # Filter by type if specified
     notification_type = request.GET.get('type', '')

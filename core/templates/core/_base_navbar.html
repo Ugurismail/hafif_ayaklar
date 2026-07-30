@@ -130,6 +130,11 @@
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item" href="{% url 'correction_inbox' %}">
+                                    <i class="bi bi-pencil-square"></i> Düzeltmeler
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item" href="{% url 'user_settings' %}">
                                     <i class="bi bi-gear"></i> Renk Ayarları
                                 </a>
@@ -147,6 +152,10 @@
                             <a class="nav-link mobile-account-link" href="{% url 'profile' %}" title="Profilim">
                                 <i class="bi bi-person"></i>
                                 <span class="ms-1">Profilim</span>
+                            </a>
+                            <a class="nav-link mobile-account-link" href="{% url 'correction_inbox' %}" title="Düzeltmeler">
+                                <i class="bi bi-pencil-square"></i>
+                                <span class="ms-1">Düzeltmeler</span>
                             </a>
                             <a class="nav-link mobile-account-link" href="{% url 'user_settings' %}" title="Renk Ayarları">
                                 <i class="bi bi-gear"></i>

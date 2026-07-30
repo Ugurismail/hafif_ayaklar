@@ -415,10 +415,10 @@ class EntryBookItem(models.Model):
 
 class AnswerSuggestion(models.Model):
     STATUS_CHOICES = [
-        ('open', 'Open'),
-        ('accepted', 'Accepted'),
-        ('rejected', 'Rejected'),
-        ('outdated', 'Outdated'),
+        ('open', 'Bekliyor'),
+        ('accepted', 'Kabul edildi'),
+        ('rejected', 'Reddedildi'),
+        ('outdated', 'Güncelliğini yitirdi'),
     ]
 
     answer = models.ForeignKey('Answer', on_delete=models.CASCADE, related_name='git_suggestions')
@@ -1126,6 +1126,13 @@ class Notification(models.Model):
     # Related objects (optional, depending on notification type)
     related_question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
     related_answer = models.ForeignKey(Answer, on_delete=models.CASCADE, null=True, blank=True)
+    related_suggestion = models.ForeignKey(
+        AnswerSuggestion,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='notifications',
+    )
 
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1289,8 +1296,9 @@ class Notification(models.Model):
         )
 
     @classmethod
-    def create_answer_suggestion_notification(cls, recipient, sender, answer):
+    def create_answer_suggestion_notification(cls, recipient, sender, suggestion):
         """Create notification when someone suggests an edit for your answer"""
+        answer = suggestion.answer
         message = f"{sender.username} yanıtın için bir düzeltme önerisi gönderdi: {answer.question.question_text}"
         return cls.objects.create(
             recipient=recipient,
@@ -1298,13 +1306,20 @@ class Notification(models.Model):
             notification_type='answer_suggestion',
             message=message,
             related_answer=answer,
-            related_question=answer.question
+            related_question=answer.question,
+            related_suggestion=suggestion,
         )
 
     @classmethod
-    def create_suggestion_result_notification(cls, recipient, sender, answer, accepted):
+    def create_suggestion_result_notification(cls, recipient, sender, suggestion, result):
         """Create notification when your suggestion is accepted or rejected"""
-        verb = "kabul edildi" if accepted else "reddedildi"
+        answer = suggestion.answer
+        result_messages = {
+            'accepted': 'kabul etti',
+            'rejected': 'reddetti',
+            'outdated': 'yanıt değiştiği için güncelliğini yitirmiş olarak kapattı',
+        }
+        verb = result_messages.get(result, 'sonuçlandırdı')
         message = f"{sender.username}, önerdiğin düzeltmeyi {verb}: {answer.question.question_text}"
         return cls.objects.create(
             recipient=recipient,
@@ -1312,8 +1327,33 @@ class Notification(models.Model):
             notification_type='suggestion_result',
             message=message,
             related_answer=answer,
-            related_question=answer.question
+            related_question=answer.question,
+            related_suggestion=suggestion,
         )
+
+    def get_target_url(self):
+        from django.urls import reverse
+
+        if self.related_suggestion_id and self.notification_type in {
+            'answer_suggestion',
+            'suggestion_result',
+        }:
+            return reverse(
+                'answer_suggestion_detail',
+                args=[self.related_suggestion_id],
+            )
+        if self.notification_type == 'answer_suggestion':
+            return f"{reverse('correction_inbox')}?view=incoming"
+        if self.notification_type == 'suggestion_result':
+            return f"{reverse('correction_inbox')}?view=outgoing"
+        if self.notification_type == 'revision_review' and self.related_answer_id:
+            return reverse('answer_git_history', args=[self.related_answer_id])
+        if self.related_question_id:
+            target = reverse('question_detail', args=[self.related_question.slug])
+            if self.related_answer_id:
+                return f'{target}#answer-{self.related_answer_id}'
+            return target
+        return reverse('notification_list')
 
     @classmethod
     def create_revision_review_notification(cls, recipient, sender, answer, revision):

@@ -33,7 +33,7 @@ from django.urls import reverse
 from ..models import (
     Invitation, UserProfile, Question, Answer,
     SavedItem, PinnedEntry, Definition, Reference,
-    AnswerRevision, AnswerSuggestion,
+    AnswerRevision,
 )
 from ..forms import ProfilePhotoForm
 from ..utils import build_reference_usage_counts
@@ -132,6 +132,10 @@ def user_profile(request, username):
         'revision_activity': None,
         'suggestion_activity': None,
         'suggestions_made': None,
+        'can_view_profile_corrections': (
+            request.user.is_authenticated
+            and (request.user == profile_user or request.user.is_superuser)
+        ),
     }
 
     # Profil fotoğrafı kontrolü - güvenli bir şekilde
@@ -183,38 +187,11 @@ def user_profile(request, username):
             'accepted_suggestion',
             'accepted_suggestion__proposed_by',
         ).order_by('-created_at')
-        suggestion_qs = AnswerSuggestion.objects.filter(
-            answer__user=profile_user
-        ).select_related(
-            'answer',
-            'answer__question',
-            'proposed_by',
-            'reviewed_by',
-            'base_revision',
-        ).order_by('-created_at')
-        suggestions_made_qs = AnswerSuggestion.objects.filter(
-            proposed_by=profile_user
-        ).select_related(
-            'answer',
-            'answer__question',
-            'reviewed_by',
-        ).order_by('-created_at')
-
         revision_paginator = Paginator(revision_qs, 8)
-        suggestion_paginator = Paginator(suggestion_qs, 8)
-        suggestions_made_paginator = Paginator(suggestions_made_qs, 8)
         try:
             context['revision_activity'] = revision_paginator.page(request.GET.get('rev_page', 1))
         except (PageNotAnInteger, EmptyPage):
             context['revision_activity'] = revision_paginator.page(1)
-        try:
-            context['suggestion_activity'] = suggestion_paginator.page(request.GET.get('sug_page', 1))
-        except (PageNotAnInteger, EmptyPage):
-            context['suggestion_activity'] = suggestion_paginator.page(1)
-        try:
-            context['suggestions_made'] = suggestions_made_paginator.page(request.GET.get('made_page', 1))
-        except (PageNotAnInteger, EmptyPage):
-            context['suggestions_made'] = suggestions_made_paginator.page(1)
 
     elif active_tab == 'tanimlar':
         definitions_qs = Definition.objects.filter(user=profile_user).select_related('question')

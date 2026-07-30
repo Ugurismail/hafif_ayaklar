@@ -8,6 +8,8 @@ from django.utils import timezone
 import datetime
 from django.core.exceptions import ValidationError
 
+from .content_limits import EDITOR_CONTENT_MAX_LENGTH
+
 
 # Kullanıcı adında boşluklar ve Türkçe karakterlere izin veren validator
 username_with_spaces_validator = RegexValidator(
@@ -149,6 +151,29 @@ class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
         fields = ['answer_text']
+
+
+class AnswerSuggestionForm(forms.Form):
+    change_summary = forms.CharField(
+        max_length=255,
+        label='Neyi değiştirdiniz?',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Örn. Yazım hatalarını düzelttim ve ikinci paragrafı netleştirdim',
+            'autocomplete': 'off',
+        }),
+    )
+    answer_text = forms.CharField(
+        max_length=EDITOR_CONTENT_MAX_LENGTH,
+        strip=False,
+        label='Önerilen metin',
+        widget=forms.Textarea(attrs={
+            'class': 'form-control auto-expand',
+            'rows': 14,
+            'placeholder': 'Düzeltilmiş metni buraya yazın',
+        }),
+    )
+
 
 class MessageForm(forms.ModelForm):
     class Meta:
