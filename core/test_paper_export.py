@@ -175,8 +175,8 @@ class PaperExportTests(TestCase):
             }
         }
         self.assertEqual(content_heading_styles["Birinci Bölüm"], "Heading 2")
-        self.assertEqual(content_heading_styles["İkinci Bölüm"], "Heading 4")
-        self.assertEqual(content_heading_styles["Üçüncü Bölüm"], "Heading 6")
+        self.assertEqual(content_heading_styles["İkinci Bölüm"], "Heading 3")
+        self.assertEqual(content_heading_styles["Üçüncü Bölüm"], "Heading 4")
         self.assertNotIn("-- Birinci Bölüm", combined_text)
         self.assertNotIn("---- İkinci Bölüm", combined_text)
         self.assertNotIn("------ Üçüncü Bölüm", combined_text)

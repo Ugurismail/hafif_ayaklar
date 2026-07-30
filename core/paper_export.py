@@ -65,8 +65,8 @@ NUMBERED_ITEM_RE = re.compile(
 CUSTOM_HEADING_OFFSETS = {
     "==": 1,
     "--": 1,
-    "----": 3,
-    "------": 5,
+    "----": 2,
+    "------": 3,
 }
 INLINE_RE = re.compile(
     r"(?P<footnote>\[\[PAPER_FOOTNOTE_\d+\]\])"
