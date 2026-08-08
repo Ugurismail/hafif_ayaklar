@@ -1,3 +1,48 @@
+/* ITC Galliard is commercial. Use a licensed local installation when present,
+   then fall back to system faces with a similar editorial character. */
+@font-face {
+    font-family: "ITC Galliard";
+    src:
+        local("ITC Galliard Roman"),
+        local("ITC Galliard Std Roman"),
+        local("ITC Galliard"),
+        local("Iowan Old Style"),
+        local("Palatino Linotype"),
+        local("Palatino"),
+        local("Book Antiqua");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "ITC Galliard";
+    src:
+        local("ITC Galliard Italic"),
+        local("ITC Galliard Std Italic"),
+        local("Iowan Old Style Italic"),
+        local("Palatino Linotype Italic"),
+        local("Palatino Italic"),
+        local("Book Antiqua Italic");
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "ITC Galliard";
+    src:
+        local("ITC Galliard Bold"),
+        local("ITC Galliard Std Bold"),
+        local("Iowan Old Style Bold"),
+        local("Palatino Linotype Bold"),
+        local("Palatino Bold"),
+        local("Book Antiqua Bold");
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+}
+
 :root {
     /* Anonymous / global default theme: Old Money */
     --secondary-button-background-color: #2E3A2F;

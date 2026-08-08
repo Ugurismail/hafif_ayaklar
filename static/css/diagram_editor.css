@@ -1,0 +1,2011 @@
+.diagram-entry-button {
+    white-space: nowrap;
+}
+
+body.diagram-modal-open .floating-tools {
+    visibility: hidden;
+}
+
+.diagram-editor-modal,
+.diagram-viewer-modal {
+    border: 1px solid color-mix(in srgb, var(--text-color) 18%, transparent);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--content-background-color);
+    color: var(--text-color);
+    box-shadow: 0 24px 72px color-mix(in srgb, var(--text-color) 18%, transparent);
+}
+
+.diagram-editor-dialog {
+    width: calc(100vw - 8px);
+    max-width: none;
+    height: calc(100vh - 8px);
+    margin: 4px auto;
+}
+
+.diagram-editor-modal {
+    height: 100%;
+}
+
+.diagram-editor-modal > .modal-body {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.diagram-modal-header {
+    min-height: 58px;
+    padding: 7px 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 13%, transparent);
+    background: var(--content-background-color);
+}
+
+.diagram-modal-heading {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 12px;
+}
+
+.diagram-modal-icon {
+    display: inline-grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--link-color) 28%, transparent);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--link-color) 10%, var(--content-background-color));
+    color: var(--link-color);
+    font-size: 19px;
+}
+
+.diagram-modal-header .modal-title {
+    margin: 1px 0 0;
+    overflow: hidden;
+    font-size: 22px;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.diagram-modal-eyebrow {
+    display: block;
+    color: var(--link-color);
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.diagram-editor-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 288px;
+    height: 100%;
+    min-height: 0;
+    transition: grid-template-columns 180ms ease;
+}
+
+.diagram-editor-layout.inspector-collapsed {
+    grid-template-columns: minmax(0, 1fr) 0;
+}
+
+.diagram-editor-layout.inspector-collapsed .diagram-inspector {
+    visibility: hidden;
+    padding-inline: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.diagram-workbench {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--background-color) 78%, var(--content-background-color));
+}
+
+.diagram-editor-toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 8px 10px;
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 12%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 97%, var(--background-color));
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--text-color) 5%, transparent);
+    z-index: 5;
+}
+
+.diagram-toolbar-row {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    overflow: visible;
+}
+
+.diagram-toolbar-row-secondary {
+    padding-top: 6px;
+    border-top: 1px solid color-mix(in srgb, var(--text-color) 9%, transparent);
+}
+
+.diagram-toolbar-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 14%, transparent);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--background-color) 46%, var(--content-background-color));
+}
+
+.diagram-command-menu {
+    flex: 0 0 auto;
+}
+
+.diagram-command-trigger {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 13px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 16%, transparent);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--background-color) 46%, var(--content-background-color));
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.diagram-command-trigger:hover,
+.diagram-command-trigger:focus-visible,
+.diagram-command-trigger[aria-expanded="true"] {
+    border-color: color-mix(in srgb, var(--link-color) 42%, transparent);
+    outline: 0;
+    background: var(--content-background-color);
+    color: var(--link-color);
+}
+
+.diagram-command-dropdown {
+    min-width: 236px;
+    padding: 7px;
+    border-color: color-mix(in srgb, var(--text-color) 16%, transparent);
+    border-radius: 8px;
+    background: var(--content-background-color);
+    box-shadow: 0 18px 42px color-mix(in srgb, var(--text-color) 16%, transparent);
+}
+
+.diagram-command-item {
+    display: flex;
+    min-height: 40px;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+}
+
+.diagram-command-item i {
+    display: inline-grid;
+    width: 22px;
+    flex: 0 0 22px;
+    place-items: center;
+    color: var(--link-color);
+    font-size: 15px;
+}
+
+.diagram-set-symbol {
+    display: inline-grid;
+    width: 22px;
+    flex: 0 0 22px;
+    place-items: center;
+    color: var(--link-color);
+    font-family: Georgia, serif;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.diagram-command-item:hover,
+.diagram-command-item:focus {
+    background: color-mix(in srgb, var(--link-color) 9%, var(--content-background-color));
+    color: var(--text-color);
+}
+
+.diagram-command-item:disabled {
+    color: color-mix(in srgb, var(--text-color) 42%, transparent);
+    opacity: .58;
+}
+
+.diagram-toolbar-history {
+    margin-left: auto;
+}
+
+.diagram-template-control {
+    display: inline-grid;
+    grid-template-columns: repeat(8, auto);
+    padding: 3px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 14%, transparent);
+    border-radius: 7px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--background-color) 46%, var(--content-background-color));
+}
+
+.diagram-toolbar-zoom {
+    margin-left: auto;
+}
+
+.diagram-zoom-value {
+    min-width: 48px;
+    padding: 0 5px;
+    color: color-mix(in srgb, var(--text-color) 72%, transparent);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+.diagram-template-btn {
+    min-height: 34px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.diagram-template-btn:hover,
+.diagram-template-btn.active {
+    background: var(--content-background-color);
+    color: var(--link-color);
+}
+
+.diagram-template-btn.active {
+    box-shadow: 0 1px 5px color-mix(in srgb, var(--text-color) 10%, transparent);
+}
+
+.diagram-tool-btn {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--icon-color);
+    font-size: 16px;
+    transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease;
+}
+
+.diagram-tool-btn-labeled {
+    display: inline-flex;
+    width: auto;
+    min-width: 34px;
+    flex-basis: auto;
+    align-items: center;
+    gap: 7px;
+    padding: 0 10px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.diagram-tool-btn-labeled i {
+    font-size: 15px;
+}
+
+.diagram-tool-btn:hover,
+.diagram-tool-btn.active {
+    border-color: color-mix(in srgb, var(--link-color) 34%, transparent);
+    background: var(--content-background-color);
+    color: var(--link-color);
+}
+
+.diagram-tool-btn:focus-visible,
+.diagram-template-btn:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--link-color) 38%, transparent);
+    outline-offset: 1px;
+}
+
+.diagram-tool-btn:disabled {
+    cursor: not-allowed;
+    opacity: .38;
+}
+
+.diagram-tooltip-proxy {
+    display: inline-flex;
+    flex: 0 0 auto;
+    border-radius: 5px;
+}
+
+.diagram-tooltip-proxy:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--link-color) 38%, transparent);
+    outline-offset: 1px;
+}
+
+.diagram-tool-danger:not(:disabled) {
+    color: #a33a3a;
+}
+
+.diagram-canvas-wrap {
+    position: relative;
+    display: grid;
+    min-height: 0;
+    padding: 10px;
+}
+
+.diagram-editor-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border: 1px solid color-mix(in srgb, var(--text-color) 16%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--content-background-color) 98%, var(--background-color));
+    box-shadow: 0 10px 26px color-mix(in srgb, var(--text-color) 7%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--content-background-color) 86%, transparent);
+    touch-action: none;
+}
+
+.diagram-editor-canvas.space-pan-active,
+.diagram-editor-canvas.space-pan-active .diagram-editor-node,
+.diagram-editor-canvas.space-pan-active .diagram-editor-edge-hit {
+    cursor: grab;
+}
+
+.diagram-editor-canvas.is-panning,
+.diagram-editor-canvas.is-panning .diagram-editor-node,
+.diagram-editor-canvas.is-panning .diagram-editor-edge-hit {
+    cursor: grabbing;
+}
+
+.diagram-grid-background {
+    fill: url(#diagramGrid);
+}
+
+.diagram-grid-dot {
+    fill: color-mix(in srgb, var(--text-color) 14%, transparent);
+}
+
+.diagram-canvas-status {
+    position: absolute;
+    left: 30px;
+    bottom: 30px;
+    max-width: calc(100% - 60px);
+    padding: 6px 11px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 14%, transparent);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--content-background-color) 96%, transparent);
+    color: color-mix(in srgb, var(--text-color) 76%, transparent);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--text-color) 8%, transparent);
+    pointer-events: none;
+}
+
+.diagram-minimap {
+    position: absolute;
+    right: 30px;
+    bottom: 30px;
+    width: 150px;
+    height: 84px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--text-color) 18%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--content-background-color) 95%, transparent);
+    box-shadow: 0 5px 18px color-mix(in srgb, var(--text-color) 12%, transparent);
+}
+
+.diagram-minimap svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+.diagram-minimap-edge {
+    stroke: color-mix(in srgb, var(--link-color) 58%, transparent);
+    stroke-width: 5;
+}
+
+.diagram-minimap-node {
+    fill: color-mix(in srgb, var(--text-color) 30%, var(--content-background-color));
+    stroke: var(--content-background-color);
+    stroke-width: 4;
+}
+
+.diagram-minimap-node-green { fill: #2f855a; }
+.diagram-minimap-node-blue { fill: #3b82f6; }
+.diagram-minimap-node-gold { fill: #c28b2c; }
+.diagram-minimap-node-red { fill: #c94b4b; }
+
+.diagram-minimap-viewport {
+    fill: color-mix(in srgb, var(--link-color) 9%, transparent);
+    stroke: var(--link-color);
+    stroke-width: 7;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+}
+
+.diagram-editor-edge,
+.diagram-editor-edge-hit {
+    fill: none;
+}
+
+.diagram-editor-edge {
+    stroke: var(--link-color);
+    stroke-width: 2.5;
+    vector-effect: non-scaling-stroke;
+}
+
+.diagram-editor-edge-hit {
+    stroke: transparent;
+    stroke-width: 18;
+    cursor: pointer;
+}
+
+.diagram-editor-edge.selected {
+    stroke: var(--button-background-color);
+    stroke-width: 4;
+}
+
+.diagram-editor-edge.dashed,
+.answer-diagram-edge-dashed {
+    stroke-dasharray: 12 9;
+}
+
+.diagram-editor-edge-label-group {
+    cursor: pointer;
+}
+
+.diagram-editor-edge-label-bg,
+.answer-diagram-edge-label-bg {
+    fill: color-mix(in srgb, var(--content-background-color) 94%, var(--background-color));
+    stroke: color-mix(in srgb, var(--text-color) 17%, transparent);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+}
+
+.diagram-editor-edge-label-group.selected .diagram-editor-edge-label-bg {
+    fill: color-mix(in srgb, var(--link-color) 10%, var(--content-background-color));
+    stroke: var(--link-color);
+}
+
+.diagram-editor-edge-label,
+.answer-diagram-edge-label {
+    fill: var(--text-color);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-anchor: middle;
+    pointer-events: none;
+}
+
+.diagram-editor-arrow {
+    fill: var(--link-color);
+}
+
+.diagram-edge-bend-handle {
+    fill: var(--content-background-color);
+    stroke: var(--button-background-color);
+    stroke-width: 3;
+    vector-effect: non-scaling-stroke;
+    cursor: move;
+    filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--text-color) 18%, transparent));
+}
+
+.diagram-free-arrow-endpoint {
+    fill: var(--content-background-color);
+    stroke: var(--link-color);
+    stroke-width: 3;
+    vector-effect: non-scaling-stroke;
+    cursor: crosshair;
+    filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--text-color) 18%, transparent));
+}
+
+.diagram-free-arrow-endpoint-end {
+    fill: var(--link-color);
+    stroke: var(--content-background-color);
+}
+
+.diagram-free-arrow-endpoint.is-anchored {
+    fill: var(--link-color);
+    stroke: var(--content-background-color);
+    stroke-width: 4;
+}
+
+.diagram-free-arrow-endpoint.is-unavailable {
+    fill: var(--content-background-color);
+    stroke: #b54848;
+    stroke-dasharray: 3 2;
+}
+
+.diagram-editor-node.is-arrow-drop-target > rect,
+.diagram-editor-node.is-arrow-drop-target > ellipse,
+.diagram-editor-node.is-arrow-drop-target > polygon,
+.diagram-editor-node.is-arrow-drop-target > path {
+    stroke: var(--link-color);
+    stroke-width: 4;
+    filter: drop-shadow(0 0 7px color-mix(in srgb, var(--link-color) 42%, transparent));
+}
+
+.diagram-node-resize-outline {
+    fill: none;
+    stroke: var(--button-background-color);
+    stroke-width: 1.5;
+    stroke-dasharray: 7 5;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+}
+
+.diagram-node-resize-handle {
+    fill: var(--content-background-color);
+    stroke: var(--button-background-color);
+    stroke-width: 2.5;
+    vector-effect: non-scaling-stroke;
+    cursor: nwse-resize;
+    filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--text-color) 18%, transparent));
+}
+
+.diagram-editor-group rect {
+    fill: color-mix(in srgb, var(--link-color) 4%, transparent);
+    stroke: color-mix(in srgb, var(--text-color) 24%, transparent);
+    stroke-width: 1.5;
+    stroke-dasharray: 8 6;
+    vector-effect: non-scaling-stroke;
+}
+
+.diagram-editor-group text {
+    fill: color-mix(in srgb, var(--text-color) 72%, transparent);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.diagram-editor-group {
+    cursor: pointer;
+}
+
+.diagram-editor-group.selected rect {
+    fill: color-mix(in srgb, var(--link-color) 9%, transparent);
+    stroke: var(--link-color);
+}
+
+.diagram-editor-node {
+    cursor: grab;
+    filter: drop-shadow(0 5px 6px color-mix(in srgb, var(--text-color) 12%, transparent));
+}
+
+.diagram-editor-node:active {
+    cursor: grabbing;
+}
+
+.diagram-editor-node rect,
+.diagram-editor-node polygon,
+.diagram-editor-node path,
+.diagram-editor-node ellipse {
+    fill: var(--yanit-card-background-color);
+    stroke: color-mix(in srgb, var(--text-color) 44%, transparent);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+    transition: fill 140ms ease, stroke 140ms ease;
+}
+
+.diagram-editor-node-terminal rect {
+    fill: color-mix(in srgb, var(--message-bubble) 70%, var(--content-background-color));
+}
+
+.diagram-editor-node-decision polygon {
+    fill: color-mix(in srgb, var(--button-background-color) 13%, var(--content-background-color));
+}
+
+.diagram-editor-node-data polygon {
+    fill: color-mix(in srgb, #3b82f6 10%, var(--content-background-color));
+}
+
+.diagram-editor-node-document path {
+    fill: color-mix(in srgb, #9b6b43 9%, var(--content-background-color));
+}
+
+.diagram-editor-node-pyramid polygon {
+    fill: color-mix(in srgb, #c28b2c 12%, var(--content-background-color));
+}
+
+.diagram-editor-node-set ellipse {
+    fill-opacity: .62;
+    stroke-width: 2.5;
+}
+
+.diagram-editor-node-label {
+    filter: none;
+}
+
+.diagram-editor-node-label rect {
+    fill: color-mix(in srgb, var(--content-background-color) 82%, transparent);
+    fill-opacity: .5;
+    stroke: transparent;
+}
+
+.diagram-editor-node-label text {
+    font-size: 17px;
+    font-weight: 750;
+}
+
+.diagram-editor-node-label.selected rect,
+.diagram-editor-node-label.connect-source rect {
+    fill: color-mix(in srgb, var(--link-color) 8%, var(--content-background-color));
+    stroke: var(--button-background-color);
+    stroke-dasharray: 6 4;
+}
+
+.diagram-editor-tone-green rect,
+.diagram-editor-tone-green polygon,
+.diagram-editor-tone-green path,
+.diagram-editor-tone-green ellipse {
+    fill: color-mix(in srgb, #2f855a 20%, var(--content-background-color));
+    stroke: color-mix(in srgb, #2f855a 76%, var(--text-color));
+}
+
+.diagram-editor-tone-blue rect,
+.diagram-editor-tone-blue polygon,
+.diagram-editor-tone-blue path,
+.diagram-editor-tone-blue ellipse {
+    fill: color-mix(in srgb, #3b82f6 18%, var(--content-background-color));
+    stroke: color-mix(in srgb, #3b82f6 76%, var(--text-color));
+}
+
+.diagram-editor-tone-gold rect,
+.diagram-editor-tone-gold polygon,
+.diagram-editor-tone-gold path,
+.diagram-editor-tone-gold ellipse {
+    fill: color-mix(in srgb, #c28b2c 20%, var(--content-background-color));
+    stroke: color-mix(in srgb, #c28b2c 76%, var(--text-color));
+}
+
+.diagram-editor-tone-red rect,
+.diagram-editor-tone-red polygon,
+.diagram-editor-tone-red path,
+.diagram-editor-tone-red ellipse {
+    fill: color-mix(in srgb, #c94b4b 17%, var(--content-background-color));
+    stroke: color-mix(in srgb, #c94b4b 76%, var(--text-color));
+}
+
+.diagram-editor-node.selected rect,
+.diagram-editor-node.selected polygon,
+.diagram-editor-node.selected path,
+.diagram-editor-node.selected ellipse,
+.diagram-editor-node.connect-source rect,
+.diagram-editor-node.connect-source polygon,
+.diagram-editor-node.connect-source path,
+.diagram-editor-node.connect-source ellipse {
+    stroke: var(--button-background-color);
+    stroke-width: 3.5;
+}
+
+.diagram-editor-node.selected,
+.diagram-editor-node.connect-source {
+    filter: drop-shadow(0 7px 9px color-mix(in srgb, var(--link-color) 23%, transparent));
+}
+
+.diagram-editor-node text {
+    fill: var(--text-color);
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 650;
+    text-anchor: middle;
+    pointer-events: none;
+}
+
+.diagram-editor-node text.diagram-editor-node-label {
+    cursor: move;
+    pointer-events: all;
+    touch-action: none;
+    user-select: none;
+}
+
+.diagram-editor-node text.diagram-editor-node-label:hover {
+    fill: var(--link-color);
+}
+
+.diagram-editor-node .diagram-node-link-indicator,
+.answer-diagram-node .answer-diagram-node-link-indicator {
+    fill: var(--link-color);
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    text-anchor: middle;
+    pointer-events: none;
+}
+
+.diagram-region-hatch,
+.answer-diagram-region-hatch {
+    stroke: color-mix(in srgb, var(--text-color) 60%, transparent);
+    stroke-width: 3.5;
+    opacity: .48;
+}
+
+.diagram-region-hatch-green,
+.answer-diagram-region-hatch-green { stroke: #24724d; }
+.diagram-region-hatch-blue,
+.answer-diagram-region-hatch-blue { stroke: #2d6bc4; }
+.diagram-region-hatch-gold,
+.answer-diagram-region-hatch-gold { stroke: #a67626; }
+.diagram-region-hatch-red,
+.answer-diagram-region-hatch-red { stroke: #af3f3f; }
+
+.diagram-editor-region-shape,
+.answer-diagram-region-shape {
+    opacity: .78;
+}
+
+.diagram-editor-region-label {
+    cursor: move;
+    pointer-events: all;
+    touch-action: none;
+    user-select: none;
+}
+
+.answer-diagram-region-label {
+    pointer-events: none;
+}
+
+.diagram-editor-region-label text,
+.answer-diagram-region-label text {
+    fill: var(--text-color);
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 650;
+    paint-order: stroke fill;
+    stroke: color-mix(in srgb, var(--content-background-color) 88%, transparent);
+    stroke-linejoin: round;
+    stroke-width: 4px;
+    text-anchor: middle;
+    vector-effect: non-scaling-stroke;
+}
+
+.diagram-editor-region-label text { pointer-events: all; }
+.answer-diagram-region-label text { pointer-events: none; }
+
+.diagram-editor-region-hit {
+    fill: transparent;
+    stroke: transparent;
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+    cursor: pointer;
+}
+
+.diagram-editor-region-hit:hover,
+.diagram-editor-region-hit:focus,
+.diagram-editor-region.selected > .diagram-editor-region-hit {
+    stroke: var(--button-background-color);
+    stroke-dasharray: 6 5;
+    outline: 0;
+}
+
+.diagram-editor-region.selected .diagram-editor-region-label text,
+.diagram-editor-region-label:hover text,
+.diagram-editor-region-label:focus text {
+    fill: var(--link-color);
+}
+
+.diagram-editor-region.is-arrow-drop-target .diagram-editor-region-shape {
+    opacity: 1;
+    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--link-color) 58%, transparent));
+}
+
+.diagram-editor-region.is-arrow-drop-target > .diagram-editor-region-hit {
+    stroke: var(--link-color);
+    stroke-width: 3;
+    stroke-dasharray: 7 4;
+}
+
+.diagram-inspector {
+    position: relative;
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    padding: 18px;
+    border-left: 1px solid color-mix(in srgb, var(--text-color) 13%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 97%, var(--background-color));
+    overflow-y: auto;
+    transition: padding 180ms ease, opacity 150ms ease;
+    z-index: 6;
+}
+
+.diagram-field {
+    margin-bottom: 16px;
+}
+
+.diagram-title-field {
+    padding-bottom: 18px;
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 12%, transparent);
+}
+
+.diagram-field label,
+.diagram-field-label,
+.diagram-inspector-heading {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    color: color-mix(in srgb, var(--text-color) 78%, transparent);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.diagram-field-label {
+    margin-bottom: 8px;
+}
+
+.diagram-tone-control {
+    display: flex;
+    justify-content: space-between;
+    gap: 7px;
+}
+
+.diagram-tone-swatch {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    padding: 0;
+    border: 2px solid color-mix(in srgb, var(--text-color) 18%, transparent);
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 3px var(--content-background-color);
+}
+
+.diagram-tone-swatch:hover,
+.diagram-tone-swatch.active {
+    border-color: var(--link-color);
+    outline: 2px solid color-mix(in srgb, var(--link-color) 20%, transparent);
+    outline-offset: 1px;
+}
+
+.diagram-tone-swatch:disabled {
+    cursor: not-allowed;
+    opacity: .4;
+}
+
+.diagram-tone-swatch.tone-neutral {
+    background: color-mix(in srgb, var(--text-color) 18%, var(--content-background-color));
+}
+
+.diagram-tone-swatch.tone-green {
+    background: #2f855a;
+}
+
+.diagram-tone-swatch.tone-blue {
+    background: #3b82f6;
+}
+
+.diagram-tone-swatch.tone-gold {
+    background: #c28b2c;
+}
+
+.diagram-tone-swatch.tone-red {
+    background: #c94b4b;
+}
+
+.diagram-field input:not([type="range"]),
+.diagram-field select,
+.diagram-field textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 11px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 18%, transparent);
+    border-radius: 6px;
+    background: var(--content-background-color);
+    color: var(--text-color);
+    resize: vertical;
+}
+
+.diagram-field input:not([type="range"]):focus,
+.diagram-field select:focus,
+.diagram-field textarea:focus {
+    border-color: var(--link-color);
+    outline: 3px solid color-mix(in srgb, var(--link-color) 15%, transparent);
+}
+
+.diagram-title-field input {
+    font-weight: 700;
+}
+
+.diagram-field input:disabled,
+.diagram-field select:disabled,
+.diagram-field textarea:disabled {
+    opacity: .48;
+}
+
+.diagram-link-field {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) 38px;
+    align-items: center;
+    border: 1px solid color-mix(in srgb, var(--text-color) 18%, transparent);
+    border-radius: 6px;
+    background: var(--content-background-color);
+}
+
+.diagram-link-field:focus-within {
+    border-color: var(--link-color);
+    outline: 3px solid color-mix(in srgb, var(--link-color) 15%, transparent);
+}
+
+.diagram-link-field i {
+    color: var(--link-color);
+    text-align: center;
+}
+
+.diagram-link-field input:not([type="range"]) {
+    min-width: 0;
+    border: 0;
+    outline: 0;
+}
+
+.diagram-link-field input:not([type="range"]):focus {
+    border: 0;
+    outline: 0;
+}
+
+.diagram-link-field button {
+    display: inline-grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--link-color) 9%, var(--content-background-color));
+    color: var(--link-color);
+}
+
+.diagram-link-field button:hover:not(:disabled),
+.diagram-link-field button:focus-visible {
+    background: color-mix(in srgb, var(--link-color) 17%, var(--content-background-color));
+    outline: 2px solid color-mix(in srgb, var(--link-color) 22%, transparent);
+}
+
+.diagram-link-field button:disabled {
+    opacity: .36;
+}
+
+.diagram-field small {
+    display: block;
+    margin-top: 6px;
+    color: color-mix(in srgb, var(--text-color) 60%, transparent);
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.diagram-range-field output {
+    color: var(--link-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.diagram-range-field input[type="range"] {
+    width: 100%;
+    accent-color: var(--button-background-color);
+}
+
+.diagram-arrow-anchor-summary {
+    display: grid;
+    gap: 8px;
+    margin: 2px 0 16px;
+    padding-top: 12px;
+    border-top: 1px solid color-mix(in srgb, var(--text-color) 12%, transparent);
+    font-family: Arial, sans-serif;
+}
+
+.diagram-arrow-anchor-summary[hidden] {
+    display: none;
+}
+
+.diagram-arrow-anchor-summary > div {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    align-items: baseline;
+    gap: 8px;
+}
+
+.diagram-arrow-anchor-summary span {
+    color: color-mix(in srgb, var(--text-color) 58%, transparent);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.diagram-arrow-anchor-summary strong {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-color);
+    font-size: 12px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.diagram-arrow-anchor-summary small {
+    color: color-mix(in srgb, var(--text-color) 60%, transparent);
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+.diagram-inspector-section {
+    padding-top: 2px;
+}
+
+.diagram-region-manager {
+    margin: 0 0 16px;
+    padding: 12px 0 14px;
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 12%, transparent);
+}
+
+.diagram-region-list {
+    display: grid;
+    max-height: 190px;
+    gap: 6px;
+    margin-bottom: 9px;
+    overflow-y: auto;
+}
+
+.diagram-region-list-item {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: 30px minmax(0, 1fr);
+    align-items: center;
+    gap: 9px;
+    padding: 8px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 13%, transparent);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-color);
+    text-align: left;
+}
+
+.diagram-region-list-item:hover,
+.diagram-region-list-item:focus-visible,
+.diagram-region-list-item.active {
+    border-color: color-mix(in srgb, var(--link-color) 54%, transparent);
+    background: color-mix(in srgb, var(--link-color) 7%, var(--content-background-color));
+    outline: 0;
+}
+
+.diagram-region-list-symbol {
+    display: inline-grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--text-color) 8%, var(--content-background-color));
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.diagram-region-list-symbol.tone-green { color: #24724d; }
+.diagram-region-list-symbol.tone-blue { color: #2d6bc4; }
+.diagram-region-list-symbol.tone-gold { color: #a67626; }
+.diagram-region-list-symbol.tone-red { color: #af3f3f; }
+
+.diagram-region-list-item > span:last-child {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+}
+
+.diagram-region-list-item strong,
+.diagram-region-list-item small {
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.diagram-region-list-item strong {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.diagram-region-list-item small {
+    color: color-mix(in srgb, var(--text-color) 58%, transparent);
+    font-size: 10px;
+}
+
+.diagram-region-member-list {
+    display: grid;
+    max-height: 210px;
+    gap: 5px;
+    margin-bottom: 7px;
+    overflow-y: auto;
+}
+
+.diagram-region-member-item {
+    display: grid !important;
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    margin: 0 !important;
+    padding: 7px 8px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 12%, transparent);
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.diagram-region-member-item.selected {
+    border-color: color-mix(in srgb, var(--link-color) 38%, transparent);
+    background: color-mix(in srgb, var(--link-color) 6%, var(--content-background-color));
+}
+
+.diagram-region-member-item input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--link-color);
+}
+
+.diagram-region-member-item span {
+    overflow: hidden;
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.diagram-region-member-item small {
+    color: color-mix(in srgb, var(--text-color) 55%, transparent);
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+}
+
+.diagram-region-member-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 2px 0 7px;
+}
+
+.diagram-region-member-actions > span {
+    color: color-mix(in srgb, var(--text-color) 66%, transparent);
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.diagram-region-member-actions button {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 9px;
+    border: 1px solid color-mix(in srgb, var(--link-color) 36%, transparent);
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--link-color) 8%, var(--content-background-color));
+    color: var(--link-color);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.diagram-region-member-actions button:disabled {
+    border-color: color-mix(in srgb, var(--text-color) 12%, transparent);
+    background: transparent;
+    color: color-mix(in srgb, var(--text-color) 38%, transparent);
+    cursor: default;
+}
+
+.diagram-versions-panel {
+    margin: 2px 0 14px;
+    padding: 12px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 14%, transparent);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--background-color) 48%, var(--content-background-color));
+}
+
+.diagram-save-version-btn {
+    display: inline-flex;
+    width: 100%;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    border: 1px solid color-mix(in srgb, var(--link-color) 30%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--link-color) 8%, var(--content-background-color));
+    color: var(--link-color);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.diagram-save-version-btn:hover,
+.diagram-save-version-btn:focus-visible {
+    border-color: var(--link-color);
+    background: color-mix(in srgb, var(--link-color) 14%, var(--content-background-color));
+}
+
+.diagram-selection-help,
+.diagram-region-note {
+    display: block;
+    color: color-mix(in srgb, var(--text-color) 64%, transparent);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.diagram-optional-label {
+    margin-left: 4px;
+    color: color-mix(in srgb, var(--text-color) 52%, transparent);
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.diagram-selection-help kbd {
+    padding: 2px 5px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 18%, transparent);
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--background-color) 50%, var(--content-background-color));
+    color: var(--text-color);
+    font-size: 10px;
+    box-shadow: none;
+}
+
+.diagram-inline-close {
+    display: inline-grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--icon-color);
+}
+
+.diagram-version-list {
+    display: grid;
+    gap: 7px;
+}
+
+.diagram-version-item {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 14%, transparent);
+    border-radius: 6px;
+    background: var(--content-background-color);
+    color: var(--text-color);
+    text-align: left;
+}
+
+.diagram-version-item:hover {
+    border-color: var(--link-color);
+}
+
+.diagram-version-item strong {
+    font-size: 13px;
+}
+
+.diagram-version-item span,
+.diagram-version-empty {
+    margin: 0;
+    color: color-mix(in srgb, var(--text-color) 64%, transparent);
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+}
+
+.diagram-inspector-empty {
+    display: flex;
+    min-height: 160px;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 24px 10px;
+    color: color-mix(in srgb, var(--text-color) 62%, transparent);
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: center;
+}
+
+.diagram-inspector-empty strong {
+    color: var(--text-color);
+    font-size: 15px;
+}
+
+.diagram-inspector-empty-icon {
+    display: inline-grid;
+    width: 42px;
+    height: 42px;
+    margin-bottom: 5px;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--link-color) 22%, transparent);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--link-color) 8%, var(--content-background-color));
+    color: var(--link-color);
+    font-size: 17px;
+}
+
+#diagramSelectionBadge {
+    color: var(--link-color);
+}
+
+.diagram-graph-meta {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid color-mix(in srgb, var(--text-color) 14%, transparent);
+    color: color-mix(in srgb, var(--text-color) 72%, transparent);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+.diagram-graph-meta span {
+    flex: 1 1 0;
+    padding: 7px 8px;
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--background-color) 52%, var(--content-background-color));
+    text-align: center;
+}
+
+.diagram-modal-footer {
+    min-height: 54px;
+    padding: 9px 16px;
+    border-top: 1px solid color-mix(in srgb, var(--text-color) 13%, transparent);
+    background: var(--content-background-color);
+}
+
+.diagram-footer-note {
+    margin-right: auto;
+    color: color-mix(in srgb, var(--text-color) 70%, transparent);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+.answer-diagram {
+    width: min(100%, 900px);
+    margin: 24px auto;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--text-color) 16%, transparent);
+    border-radius: 8px;
+    background: var(--content-background-color);
+    box-shadow: 0 12px 30px color-mix(in srgb, var(--text-color) 8%, transparent);
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.answer-diagram:hover {
+    border-color: color-mix(in srgb, var(--link-color) 45%, transparent);
+    box-shadow: 0 15px 36px color-mix(in srgb, var(--text-color) 11%, transparent);
+}
+
+.answer-diagram-toolbar {
+    display: flex;
+    min-height: 52px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 8px 7px 10px;
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 12%, transparent);
+    background: color-mix(in srgb, var(--content-background-color) 96%, var(--background-color));
+}
+
+.answer-diagram-open {
+    display: inline-flex;
+    min-width: 0;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 9px;
+    padding: 6px 8px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-color);
+    font-family: var(--body-font-family), serif;
+    font-weight: 700;
+    text-align: left;
+    transition: background-color 140ms ease, color 140ms ease;
+}
+
+.answer-diagram-open:hover,
+.answer-diagram-open:focus-visible {
+    outline: 0;
+    background: color-mix(in srgb, var(--link-color) 8%, var(--content-background-color));
+    color: var(--link-color);
+}
+
+.answer-diagram-open > i {
+    display: inline-grid;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    place-items: center;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--link-color) 10%, var(--content-background-color));
+    color: var(--link-color);
+}
+
+.answer-diagram-open > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.answer-diagram-actions {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 4px;
+}
+
+.answer-diagram-edit,
+.answer-diagram-toggle,
+.answer-diagram-expand {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--icon-color);
+    font-size: 14px;
+}
+
+.answer-diagram-edit {
+    width: auto;
+    grid-auto-flow: column;
+    gap: 6px;
+    padding: 0 9px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.answer-diagram-edit:hover,
+.answer-diagram-edit:focus-visible,
+.answer-diagram-toggle:hover,
+.answer-diagram-toggle:focus-visible,
+.answer-diagram-expand:hover,
+.answer-diagram-expand:focus-visible {
+    border-color: color-mix(in srgb, var(--link-color) 28%, transparent);
+    outline: 0;
+    background: color-mix(in srgb, var(--link-color) 8%, var(--content-background-color));
+    color: var(--link-color);
+}
+
+.answer-diagram-body {
+    max-height: 520px;
+    overflow: hidden;
+    opacity: 1;
+    transition: max-height 220ms ease, opacity 160ms ease;
+}
+
+.answer-diagram.is-collapsed .answer-diagram-toolbar {
+    border-bottom-color: transparent;
+}
+
+.answer-diagram.is-collapsed .answer-diagram-body {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.answer-diagram-body > svg {
+    display: block;
+    width: 100%;
+    min-height: 210px;
+    max-height: 440px;
+    background: color-mix(in srgb, var(--background-color) 62%, var(--content-background-color));
+    cursor: zoom-in;
+}
+
+.answer-diagram-edge {
+    fill: none;
+    stroke: var(--link-color);
+    stroke-width: 2.5;
+    vector-effect: non-scaling-stroke;
+}
+
+.answer-diagram-edge-hit {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 20;
+    vector-effect: non-scaling-stroke;
+}
+
+.answer-diagram-edge-interactive {
+    cursor: pointer;
+}
+
+.answer-diagram-edge-interactive:hover .answer-diagram-edge,
+.answer-diagram-edge-interactive:focus .answer-diagram-edge {
+    stroke: var(--button-background-color);
+    stroke-width: 4;
+}
+
+.answer-diagram-edge-interactive:hover .answer-diagram-edge-label-bg,
+.answer-diagram-edge-interactive:focus .answer-diagram-edge-label-bg {
+    stroke: var(--button-background-color);
+}
+
+.answer-diagram-arrow {
+    fill: var(--link-color);
+}
+
+.answer-diagram-group rect {
+    fill: color-mix(in srgb, var(--link-color) 4%, transparent);
+    stroke: color-mix(in srgb, var(--text-color) 24%, transparent);
+    stroke-width: 1.5;
+    stroke-dasharray: 8 6;
+    vector-effect: non-scaling-stroke;
+}
+
+.answer-diagram-group text {
+    fill: color-mix(in srgb, var(--text-color) 72%, transparent);
+    font-family: var(--body-font-family), serif;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.answer-diagram-node rect,
+.answer-diagram-node polygon,
+.answer-diagram-node path,
+.answer-diagram-node ellipse {
+    fill: var(--yanit-card-background-color);
+    stroke: color-mix(in srgb, var(--text-color) 44%, transparent);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+}
+
+.answer-diagram-node {
+    filter: drop-shadow(0 5px 6px color-mix(in srgb, var(--text-color) 11%, transparent));
+}
+
+.answer-diagram-node-linked {
+    cursor: pointer;
+}
+
+.answer-diagram-node-linked:hover rect,
+.answer-diagram-node-linked:hover polygon,
+.answer-diagram-node-linked:hover path,
+.answer-diagram-node-linked:hover ellipse,
+.answer-diagram-node-linked:focus rect,
+.answer-diagram-node-linked:focus polygon,
+.answer-diagram-node-linked:focus path,
+.answer-diagram-node-linked:focus ellipse {
+    stroke: var(--button-background-color);
+    stroke-width: 3.5;
+}
+
+.answer-diagram-node-terminal rect {
+    fill: color-mix(in srgb, var(--message-bubble) 72%, var(--content-background-color));
+}
+
+.answer-diagram-node-decision polygon {
+    fill: color-mix(in srgb, var(--button-background-color) 14%, var(--content-background-color));
+}
+
+.answer-diagram-node-data polygon {
+    fill: color-mix(in srgb, #3b82f6 10%, var(--content-background-color));
+}
+
+.answer-diagram-node-document path {
+    fill: color-mix(in srgb, #9b6b43 9%, var(--content-background-color));
+}
+
+.answer-diagram-node-pyramid polygon {
+    fill: color-mix(in srgb, #c28b2c 12%, var(--content-background-color));
+}
+
+.answer-diagram-node-set ellipse {
+    fill-opacity: .62;
+    stroke-width: 2.5;
+}
+
+.answer-diagram-node-label {
+    filter: none;
+}
+
+.answer-diagram-node-label rect {
+    fill: color-mix(in srgb, var(--content-background-color) 76%, transparent);
+    fill-opacity: .34;
+    stroke: transparent;
+}
+
+.answer-diagram-node-label text {
+    font-size: 17px;
+    font-weight: 750;
+}
+
+.answer-diagram-tone-green rect,
+.answer-diagram-tone-green polygon,
+.answer-diagram-tone-green path,
+.answer-diagram-tone-green ellipse {
+    fill: color-mix(in srgb, #2f855a 20%, var(--content-background-color));
+    stroke: color-mix(in srgb, #2f855a 76%, var(--text-color));
+}
+
+.answer-diagram-tone-blue rect,
+.answer-diagram-tone-blue polygon,
+.answer-diagram-tone-blue path,
+.answer-diagram-tone-blue ellipse {
+    fill: color-mix(in srgb, #3b82f6 18%, var(--content-background-color));
+    stroke: color-mix(in srgb, #3b82f6 76%, var(--text-color));
+}
+
+.answer-diagram-tone-gold rect,
+.answer-diagram-tone-gold polygon,
+.answer-diagram-tone-gold path,
+.answer-diagram-tone-gold ellipse {
+    fill: color-mix(in srgb, #c28b2c 20%, var(--content-background-color));
+    stroke: color-mix(in srgb, #c28b2c 76%, var(--text-color));
+}
+
+.answer-diagram-tone-red rect,
+.answer-diagram-tone-red polygon,
+.answer-diagram-tone-red path,
+.answer-diagram-tone-red ellipse {
+    fill: color-mix(in srgb, #c94b4b 17%, var(--content-background-color));
+    stroke: color-mix(in srgb, #c94b4b 76%, var(--text-color));
+}
+
+.answer-diagram-node text {
+    fill: var(--text-color);
+    font-family: var(--body-font-family), serif;
+    font-size: 15px;
+    font-weight: 650;
+    text-anchor: middle;
+}
+
+.diagram-viewer-stage {
+    display: grid;
+    min-height: 68vh;
+    place-items: center;
+    padding: 28px;
+    background: color-mix(in srgb, var(--background-color) 70%, var(--content-background-color));
+}
+
+.diagram-viewer-stage.has-info {
+    padding-right: 28px;
+}
+
+.diagram-viewer-stage svg {
+    width: 100%;
+    max-height: 72vh;
+    border: 1px solid color-mix(in srgb, var(--text-color) 13%, transparent);
+    border-radius: 8px;
+    background: var(--content-background-color);
+    box-shadow: 0 14px 34px color-mix(in srgb, var(--text-color) 9%, transparent);
+}
+
+.diagram-viewer-modal {
+    position: relative;
+}
+
+.diagram-viewer-info {
+    position: absolute;
+    z-index: 3;
+    top: var(--diagram-info-top, 96px);
+    left: var(--diagram-info-left, calc(100% - 344px));
+    width: min(360px, calc(100% - 32px));
+    max-height: min(320px, calc(100% - 150px));
+    padding: 16px;
+    overflow-y: auto;
+    border: 1px solid color-mix(in srgb, var(--link-color) 28%, transparent);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--content-background-color) 97%, var(--background-color));
+    box-shadow: 0 14px 34px color-mix(in srgb, var(--text-color) 16%, transparent);
+}
+
+.diagram-viewer-info::before {
+    position: absolute;
+    top: 50%;
+    left: -8px;
+    width: 14px;
+    height: 14px;
+    border-bottom: 1px solid color-mix(in srgb, var(--link-color) 28%, transparent);
+    border-left: 1px solid color-mix(in srgb, var(--link-color) 28%, transparent);
+    background: inherit;
+    content: "";
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.diagram-viewer-info.opens-left::before {
+    right: -8px;
+    left: auto;
+    border: 0;
+    border-top: 1px solid color-mix(in srgb, var(--link-color) 28%, transparent);
+    border-right: 1px solid color-mix(in srgb, var(--link-color) 28%, transparent);
+}
+
+.tooltip {
+    z-index: 11050;
+}
+
+.tooltip .tooltip-inner {
+    max-width: 280px;
+    padding: 7px 10px;
+    border: 1px solid color-mix(in srgb, #fff 18%, transparent);
+    border-radius: 5px;
+    font-size: 12px;
+    line-height: 1.35;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+}
+
+.diagram-viewer-info > div {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.diagram-viewer-info strong {
+    color: var(--link-color);
+    font-size: 18px;
+}
+
+.diagram-viewer-info button {
+    display: inline-grid;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--icon-color);
+}
+
+.diagram-viewer-info p {
+    margin: 12px 0 0;
+    color: var(--text-color);
+    font-family: var(--body-font-family), serif;
+    font-size: 16px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+}
+
+.diagram-viewer-footer {
+    min-height: 64px;
+    border-top: 1px solid color-mix(in srgb, var(--text-color) 13%, transparent);
+    background: var(--content-background-color);
+}
+
+.diagram-viewer-footer #downloadDiagramBtn {
+    margin-right: auto;
+}
+
+@media (max-width: 991.98px) {
+    .diagram-editor-modal {
+        height: 100vh;
+    }
+
+    .diagram-editor-modal > .modal-body {
+        overflow-y: auto;
+    }
+
+    .diagram-editor-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+
+    .diagram-editor-layout.inspector-collapsed {
+        grid-template-columns: 1fr;
+    }
+
+    .diagram-editor-toolbar {
+        overflow: hidden;
+    }
+
+    .diagram-toolbar-row {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        overscroll-behavior-inline: contain;
+        scrollbar-width: thin;
+    }
+
+    .diagram-command-dropdown {
+        position: fixed !important;
+    }
+
+    .diagram-inspector {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        border-top: 1px solid color-mix(in srgb, var(--text-color) 16%, transparent);
+        border-left: 0;
+    }
+
+    .diagram-title-field {
+        grid-column: 1 / -1;
+    }
+
+    .diagram-inspector-empty {
+        min-height: 120px;
+    }
+
+    .diagram-graph-meta {
+        margin-top: 0;
+    }
+
+    .diagram-editor-canvas {
+        aspect-ratio: 16 / 9;
+        height: auto;
+        min-height: 330px;
+    }
+
+    .diagram-viewer-stage.has-info {
+        padding-right: 28px;
+    }
+
+    .diagram-viewer-info {
+        position: static;
+        width: auto;
+        max-height: none;
+        margin: 0 18px 18px;
+    }
+
+    .diagram-viewer-info::before {
+        display: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .diagram-editor-toolbar {
+        padding: 7px 8px;
+    }
+
+    .diagram-template-control {
+        min-width: 592px;
+        grid-template-columns: repeat(8, minmax(66px, 1fr));
+    }
+
+    .diagram-toolbar-history {
+        margin-left: 0;
+    }
+
+    .diagram-canvas-wrap {
+        padding: 10px;
+    }
+
+    .diagram-editor-canvas {
+        min-height: 270px;
+    }
+
+    .diagram-minimap {
+        right: 18px;
+        bottom: 18px;
+        width: 110px;
+        height: 62px;
+    }
+
+    .diagram-canvas-status {
+        left: 18px;
+        bottom: 18px;
+        max-width: calc(100% - 154px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .diagram-inspector {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+
+    .diagram-modal-footer {
+        flex-wrap: nowrap;
+        padding: 10px;
+    }
+
+    .diagram-footer-note {
+        display: none;
+    }
+
+    .answer-diagram {
+        margin: 16px auto;
+    }
+
+    .answer-diagram-toolbar {
+        min-height: 46px;
+        padding: 5px 6px;
+    }
+
+    .answer-diagram-open {
+        font-size: 15px;
+    }
+
+    .answer-diagram-open > i {
+        width: 30px;
+        height: 30px;
+        flex-basis: 30px;
+    }
+
+    .answer-diagram-edit span {
+        display: none;
+    }
+
+    .answer-diagram-edit {
+        width: 34px;
+        padding: 0;
+    }
+
+    .answer-diagram-body > svg {
+        min-height: 180px;
+    }
+
+    .diagram-modal-header {
+        min-height: 66px;
+        padding: 10px 12px;
+    }
+
+    .diagram-modal-icon {
+        width: 38px;
+        height: 38px;
+        flex-basis: 38px;
+    }
+
+    .diagram-modal-header .modal-title {
+        font-size: 20px;
+    }
+
+    .diagram-viewer-stage {
+        padding: 10px;
+    }
+
+    .diagram-viewer-stage.has-info {
+        padding-right: 10px;
+    }
+
+    .diagram-viewer-info {
+        margin: 0 10px 10px;
+        padding: 14px;
+    }
+
+    .diagram-viewer-footer {
+        flex-wrap: wrap;
+    }
+
+    .diagram-viewer-footer #downloadDiagramBtn {
+        margin-right: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .diagram-tool-btn,
+    .diagram-command-trigger,
+    .diagram-editor-node rect,
+    .diagram-editor-node polygon,
+    .diagram-editor-node path,
+    .diagram-editor-node ellipse,
+    .answer-diagram,
+    .answer-diagram-open,
+    .answer-diagram-body {
+        transition: none;
+    }
+}

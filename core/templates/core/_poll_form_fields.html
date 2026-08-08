@@ -1,0 +1,67 @@
+{% load custom_tags %}
+
+{% if poll_form.non_field_errors %}
+<div class="poll-form-errors" role="alert">{{ poll_form.non_field_errors }}</div>
+{% endif %}
+
+<div class="poll-form-field">
+  <label for="{{ poll_form.question_text.id_for_label }}">Anket sorusu</label>
+  {{ poll_form.question_text }}
+  <small>Tek ve açık bir soru yaz.</small>
+  {% if poll_form.question_text.errors %}<div class="poll-field-errors">{{ poll_form.question_text.errors }}</div>{% endif %}
+</div>
+
+<div class="poll-form-settings">
+  <div class="poll-form-field">
+    <label for="{{ poll_form.end_date.id_for_label }}">Bitiş zamanı</label>
+    {{ poll_form.end_date }}
+    <small>En fazla bir yıl sürebilir.</small>
+    {% if poll_form.end_date.errors %}<div class="poll-field-errors">{{ poll_form.end_date.errors }}</div>{% endif %}
+  </div>
+
+  <label class="poll-privacy-option" for="{{ poll_form.is_anonymous.id_for_label }}">
+    {{ poll_form.is_anonymous }}
+    <span class="poll-switch" aria-hidden="true"><span></span></span>
+    <span>
+      <strong>Anonim oy</strong>
+      <small>Kimlerin oy verdiği görünmez.</small>
+    </span>
+  </label>
+</div>
+
+<section class="poll-form-options" aria-labelledby="pollOptionsTitle-{{ poll_form.prefix|default:'create' }}">
+  <div class="poll-form-section-heading">
+    <div>
+      <h3 id="pollOptionsTitle-{{ poll_form.prefix|default:'create' }}">Seçenekler</h3>
+      <p>En az iki, en fazla on seçenek ekleyebilirsin.</p>
+    </div>
+    <span data-option-count>2 / 10</span>
+  </div>
+
+  <div class="poll-form-option-list" data-option-list>
+    {% for index in "1,2,3,4,5,6,7,8,9,10"|split:"," %}
+      {% with field_name="option_"|add:index %}
+        {% with field=poll_form|field_by_name:field_name %}
+        <div class="poll-form-option{% if forloop.counter > 2 and not field.value and not field.errors %} is-hidden{% endif %}" data-option-field>
+          <span class="poll-option-number" data-option-number>{{ forloop.counter }}</span>
+          <div>
+            <label class="visually-hidden" for="{{ field.id_for_label }}">Seçenek {{ forloop.counter }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="poll-field-errors">{{ field.errors }}</div>{% endif %}
+          </div>
+          {% if forloop.counter > 2 %}
+          <button type="button" class="poll-remove-option" data-remove-option title="Seçeneği kaldır" aria-label="Seçeneği kaldır"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+          {% else %}
+          <span class="poll-option-spacer" aria-hidden="true"></span>
+          {% endif %}
+        </div>
+        {% endwith %}
+      {% endwith %}
+    {% endfor %}
+  </div>
+
+  <button type="button" class="poll-add-option" data-add-option>
+    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+    Seçenek ekle
+  </button>
+</section>

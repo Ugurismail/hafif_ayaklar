@@ -234,7 +234,7 @@ class PollForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
         end_date = cleaned_data.get('end_date')
-        if end_date <= timezone.now():
+        if end_date and end_date <= timezone.now():
             self.add_error('end_date', 'Bitiş tarihi gelecekte bir zaman olmalıdır.')
         if end_date and end_date > (timezone.now() + datetime.timedelta(days=365)):
             self.add_error('end_date', 'Bitiş tarihi 1 yıldan fazla olmamalıdır.')
@@ -245,6 +245,10 @@ class PollForm(forms.Form):
                 options.append(opt)
         if len(options) < 2:
             self.add_error('option_1', 'En az 2 seçenek girmelisiniz.')
+        turkish_case_map = str.maketrans({'I': 'ı', 'İ': 'i'})
+        normalized_options = [option.translate(turkish_case_map).casefold() for option in options]
+        if len(normalized_options) != len(set(normalized_options)):
+            self.add_error('option_1', 'Seçenekler birbirinden farklı olmalıdır.')
         cleaned_data['options'] = options
         return cleaned_data
     def clean_question_text(self):

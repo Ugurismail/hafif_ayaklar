@@ -1,34 +1,33 @@
-<div style="min-width:180px;">
-  <div class="fw-bold mb-2">{{ poll.question_text }}</div>
-  <ul class="list-unstyled mb-2">
-    {% for opt_data in options_data %}
-      <li>
-        {{ opt_data.option.option_text }}:
-        <span class="text-muted">%{{ opt_data.percentage }}</span>
-      </li>
+<div style="min-width: 220px; max-width: 300px;">
+  <strong class="d-block mb-1">{{ poll.question_text }}</strong>
+  <span class="text-muted small d-block mb-3">{{ total_votes }} oy</span>
+
+  <div class="d-grid gap-2 mb-3">
+    {% for option_data in options_data %}
+    <div>
+      <div class="d-flex justify-content-between gap-3 small">
+        <span>{{ option_data.option.option_text }}</span>
+        <strong>%{{ option_data.percentage|floatformat:1 }}</strong>
+      </div>
+      <progress class="w-100" max="100" value="{{ option_data.percentage }}" aria-label="{{ option_data.option.option_text }} yüzde {{ option_data.percentage }}"></progress>
+    </div>
     {% endfor %}
-  </ul>
+  </div>
 
   {% if poll_expired %}
-    <span class="badge" style="background-color: var(--secondary-button-background-color); color: var(--secondary-button-text-color);">Bu anketin süresi doldu</span>
+  <div class="small text-muted"><i class="bi bi-clock-history me-1" aria-hidden="true"></i>Anket sona erdi.</div>
   {% elif user_vote %}
-    <span class="badge tbas-color">Oyunuz kaydedildi</span>
+  <div class="small text-success"><i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Oyun kaydedildi.</div>
   {% else %}
-    <form class="popover-vote-form" data-poll-id="{{ poll.id }}">
-      {% csrf_token %}
-      {% for opt_data in options_data %}
-        <div class="form-check mb-1">
-          <input type="radio"
-                 class="form-check-input"
-                 name="option_id"
-                 value="{{ opt_data.option.id }}"
-                 id="poll_{{ poll.id }}_opt_{{ opt_data.option.id }}">
-          <label class="form-check-label" for="poll_{{ poll.id }}_opt_{{ opt_data.option.id }}">
-            {{ opt_data.option.option_text }}
-          </label>
-        </div>
-      {% endfor %}
-      <button type="submit" class="btn btn-theme-primary btn-sm mt-2 w-100">Oy Ver</button>
-    </form>
+  <form class="popover-vote-form" data-poll-id="{{ poll.id }}">
+    {% csrf_token %}
+    {% for option_data in options_data %}
+    <label class="form-check mb-1">
+      <input type="radio" class="form-check-input" name="option_id" value="{{ option_data.option.id }}" required>
+      <span class="form-check-label">{{ option_data.option.option_text }}</span>
+    </label>
+    {% endfor %}
+    <button type="submit" class="btn btn-theme-primary btn-sm mt-2 w-100">Oyumu gönder</button>
+  </form>
   {% endif %}
 </div>

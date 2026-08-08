@@ -16,6 +16,11 @@ from core.content_link_preload import (
     get_preloaded_reference,
     get_preloaded_user,
 )
+from core.diagram_markup import (
+    DIAGRAM_MARKER_PATTERN,
+    decode_diagram_payload,
+    render_diagram_html,
+)
 
 
 
@@ -34,6 +39,7 @@ MATH_SEGMENT_PATTERN = re.compile(
 )
 MARKDOWN_INLINE_TOKEN_PATTERNS = (
     re.compile(r'!?\[[^\]\n]*\]\([^\)\n]*\)'),
+    re.compile(DIAGRAM_MARKER_PATTERN),
     re.compile(
         r'\((?:kaynak|k|tanim|t|bkz|ref|r):[^\)]*\)',
         flags=re.IGNORECASE,
@@ -440,6 +446,7 @@ def safe_markdownify(text, arg='default'):
     block_map = {}
     indent_map = {}
     outline_map = {}
+    diagram_map = {}
 
     # Protect TeX blocks so Markdown doesn't eat backslashes like `\\` (align/matrix).
     # We restore as HTML-escaped text so BLEACH safety is preserved.
@@ -522,6 +529,15 @@ def safe_markdownify(text, arg='default'):
         outline_map[placeholder] = '<div class="answer-outline-list">' + ''.join(items) + '</div>'
         return placeholder
 
+    def _store_diagram(match):
+        encoded_payload = match.group(1)
+        payload = decode_diagram_payload(encoded_payload)
+        if not payload:
+            return match.group(0)
+        placeholder = f"DIAGRAM_{uuid.uuid4().hex[:10]}_END"
+        diagram_map[placeholder] = render_diagram_html(payload, encoded_payload)
+        return f"\n\n{placeholder}\n\n"
+
     def _replace_numbered_outline_blocks(raw_text):
         line_pattern = re.compile(r'^\s*((?:\d+\.){1,4})\s+(.+)$')
         lines = raw_text.splitlines()
@@ -590,6 +606,12 @@ def safe_markdownify(text, arg='default'):
         raw = match.group(0)
         return _store_math_block(raw)
 
+    text_with_placeholders = re.sub(
+        DIAGRAM_MARKER_PATTERN,
+        _store_diagram,
+        text_with_placeholders,
+        flags=re.MULTILINE,
+    )
     text_with_placeholders = display_math_re.sub(_replace_display, text_with_placeholders)
     text_with_placeholders = inline_math_re.sub(_replace_inline, text_with_placeholders)
     # Protect plain-text hashtags before markdown so `#etiket` line starts
@@ -662,6 +684,10 @@ def safe_markdownify(text, arg='default'):
     for placeholder, outline_html in outline_map.items():
         markdown_result = markdown_result.replace(f'<p>{placeholder}</p>', outline_html)
         markdown_result = markdown_result.replace(placeholder, outline_html)
+
+    for placeholder, diagram_html in diagram_map.items():
+        markdown_result = markdown_result.replace(f'<p>{placeholder}</p>', diagram_html)
+        markdown_result = markdown_result.replace(placeholder, diagram_html)
 
     for placeholder, indent_html in indent_map.items():
         markdown_result = markdown_result.replace(placeholder, indent_html)

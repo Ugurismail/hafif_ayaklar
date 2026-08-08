@@ -1,34 +1,92 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/polls.css' %}?v={{ STATIC_ASSET_VERSION }}-polls1">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <h2>{{ poll.question_text }}</h2>
-    <p>Bitiş Tarihi: {{ poll.end_date|date:"Y-m-d H:i" }}</p>
+<main class="poll-detail-page">
+  <a class="poll-detail-back" href="{% url 'polls_home' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i>Anketlere dön</a>
 
-    {% if user_vote %}
-        <div class="alert alert-success">Bu ankete oy verdiniz.</div>
-    {% endif %}
+  <div class="poll-detail-shell">
+    <section class="poll-detail-main">
+      <div class="poll-detail-state{% if poll_expired %} is-expired{% endif %}">
+        <span aria-hidden="true"></span>
+        {% if poll_expired %}Tamamlandı{% else %}{{ poll.end_date|timeuntil }} kaldı{% endif %}
+      </div>
+      <h1>{{ poll.question_text }}</h1>
+      <p class="poll-detail-byline">{{ poll.created_by.username }} tarafından oluşturuldu</p>
 
-    <form method="post" class="mb-4">
+      <form method="post" class="poll-detail-vote-form">
         {% csrf_token %}
-        <ul class="list-group">
-            {% for opt in options_data %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <label>
-                  <input type="radio" name="option" value="{{ opt.option.id }}" {% if user_vote == opt.option.id %}checked disabled{% elif user_vote %}disabled{% endif %}>
-                  {{ opt.option.option_text }}
-                </label>
-                <span>
-                  {{ opt.votes }} oy (%{{ opt.percentage }})
+        <fieldset>
+          <legend>Sonuçlar</legend>
+          <div class="poll-detail-options">
+            {% for option_data in options_data %}
+            <label class="poll-option{% if option_data.is_selected %} is-selected{% endif %}">
+              <input type="radio"
+                     name="option"
+                     value="{{ option_data.option.id }}"
+                     {% if option_data.is_selected %}checked{% endif %}
+                     {% if has_voted or poll_expired %}disabled{% endif %}
+                     {% if can_vote %}required{% endif %}>
+              <span class="poll-option-control" aria-hidden="true"></span>
+              <span class="poll-option-content">
+                <span class="poll-option-line">
+                  <span>{{ option_data.option.option_text }}</span>
+                  <strong>%{{ option_data.percentage|floatformat:1 }}</strong>
                 </span>
-            </li>
+                <span class="poll-progress" aria-hidden="true"><span style="width: {{ option_data.percentage }}%"></span></span>
+                <small>{{ option_data.votes }} oy{% if option_data.is_selected %} · senin seçimin{% endif %}</small>
+              </span>
+            </label>
             {% endfor %}
-        </ul>
-        {% if not user_vote %}
-        <button type="submit" class="btn btn-theme-primary mt-3">Oy Ver</button>
+          </div>
+        </fieldset>
+
+        {% if can_vote %}
+        <button type="submit" class="poll-primary-action"><i class="bi bi-check2" aria-hidden="true"></i>Oyumu gönder</button>
+        {% elif has_voted %}
+        <div class="poll-detail-notice"><i class="bi bi-check2-circle" aria-hidden="true"></i>Oyun kaydedildi.</div>
+        {% elif poll_expired %}
+        <div class="poll-detail-notice is-muted"><i class="bi bi-clock-history" aria-hidden="true"></i>Bu anket sona erdi.</div>
         {% endif %}
-    </form>
-    <a href="{% url 'polls_home' %}" class="btn btn-theme-secondary">Tüm Anketler</a>
-</div>
+      </form>
+
+      {% if not poll.is_anonymous and total_votes %}
+      <details class="poll-voter-disclosure">
+        <summary>Oy kullananları göster <i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+        <div>
+          {% for option_data in options_data %}
+            {% if option_data.voters %}
+            <section>
+              <strong>{{ option_data.option.option_text }}</strong>
+              <p>{{ option_data.voters|join:", " }}</p>
+            </section>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </details>
+      {% endif %}
+    </section>
+
+    <aside class="poll-detail-sidebar" aria-label="Anket bilgileri">
+      <h2>Anket bilgileri</h2>
+      <dl>
+        <div><dt>Toplam oy</dt><dd>{{ total_votes }}</dd></div>
+        <div><dt>Bitiş</dt><dd>{{ poll.end_date|date:"d M Y, H:i" }}</dd></div>
+        <div><dt>Oy görünürlüğü</dt><dd>{% if poll.is_anonymous %}Anonim{% else %}Açık{% endif %}</dd></div>
+      </dl>
+      <a class="poll-detail-topic" href="{% url 'poll_question_redirect' poll.id %}">
+        <i class="bi bi-chat-square-text" aria-hidden="true"></i>
+        <span>{% if poll.related_question %}Anket başlığına git{% else %}Anket başlığı oluştur{% endif %}</span>
+        <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+      </a>
+      {% if can_edit %}
+      <a class="poll-detail-edit" href="{% url 'edit_poll' poll.id %}"><i class="bi bi-pencil" aria-hidden="true"></i>Anketi düzenle</a>
+      {% endif %}
+    </aside>
+  </div>
+</main>
 {% endblock %}

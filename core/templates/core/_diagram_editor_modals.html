@@ -1,0 +1,468 @@
+<div class="modal fade" id="diagramEditorModal" tabindex="-1" aria-labelledby="diagramEditorTitle" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-lg-down diagram-editor-dialog">
+    <div class="modal-content diagram-editor-modal">
+      <div class="modal-header diagram-modal-header">
+        <div class="diagram-modal-heading">
+          <span class="diagram-modal-icon" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
+          <div>
+            <span class="diagram-modal-eyebrow">ENTRY DIYAGRAMI</span>
+            <h5 class="modal-title" id="diagramEditorTitle">Akışı oluştur</h5>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+
+      <div class="modal-body p-0">
+        <div class="diagram-editor-layout">
+          <section class="diagram-workbench" aria-label="Diyagram çalışma alanı">
+            <div class="diagram-editor-toolbar" role="toolbar" aria-label="Diyagram araçları">
+              <div class="diagram-toolbar-row">
+                <div class="diagram-template-control" role="group" aria-label="Hazır diyagramlar">
+                  <button type="button" class="diagram-template-btn" data-diagram-template="blank" title="Boş diyagramla başla">Boş</button>
+                  <button type="button" class="diagram-template-btn" data-diagram-template="flow" title="Akış şeması taslağı">Akış</button>
+                  <button type="button" class="diagram-template-btn active" data-diagram-template="cycle" title="Döngü diyagramı taslağı">Döngü</button>
+                  <button type="button" class="diagram-template-btn" data-diagram-template="tree" title="Karar ağacı taslağı">Ağaç</button>
+                  <button type="button" class="diagram-template-btn" data-diagram-template="timeline" title="Zaman çizelgesi taslağı">Zaman</button>
+                  <button type="button" class="diagram-template-btn" data-diagram-template="pyramid" title="Katmanlı piramit taslağı">Piramit</button>
+                  <button type="button" class="diagram-template-btn" data-diagram-template="sets" title="Kesişen kümeler taslağı">Kümeler</button>
+                  <button type="button" class="diagram-template-btn" data-diagram-template="spiral" title="Spiral ilerleme taslağı">Spiral</button>
+                </div>
+
+                <div class="dropdown diagram-command-menu">
+                  <button type="button" class="diagram-command-trigger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-plus-square" aria-hidden="true"></i>
+                    <span>Şekil ekle</span>
+                  </button>
+                  <div class="dropdown-menu diagram-command-dropdown">
+                    <button type="button" class="dropdown-item diagram-command-item" data-diagram-add="terminal">
+                      <i class="bi bi-record-circle" aria-hidden="true"></i><span>Başlangıç / bitiş</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" data-diagram-add="process">
+                      <i class="bi bi-square" aria-hidden="true"></i><span>İşlem kutusu</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" data-diagram-add="decision">
+                      <i class="bi bi-diamond" aria-hidden="true"></i><span>Karar noktası</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" data-diagram-add="data">
+                      <i class="bi bi-input-cursor-text" aria-hidden="true"></i><span>Veri girişi / çıktısı</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" data-diagram-add="document">
+                      <i class="bi bi-file-earmark-text" aria-hidden="true"></i><span>Belge</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" data-diagram-add="pyramid">
+                      <i class="bi bi-triangle" aria-hidden="true"></i><span>Piramit katmanı</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" data-diagram-add="set">
+                      <i class="bi bi-intersect" aria-hidden="true"></i><span>Küme</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" data-diagram-add="label">
+                      <i class="bi bi-fonts" aria-hidden="true"></i><span>Bölge etiketi</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="dropdown diagram-command-menu">
+                  <button type="button" class="diagram-command-trigger dropdown-toggle" id="diagramRegionMenuBtn" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                    <i class="bi bi-intersect" aria-hidden="true"></i>
+                    <span>Bölge</span>
+                  </button>
+                  <div class="dropdown-menu diagram-command-dropdown">
+                    <button type="button" class="dropdown-item diagram-command-item" data-diagram-region="intersection">
+                      <span class="diagram-set-symbol" aria-hidden="true">∩</span><span>Kesişimi tara</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" data-diagram-region="union">
+                      <span class="diagram-set-symbol" aria-hidden="true">∪</span><span>Birleşimi tara</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" data-diagram-region="difference">
+                      <span class="diagram-set-symbol" aria-hidden="true">∖</span><span>İlk şeklin farkını tara</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="diagram-toolbar-group" role="group" aria-label="Bağlantı araçları">
+                  <button type="button" class="diagram-tool-btn diagram-tool-btn-labeled" id="diagramConnectBtn" title="İki düğümü okla bağla" aria-label="İki düğümü okla bağla" aria-pressed="false">
+                    <i class="bi bi-bezier2" aria-hidden="true"></i>
+                    <span>Bağla</span>
+                  </button>
+                  <button type="button" class="diagram-tool-btn diagram-tool-btn-labeled" id="diagramFreeArrowBtn" title="Herhangi bir şekle bağlı olmayan ok ekle" aria-label="Bağımsız ok ekle">
+                    <i class="bi bi-arrow-down-right" aria-hidden="true"></i>
+                    <span>Serbest ok</span>
+                  </button>
+                </div>
+
+                <div class="diagram-toolbar-group diagram-toolbar-history" role="group" aria-label="Geçmiş ve silme">
+                  <button type="button" class="diagram-tool-btn" id="diagramUndoBtn" title="Geri al" aria-label="Geri al">
+                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" class="diagram-tool-btn" id="diagramRedoBtn" title="Yeniden yap" aria-label="Yeniden yap">
+                    <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" class="diagram-tool-btn diagram-tool-btn-labeled" id="diagramVersionsBtn" title="Kaydedilmiş sürümleri aç" aria-label="Kaydedilmiş sürümleri aç" aria-pressed="false">
+                    <i class="bi bi-clock-history" aria-hidden="true"></i>
+                    <span>Sürümler</span>
+                  </button>
+                  <button type="button" class="diagram-tool-btn diagram-tool-danger" id="diagramDeleteBtn" title="Seçileni sil" aria-label="Seçileni sil" disabled>
+                    <i class="bi bi-trash" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="diagram-toolbar-row diagram-toolbar-row-secondary">
+                <div class="diagram-toolbar-group diagram-toolbar-editing" role="group" aria-label="Kopyalama araçları">
+                  <button type="button" class="diagram-tool-btn diagram-tool-btn-labeled" id="diagramCopyBtn" title="Seçimi kopyala" aria-label="Seçimi kopyala" disabled>
+                    <i class="bi bi-copy" aria-hidden="true"></i>
+                    <span>Kopyala</span>
+                  </button>
+                  <button type="button" class="diagram-tool-btn diagram-tool-btn-labeled" id="diagramPasteBtn" title="Seçimi yapıştır" aria-label="Seçimi yapıştır" disabled>
+                    <i class="bi bi-clipboard-plus" aria-hidden="true"></i>
+                    <span>Yapıştır</span>
+                  </button>
+                  <button type="button" class="diagram-tool-btn diagram-tool-btn-labeled" id="diagramDuplicateBtn" title="Seçili öğeleri çoğalt" aria-label="Seçili öğeleri çoğalt" disabled>
+                    <i class="bi bi-files" aria-hidden="true"></i>
+                    <span>Çoğalt</span>
+                  </button>
+                </div>
+
+                <div class="dropdown diagram-command-menu">
+                  <button type="button" class="diagram-command-trigger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-sliders" aria-hidden="true"></i>
+                    <span>Düzenle</span>
+                  </button>
+                  <div class="dropdown-menu diagram-command-dropdown">
+                    <button type="button" class="dropdown-item diagram-command-item" id="diagramAlignHorizontalBtn" disabled>
+                      <i class="bi bi-align-middle" aria-hidden="true"></i><span>Yatay hizala</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" id="diagramAlignVerticalBtn" disabled>
+                      <i class="bi bi-align-center" aria-hidden="true"></i><span>Dikey hizala</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" id="diagramDistributeBtn" disabled>
+                      <i class="bi bi-distribute-horizontal" aria-hidden="true"></i><span>Eşit aralıkla dağıt</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" id="diagramGroupBtn" disabled>
+                      <i class="bi bi-bounding-box-circles" aria-hidden="true"></i><span>Seçimi grupla</span>
+                    </button>
+                    <button type="button" class="dropdown-item diagram-command-item" id="diagramUngroupBtn" disabled>
+                      <i class="bi bi-subtract" aria-hidden="true"></i><span>Grubu çöz</span>
+                    </button>
+                    <div class="dropdown-divider"></div>
+                    <button type="button" class="dropdown-item diagram-command-item" id="diagramArrangeBtn">
+                      <i class="bi bi-grid-3x3-gap" aria-hidden="true"></i><span>Otomatik düzenle</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="diagram-toolbar-group" role="group" aria-label="Yerleşim araçları">
+                  <button type="button" class="diagram-tool-btn diagram-tool-btn-labeled active" id="diagramSnapBtn" title="Öğeleri ızgaraya hizala" aria-label="Öğeleri ızgaraya hizala" aria-pressed="true">
+                    <i class="bi bi-grid" aria-hidden="true"></i><span>Izgara</span>
+                  </button>
+                </div>
+
+                <div class="diagram-toolbar-group diagram-toolbar-zoom" role="group" aria-label="Tuval görünümü">
+                  <button type="button" class="diagram-tool-btn" id="diagramZoomOutBtn" title="Uzaklaştır" aria-label="Uzaklaştır">
+                    <i class="bi bi-zoom-out" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" class="diagram-tool-btn" id="diagramFitBtn" title="Tümünü göster" aria-label="Tümünü göster">
+                    <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" class="diagram-tool-btn" id="diagramZoomInBtn" title="Yakınlaştır" aria-label="Yakınlaştır">
+                    <i class="bi bi-zoom-in" aria-hidden="true"></i>
+                  </button>
+                  <button type="button" class="diagram-tool-btn diagram-tool-btn-labeled" id="diagramInspectorToggleBtn" title="Ayar panelini gizle veya göster" aria-label="Ayar panelini gizle" aria-pressed="false">
+                    <i class="bi bi-layout-sidebar-inset-reverse" aria-hidden="true"></i>
+                    <span>Panel</span>
+                  </button>
+                  <span class="diagram-zoom-value" id="diagramZoomValue">%100</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="diagram-canvas-wrap">
+              <svg id="diagramEditorCanvas" class="diagram-editor-canvas" viewBox="0 0 960 540" role="application" aria-label="Diyagram tuvali" tabindex="0">
+                <defs>
+                  <pattern id="diagramGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+                    <circle cx="1" cy="1" r="1" class="diagram-grid-dot"></circle>
+                  </pattern>
+                  <marker id="diagramEditorArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" class="diagram-editor-arrow"></path>
+                  </marker>
+                  <pattern id="diagramRegionPattern-neutral" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(36)">
+                    <line x1="0" y1="0" x2="0" y2="12" class="diagram-region-hatch diagram-region-hatch-neutral"></line>
+                  </pattern>
+                  <pattern id="diagramRegionPattern-green" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(36)">
+                    <line x1="0" y1="0" x2="0" y2="12" class="diagram-region-hatch diagram-region-hatch-green"></line>
+                  </pattern>
+                  <pattern id="diagramRegionPattern-blue" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(36)">
+                    <line x1="0" y1="0" x2="0" y2="12" class="diagram-region-hatch diagram-region-hatch-blue"></line>
+                  </pattern>
+                  <pattern id="diagramRegionPattern-gold" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(36)">
+                    <line x1="0" y1="0" x2="0" y2="12" class="diagram-region-hatch diagram-region-hatch-gold"></line>
+                  </pattern>
+                  <pattern id="diagramRegionPattern-red" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(36)">
+                    <line x1="0" y1="0" x2="0" y2="12" class="diagram-region-hatch diagram-region-hatch-red"></line>
+                  </pattern>
+                </defs>
+                <defs id="diagramEditorRegionDefs"></defs>
+                <rect width="960" height="540" class="diagram-grid-background"></rect>
+                <g id="diagramEditorViewport">
+                  <g id="diagramEditorGroups"></g>
+                  <g id="diagramEditorEdges"></g>
+                  <g id="diagramEditorNodes"></g>
+                  <g id="diagramEditorRegions"></g>
+                  <g id="diagramEditorHandles"></g>
+                </g>
+              </svg>
+              <div class="diagram-canvas-status" id="diagramCanvasStatus" aria-live="polite">Döngü taslağı hazır</div>
+              <div class="diagram-minimap" aria-label="Diyagram mini haritası">
+                <svg id="diagramMiniMap" viewBox="0 0 8000 5200" role="img" aria-hidden="true">
+                  <g id="diagramMiniMapContent"></g>
+                  <rect id="diagramMiniMapViewport" class="diagram-minimap-viewport"></rect>
+                </svg>
+              </div>
+            </div>
+          </section>
+
+          <aside class="diagram-inspector" aria-label="Diyagram ayarları">
+            <div class="diagram-field diagram-title-field">
+              <label for="diagramTitleInput">Diyagram adı</label>
+              <input type="text" id="diagramTitleInput" maxlength="80" value="Basit döngü" autocomplete="off">
+            </div>
+
+            <div class="diagram-inspector-section diagram-region-manager" id="diagramRegionManager" hidden>
+              <div class="diagram-inspector-heading">
+                <span>Taralı bölgeler</span>
+                <span id="diagramRegionCount">0</span>
+              </div>
+              <div class="diagram-region-list" id="diagramRegionList"></div>
+              <small class="diagram-region-note">Bir bölgeyi seçerek işlemini, taraflarını ve rengini değiştirebilirsin.</small>
+            </div>
+
+            <div class="diagram-inspector-section" id="diagramNodeInspector">
+              <div class="diagram-inspector-heading">
+                <span>Seçili düğüm</span>
+                <span id="diagramSelectionBadge">Yok</span>
+              </div>
+              <div class="diagram-field">
+                <label for="diagramNodeLabelInput">Metin</label>
+                <textarea id="diagramNodeLabelInput" maxlength="240" rows="3" disabled></textarea>
+              </div>
+              <div class="diagram-field">
+                <label for="diagramNodeShapeSelect">Şekil</label>
+                <select id="diagramNodeShapeSelect" disabled>
+                  <option value="terminal">Başlangıç / bitiş</option>
+                  <option value="process">İşlem</option>
+                  <option value="decision">Karar</option>
+                  <option value="data">Veri girişi / çıktısı</option>
+                  <option value="document">Belge</option>
+                  <option value="pyramid">Piramit katmanı</option>
+                  <option value="set">Küme</option>
+                  <option value="label">Bölge etiketi</option>
+                </select>
+              </div>
+              <div class="diagram-field">
+                <span class="diagram-field-label">Renk</span>
+                <div class="diagram-tone-control" role="group" aria-label="Düğüm rengi">
+                  <button type="button" class="diagram-tone-swatch tone-neutral active" data-diagram-tone="neutral" aria-label="Nötr" title="Nötr"></button>
+                  <button type="button" class="diagram-tone-swatch tone-green" data-diagram-tone="green" aria-label="Yeşil" title="Yeşil"></button>
+                  <button type="button" class="diagram-tone-swatch tone-blue" data-diagram-tone="blue" aria-label="Mavi" title="Mavi"></button>
+                  <button type="button" class="diagram-tone-swatch tone-gold" data-diagram-tone="gold" aria-label="Altın" title="Altın"></button>
+                  <button type="button" class="diagram-tone-swatch tone-red" data-diagram-tone="red" aria-label="Kırmızı" title="Kırmızı"></button>
+                </div>
+              </div>
+              <div class="diagram-field diagram-range-field">
+                <label for="diagramNodeWidthInput">Genişlik <output id="diagramNodeWidthValue">152</output></label>
+                <input type="range" id="diagramNodeWidthInput" min="80" max="2400" step="4" value="152" disabled>
+              </div>
+              <div class="diagram-field diagram-range-field">
+                <label for="diagramNodeHeightInput">Yükseklik <output id="diagramNodeHeightValue">68</output></label>
+                <input type="range" id="diagramNodeHeightInput" min="44" max="1800" step="4" value="68" disabled>
+              </div>
+              <div class="diagram-field diagram-range-field">
+                <label for="diagramNodeFontSizeInput">Yazı boyutu <output id="diagramNodeFontSizeValue">15</output></label>
+                <input type="range" id="diagramNodeFontSizeInput" min="10" max="52" step="1" value="15" disabled>
+              </div>
+              <div class="diagram-field">
+                <label for="diagramNodeLinkInput">Tıklanınca açılacak yer</label>
+                <div class="diagram-link-field">
+                  <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                  <input type="text" id="diagramNodeLinkInput" maxlength="500" placeholder="/başlık/ veya https://..." disabled autocomplete="off">
+                  <button type="button" id="diagramNodeLinkOpenBtn" title="Bağlantıyı yeni sekmede aç" aria-label="Bağlantıyı yeni sekmede aç" disabled>
+                    <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+                  </button>
+                </div>
+                <small>Site içi bir yol ya da tam web adresi yazabilirsin.</small>
+              </div>
+            </div>
+
+            <div class="diagram-inspector-section" id="diagramEdgeInspector" hidden>
+              <div class="diagram-inspector-heading">
+                <span id="diagramEdgeInspectorTitle">Seçili bağlantı</span>
+                <span id="diagramEdgeInspectorBadge">Ok</span>
+              </div>
+              <div class="diagram-field">
+                <label for="diagramEdgeLabelInput">Etiket</label>
+                <input type="text" id="diagramEdgeLabelInput" maxlength="50" placeholder="Evet, Hayır, Sonra..." autocomplete="off">
+              </div>
+              <div class="diagram-field">
+                <label for="diagramEdgeDescriptionInput">Açıklama</label>
+                <textarea id="diagramEdgeDescriptionInput" maxlength="600" rows="4" placeholder="Bu okun ne anlama geldiğini yaz..."></textarea>
+              </div>
+              <div class="diagram-field">
+                <label for="diagramEdgeStyleSelect">Çizgi</label>
+                <select id="diagramEdgeStyleSelect">
+                  <option value="solid">Düz</option>
+                  <option value="dashed">Kesik</option>
+                </select>
+              </div>
+              <div class="diagram-field">
+                <label for="diagramEdgeRouteSelect">Rota</label>
+                <select id="diagramEdgeRouteSelect">
+                  <option value="auto">Akıllı</option>
+                  <option value="straight">Düz</option>
+                  <option value="curve">Kavisli</option>
+                  <option value="orthogonal">Köşeli</option>
+                </select>
+              </div>
+              <div class="diagram-field diagram-range-field">
+                <label for="diagramEdgeBendInput">Kavis <output id="diagramEdgeBendValue">0</output></label>
+                <input type="range" id="diagramEdgeBendInput" min="-1200" max="1200" step="4" value="0">
+              </div>
+              <div class="diagram-arrow-anchor-summary" id="diagramArrowAnchors" hidden>
+                <div><span>Başlangıç</span><strong id="diagramArrowStartAnchor">Serbest</strong></div>
+                <div><span>Bitiş</span><strong id="diagramArrowEndAnchor">Serbest</strong></div>
+                <small>Bir ucu şeklin veya taralı bölgenin üzerine bırakarak bağlayabilirsin.</small>
+              </div>
+            </div>
+
+            <div class="diagram-inspector-section" id="diagramRegionInspector" hidden>
+              <div class="diagram-inspector-heading">
+                <span>Seçili taralı bölge</span>
+                <span id="diagramRegionSymbol">∩</span>
+              </div>
+              <div class="diagram-field">
+                <label for="diagramRegionLabelInput">Bölge adı <span class="diagram-optional-label">isteğe bağlı</span></label>
+                <input type="text" id="diagramRegionLabelInput" maxlength="80" placeholder="İstersen bu alanı adlandır" autocomplete="off">
+              </div>
+              <div class="diagram-field">
+                <label for="diagramRegionOperationSelect">Küme işlemi</label>
+                <select id="diagramRegionOperationSelect">
+                  <option value="intersection">Kesişim (∩)</option>
+                  <option value="union">Birleşim (∪)</option>
+                  <option value="difference">Fark (∖)</option>
+                </select>
+              </div>
+              <div class="diagram-field" id="diagramDifferenceBaseField" hidden>
+                <label for="diagramDifferenceBaseSelect">Korunan taraf</label>
+                <select id="diagramDifferenceBaseSelect"></select>
+                <small>Fark, bu şekilden diğer seçili şekiller çıkarılarak hesaplanır.</small>
+              </div>
+              <div class="diagram-field">
+                <span class="diagram-field-label">Bölgeye dahil şekiller</span>
+                <div class="diagram-region-member-list" id="diagramRegionMemberList"></div>
+                <div class="diagram-region-member-actions">
+                  <span id="diagramRegionMemberCount" aria-live="polite">2 seçili</span>
+                  <button type="button" id="diagramRegionMemberApplyBtn" disabled>
+                    <i class="bi bi-check-lg" aria-hidden="true"></i><span>Seçimi uygula</span>
+                  </button>
+                </div>
+                <small>İstediğin şekilleri işaretle. En az iki şekil seçildiğinde değişikliği tek seferde uygulayabilirsin.</small>
+              </div>
+              <div class="diagram-field">
+                <label for="diagramRegionToneSelect">Tarama rengi</label>
+                <select id="diagramRegionToneSelect">
+                  <option value="neutral">Nötr</option>
+                  <option value="green">Yeşil</option>
+                  <option value="blue">Mavi</option>
+                  <option value="gold">Altın</option>
+                  <option value="red">Kırmızı</option>
+                </select>
+              </div>
+              <small class="diagram-region-note">Ad boş bırakılabilir. Bölge, bağlı olduğu şekiller taşındığında ve boyutlandığında kendiliğinden güncellenir.</small>
+            </div>
+
+            <div class="diagram-inspector-section" id="diagramMultiInspector" hidden>
+              <div class="diagram-inspector-heading">
+                <span>Çoklu seçim</span>
+                <span id="diagramMultiSelectionCount">0 düğüm</span>
+              </div>
+              <div class="diagram-field" id="diagramGroupNameField" hidden>
+                <label for="diagramGroupLabelInput">Grup adı</label>
+                <input type="text" id="diagramGroupLabelInput" maxlength="80" autocomplete="off">
+              </div>
+              <small class="diagram-selection-help"><kbd>Shift</kbd>, <kbd>Ctrl</kbd> veya <kbd>⌘</kbd> basılıyken tıklayarak seçime öğe ekleyip çıkarabilirsin.</small>
+            </div>
+
+            <div class="diagram-inspector-section diagram-versions-panel" id="diagramVersionsPanel" hidden>
+              <div class="diagram-inspector-heading">
+                <span>Kaydedilmiş sürümler</span>
+                <button type="button" class="diagram-inline-close" id="diagramVersionsCloseBtn" aria-label="Sürümleri kapat"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+              </div>
+              <button type="button" class="diagram-save-version-btn" id="diagramSaveVersionBtn">
+                <i class="bi bi-save" aria-hidden="true"></i><span>Şimdiki sürümü kaydet</span>
+              </button>
+              <div class="diagram-version-list" id="diagramVersionList"></div>
+            </div>
+
+            <div class="diagram-inspector-empty" id="diagramInspectorEmpty">
+              <span class="diagram-inspector-empty-icon" aria-hidden="true"><i class="bi bi-cursor"></i></span>
+              <strong>Bir öğe seç</strong>
+              <span>Düğüm, bağlantı ve taralı bölge ayarları burada açılır. Birkaç şekil için Shift, Ctrl veya ⌘ ile tıkla.</span>
+            </div>
+
+            <div class="diagram-graph-meta" aria-live="polite">
+              <span><strong id="diagramNodeCount">0</strong> düğüm</span>
+              <span><strong id="diagramEdgeCount">0</strong> bağlantı</span>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="modal-footer diagram-modal-footer">
+        <span class="diagram-footer-note" id="diagramFooterNote">Hazır</span>
+        <button type="button" class="btn btn-theme-secondary" data-bs-dismiss="modal">Vazgeç</button>
+        <button type="button" class="btn btn-theme-primary" id="insertDiagramBtn">
+          <i class="bi bi-plus-lg" aria-hidden="true"></i> Metne ekle
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="diagramViewerModal" tabindex="-1" aria-labelledby="diagramViewerTitle" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-lg-down">
+    <div class="modal-content diagram-viewer-modal">
+      <div class="modal-header diagram-modal-header">
+        <div class="diagram-modal-heading">
+          <span class="diagram-modal-icon" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
+          <div>
+            <span class="diagram-modal-eyebrow">DIYAGRAM</span>
+            <h5 class="modal-title" id="diagramViewerTitle">Diyagram</h5>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body diagram-viewer-stage" id="diagramViewerStage"></div>
+      <aside class="diagram-viewer-info" id="diagramViewerInfo" hidden aria-live="polite">
+        <div>
+          <strong id="diagramViewerInfoTitle">Bağlantı</strong>
+          <button type="button" id="diagramViewerInfoClose" aria-label="Açıklamayı kapat"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+        </div>
+        <p id="diagramViewerInfoText"></p>
+      </aside>
+      <div class="modal-footer diagram-viewer-footer">
+        <button type="button" class="btn btn-outline-theme-secondary" id="downloadDiagramBtn">
+          <i class="bi bi-download" aria-hidden="true"></i> SVG indir
+        </button>
+        <button type="button" class="btn btn-outline-theme-secondary" id="downloadDiagramPngBtn">
+          <i class="bi bi-filetype-png" aria-hidden="true"></i> PNG
+        </button>
+        <button type="button" class="btn btn-outline-theme-secondary" id="downloadDiagramPdfBtn">
+          <i class="bi bi-filetype-pdf" aria-hidden="true"></i> PDF
+        </button>
+        <button type="button" class="btn btn-theme-primary" id="editDiagramBtn" hidden>
+          <i class="bi bi-pencil" aria-hidden="true"></i> Düzenle
+        </button>
+        <button type="button" class="btn btn-theme-secondary" data-bs-dismiss="modal">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>

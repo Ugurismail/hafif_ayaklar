@@ -62,6 +62,7 @@
     <!-- Özel CSS -->
     <link rel="stylesheet" href="{% static 'css/animations.css' %}?v={{ STATIC_ASSET_VERSION }}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}?v={{ STATIC_ASSET_VERSION }}-bookquick2">
+    <link rel="stylesheet" href="{% static 'css/diagram_editor.css' %}?v={{ STATIC_ASSET_VERSION }}-diagram18">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     {% block extra_css %}{% endblock extra_css %}
     {% if user.is_authenticated %}
@@ -172,6 +173,7 @@
 {% if user.is_authenticated %}
 {% include "core/_entry_book_quick_add_modal.html" %}
 {% endif %}
+{% include "core/_diagram_editor_modals.html" %}
 
     <!-- İçerik -->
     <div class="container-fluid" id="mainContent">

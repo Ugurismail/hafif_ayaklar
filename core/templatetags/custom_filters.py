@@ -24,7 +24,7 @@ def is_system_font(value):
         'Comic+Sans+MS',
         'Arial',
         'Verdana',
-        'Helvetica'
+        'Helvetica',
+        'ITC+Galliard'
     ]
     return value in system_fonts
-

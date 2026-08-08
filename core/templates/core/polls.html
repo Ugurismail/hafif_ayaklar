@@ -1,559 +1,277 @@
 {% extends 'core/base.html' %}
 {% load static %}
-{% load custom_tags %}
 
 {% block extra_css %}
-<style>
-.expired-poll-cards-wrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: flex-start;
-  align-items: stretch;
-}
-.expired-poll-card {
-  min-width: 230px;
-  max-width: 320px;
-  background: var(--content-background-color);
-  border-radius: 12px;
-  border: 1.5px solid var(--header-background-color);
-  box-shadow: 0 1.5px 10px rgba(60,75,100,0.07);
-  margin-bottom: 0;
-  padding: 17px 20px 13px 20px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  transition: box-shadow 0.15s, border 0.15s;
-}
-.expired-poll-card:hover {
-  box-shadow: 0 4px 20px rgba(80,110,220,0.12), 0 1.5px 4.5px rgba(0,0,0,0.05);
-  border: 1.5px solid #8fb7ed;
-}
-.expired-poll-badge {
-  position: absolute;
-  top: 8px;            /* daha yukarıda ve başlıktan uzak */
-  right: 12px;
-  background: rgba(251,238,217, 0.68); /* daha şeffaf */
-  color: #b48b1e;
-  padding: 1px 8px 1px 7px;
-  font-size: 0.79rem;  /* daha küçük */
-  border-radius: 9px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  z-index: 2;
-  pointer-events: none;
-  box-shadow: none;
-}
-
-.poll-title {
-  font-size: 1.12rem;
-  font-weight: bold;
-  margin-bottom: 6px;
-  color: var(--text-color);
-  line-height: 1.32;
-  word-break: break-word;
-}
-.poll-meta-date {
-  font-size: 0.97rem;
-  color: var(--text-color);
-  opacity: 0.7;
-  margin-bottom: 7px;
-}
-.expired-poll-options {
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.expired-poll-option {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 0;
-  font-size: 0.99rem;
-  border-bottom: 1px dashed var(--header-background-color);
-}
-.expired-poll-option:last-child {
-  border-bottom: none;
-}
-.expired-poll-option-text {
-  font-weight: 500;
-  color: var(--text-color);
-}
-.expired-poll-option-percent {
-  font-size: 0.98rem;
-  margin-left: 10px;
-  color: var(--button-background-color);
-  font-weight: 500;
-  min-width: 38px;
-  text-align: right;
-}
-@media (max-width: 900px) {
-  .expired-poll-cards-wrap { gap: 10px; }
-  .expired-poll-card { min-width: 150px; max-width: 100%; flex: 1 1 47vw; }
-}
-@media (max-width: 600px) {
-  .expired-poll-cards-wrap { flex-direction: column; gap: 8px; }
-  .expired-poll-card { min-width: 0; width: 100%; max-width: 100%; }
-}
-</style>
-{% endblock extra_css %}
+<link rel="stylesheet" href="{% static 'css/polls.css' %}?v={{ STATIC_ASSET_VERSION }}-polls1">
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-  <h2>Anketler</h2>
-  <button class="btn btn-theme-primary mb-3" data-bs-toggle="modal" data-bs-target="#createPollModal">
-    Yeni Anket Oluştur
-  </button>
-
-  <ul class="nav nav-tabs" id="pollTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="active-polls-tab" data-bs-toggle="tab" data-bs-target="#active-polls" type="button" role="tab" aria-controls="active-polls" aria-selected="true">
-        Aktif Anketler
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="expired-polls-tab" data-bs-toggle="tab" data-bs-target="#expired-polls" type="button" role="tab" aria-controls="expired-polls" aria-selected="false">
-        Süresi Geçmiş Anketler
-      </button>
-    </li>
-  </ul>
-
-  <div class="tab-content mt-3" id="pollTabsContent">
-    <!-- Aktif Anketler -->
-    <div class="tab-pane fade show active" id="active-polls" role="tabpanel" aria-labelledby="active-polls-tab">
-      <div class="row g-4">
-        {% for apoll in active_polls_data %}
-        <div class="col-12 col-md-6 col-lg-4 d-flex">
-          <div class="card flex-fill" style="border-radius: 14px;">
-            <div class="card-body">
-              <h5 class="card-title" style="font-weight:600;">{{ apoll.poll.question_text }}</h5>
-              <p class="card-subtitle mb-2 text-muted">Bitiş tarihi: {{ apoll.poll.end_date|date:"Y-m-d H:i" }}</p>
-              <div class="mb-3">
-                {% if apoll.poll.related_question %}
-                  <a href="{% url 'poll_question_redirect' apoll.poll.id %}" class="btn btn-theme-primary btn-sm me-2">Anket Başlığına Git</a>
-                {% else %}
-                  <a href="{% url 'poll_question_redirect' apoll.poll.id %}" class="btn btn-theme-primary btn-sm me-2">Anket Başlığı Oluştur</a>
-                {% endif %}
-                <button class="btn btn-outline-theme-secondary btn-sm" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#poll-details-{{ apoll.poll.id }}" aria-expanded="false"
-                        aria-controls="poll-details-{{ apoll.poll.id }}">
-                  Detayları Göster
-                </button>
-                {% if apoll.can_edit %}
-                  <a href="{% url 'edit_poll' apoll.poll.id %}" class="btn btn-outline-theme-secondary btn-sm mt-2 mt-md-0">Düzenle</a>
-                {% endif %}
-                {% if apoll.can_manage %}
-                  <form action="{% url 'delete_poll' apoll.poll.id %}" method="post" class="d-inline poll-delete-form">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-danger btn-sm mt-2 mt-md-0">Sil</button>
-                  </form>
-                {% endif %}
-              </div>
-              <div class="collapse" id="poll-details-{{ apoll.poll.id }}">
-                <h6 class="fw-bold">Seçenekler:</h6>
-                <ul class="list-group list-group-flush mb-2">
-                  {% for opt in apoll.options_data %}
-                  <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>{{ opt.option.option_text }}</span>
-                    <span>
-                      %{{ opt.percentage|floatformat:1 }} ({{ opt.votes }} oy)
-                      {% if apoll.poll.is_active and not apoll.poll.options.all|user_has_voted:request.user %}
-                        <a href="{% url 'vote_poll' apoll.poll.id opt.option.id %}" class="btn btn-sm btn-theme-primary ms-2">Oy Ver</a>
-                      {% endif %}
-                    </span>
-                  </li>
-                  {% endfor %}
-                </ul>
-                <div class="mt-3">
-                  <!-- Donut Grafik (Chart.js) -->
-                  <canvas id="pollChart-{{ apoll.poll.id }}" width="200" height="200"></canvas>
-                  <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                      var ctx = document.getElementById('pollChart-{{ apoll.poll.id }}').getContext('2d');
-                      var data = {
-                        labels: [{% for opt in apoll.options_data %}"{{ opt.option.option_text|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}],
-                        datasets: [{
-                          data: [{% for opt in apoll.options_data %}{{ opt.votes }}{% if not forloop.last %},{% endif %}{% endfor %}],
-                          backgroundColor: ['#007bff','#6c757d','#28a745','#dc3545','#ffc107','#17a2b8','#f8f9fa','#343a40','#fd7e14','#e83e8c']
-                        }]
-                      };
-                      new Chart(ctx, {
-                        type: 'doughnut',
-                        data: data,
-                      });
-                    });
-                  </script>
-                </div>
-                {% if not apoll.poll.is_anonymous %}
-                  <h6 class="mt-3">Oy Kullananlar:</h6>
-                  <ul>
-                    {% for opt in apoll.options_data %}
-                      {% for v in opt.option.votes.all %}
-                        <li>{{ v.user.username }} -> {{ opt.option.option_text }}</li>
-                      {% endfor %}
-                    {% endfor %}
-                  </ul>
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </div>
-        {% empty %}
-        <div class="col-12"><p>Henüz aktif anket yok. İlk anketi siz oluşturun!</p></div>
-        {% endfor %}
+<main id="pollsPage"
+      class="polls-page"
+      data-open-create="{{ open_create_poll_modal|yesno:'true,false' }}"
+      data-open-edit="{{ open_edit_poll_modal|yesno:'true,false' }}">
+  <header class="polls-header">
+    <div class="polls-heading">
+      <span class="polls-heading-icon" aria-hidden="true"><i class="bi bi-bar-chart"></i></span>
+      <div>
+        <h1>Anketler</h1>
+        <p>Görüşünü paylaş, sonuçları karşılaştır.</p>
       </div>
     </div>
 
-    <!-- Süresi Geçmiş Anketler -->
-    <div class="tab-pane fade" id="expired-polls" role="tabpanel" aria-labelledby="expired-polls-tab">
-      <div class="mb-3">
-        <input type="text" id="expiredPollSearch" class="form-control" placeholder="Anket başlığına göre ara...">
-      </div>
-      <div class="expired-poll-cards-wrap" id="expiredPollsRow">
-        {% for epoll in expired_polls_data %}
-          <div class="expired-poll-card" data-title="{{ epoll.poll.question_text|lower }}">
-            <span class="expired-poll-badge">Süresi Geçti</span>
-            <div class="poll-title">{{ epoll.poll.question_text }}</div>
-            <div class="poll-meta-date">{{ epoll.poll.end_date|date:"Y-m-d H:i" }}</div>
-            {% if epoll.can_manage %}
-              <div class="d-flex gap-2 mb-2">
-                {% if epoll.can_edit %}
-                  <a href="{% url 'edit_poll' epoll.poll.id %}" class="btn btn-outline-theme-secondary btn-sm">Düzenle</a>
-                {% endif %}
-                <form action="{% url 'delete_poll' epoll.poll.id %}" method="post" class="d-inline poll-delete-form">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-outline-danger btn-sm">Sil</button>
-                </form>
-              </div>
+    {% if request.user.is_authenticated %}
+    <button type="button" class="poll-primary-action" data-bs-toggle="modal" data-bs-target="#createPollModal">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+      Yeni anket
+    </button>
+    {% else %}
+    <a class="poll-primary-action" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">
+      <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+      Giriş yap
+    </a>
+    {% endif %}
+  </header>
+
+  <nav class="poll-status-tabs" aria-label="Anket durumu">
+    <a href="?status=active" class="{% if status == 'active' %}is-active{% endif %}" {% if status == 'active' %}aria-current="page"{% endif %}>
+      <i class="bi bi-broadcast" aria-hidden="true"></i>
+      <span>Aktif</span>
+      <strong>{{ active_count }}</strong>
+    </a>
+    <a href="?status=expired" class="{% if status == 'expired' %}is-active{% endif %}" {% if status == 'expired' %}aria-current="page"{% endif %}>
+      <i class="bi bi-archive" aria-hidden="true"></i>
+      <span>Arşiv</span>
+      <strong>{{ expired_count }}</strong>
+    </a>
+  </nav>
+
+  <section class="polls-toolbar" aria-label="Anket araçları">
+    <div>
+      <strong>{% if status == 'active' %}Devam eden anketler{% else %}Tamamlanan anketler{% endif %}</strong>
+      <span>{{ page_obj.paginator.count }} sonuç</span>
+    </div>
+    <form method="get" class="poll-search" role="search">
+      <input type="hidden" name="status" value="{{ status }}">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <label class="visually-hidden" for="pollSearchInput">Anket ara</label>
+      <input id="pollSearchInput" type="search" name="q" value="{{ search_query }}" placeholder="Anket ara" autocomplete="off">
+      {% if search_query %}
+      <a href="?status={{ status }}" title="Aramayı temizle" aria-label="Aramayı temizle"><i class="bi bi-x-lg" aria-hidden="true"></i></a>
+      {% endif %}
+      <button type="submit">Ara</button>
+    </form>
+  </section>
+
+  {% if status == 'active' %}
+  <section class="poll-card-grid" aria-label="Aktif anketler">
+    {% for apoll in active_polls_data %}
+    <article class="poll-card">
+      <header class="poll-card-header">
+        <div class="poll-state poll-state-active">
+          <span aria-hidden="true"></span>
+          {{ apoll.poll.end_date|timeuntil }} kaldı
+        </div>
+
+        {% if apoll.can_manage %}
+        <details class="poll-card-menu">
+          <summary title="Anket işlemleri" aria-label="Anket işlemleri"><i class="bi bi-three-dots" aria-hidden="true"></i></summary>
+          <div>
+            {% if apoll.can_edit %}
+            <a href="{% url 'edit_poll' apoll.poll.id %}"><i class="bi bi-pencil" aria-hidden="true"></i>Düzenle</a>
             {% endif %}
-            <div class="expired-poll-options">
-              {% for opt_data in epoll.options_data %}
-                <div class="expired-poll-option">
-                  <span class="expired-poll-option-text">{{ opt_data.text }}</span>
-                  <span class="expired-poll-option-percent">%{{ opt_data.percentage }}</span>
-                </div>
-              {% endfor %}
-            </div>
+            <form action="{% url 'delete_poll' apoll.poll.id %}" method="post" class="poll-delete-form">
+              {% csrf_token %}
+              <button type="submit"><i class="bi bi-trash" aria-hidden="true"></i>Sil</button>
+            </form>
           </div>
-        {% empty %}
-          <div>Hiç eski anket yok!</div>
-        {% endfor %}
+        </details>
+        {% endif %}
+      </header>
+
+      <a class="poll-card-title" href="{% url 'poll_detail' apoll.poll.id %}">{{ apoll.poll.question_text }}</a>
+      <div class="poll-card-meta">
+        <span><i class="bi bi-person" aria-hidden="true"></i>{{ apoll.poll.created_by.username }}</span>
+        <span><i class="bi bi-people" aria-hidden="true"></i>{{ apoll.total_votes }} oy</span>
+        <span><i class="bi {% if apoll.poll.is_anonymous %}bi-incognito{% else %}bi-person-check{% endif %}" aria-hidden="true"></i>{% if apoll.poll.is_anonymous %}Anonim{% else %}Açık{% endif %}</span>
       </div>
-    </div>
-    
-  </div>
-</div>
 
-<!-- Anket Oluşturma Modal - Multi-Step Form -->
-<div class="modal fade" id="createPollModal" tabindex="-1" aria-labelledby="createPollModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form action="{% url 'create_poll' %}" method="post" id="pollForm">
+      <form method="post"
+            class="poll-vote-form"
+            data-vote-url-template="{% url 'vote_poll' apoll.poll.id 0 %}">
         {% csrf_token %}
-        <div class="modal-header">
-          <h5 class="modal-title" id="createPollModalLabel">Yeni Anket Oluştur</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-        </div>
-        <div class="modal-body">
-          <!-- Adım 1 -->
-          <div id="pollStep1">
-            <div class="mb-3">
-              {{ form.question_text.label_tag }}
-              {{ form.question_text }}
-              <div class="invalid-feedback">Anket sorusu boş bırakılamaz.</div>
-              {% if form.question_text.errors %}
-              <div class="text-danger">{{ form.question_text.errors }}</div>
-              {% endif %}
-            </div>
-            <div class="mb-3">
-              {{ form.end_date.label_tag }}
-              {{ form.end_date }}
-              {% if form.end_date.errors %}
-              <div class="text-danger">{{ form.end_date.errors }}</div>
-              {% endif %}
-            </div>
-            <div class="form-check mb-3">
-              {{ form.is_anonymous }}
-              {{ form.is_anonymous.label_tag }}
-              {% if form.is_anonymous.errors %}
-              <div class="text-danger">{{ form.is_anonymous.errors }}</div>
-              {% endif %}
-            </div>
-            <button type="button" class="btn btn-theme-primary" id="toStep2Btn">İleri</button>
+        <fieldset>
+          <legend class="visually-hidden">{{ apoll.poll.question_text }} seçenekleri</legend>
+          <div class="poll-option-list">
+            {% for option_data in apoll.options_data %}
+            <label class="poll-option{% if option_data.is_selected %} is-selected{% endif %}">
+              <input type="radio"
+                     name="option"
+                     value="{{ option_data.option.id }}"
+                     {% if option_data.is_selected %}checked{% endif %}
+                     {% if apoll.has_voted or not request.user.is_authenticated %}disabled{% endif %}>
+              <span class="poll-option-control" aria-hidden="true"></span>
+              <span class="poll-option-content">
+                <span class="poll-option-line">
+                  <span>{{ option_data.option.option_text }}</span>
+                  <strong>%{{ option_data.percentage|floatformat:1 }}</strong>
+                </span>
+                <span class="poll-progress" aria-hidden="true"><span style="width: {{ option_data.percentage }}%"></span></span>
+                <small>{{ option_data.votes }} oy{% if option_data.is_selected %} · senin seçimin{% endif %}</small>
+              </span>
+            </label>
+            {% endfor %}
           </div>
-          <!-- Adım 2 -->
-          <div id="pollStep2" style="display: none;">
-            <h6>Seçenekler:</h6>
-            <div id="optionsContainer">
-              <div class="mb-2" id="optionField1">
-                {{ form.option_1.label_tag }}
-                {{ form.option_1 }}
-                {% if form.option_1.errors %}
-                <div class="text-danger">{{ form.option_1.errors }}</div>
-                {% endif %}
-              </div>
-              <div class="mb-2" id="optionField2">
-                {{ form.option_2.label_tag }}
-                {{ form.option_2 }}
-                {% if form.option_2.errors %}
-                <div class="text-danger">{{ form.option_2.errors }}</div>
-                {% endif %}
-              </div>
-              {% for i in "3,4,5,6,7,8,9,10"|split:"," %}
-                {% with field_name="option_"|add:i %}
-                  {% with field=form|field_by_name:field_name %}
-                    <div class="mb-2 option-field" id="optionField{{ i }}" style="display: none;">
-                      {{ field.label_tag }}
-                      {{ field }}
-                      {% if field.errors %}
-                        <div class="text-danger">{{ field.errors }}</div>
-                      {% endif %}
-                    </div>
-                  {% endwith %}
-                {% endwith %}
-              {% endfor %}
-            </div>
-            <button type="button" class="btn btn-theme-secondary" id="addOptionBtn">Seçenek Ekle</button>
-            <div class="mt-3 d-flex justify-content-between">
-              <button type="button" class="btn btn-theme-secondary" id="backToStep1Btn">Geri</button>
-              <button type="submit" class="btn btn-theme-primary">Anketi Oluştur</button>
-            </div>
+        </fieldset>
+        <p class="poll-vote-error" hidden>Bir seçenek seçmelisin.</p>
+
+        <footer class="poll-card-footer">
+          <div class="poll-card-links">
+            <a href="{% url 'poll_detail' apoll.poll.id %}" title="Anket ayrıntıları"><i class="bi bi-arrow-up-right" aria-hidden="true"></i><span>Ayrıntı</span></a>
+            <a href="{% url 'poll_question_redirect' apoll.poll.id %}" title="Anket başlığı">
+              <i class="bi bi-chat-square-text" aria-hidden="true"></i>
+              <span>{% if apoll.poll.related_question %}Başlık{% else %}Başlık oluştur{% endif %}</span>
+            </a>
           </div>
-        </div>
+          {% if apoll.can_vote %}
+          <button type="submit" class="poll-vote-button">Oyumu gönder</button>
+          {% elif apoll.has_voted %}
+          <span class="poll-voted-state"><i class="bi bi-check2-circle" aria-hidden="true"></i>Oyun kaydedildi</span>
+          {% elif not request.user.is_authenticated %}
+          <a class="poll-login-link" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">Oy vermek için giriş yap</a>
+          {% endif %}
+        </footer>
       </form>
+    </article>
+    {% empty %}
+    <div class="poll-empty-state">
+      <i class="bi bi-bar-chart" aria-hidden="true"></i>
+      <strong>{% if search_query %}Aramana uyan aktif anket yok{% else %}Şu anda aktif anket yok{% endif %}</strong>
+      <span>{% if search_query %}Başka bir ifade deneyebilirsin.{% else %}Yeni bir anket oluşturulduğunda burada görünecek.{% endif %}</span>
     </div>
-  </div>
-</div>
+    {% endfor %}
+  </section>
+  {% else %}
+  <section class="poll-archive-list" aria-label="Anket arşivi">
+    {% for epoll in expired_polls_data %}
+    <details class="poll-archive-item">
+      <summary>
+        <span class="poll-archive-icon" aria-hidden="true"><i class="bi bi-bar-chart-steps"></i></span>
+        <span class="poll-archive-copy">
+          <strong>{{ epoll.poll.question_text }}</strong>
+          <small>{{ epoll.poll.end_date|date:"d M Y, H:i" }} · {{ epoll.total_votes }} oy</small>
+        </span>
+        <span class="poll-archive-winner">
+          <small>Önde</small>
+          <strong>{{ epoll.winner_text }}</strong>
+        </span>
+        <i class="bi bi-chevron-down poll-archive-chevron" aria-hidden="true"></i>
+      </summary>
 
-{% if edit_form and editing_poll %}
-<div class="modal fade" id="editPollModal" tabindex="-1" aria-labelledby="editPollModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+      <div class="poll-archive-body">
+        <div class="poll-archive-results">
+          {% for option_data in epoll.options_data %}
+          <div class="poll-result-row{% if option_data.is_winner %} is-winner{% endif %}">
+            <div>
+              <span>{{ option_data.option.option_text }}</span>
+              <strong>%{{ option_data.percentage|floatformat:1 }}</strong>
+            </div>
+            <span class="poll-progress" aria-hidden="true"><span style="width: {{ option_data.percentage }}%"></span></span>
+            <small>{{ option_data.votes }} oy</small>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="poll-archive-actions">
+          <a href="{% url 'poll_detail' epoll.poll.id %}"><i class="bi bi-arrow-up-right" aria-hidden="true"></i>Ayrıntı</a>
+          <a href="{% url 'poll_question_redirect' epoll.poll.id %}"><i class="bi bi-chat-square-text" aria-hidden="true"></i>Başlık</a>
+          {% if epoll.can_manage %}
+          <form action="{% url 'delete_poll' epoll.poll.id %}" method="post" class="poll-delete-form">
+            {% csrf_token %}
+            <button type="submit"><i class="bi bi-trash" aria-hidden="true"></i>Sil</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </details>
+    {% empty %}
+    <div class="poll-empty-state">
+      <i class="bi bi-archive" aria-hidden="true"></i>
+      <strong>{% if search_query %}Aramana uyan anket bulunamadı{% else %}Arşiv henüz boş{% endif %}</strong>
+      <span>{% if search_query %}Başka bir ifade deneyebilirsin.{% else %}Süresi biten anketler burada saklanacak.{% endif %}</span>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="poll-pagination" aria-label="Anket sayfaları">
+    {% if page_obj.has_previous %}
+    <a href="?status={{ status }}&q={{ search_query|urlencode }}&page={{ page_obj.previous_page_number }}" aria-label="Önceki sayfa"><i class="bi bi-chevron-left" aria-hidden="true"></i></a>
+    {% else %}
+    <span aria-hidden="true"><i class="bi bi-chevron-left"></i></span>
+    {% endif %}
+    <strong>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</strong>
+    {% if page_obj.has_next %}
+    <a href="?status={{ status }}&q={{ search_query|urlencode }}&page={{ page_obj.next_page_number }}" aria-label="Sonraki sayfa"><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+    {% else %}
+    <span aria-hidden="true"><i class="bi bi-chevron-right"></i></span>
+    {% endif %}
+  </nav>
+  {% endif %}
+</main>
+
+{% if request.user.is_authenticated %}
+<div class="modal fade poll-modal" id="createPollModal" tabindex="-1" aria-labelledby="createPollModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
-      <form action="{% url 'edit_poll' editing_poll.id %}" method="post" id="editPollForm">
+      <form action="{% url 'create_poll' %}" method="post" id="createPollForm" data-poll-form>
         {% csrf_token %}
         <div class="modal-header">
-          <h5 class="modal-title" id="editPollModalLabel">Anketi Düzenle</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+          <div>
+            <span class="poll-modal-kicker">Yeni anket</span>
+            <h2 class="modal-title" id="createPollModalLabel">Sorunu ve seçeneklerini belirle</h2>
+          </div>
+          <button type="button" class="poll-modal-close" data-bs-dismiss="modal" aria-label="Kapat"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
         </div>
         <div class="modal-body">
-          <div id="editPollStep1">
-            <div class="mb-3">
-              {{ edit_form.question_text.label_tag }}
-              {{ edit_form.question_text }}
-              {% if edit_form.question_text.errors %}
-              <div class="text-danger">{{ edit_form.question_text.errors }}</div>
-              {% endif %}
-            </div>
-            <div class="mb-3">
-              {{ edit_form.end_date.label_tag }}
-              {{ edit_form.end_date }}
-              {% if edit_form.end_date.errors %}
-              <div class="text-danger">{{ edit_form.end_date.errors }}</div>
-              {% endif %}
-            </div>
-            <div class="form-check mb-3">
-              {{ edit_form.is_anonymous }}
-              {{ edit_form.is_anonymous.label_tag }}
-              {% if edit_form.is_anonymous.errors %}
-              <div class="text-danger">{{ edit_form.is_anonymous.errors }}</div>
-              {% endif %}
-            </div>
-            <button type="button" class="btn btn-theme-primary" id="toEditStep2Btn">İleri</button>
-          </div>
-          <div id="editPollStep2" style="display: none;">
-            <h6>Seçenekler:</h6>
-            <div id="editOptionsContainer">
-              <div class="mb-2" id="editOptionField1">
-                {{ edit_form.option_1.label_tag }}
-                {{ edit_form.option_1 }}
-                {% if edit_form.option_1.errors %}
-                <div class="text-danger">{{ edit_form.option_1.errors }}</div>
-                {% endif %}
-              </div>
-              <div class="mb-2" id="editOptionField2">
-                {{ edit_form.option_2.label_tag }}
-                {{ edit_form.option_2 }}
-                {% if edit_form.option_2.errors %}
-                <div class="text-danger">{{ edit_form.option_2.errors }}</div>
-                {% endif %}
-              </div>
-              {% for i in "3,4,5,6,7,8,9,10"|split:"," %}
-                {% with field_name="option_"|add:i %}
-                  {% with field=edit_form|field_by_name:field_name %}
-                    <div class="mb-2 option-field" id="editOptionField{{ i }}" {% if not field.value %}style="display: none;"{% endif %}>
-                      {{ field.label_tag }}
-                      {{ field }}
-                      {% if field.errors %}
-                        <div class="text-danger">{{ field.errors }}</div>
-                      {% endif %}
-                    </div>
-                  {% endwith %}
-                {% endwith %}
-              {% endfor %}
-            </div>
-            <button type="button" class="btn btn-theme-secondary" id="editAddOptionBtn">Seçenek Ekle</button>
-            <div class="mt-3 d-flex justify-content-between">
-              <button type="button" class="btn btn-theme-secondary" id="backToEditStep1Btn">Geri</button>
-              <button type="submit" class="btn btn-theme-primary">Anketi Güncelle</button>
-            </div>
-          </div>
+          {% include 'core/_poll_form_fields.html' with poll_form=form %}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="poll-secondary-button" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="submit" class="poll-primary-action"><i class="bi bi-check2" aria-hidden="true"></i>Anketi yayımla</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 {% endif %}
-{% endblock content %}
+
+{% if edit_form and editing_poll %}
+<div class="modal fade poll-modal" id="editPollModal" tabindex="-1" aria-labelledby="editPollModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <form action="{% url 'edit_poll' editing_poll.id %}" method="post" id="editPollForm" data-poll-form>
+        {% csrf_token %}
+        <div class="modal-header">
+          <div>
+            <span class="poll-modal-kicker">Düzenleme</span>
+            <h2 class="modal-title" id="editPollModalLabel">Anketi güncelle</h2>
+          </div>
+          <button type="button" class="poll-modal-close" data-bs-dismiss="modal" aria-label="Kapat"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+        </div>
+        <div class="modal-body">
+          {% include 'core/_poll_form_fields.html' with poll_form=edit_form %}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="poll-secondary-button" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="submit" class="poll-primary-action"><i class="bi bi-check2" aria-hidden="true"></i>Değişiklikleri kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
 
 {% block extra_js %}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  var createPollModalEl = document.getElementById('createPollModal');
-  var createPollModal = createPollModalEl ? bootstrap.Modal.getOrCreateInstance(createPollModalEl) : null;
-  var editPollModalEl = document.getElementById('editPollModal');
-  var editPollModal = editPollModalEl ? bootstrap.Modal.getOrCreateInstance(editPollModalEl) : null;
-
-  function initPollWizard(config) {
-    var step1 = document.getElementById(config.step1Id);
-    var step2 = document.getElementById(config.step2Id);
-    var toStep2Btn = document.getElementById(config.toStep2BtnId);
-    var backToStep1Btn = document.getElementById(config.backToStep1BtnId);
-    var addOptionBtn = document.getElementById(config.addOptionBtnId);
-    if (!step1 || !step2 || !toStep2Btn || !backToStep1Btn || !addOptionBtn) {
-      return;
-    }
-
-    toStep2Btn.addEventListener('click', function() {
-      var questionInput = document.querySelector(config.formSelector + ' [name="question_text"]');
-      if (!questionInput.value.trim()) {
-        questionInput.classList.add('is-invalid');
-        questionInput.focus();
-        return;
-      }
-      questionInput.classList.remove('is-invalid');
-      step1.style.display = 'none';
-      step2.style.display = 'block';
-    });
-
-    backToStep1Btn.addEventListener('click', function() {
-      step2.style.display = 'none';
-      step1.style.display = 'block';
-    });
-
-    var maxOptions = 10;
-    var currentVisibleOptions = config.initialVisibleOptions || 2;
-    addOptionBtn.addEventListener('click', function() {
-      if (currentVisibleOptions < maxOptions) {
-        currentVisibleOptions++;
-        var nextOptionField = document.getElementById(config.optionPrefix + currentVisibleOptions);
-        if (nextOptionField) nextOptionField.style.display = 'block';
-        if (currentVisibleOptions === maxOptions) addOptionBtn.disabled = true;
-      }
-    });
-    if (currentVisibleOptions === maxOptions) {
-      addOptionBtn.disabled = true;
-    }
-  }
-
-  var hasOptionErrors = {{ form.option_1.errors|yesno:"true,false" }}
-    || {{ form.option_2.errors|yesno:"true,false" }}
-    || {{ form.option_3.errors|yesno:"true,false" }}
-    || {{ form.option_4.errors|yesno:"true,false" }}
-    || {{ form.option_5.errors|yesno:"true,false" }}
-    || {{ form.option_6.errors|yesno:"true,false" }}
-    || {{ form.option_7.errors|yesno:"true,false" }}
-    || {{ form.option_8.errors|yesno:"true,false" }}
-    || {{ form.option_9.errors|yesno:"true,false" }}
-    || {{ form.option_10.errors|yesno:"true,false" }};
-
-  {% if open_create_poll_modal %}
-    if (step1 && step2 && hasOptionErrors) {
-      step1.style.display = 'none';
-      step2.style.display = 'block';
-    }
-    if (createPollModal) {
-      createPollModal.show();
-    }
-  {% endif %}
-
-  initPollWizard({
-    step1Id: 'pollStep1',
-    step2Id: 'pollStep2',
-    toStep2BtnId: 'toStep2Btn',
-    backToStep1BtnId: 'backToStep1Btn',
-    addOptionBtnId: 'addOptionBtn',
-    optionPrefix: 'optionField',
-    formSelector: '#pollForm',
-    initialVisibleOptions: 2
-  });
-
-  {% if edit_form and editing_poll %}
-    var editHasOptionErrors = {{ edit_form.option_1.errors|yesno:"true,false" }}
-      || {{ edit_form.option_2.errors|yesno:"true,false" }}
-      || {{ edit_form.option_3.errors|yesno:"true,false" }}
-      || {{ edit_form.option_4.errors|yesno:"true,false" }}
-      || {{ edit_form.option_5.errors|yesno:"true,false" }}
-      || {{ edit_form.option_6.errors|yesno:"true,false" }}
-      || {{ edit_form.option_7.errors|yesno:"true,false" }}
-      || {{ edit_form.option_8.errors|yesno:"true,false" }}
-      || {{ edit_form.option_9.errors|yesno:"true,false" }}
-      || {{ edit_form.option_10.errors|yesno:"true,false" }};
-    var editVisibleOptions = 2;
-    {% for i in "10,9,8,7,6,5,4,3"|split:"," %}
-      {% with field_name="option_"|add:i %}
-        {% with field=edit_form|field_by_name:field_name %}
-          {% if field.value %}editVisibleOptions = Math.max(editVisibleOptions, {{ i }});{% endif %}
-        {% endwith %}
-      {% endwith %}
-    {% endfor %}
-    if (editHasOptionErrors) {
-      document.getElementById('editPollStep1').style.display = 'none';
-      document.getElementById('editPollStep2').style.display = 'block';
-    }
-    if (editPollModal) {
-      editPollModal.show();
-    }
-    initPollWizard({
-      step1Id: 'editPollStep1',
-      step2Id: 'editPollStep2',
-      toStep2BtnId: 'toEditStep2Btn',
-      backToStep1BtnId: 'backToEditStep1Btn',
-      addOptionBtnId: 'editAddOptionBtn',
-      optionPrefix: 'editOptionField',
-      formSelector: '#editPollForm',
-      initialVisibleOptions: editVisibleOptions
-    });
-  {% endif %}
-
-  // Süresi geçmiş anketlerde arama filtresi
-  var pollSearch = document.getElementById('expiredPollSearch');
-  if (pollSearch) {
-    pollSearch.addEventListener('input', function() {
-      var searchValue = pollSearch.value.trim().toLowerCase();
-      var pollCards = document.querySelectorAll('#expiredPollsRow .expired-poll-card');
-      pollCards.forEach(function(card) {
-        var title = card.getAttribute('data-title');
-        card.style.display = (!searchValue || title.includes(searchValue)) ? '' : 'none';
-      });
-    });
-  }
-
-  document.querySelectorAll('.poll-delete-form').forEach(function(formEl) {
-    formEl.addEventListener('submit', async function(event) {
-      event.preventDefault();
-      if (typeof showConfirm !== 'function') {
-        return;
-      }
-      var confirmed = await showConfirm('Bu anket silinsin mi?', 'Anketi Sil', 'Sil', 'btn-outline-danger');
-      if (confirmed) {
-        formEl.submit();
-      }
-    });
-  });
-});
-</script>
-{% endblock extra_js %}
+<script src="{% static 'js/polls.js' %}?v={{ STATIC_ASSET_VERSION }}-polls1"></script>
+{% endblock %}
