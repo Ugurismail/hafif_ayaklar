@@ -730,7 +730,16 @@ def _resolved_free_arrow_endpoints(arrow, nodes_by_id=None, regions_by_id=None):
     start_anchor = _resolve_arrow_anchor(arrow.get("start_anchor"), nodes_by_id, regions_by_id)
     end_anchor = _resolve_arrow_anchor(arrow.get("end_anchor"), nodes_by_id, regions_by_id)
     start = start_anchor["center"] if start_anchor else raw_start
-    end = end_anchor["center"] if end_anchor else raw_end
+    end = raw_end
+    if end_anchor and end_anchor["type"] == "node":
+        end = _node_boundary(end_anchor["node"], start)
+    elif end_anchor and end_anchor["type"] == "region":
+        end = _region_anchor_point(
+            end_anchor["region"],
+            end_anchor["members"],
+            end_anchor["bounds"],
+            target=start,
+        ) or end_anchor["center"]
     return start, end
 
 

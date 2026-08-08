@@ -769,7 +769,7 @@ class DiagramMarkupTests(SimpleTestCase):
         self.assertIn("answer-diagram-free-arrow-group", rendered)
         self.assertNotIn('d="M 24.0 24.0', rendered)
 
-    def test_anchored_free_arrow_uses_intersection_and_node_centers(self):
+    def test_anchored_free_arrow_starts_at_region_center_and_ends_at_node_boundary(self):
         payload = {
             "uid": "centered-anchors",
             "title": "Merkez bağlantısı",
@@ -836,8 +836,8 @@ class DiagramMarkupTests(SimpleTestCase):
         rendered = str(safe_markdownify(f"[[diyagram:{encode_diagram_payload(payload)}]]"))
 
         self.assertEqual(start, (695, 300))
-        self.assertEqual(end, (695, 700))
-        self.assertIn('d="M 695.0 300.0 L 695.0 700.0"', rendered)
+        self.assertEqual(end, (695, 660))
+        self.assertIn('d="M 695.0 300.0 L 695.0 660.0"', rendered)
 
     def test_invalid_independent_arrow_anchors_are_removed(self):
         payload = {

@@ -1183,7 +1183,17 @@
         const startAnchor = resolveArrowAnchor(arrow.startAnchor);
         const endAnchor = resolveArrowAnchor(arrow.endAnchor);
         const start = startAnchor ? startAnchor.center : rawStart;
-        const end = endAnchor ? endAnchor.center : rawEnd;
+        let end = rawEnd;
+        if (endAnchor?.type === 'node') {
+            end = boundaryPoint(endAnchor.node, start);
+        } else if (endAnchor?.type === 'region') {
+            end = regionAnchorPoint(
+                endAnchor.region,
+                endAnchor.members,
+                endAnchor.bounds,
+                start
+            ) || endAnchor.center;
+        }
         return { start, end, startAnchor, endAnchor };
     }
 
