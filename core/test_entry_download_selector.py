@@ -140,6 +140,21 @@ class EntryDownloadSelectorTests(TestCase):
         self.assertContains(response, "Arama değişse de seçimlerin korunur.")
         self.assertContains(response, "selectedEntryOrder.filter")
 
+    def test_clearing_saved_book_resets_loaded_entry_selection(self):
+        response = self.client.get(
+            reverse("user_profile", args=[self.user.username]),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "function clearLoadedEntryBookSelection()")
+        self.assertContains(response, "selectedEntryIds = new Set();")
+        self.assertContains(response, "selectedEntryOrder = [];")
+        self.assertContains(response, "clearLoadedEntryBookSelection();")
+        self.assertContains(
+            response,
+            "Kitap seçimi kaldırıldı. Yeni entrylerini seçebilirsin.",
+        )
+
     def test_custom_export_accepts_entries_selected_from_separate_searches(self):
         response = self.client.post(
             reverse("download_entries_json", args=[self.user.username]),

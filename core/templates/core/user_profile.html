@@ -1777,14 +1777,28 @@ function debounce(func, delay) {
     };
   }
 
+  function clearLoadedEntryBookSelection() {
+    selectedEntryIds = new Set();
+    selectedEntryOrder = [];
+    selectedSearchTerm = '';
+    selectedEntriesSearch.value = '';
+    clearSelectedSearch.hidden = true;
+    downloadAllCheckbox.checked = false;
+    entrySelectionSection.hidden = false;
+    downloadAllSummary.hidden = true;
+    orderSelect.value = 'oldest';
+    hideSelectionNotice();
+    renderEntries();
+    renderSelectedEntries();
+  }
+
   async function loadEntryBook(bookId) {
     if (!bookId) {
       activeEntryBookId = '';
       entryBookName.value = '';
+      clearLoadedEntryBookSelection();
       setEntryBookStatus(
-        selectedEntryIds.size
-          ? `${selectedEntryIds.size} seçili entry ile yeni bir kitap oluşturabilirsin.`
-          : 'Seçimini hazırla, bir ad ver ve Kitap yap düğmesine bas.'
+        'Kitap seçimi kaldırıldı. Yeni entrylerini seçebilirsin.'
       );
       updateEntryBookControls();
       return;
