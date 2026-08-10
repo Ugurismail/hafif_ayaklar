@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
-from core.sitemaps import QuestionSitemap, UserProfileSitemap, StaticViewSitemap
+from core.sitemaps import QuestionSitemap, StaticViewSitemap
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 from django.templatetags.static import static as static_url
@@ -11,7 +11,6 @@ import os
 
 sitemaps = {
     'questions': QuestionSitemap,
-    'users': UserProfileSitemap,
     'static': StaticViewSitemap,
 }
 

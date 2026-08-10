@@ -42,9 +42,9 @@ csrf_origins_str = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 if csrf_origins_str:
     CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins_str.split(',') if origin.strip()]
 
-# Production security settings
-# These should be enabled in production (hosted + DEBUG=False).
-if IS_HOSTED and not DEBUG:
+# Production security settings. PythonAnywhere is always served through HTTPS,
+# so an accidentally enabled DEBUG flag must not disable transport security.
+if IS_HOSTED:
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True
