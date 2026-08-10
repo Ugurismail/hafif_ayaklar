@@ -90,6 +90,32 @@
                   </button>
                 </div>
 
+                <div class="diagram-toolbar-group diagram-drawing-tools" role="group" aria-label="Serbest çizim araçları">
+                  <button type="button" class="diagram-tool-btn diagram-tool-btn-labeled" id="diagramPenBtn" title="Tuval üzerinde serbest çizim yap" aria-label="Serbest çizim kalemi" aria-pressed="false">
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                    <span>Kalem</span>
+                  </button>
+                  <button type="button" class="diagram-tool-btn" id="diagramEraserBtn" title="Serbest çizgileri sil" aria-label="Serbest çizim silgisi" aria-pressed="false">
+                    <i class="bi bi-eraser" aria-hidden="true"></i>
+                  </button>
+                  <div class="diagram-draw-tone-control" role="group" aria-label="Kalem rengi">
+                    <button type="button" class="diagram-draw-swatch tone-neutral" data-diagram-draw-tone="neutral" aria-label="Nötr kalem" title="Nötr"></button>
+                    <button type="button" class="diagram-draw-swatch tone-green active" data-diagram-draw-tone="green" aria-label="Yeşil kalem" title="Yeşil"></button>
+                    <button type="button" class="diagram-draw-swatch tone-blue" data-diagram-draw-tone="blue" aria-label="Mavi kalem" title="Mavi"></button>
+                    <button type="button" class="diagram-draw-swatch tone-gold" data-diagram-draw-tone="gold" aria-label="Altın kalem" title="Altın"></button>
+                    <button type="button" class="diagram-draw-swatch tone-red" data-diagram-draw-tone="red" aria-label="Kırmızı kalem" title="Kırmızı"></button>
+                  </div>
+                  <label class="diagram-stroke-width-control" title="Kalem kalınlığı">
+                    <span class="visually-hidden">Kalem kalınlığı</span>
+                    <select id="diagramDrawWidthSelect" aria-label="Kalem kalınlığı">
+                      <option value="2">İnce</option>
+                      <option value="4" selected>Normal</option>
+                      <option value="7">Kalın</option>
+                      <option value="12">Çok kalın</option>
+                    </select>
+                  </label>
+                </div>
+
                 <div class="diagram-toolbar-group diagram-toolbar-history" role="group" aria-label="Geçmiş ve silme">
                   <button type="button" class="diagram-tool-btn" id="diagramUndoBtn" title="Geri al" aria-label="Geri al">
                     <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
@@ -106,7 +132,6 @@
                   </button>
                 </div>
               </div>
-
               <div class="diagram-toolbar-row diagram-toolbar-row-secondary">
                 <div class="diagram-toolbar-group diagram-toolbar-editing" role="group" aria-label="Kopyalama araçları">
                   <button type="button" class="diagram-tool-btn diagram-tool-btn-labeled" id="diagramCopyBtn" title="Seçimi kopyala" aria-label="Seçimi kopyala" disabled>
@@ -208,6 +233,7 @@
                   <g id="diagramEditorEdges"></g>
                   <g id="diagramEditorNodes"></g>
                   <g id="diagramEditorRegions"></g>
+                  <g id="diagramEditorStrokes"></g>
                   <g id="diagramEditorHandles"></g>
                 </g>
               </svg>
@@ -379,6 +405,28 @@
               <small class="diagram-region-note">Ad boş bırakılabilir. Bölge, bağlı olduğu şekiller taşındığında ve boyutlandığında kendiliğinden güncellenir.</small>
             </div>
 
+            <div class="diagram-inspector-section" id="diagramStrokeInspector" hidden>
+              <div class="diagram-inspector-heading">
+                <span>Seçili serbest çizgi</span>
+                <span>Kalem</span>
+              </div>
+              <div class="diagram-field">
+                <span class="diagram-field-label">Renk</span>
+                <div class="diagram-tone-control" role="group" aria-label="Çizgi rengi">
+                  <button type="button" class="diagram-tone-swatch tone-neutral" data-diagram-stroke-tone="neutral" aria-label="Nötr" title="Nötr"></button>
+                  <button type="button" class="diagram-tone-swatch tone-green" data-diagram-stroke-tone="green" aria-label="Yeşil" title="Yeşil"></button>
+                  <button type="button" class="diagram-tone-swatch tone-blue" data-diagram-stroke-tone="blue" aria-label="Mavi" title="Mavi"></button>
+                  <button type="button" class="diagram-tone-swatch tone-gold" data-diagram-stroke-tone="gold" aria-label="Altın" title="Altın"></button>
+                  <button type="button" class="diagram-tone-swatch tone-red" data-diagram-stroke-tone="red" aria-label="Kırmızı" title="Kırmızı"></button>
+                </div>
+              </div>
+              <div class="diagram-field diagram-range-field">
+                <label for="diagramStrokeWidthInput">Kalınlık <output id="diagramStrokeWidthValue">4</output></label>
+                <input type="range" id="diagramStrokeWidthInput" min="1" max="24" step="1" value="4">
+              </div>
+              <small class="diagram-selection-help">Çizgiyi tuval üzerinde sürükleyerek taşıyabilir, Delete ile silebilirsin.</small>
+            </div>
+
             <div class="diagram-inspector-section" id="diagramMultiInspector" hidden>
               <div class="diagram-inspector-heading">
                 <span>Çoklu seçim</span>
@@ -405,12 +453,13 @@
             <div class="diagram-inspector-empty" id="diagramInspectorEmpty">
               <span class="diagram-inspector-empty-icon" aria-hidden="true"><i class="bi bi-cursor"></i></span>
               <strong>Bir öğe seç</strong>
-              <span>Düğüm, bağlantı ve taralı bölge ayarları burada açılır. Birkaç şekil için Shift, Ctrl veya ⌘ ile tıkla.</span>
+              <span>Düğüm, bağlantı, çizim ve taralı bölge ayarları burada açılır. Birkaç şekil için Shift, Ctrl veya ⌘ ile tıkla.</span>
             </div>
 
             <div class="diagram-graph-meta" aria-live="polite">
               <span><strong id="diagramNodeCount">0</strong> düğüm</span>
               <span><strong id="diagramEdgeCount">0</strong> bağlantı</span>
+              <span><strong id="diagramStrokeCount">0</strong> çizim</span>
             </div>
           </aside>
         </div>

@@ -57,7 +57,7 @@ class DiagramMarkupTests(SimpleTestCase):
         self.assertEqual(reverse_edge["to"], "n2")
         self.assertEqual(reverse_edge["route"], "auto")
         self.assertEqual(reverse_edge["description"], "")
-        self.assertEqual(decoded["version"], 5)
+        self.assertEqual(decoded["version"], 6)
         self.assertEqual(decoded["nodes"][0]["tone"], "neutral")
         self.assertEqual(decoded["nodes"][0]["width"], 152)
 
@@ -68,6 +68,8 @@ class DiagramMarkupTests(SimpleTestCase):
 
         self.assertIn("n", packed)
         self.assertIn("e", packed)
+        self.assertIn("s", packed)
+        self.assertEqual(packed["v"], 6)
         self.assertNotIn("nodes", packed)
         self.assertLess(len(encoded), 700)
 
@@ -79,7 +81,54 @@ class DiagramMarkupTests(SimpleTestCase):
 
         self.assertEqual(decoded["title"], "Karar döngüsü")
         self.assertEqual(len(decoded["nodes"]), 3)
-        self.assertEqual(decoded["version"], 5)
+        self.assertEqual(decoded["version"], 6)
+
+    def test_freehand_strokes_round_trip_and_render_without_nodes(self):
+        payload = {
+            "title": "El çizimi",
+            "nodes": [],
+            "edges": [],
+            "strokes": [
+                {
+                    "id": "s1",
+                    "tone": "blue",
+                    "width": 7,
+                    "points": [[120, 180], [190, 220], [275, 165]],
+                }
+            ],
+        }
+
+        encoded = encode_diagram_payload(payload)
+        decoded = decode_diagram_payload(encoded)
+        rendered = str(safe_markdownify(f"[[diyagram:{encoded}]]"))
+
+        self.assertEqual(decoded["version"], 6)
+        self.assertEqual(decoded["nodes"], [])
+        self.assertEqual(decoded["strokes"][0]["points"], [[120.0, 180.0], [190.0, 220.0], [275.0, 165.0]])
+        self.assertIn('class="answer-diagram-stroke answer-diagram-stroke-blue"', rendered)
+        self.assertIn('stroke-width="7.0"', rendered)
+        self.assertIn('points="120.0,180.0 190.0,220.0 275.0,165.0"', rendered)
+
+    def test_invalid_freehand_values_are_clamped_and_sanitized(self):
+        payload = {
+            "title": "Sınırlandırılmış çizim",
+            "nodes": [],
+            "edges": [],
+            "strokes": [
+                {
+                    "id": "stroke-safe",
+                    "tone": "unknown",
+                    "width": 200,
+                    "points": [[-40, 25], [9000, 6100], ["bad", 20]],
+                }
+            ],
+        }
+
+        normalized = normalize_diagram_payload(payload)
+
+        self.assertEqual(normalized["strokes"][0]["tone"], "neutral")
+        self.assertEqual(normalized["strokes"][0]["width"], 24)
+        self.assertEqual(normalized["strokes"][0]["points"], [[0, 25.0], [8000, 5200]])
 
     def test_malformed_payload_is_ignored(self):
         self.assertIsNone(decode_diagram_payload("invalid_base64_payload"))
@@ -573,7 +622,7 @@ class DiagramMarkupTests(SimpleTestCase):
 
         decoded = decode_diagram_payload(encoded)
 
-        self.assertEqual(decoded["version"], 5)
+        self.assertEqual(decoded["version"], 6)
         self.assertEqual(decoded["nodes"][0]["width"], 152)
         self.assertEqual(decoded["edges"][0]["description"], "")
 
@@ -612,7 +661,7 @@ class DiagramMarkupTests(SimpleTestCase):
         decoded = decode_diagram_payload(encoded)
         rendered = str(safe_markdownify(f"[[diyagram:{encoded}]]"))
 
-        self.assertEqual(decoded["version"], 5)
+        self.assertEqual(decoded["version"], 6)
         self.assertEqual(decoded["nodes"], [])
         self.assertEqual(decoded["arrows"][0]["bend"], 180)
         self.assertIn("answer-diagram-free-arrow-group", rendered)
@@ -882,7 +931,7 @@ class DiagramMarkupTests(SimpleTestCase):
 
         decoded = decode_diagram_payload(encoded)
 
-        self.assertEqual(decoded["version"], 5)
+        self.assertEqual(decoded["version"], 6)
         self.assertEqual(decoded["arrows"], [])
         self.assertEqual(len(decoded["edges"]), 1)
         self.assertEqual(decoded["nodes"][0]["label_offset_x"], 0)

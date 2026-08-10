@@ -325,6 +325,51 @@ body.diagram-modal-open .floating-tools {
     opacity: .38;
 }
 
+.diagram-drawing-tools {
+    gap: 5px;
+}
+
+.diagram-draw-tone-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 4px;
+}
+
+.diagram-draw-swatch {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    padding: 0;
+    border: 2px solid var(--content-background-color);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-color) 24%, transparent);
+}
+
+.diagram-draw-swatch:hover,
+.diagram-draw-swatch.active {
+    outline: 2px solid color-mix(in srgb, var(--link-color) 52%, transparent);
+    outline-offset: 1px;
+}
+
+.diagram-draw-swatch.tone-neutral { background: color-mix(in srgb, var(--text-color) 62%, var(--content-background-color)); }
+.diagram-draw-swatch.tone-green { background: #2f855a; }
+.diagram-draw-swatch.tone-blue { background: #3b82f6; }
+.diagram-draw-swatch.tone-gold { background: #c28b2c; }
+.diagram-draw-swatch.tone-red { background: #c94b4b; }
+
+.diagram-stroke-width-control select {
+    width: 76px;
+    height: 32px;
+    padding: 0 24px 0 8px;
+    border: 1px solid color-mix(in srgb, var(--text-color) 16%, transparent);
+    border-radius: 5px;
+    background-color: var(--content-background-color);
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+}
+
 .diagram-tooltip-proxy {
     display: inline-flex;
     flex: 0 0 auto;
@@ -370,6 +415,16 @@ body.diagram-modal-open .floating-tools {
 .diagram-editor-canvas.is-panning .diagram-editor-node,
 .diagram-editor-canvas.is-panning .diagram-editor-edge-hit {
     cursor: grabbing;
+}
+
+.diagram-editor-canvas.is-drawing,
+.diagram-editor-canvas.is-drawing * {
+    cursor: crosshair !important;
+}
+
+.diagram-editor-canvas.is-erasing,
+.diagram-editor-canvas.is-erasing * {
+    cursor: cell !important;
 }
 
 .diagram-grid-background {
@@ -460,6 +515,50 @@ body.diagram-modal-open .floating-tools {
 .diagram-editor-edge.selected {
     stroke: var(--button-background-color);
     stroke-width: 4;
+}
+
+.diagram-editor-stroke,
+.answer-diagram-stroke {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.diagram-editor-stroke {
+    vector-effect: non-scaling-stroke;
+    cursor: move;
+}
+
+.diagram-editor-stroke-hit {
+    fill: none;
+    stroke: transparent;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    cursor: move;
+    vector-effect: non-scaling-stroke;
+}
+
+.diagram-editor-stroke.selected {
+    filter: drop-shadow(0 0 3px color-mix(in srgb, var(--button-background-color) 82%, transparent));
+}
+
+.diagram-editor-stroke-neutral,
+.answer-diagram-stroke-neutral { stroke: color-mix(in srgb, var(--text-color) 72%, var(--content-background-color)); }
+.diagram-editor-stroke-green,
+.answer-diagram-stroke-green { stroke: #24724d; }
+.diagram-editor-stroke-blue,
+.answer-diagram-stroke-blue { stroke: #2d6bc4; }
+.diagram-editor-stroke-gold,
+.answer-diagram-stroke-gold { stroke: #a67626; }
+.diagram-editor-stroke-red,
+.answer-diagram-stroke-red { stroke: #af3f3f; }
+
+.diagram-minimap-stroke {
+    fill: none;
+    stroke: color-mix(in srgb, var(--text-color) 58%, transparent);
+    stroke-width: 10;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .diagram-editor-edge.dashed,
@@ -1537,6 +1636,11 @@ body.diagram-modal-open .floating-tools {
     vector-effect: non-scaling-stroke;
 }
 
+.answer-diagram-stroke {
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+}
+
 .answer-diagram-edge-interactive {
     cursor: pointer;
 }
@@ -1746,6 +1850,10 @@ body.diagram-modal-open .floating-tools {
     z-index: 11050;
 }
 
+.diagram-editor-tooltip {
+    pointer-events: none;
+}
+
 .tooltip .tooltip-inner {
     max-width: 280px;
     padding: 7px 10px;
@@ -1827,6 +1935,20 @@ body.diagram-modal-open .floating-tools {
         overflow-y: hidden;
         overscroll-behavior-inline: contain;
         scrollbar-width: thin;
+    }
+
+    .diagram-drawing-tools {
+        order: -1;
+    }
+
+    .diagram-drawing-tools .diagram-tool-btn-labeled {
+        width: 34px;
+        flex-basis: 34px;
+        padding: 0;
+    }
+
+    .diagram-drawing-tools .diagram-tool-btn-labeled span {
+        display: none;
     }
 
     .diagram-command-dropdown {

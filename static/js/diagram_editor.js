@@ -18,6 +18,11 @@
     const MAX_FREE_ARROWS = 100;
     const MAX_GROUPS = 32;
     const MAX_REGIONS = 40;
+    const MAX_STROKES = 64;
+    const MAX_STROKE_POINTS = 320;
+    const MAX_TOTAL_STROKE_POINTS = 3000;
+    const MIN_STROKE_WIDTH = 1;
+    const MAX_STROKE_WIDTH = 24;
     const MIN_ZOOM = 0.1;
     const MAX_ZOOM = 4;
     const ARROW_REGION_SNAP_PX = 32;
@@ -33,6 +38,7 @@
     const edgesLayer = document.getElementById('diagramEditorEdges');
     const nodesLayer = document.getElementById('diagramEditorNodes');
     const regionsLayer = document.getElementById('diagramEditorRegions');
+    const strokesLayer = document.getElementById('diagramEditorStrokes');
     const regionDefs = document.getElementById('diagramEditorRegionDefs');
     const handlesLayer = document.getElementById('diagramEditorHandles');
     const miniMap = document.getElementById('diagramMiniMap');
@@ -40,6 +46,10 @@
     const miniMapViewport = document.getElementById('diagramMiniMapViewport');
     const connectButton = document.getElementById('diagramConnectBtn');
     const freeArrowButton = document.getElementById('diagramFreeArrowBtn');
+    const penButton = document.getElementById('diagramPenBtn');
+    const eraserButton = document.getElementById('diagramEraserBtn');
+    const drawWidthSelect = document.getElementById('diagramDrawWidthSelect');
+    const drawToneButtons = Array.from(document.querySelectorAll('[data-diagram-draw-tone]'));
     const duplicateButton = document.getElementById('diagramDuplicateBtn');
     const arrangeButton = document.getElementById('diagramArrangeBtn');
     const snapButton = document.getElementById('diagramSnapBtn');
@@ -96,6 +106,10 @@
     const groupLabelInput = document.getElementById('diagramGroupLabelInput');
     const regionMenuButton = document.getElementById('diagramRegionMenuBtn');
     const regionInspector = document.getElementById('diagramRegionInspector');
+    const strokeInspector = document.getElementById('diagramStrokeInspector');
+    const strokeWidthInput = document.getElementById('diagramStrokeWidthInput');
+    const strokeWidthValue = document.getElementById('diagramStrokeWidthValue');
+    const strokeToneButtons = Array.from(document.querySelectorAll('[data-diagram-stroke-tone]'));
     const regionManager = document.getElementById('diagramRegionManager');
     const regionList = document.getElementById('diagramRegionList');
     const regionCount = document.getElementById('diagramRegionCount');
@@ -113,6 +127,7 @@
     const status = document.getElementById('diagramCanvasStatus');
     const nodeCount = document.getElementById('diagramNodeCount');
     const edgeCount = document.getElementById('diagramEdgeCount');
+    const strokeCount = document.getElementById('diagramStrokeCount');
     const viewerStage = document.getElementById('diagramViewerStage');
     const viewerTitle = document.getElementById('diagramViewerTitle');
     const editorTitle = document.getElementById('diagramEditorTitle');
@@ -150,6 +165,12 @@
     let freeArrowEndpointState = null;
     let freeArrowDropAnchor = '';
     let nodeResizeState = null;
+    let drawingTool = '';
+    let drawingTone = 'green';
+    let drawingWidth = 4;
+    let strokeDrawState = null;
+    let strokeDragState = null;
+    let eraseState = null;
     let viewState = { zoom: 1, panX: 0, panY: 0 };
 
     function svgElement(name, attributes) {
@@ -175,6 +196,7 @@
         root.querySelectorAll('[title]').forEach((element) => {
             bootstrap.Tooltip.getOrCreateInstance(element, {
                 container: 'body',
+                customClass: 'diagram-editor-tooltip',
                 placement: 'bottom',
                 trigger: 'hover focus',
                 delay: { show: 320, hide: 80 }
@@ -206,12 +228,12 @@
     }
 
     function createBlankTemplate() {
-        return { version: 5, uid: createUid(), title: 'Yeni diyagram', nodes: [], edges: [], arrows: [], groups: [], regions: [] };
+        return { version: 6, uid: createUid(), title: 'Yeni diyagram', nodes: [], edges: [], arrows: [], groups: [], regions: [], strokes: [] };
     }
 
     function createFlowTemplate() {
         return {
-            version: 5,
+            version: 6,
             uid: createUid(),
             title: 'Basit akış',
             nodes: [
@@ -233,7 +255,7 @@
 
     function createCycleTemplate() {
         return {
-            version: 5,
+            version: 6,
             uid: createUid(),
             title: 'Basit döngü',
             nodes: [
@@ -291,7 +313,7 @@
             };
         });
         return {
-            version: 5,
+            version: 6,
             uid: createUid(),
             title: 'Spiral ilerleme',
             nodes,
@@ -304,7 +326,7 @@
 
     function createTreeTemplate() {
         return {
-            version: 5,
+            version: 6,
             uid: createUid(),
             title: 'Karar ağacı',
             nodes: [
@@ -330,7 +352,7 @@
 
     function createTimelineTemplate() {
         return {
-            version: 5,
+            version: 6,
             uid: createUid(),
             title: 'Zaman çizelgesi',
             nodes: [
@@ -352,7 +374,7 @@
 
     function createPyramidTemplate() {
         return {
-            version: 5,
+            version: 6,
             uid: createUid(),
             title: 'Katmanlı piramit',
             nodes: [
@@ -370,7 +392,7 @@
 
     function createSetsTemplate() {
         return {
-            version: 5,
+            version: 6,
             uid: createUid(),
             title: 'Kümeler ve kesişimler',
             nodes: [
@@ -389,6 +411,95 @@
 
     function cloneGraph(value) {
         return JSON.parse(JSON.stringify(value));
+    }
+
+    function normalizeStrokePoints(rawPoints, limit = MAX_STROKE_POINTS) {
+        if (!Array.isArray(rawPoints)) return [];
+        const points = [];
+        rawPoints.slice(0, Math.max(0, limit)).forEach((rawPoint) => {
+            if (!Array.isArray(rawPoint) || rawPoint.length < 2) return;
+            const x = Number(rawPoint[0]);
+            const y = Number(rawPoint[1]);
+            if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+            const point = [
+                Math.round(Math.min(WORLD_WIDTH, Math.max(0, x)) * 10) / 10,
+                Math.round(Math.min(WORLD_HEIGHT, Math.max(0, y)) * 10) / 10
+            ];
+            const previous = points[points.length - 1];
+            if (!previous || previous[0] !== point[0] || previous[1] !== point[1]) points.push(point);
+        });
+        return points;
+    }
+
+    function totalStrokePointCount(excludedId = '') {
+        return (graph.strokes || []).reduce((total, stroke) => (
+            stroke.id === excludedId ? total : total + stroke.points.length
+        ), 0);
+    }
+
+    function takeStrokeId() {
+        const usedIds = new Set((graph.strokes || []).map((stroke) => stroke.id));
+        let id;
+        do {
+            id = `s${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
+        } while (usedIds.has(id));
+        return id.slice(0, 32);
+    }
+
+    function pointSegmentDistance(point, start, end) {
+        const dx = end[0] - start[0];
+        const dy = end[1] - start[1];
+        if (!dx && !dy) return Math.hypot(point[0] - start[0], point[1] - start[1]);
+        const ratio = Math.min(1, Math.max(0, (
+            ((point[0] - start[0]) * dx) + ((point[1] - start[1]) * dy)
+        ) / ((dx * dx) + (dy * dy))));
+        return Math.hypot(point[0] - (start[0] + (ratio * dx)), point[1] - (start[1] + (ratio * dy)));
+    }
+
+    function simplifyStrokePoints(points, tolerance) {
+        if (!Array.isArray(points) || points.length <= 2) return normalizeStrokePoints(points);
+        const simplifyRange = (startIndex, endIndex, selectedIndexes) => {
+            let farthestDistance = 0;
+            let farthestIndex = -1;
+            for (let index = startIndex + 1; index < endIndex; index += 1) {
+                const distance = pointSegmentDistance(points[index], points[startIndex], points[endIndex]);
+                if (distance > farthestDistance) {
+                    farthestDistance = distance;
+                    farthestIndex = index;
+                }
+            }
+            if (farthestIndex < 0 || farthestDistance <= tolerance) return;
+            selectedIndexes.add(farthestIndex);
+            simplifyRange(startIndex, farthestIndex, selectedIndexes);
+            simplifyRange(farthestIndex, endIndex, selectedIndexes);
+        };
+        const selectedIndexes = new Set([0, points.length - 1]);
+        simplifyRange(0, points.length - 1, selectedIndexes);
+        let simplified = Array.from(selectedIndexes)
+            .sort((left, right) => left - right)
+            .map((index) => points[index]);
+        if (simplified.length > MAX_STROKE_POINTS) {
+            const lastIndex = simplified.length - 1;
+            simplified = Array.from({ length: MAX_STROKE_POINTS }, (_, index) => (
+                simplified[Math.round((index * lastIndex) / (MAX_STROKE_POINTS - 1))]
+            ));
+        }
+        return normalizeStrokePoints(simplified);
+    }
+
+    function strokePointsAttribute(stroke) {
+        return stroke.points.map((point) => `${point[0]},${point[1]}`).join(' ');
+    }
+
+    function strokeBounds(stroke) {
+        const xValues = stroke.points.map((point) => point[0]);
+        const yValues = stroke.points.map((point) => point[1]);
+        return {
+            left: Math.min(...xValues),
+            right: Math.max(...xValues),
+            top: Math.min(...yValues),
+            bottom: Math.max(...yValues)
+        };
     }
 
     function defaultNodeLabel(shape) {
@@ -467,6 +578,21 @@
                             labelOffsetX: region[5],
                             labelOffsetY: region[6]
                         }))
+                    : [],
+                strokes: Array.isArray(value.s)
+                    ? value.s
+                        .filter((stroke) => Array.isArray(stroke) && stroke.length >= 4)
+                        .map((stroke) => ({
+                            id: stroke[0],
+                            tone: stroke[1],
+                            width: stroke[2],
+                            points: Array.isArray(stroke[3])
+                                ? Array.from({ length: Math.floor(stroke[3].length / 2) }, (_, index) => [
+                                    stroke[3][index * 2],
+                                    stroke[3][(index * 2) + 1]
+                                ])
+                                : []
+                        }))
                     : []
             };
         }
@@ -475,7 +601,7 @@
         const allowedTones = new Set(['neutral', 'green', 'blue', 'gold', 'red']);
         const graphValue = cloneGraph(value);
         const allowedRoutes = new Set(['auto', 'straight', 'curve', 'orthogonal']);
-        graphValue.version = 5;
+        graphValue.version = 6;
         graphValue.uid = /^[A-Za-z0-9_-]{1,32}$/.test(String(graphValue.uid || ''))
             ? String(graphValue.uid)
             : createUid();
@@ -639,6 +765,28 @@
             if (!validAnchors.has(arrow.startAnchor)) arrow.startAnchor = '';
             if (!validAnchors.has(arrow.endAnchor)) arrow.endAnchor = '';
         });
+        const strokeIds = new Set();
+        let totalStrokePoints = 0;
+        graphValue.strokes = (Array.isArray(graphValue.strokes) ? graphValue.strokes : [])
+            .slice(0, MAX_STROKES)
+            .flatMap((stroke, index) => {
+                let id = /^[A-Za-z0-9_-]{1,32}$/.test(String(stroke.id || ''))
+                    ? String(stroke.id)
+                    : `s${index + 1}`;
+                if (strokeIds.has(id)) id = `s${index + 1}-${Date.now().toString(36).slice(-4)}`;
+                const remaining = MAX_TOTAL_STROKE_POINTS - totalStrokePoints;
+                if (remaining < 2) return [];
+                const points = normalizeStrokePoints(stroke.points, Math.min(MAX_STROKE_POINTS, remaining));
+                if (points.length < 2) return [];
+                strokeIds.add(id);
+                totalStrokePoints += points.length;
+                return [{
+                    id,
+                    tone: allowedTones.has(stroke.tone) ? stroke.tone : 'neutral',
+                    width: Math.min(MAX_STROKE_WIDTH, Math.max(MIN_STROKE_WIDTH, Number(stroke.width) || 4)),
+                    points
+                }];
+            });
         return graphValue;
     }
 
@@ -674,7 +822,7 @@
 
     function packGraph(value) {
         return {
-            v: 5,
+            v: 6,
             i: value.uid,
             t: value.title,
             n: value.nodes.map((node) => [
@@ -695,6 +843,12 @@
             r: value.regions.map((region) => [
                 region.id, region.label, region.operation, region.tone, region.nodeIds,
                 region.labelOffsetX || 0, region.labelOffsetY || 0
+            ]),
+            s: (value.strokes || []).map((stroke) => [
+                stroke.id,
+                stroke.tone,
+                stroke.width,
+                stroke.points.flatMap((point) => [point[0], point[1]])
             ])
         };
     }
@@ -757,6 +911,7 @@
         selected = null;
         selectedNodeIds.clear();
         disableConnectMode(false);
+        disableDrawingTool(false);
         syncNextNodeNumber();
         titleInput.value = graph.title;
         editorTitle.textContent = editingMarker ? 'Diyagramı düzenle' : 'Akışı oluştur';
@@ -832,7 +987,8 @@
 
     function fitGraph() {
         const freeArrows = graph.arrows || [];
-        if (!graph.nodes.length && !freeArrows.length) {
+        const strokes = graph.strokes || [];
+        if (!graph.nodes.length && !freeArrows.length && !strokes.length) {
             resetView();
             return;
         }
@@ -842,6 +998,12 @@
             const geometry = freeArrowGeometry(arrow);
             xs.push(arrow.startX, arrow.endX, geometry.handleX);
             ys.push(arrow.startY, arrow.endY, geometry.handleY);
+        });
+        strokes.forEach((stroke) => {
+            stroke.points.forEach((point) => {
+                xs.push(point[0]);
+                ys.push(point[1]);
+            });
         });
         const left = Math.min(...xs) - 50;
         const right = Math.max(...xs) + 50;
@@ -886,6 +1048,12 @@
                 d: freeArrowGeometry(arrow).path,
                 class: 'diagram-minimap-edge',
                 fill: 'none'
+            }));
+        });
+        (graph.strokes || []).forEach((stroke) => {
+            miniMapContent.appendChild(svgElement('polyline', {
+                points: strokePointsAttribute(stroke),
+                class: 'diagram-minimap-stroke'
             }));
         });
         graph.nodes.forEach((node) => {
@@ -988,6 +1156,7 @@
         selected = null;
         selectedNodeIds.clear();
         disableConnectMode();
+        disableDrawingTool(false);
         resetView();
         titleInput.value = graph.title;
         document.querySelectorAll('[data-diagram-template]').forEach((button) => {
@@ -1432,6 +1601,45 @@
         if (editLabel) focusAndSelect(edgeLabelInput);
     }
 
+    function selectedStroke() {
+        if (!selected || selected.type !== 'stroke') return null;
+        return (graph.strokes || []).find((stroke) => stroke.id === selected.id) || null;
+    }
+
+    function handleStrokePointerDown(event, strokeId) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (pinchState) return;
+        if (spacePanActive || event.button === 1) {
+            startPan(event, false);
+            return;
+        }
+        const stroke = (graph.strokes || []).find((item) => item.id === strokeId);
+        if (!stroke || event.button !== 0) return;
+        selected = { type: 'stroke', id: strokeId };
+        selectedNodeIds.clear();
+        disableConnectMode(false);
+        strokeDragState = {
+            pointerId: event.pointerId,
+            strokeId,
+            startPoint: canvasPoint(event),
+            startPoints: stroke.points.map((point) => [...point]),
+            startClientX: event.clientX,
+            startClientY: event.clientY,
+            moved: false,
+            historyPushed: false
+        };
+        if (canvas.setPointerCapture) {
+            try {
+                canvas.setPointerCapture(event.pointerId);
+            } catch (error) {
+                // Dragging remains available while the pointer is over the canvas.
+            }
+        }
+        setStatus('Çizgiyi taşımak için sürükle');
+        render();
+    }
+
     function getSelectedConnector() {
         if (!selected) return null;
         if (selected.type === 'edge') {
@@ -1513,6 +1721,27 @@
             const isSelected = selected && selected.type === 'arrow' && selected.id === arrow.id;
             renderConnector(group, arrow, geometry, isSelected, (editLabel) => selectFreeArrow(arrow.id, editLabel));
             edgesLayer.appendChild(group);
+        });
+    }
+
+    function renderStrokes() {
+        strokesLayer.replaceChildren();
+        (graph.strokes || []).forEach((stroke) => {
+            const isSelected = selected && selected.type === 'stroke' && selected.id === stroke.id;
+            const group = svgElement('g', { 'data-stroke-id': stroke.id });
+            const visible = svgElement('polyline', {
+                points: strokePointsAttribute(stroke),
+                'stroke-width': stroke.width,
+                class: `diagram-editor-stroke diagram-editor-stroke-${stroke.tone}${isSelected ? ' selected' : ''}`
+            });
+            const hit = svgElement('polyline', {
+                points: strokePointsAttribute(stroke),
+                'stroke-width': Math.max(18, stroke.width + 12),
+                class: 'diagram-editor-stroke-hit'
+            });
+            hit.addEventListener('pointerdown', (event) => handleStrokePointerDown(event, stroke.id));
+            group.append(visible, hit);
+            strokesLayer.appendChild(group);
         });
     }
 
@@ -2192,6 +2421,7 @@
         const selectedRegion = selected && selected.type === 'region'
             ? graph.regions.find((region) => region.id === selected.id)
             : null;
+        const activeStroke = selectedStroke();
         const isMultiSelection = selectedNodeIds.size > 1;
         const selectedGroup = matchingSelectedGroup();
         renderRegionManager(selectedRegion);
@@ -2232,12 +2462,22 @@
             }
         }
         regionInspector.hidden = !selectedRegion;
+        strokeInspector.hidden = !activeStroke;
+        strokeWidthInput.disabled = !activeStroke;
+        strokeWidthInput.value = activeStroke ? String(activeStroke.width) : '4';
+        strokeWidthValue.textContent = activeStroke ? String(Math.round(activeStroke.width)) : '4';
+        strokeToneButtons.forEach((button) => {
+            const active = Boolean(activeStroke && button.dataset.diagramStrokeTone === activeStroke.tone);
+            button.classList.toggle('active', active);
+            button.disabled = !activeStroke;
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
         multiInspector.hidden = !isMultiSelection;
         multiSelectionCount.textContent = `${selectedNodeIds.size} düğüm`;
         groupNameField.hidden = !selectedGroup;
         groupLabelInput.value = selectedGroup ? selectedGroup.label : '';
         inspectorEmpty.hidden = Boolean(
-            selectedNode || selectedEdge || selectedRegion || isMultiSelection
+            selectedNode || selectedEdge || selectedRegion || activeStroke || isMultiSelection
             || !versionsPanel.hidden || graph.regions.length
         );
         edgeLabelInput.value = selectedEdge ? selectedEdge.label || '' : '';
@@ -2260,8 +2500,14 @@
             ? 'Düğüm'
             : selectedConnector && selectedConnector.type === 'arrow'
                 ? 'Bağımsız ok'
-                : selectedEdge ? 'Bağlantı' : selectedRegion ? 'Bölge' : isMultiSelection ? 'Çoklu' : 'Yok';
-        deleteButton.disabled = !selectedEdge && !selectedRegion && selectedNodeIds.size === 0;
+                : selectedEdge
+                    ? 'Bağlantı'
+                    : selectedRegion
+                        ? 'Bölge'
+                        : activeStroke
+                            ? 'Çizim'
+                            : isMultiSelection ? 'Çoklu' : 'Yok';
+        deleteButton.disabled = !selectedEdge && !selectedRegion && !activeStroke && selectedNodeIds.size === 0;
         copyButton.disabled = selectedNodeIds.size === 0;
         pasteButton.disabled = !clipboardGraph || graph.nodes.length >= MAX_NODES;
         duplicateButton.disabled = selectedNodeIds.size === 0 || graph.nodes.length >= MAX_NODES;
@@ -2275,6 +2521,7 @@
         redoButton.disabled = redoHistory.length === 0;
         nodeCount.textContent = graph.nodes.length;
         edgeCount.textContent = graph.edges.length + (graph.arrows || []).length;
+        strokeCount.textContent = (graph.strokes || []).length;
         if (freeArrowButton) freeArrowButton.disabled = (graph.arrows || []).length >= MAX_FREE_ARROWS;
         connectButton.classList.toggle('active', connectMode);
         connectButton.setAttribute('aria-pressed', connectMode ? 'true' : 'false');
@@ -2282,6 +2529,7 @@
         snapButton.setAttribute('aria-pressed', snapEnabled ? 'true' : 'false');
         versionsButton.classList.toggle('active', !versionsPanel.hidden);
         versionsButton.setAttribute('aria-pressed', versionsPanel.hidden ? 'false' : 'true');
+        updateDrawingToolUi();
         applyViewport();
     }
 
@@ -2290,6 +2538,7 @@
         renderEdges();
         renderNodes();
         renderRegions();
+        renderStrokes();
         renderEdgeHandle();
         renderInspector();
         renderMiniMap();
@@ -2479,11 +2728,165 @@
         if (updateStatus) setStatus('Bir düğüm veya bağlantı seç');
     }
 
+    function disableDrawingTool(updateStatus = true) {
+        const wasActive = Boolean(drawingTool);
+        drawingTool = '';
+        strokeDrawState = null;
+        eraseState = null;
+        updateDrawingToolUi();
+        if (updateStatus && wasActive) setStatus('Serbest çizim aracı kapatıldı');
+    }
+
+    function updateDrawingToolUi() {
+        if (penButton) {
+            penButton.classList.toggle('active', drawingTool === 'pen');
+            penButton.setAttribute('aria-pressed', drawingTool === 'pen' ? 'true' : 'false');
+        }
+        if (eraserButton) {
+            eraserButton.classList.toggle('active', drawingTool === 'eraser');
+            eraserButton.setAttribute('aria-pressed', drawingTool === 'eraser' ? 'true' : 'false');
+        }
+        canvas.classList.toggle('is-drawing', drawingTool === 'pen');
+        canvas.classList.toggle('is-erasing', drawingTool === 'eraser');
+        drawToneButtons.forEach((button) => {
+            const active = button.dataset.diagramDrawTone === drawingTone;
+            button.classList.toggle('active', active);
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        if (drawWidthSelect) drawWidthSelect.value = String(drawingWidth);
+    }
+
+    function setDrawingTool(tool, updateStatus = true) {
+        const nextTool = ['pen', 'eraser'].includes(tool) ? tool : '';
+        drawingTool = drawingTool === nextTool && nextTool ? '' : nextTool;
+        if (drawingTool) {
+            disableConnectMode(false);
+            selected = null;
+            selectedNodeIds.clear();
+        }
+        updateDrawingToolUi();
+        if (updateStatus) {
+            setStatus(drawingTool === 'pen'
+                ? 'Kalem açık: tuval üzerinde sürükleyerek çiz'
+                : drawingTool === 'eraser'
+                    ? 'Silgi açık: kaldırmak istediğin çizginin üzerinden geç'
+                    : 'Serbest çizim aracı kapatıldı');
+        }
+        renderInspector();
+    }
+
+    function strokeDistanceFromPoint(stroke, point) {
+        let distance = Infinity;
+        for (let index = 1; index < stroke.points.length; index += 1) {
+            distance = Math.min(distance, pointSegmentDistance(
+                [point.x, point.y],
+                stroke.points[index - 1],
+                stroke.points[index]
+            ));
+        }
+        return distance;
+    }
+
+    function findStrokeAtPoint(point) {
+        const strokes = graph.strokes || [];
+        for (let index = strokes.length - 1; index >= 0; index -= 1) {
+            const stroke = strokes[index];
+            const tolerance = (12 / Math.max(viewState.zoom, 0.1)) + (stroke.width / 2);
+            if (strokeDistanceFromPoint(stroke, point) <= tolerance) return stroke;
+        }
+        return null;
+    }
+
+    function eraseStrokeAtPoint(point) {
+        const stroke = findStrokeAtPoint(point);
+        if (!stroke) return false;
+        graph.strokes = (graph.strokes || []).filter((item) => item.id !== stroke.id);
+        if (selected && selected.type === 'stroke' && selected.id === stroke.id) selected = null;
+        eraseState.changed = true;
+        renderStrokes();
+        renderInspector();
+        renderMiniMap();
+        setStatus('Çizgi silindi');
+        return true;
+    }
+
+    function beginDrawingInteraction(event) {
+        if (!drawingTool || pinchState || event.button !== 0 || spacePanActive) return false;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const point = canvasPoint(event);
+        if (drawingTool === 'eraser') {
+            eraseState = {
+                pointerId: event.pointerId,
+                before: JSON.stringify(graph),
+                changed: false
+            };
+            eraseStrokeAtPoint(point);
+        } else {
+            const currentPoints = totalStrokePointCount();
+            if ((graph.strokes || []).length >= MAX_STROKES || currentPoints >= MAX_TOTAL_STROKE_POINTS - 1) {
+                setStatus('Serbest çizim sınırına ulaşıldı; önce bir çizgiyi sil');
+                return true;
+            }
+            const stroke = {
+                id: takeStrokeId(),
+                tone: drawingTone,
+                width: drawingWidth,
+                points: [[point.x, point.y]]
+            };
+            strokeDrawState = {
+                pointerId: event.pointerId,
+                strokeId: stroke.id,
+                before: JSON.stringify(graph),
+                viewZoom: viewState.zoom,
+                maximumPoints: Math.min(
+                    MAX_STROKE_POINTS,
+                    MAX_TOTAL_STROKE_POINTS - currentPoints
+                )
+            };
+            graph.strokes.push(stroke);
+            selected = null;
+            selectedNodeIds.clear();
+            renderStrokes();
+            renderInspector();
+            setStatus('Çiziliyor…');
+        }
+        if (canvas.setPointerCapture) {
+            try {
+                canvas.setPointerCapture(event.pointerId);
+            } catch (error) {
+                // Drawing continues while the pointer remains over the canvas.
+            }
+        }
+        return true;
+    }
+
+    function commitHistorySnapshot(snapshot) {
+        if (!snapshot || snapshot === JSON.stringify(graph)) return false;
+        history.push(snapshot);
+        if (history.length > 30) history.shift();
+        redoHistory = [];
+        return true;
+    }
+
+    function cancelActiveStrokeInteraction() {
+        const snapshot = strokeDrawState?.before || eraseState?.before || '';
+        strokeDrawState = null;
+        eraseState = null;
+        strokeDragState = null;
+        if (!snapshot) return;
+        graph = normalizeGraphForEditor(JSON.parse(snapshot));
+        selected = null;
+        selectedNodeIds.clear();
+        render();
+    }
+
     function addNode(shape) {
         if (graph.nodes.length >= MAX_NODES) {
             setStatus(`En fazla ${MAX_NODES} düğüm eklenebilir`);
             return;
         }
+        disableDrawingTool(false);
         pushHistory();
         const offset = graph.nodes.length * 34;
         const labels = {
@@ -2532,6 +2935,7 @@
             setStatus(`En fazla ${MAX_FREE_ARROWS} bağımsız ok eklenebilir`);
             return;
         }
+        disableDrawingTool(false);
         pushHistory();
         const centerX = ((VIEWPORT_WIDTH / 2) - viewState.panX) / viewState.zoom;
         const centerY = ((VIEWPORT_HEIGHT / 2) - viewState.panY) / viewState.zoom;
@@ -2784,6 +3188,9 @@
                 if (arrow.endAnchor === removedAnchor) arrow.endAnchor = '';
             });
             setStatus('Taralı bölge silindi');
+        } else if (selected && selected.type === 'stroke') {
+            graph.strokes = (graph.strokes || []).filter((stroke) => stroke.id !== selected.id);
+            setStatus('Serbest çizgi silindi');
         } else {
             const removedIds = new Set(selectedNodeIds);
             const previousRegionIds = new Set(graph.regions.map((region) => region.id));
@@ -2945,6 +3352,7 @@
     });
 
     connectButton.addEventListener('click', () => {
+        disableDrawingTool(false);
         connectMode = !connectMode;
         connectSource = null;
         selected = null;
@@ -2953,6 +3361,26 @@
         render();
     });
     if (freeArrowButton) freeArrowButton.addEventListener('click', addFreeArrow);
+    if (penButton) penButton.addEventListener('click', () => setDrawingTool('pen'));
+    if (eraserButton) eraserButton.addEventListener('click', () => setDrawingTool('eraser'));
+    drawToneButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const tone = button.dataset.diagramDrawTone;
+            if (!['neutral', 'green', 'blue', 'gold', 'red'].includes(tone)) return;
+            drawingTone = tone;
+            updateDrawingToolUi();
+            setStatus(`Kalem rengi ${button.getAttribute('aria-label') || 'güncellendi'}`);
+        });
+    });
+    if (drawWidthSelect) {
+        drawWidthSelect.addEventListener('change', () => {
+            drawingWidth = Math.min(
+                MAX_STROKE_WIDTH,
+                Math.max(MIN_STROKE_WIDTH, Number(drawWidthSelect.value) || 4)
+            );
+            updateDrawingToolUi();
+        });
+    }
 
     duplicateButton.addEventListener('click', duplicateSelectedNode);
     copyButton.addEventListener('click', copySelection);
@@ -3160,6 +3588,36 @@
         });
     });
 
+    strokeToneButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const stroke = selectedStroke();
+            const tone = button.dataset.diagramStrokeTone;
+            if (!stroke || !['neutral', 'green', 'blue', 'gold', 'red'].includes(tone) || stroke.tone === tone) return;
+            pushHistory();
+            stroke.tone = tone;
+            setStatus('Çizgi rengi güncellendi');
+            render();
+        });
+    });
+
+    strokeWidthInput.addEventListener('pointerdown', () => {
+        if (selectedStroke()) pushHistory();
+    });
+    strokeWidthInput.addEventListener('keydown', (event) => {
+        if (selectedStroke() && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) pushHistory();
+    });
+    strokeWidthInput.addEventListener('input', () => {
+        const stroke = selectedStroke();
+        if (!stroke) return;
+        stroke.width = Math.min(
+            MAX_STROKE_WIDTH,
+            Math.max(MIN_STROKE_WIDTH, Number(strokeWidthInput.value) || 4)
+        );
+        strokeWidthValue.textContent = String(Math.round(stroke.width));
+        renderStrokes();
+        renderMiniMap();
+    });
+
     edgeLabelInput.addEventListener('focus', () => {
         if (getSelectedConnector()) pushHistory();
     });
@@ -3315,6 +3773,61 @@
             viewState.panX = panState.panX + (point.x - panState.startPoint.x);
             viewState.panY = panState.panY + (point.y - panState.startPoint.y);
             applyViewport();
+            return;
+        }
+
+        if (strokeDrawState && event.pointerId === strokeDrawState.pointerId) {
+            const stroke = (graph.strokes || []).find((item) => item.id === strokeDrawState.strokeId);
+            if (!stroke) return;
+            const point = canvasPoint(event);
+            const previous = stroke.points[stroke.points.length - 1];
+            const distance = Math.hypot(point.x - previous[0], point.y - previous[1]);
+            if (
+                distance * Math.max(strokeDrawState.viewZoom, 0.1) >= 2.5
+                && stroke.points.length < strokeDrawState.maximumPoints
+            ) {
+                stroke.points.push([
+                    Math.round(Math.min(WORLD_WIDTH, Math.max(0, point.x)) * 10) / 10,
+                    Math.round(Math.min(WORLD_HEIGHT, Math.max(0, point.y)) * 10) / 10
+                ]);
+                renderStrokes();
+                renderMiniMap();
+            }
+            return;
+        }
+
+        if (eraseState && event.pointerId === eraseState.pointerId) {
+            eraseStrokeAtPoint(canvasPoint(event));
+            return;
+        }
+
+        if (strokeDragState && event.pointerId === strokeDragState.pointerId) {
+            const stroke = (graph.strokes || []).find((item) => item.id === strokeDragState.strokeId);
+            if (!stroke) return;
+            if (!strokeDragState.moved) {
+                const distance = Math.hypot(
+                    event.clientX - strokeDragState.startClientX,
+                    event.clientY - strokeDragState.startClientY
+                );
+                if (distance < 4) return;
+                strokeDragState.moved = true;
+                if (!strokeDragState.historyPushed) {
+                    pushHistory();
+                    strokeDragState.historyPushed = true;
+                }
+            }
+            const point = canvasPoint(event);
+            const bounds = strokeBounds({ points: strokeDragState.startPoints });
+            const rawDeltaX = point.x - strokeDragState.startPoint.x;
+            const rawDeltaY = point.y - strokeDragState.startPoint.y;
+            const deltaX = Math.min(WORLD_WIDTH - bounds.right, Math.max(-bounds.left, rawDeltaX));
+            const deltaY = Math.min(WORLD_HEIGHT - bounds.bottom, Math.max(-bounds.top, rawDeltaY));
+            stroke.points = strokeDragState.startPoints.map((item) => [
+                Math.round((item[0] + deltaX) * 10) / 10,
+                Math.round((item[1] + deltaY) * 10) / 10
+            ]);
+            renderStrokes();
+            renderMiniMap();
             return;
         }
 
@@ -3498,7 +4011,44 @@
         renderMiniMap();
     });
 
-    function endPointerInteraction() {
+    function endPointerInteraction(event) {
+        if (strokeDrawState && (!event || event.pointerId === strokeDrawState.pointerId)) {
+            const drawState = strokeDrawState;
+            const stroke = (graph.strokes || []).find((item) => item.id === drawState.strokeId);
+            strokeDrawState = null;
+            if (stroke) {
+                stroke.points = simplifyStrokePoints(
+                    stroke.points,
+                    1.4 / Math.max(drawState.viewZoom, 0.1)
+                );
+                if (stroke.points.length < 2) {
+                    graph.strokes = graph.strokes.filter((item) => item.id !== stroke.id);
+                    selected = null;
+                    setStatus('Nokta oluşturmadığı için çizim eklenmedi');
+                } else {
+                    commitHistorySnapshot(drawState.before);
+                    selected = { type: 'stroke', id: stroke.id };
+                    selectedNodeIds.clear();
+                    setStatus('Çizgi eklendi; kalem açık kalmaya devam ediyor');
+                }
+                render();
+            }
+        }
+        if (eraseState && (!event || event.pointerId === eraseState.pointerId)) {
+            const currentEraseState = eraseState;
+            eraseState = null;
+            if (currentEraseState.changed) {
+                commitHistorySnapshot(currentEraseState.before);
+                setStatus('Çizgiler silindi');
+                render();
+            }
+        }
+        if (strokeDragState && (!event || event.pointerId === strokeDragState.pointerId)) {
+            const moved = strokeDragState.moved;
+            strokeDragState = null;
+            setStatus(moved ? 'Çizgi taşındı' : 'Çizgi seçildi');
+            renderInspector();
+        }
         if (panState) {
             const { moved, startedOnBackground } = panState;
             panState = null;
@@ -3572,16 +4122,22 @@
             contentX: (center.x - viewState.panX) / viewState.zoom,
             contentY: (center.y - viewState.panY) / viewState.zoom
         };
+        if (strokeDrawState || eraseState) cancelActiveStrokeInteraction();
         dragState = null;
         labelDragState = null;
         regionLabelDragState = null;
+        strokeDragState = null;
         panState = null;
         edgeHandleState = null;
         freeArrowEndpointState = null;
+        strokeDrawState = null;
+        strokeDragState = null;
+        eraseState = null;
         setArrowDropTarget('');
         nodeResizeState = null;
         canvas.classList.add('is-panning');
     }, true);
+    canvas.addEventListener('pointerdown', beginDrawingInteraction, true);
     const releaseTouchPointer = (event) => {
         if (event.pointerType !== 'touch') return;
         const wasPinching = Boolean(pinchState);
@@ -3653,8 +4209,8 @@
             arrow.route = ['auto', 'straight', 'curve', 'orthogonal'].includes(arrow.route) ? arrow.route : 'straight';
             arrow.bend = Math.min(MAX_EDGE_BEND, Math.max(-MAX_EDGE_BEND, Number(arrow.bend) || 0));
         });
-        if (graph.nodes.length < 1 && !(graph.arrows || []).length) {
-            setStatus('Metne eklemek için en az bir öğe veya bağımsız ok gerekli');
+        if (graph.nodes.length < 1 && !(graph.arrows || []).length && !(graph.strokes || []).length) {
+            setStatus('Metne eklemek için en az bir öğe, bağımsız ok veya çizim gerekli');
             return;
         }
         const payload = normalizeGraphForEditor(graph);
@@ -4124,6 +4680,7 @@
         spacePanActive = false;
         canvas.classList.remove('is-panning', 'space-pan-active');
         disableConnectMode(false);
+        disableDrawingTool(false);
     });
 
     viewerModal.addEventListener('shown.bs.modal', () => {
@@ -4190,6 +4747,22 @@
             deleteSelected();
             return;
         }
+        if (!isFormField && selected?.type === 'stroke' && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+            const stroke = selectedStroke();
+            if (!stroke) return;
+            event.preventDefault();
+            pushHistory();
+            const amount = event.shiftKey ? 24 : 4;
+            const requestedX = event.key === 'ArrowLeft' ? -amount : event.key === 'ArrowRight' ? amount : 0;
+            const requestedY = event.key === 'ArrowUp' ? -amount : event.key === 'ArrowDown' ? amount : 0;
+            const bounds = strokeBounds(stroke);
+            const deltaX = Math.min(WORLD_WIDTH - bounds.right, Math.max(-bounds.left, requestedX));
+            const deltaY = Math.min(WORLD_HEIGHT - bounds.bottom, Math.max(-bounds.top, requestedY));
+            stroke.points = stroke.points.map((point) => [point[0] + deltaX, point[1] + deltaY]);
+            setStatus('Çizgi taşındı');
+            render();
+            return;
+        }
         if (!isFormField && selectedNodeIds.size && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
             event.preventDefault();
             pushHistory();
@@ -4205,9 +4778,10 @@
             render();
             return;
         }
-        if (event.key === 'Escape' && connectMode) {
+        if (event.key === 'Escape' && (connectMode || drawingTool)) {
             event.preventDefault();
             disableConnectMode();
+            disableDrawingTool(false);
             render();
         }
     });

@@ -27,6 +27,11 @@ MAX_EDGES = 200
 MAX_FREE_ARROWS = 100
 MAX_GROUPS = 32
 MAX_REGIONS = 40
+MAX_STROKES = 64
+MAX_STROKE_POINTS = 320
+MAX_TOTAL_STROKE_POINTS = 3000
+MIN_STROKE_WIDTH = 1
+MAX_STROKE_WIDTH = 24
 ALLOWED_SHAPES = {
     "process",
     "decision",
@@ -48,7 +53,7 @@ def encode_diagram_payload(payload):
     value = payload
     if normalized:
         value = {
-            "v": 5,
+            "v": 6,
             "i": normalized["uid"],
             "t": normalized["title"],
             "n": [
@@ -112,6 +117,15 @@ def encode_diagram_payload(payload):
                     region["label_offset_y"],
                 ]
                 for region in normalized["regions"]
+            ],
+            "s": [
+                [
+                    stroke["id"],
+                    stroke["tone"],
+                    stroke["width"],
+                    [coordinate for point in stroke["points"] for coordinate in point],
+                ]
+                for stroke in normalized["strokes"]
             ],
         }
     raw = json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
@@ -206,6 +220,19 @@ def decode_diagram_payload(encoded):
                 for region in payload.get("r", [])
                 if isinstance(region, list) and len(region) >= 5
             ],
+            "strokes": [
+                {
+                    "id": stroke[0],
+                    "tone": stroke[1],
+                    "width": stroke[2],
+                    "points": [
+                        [stroke[3][index], stroke[3][index + 1]]
+                        for index in range(0, len(stroke[3]) - 1, 2)
+                    ] if isinstance(stroke[3], list) else [],
+                }
+                for stroke in payload.get("s", [])
+                if isinstance(stroke, list) and len(stroke) >= 4
+            ],
         }
 
     return normalize_diagram_payload(payload)
@@ -220,21 +247,24 @@ def normalize_diagram_payload(payload):
     raw_arrows = payload.get("arrows", [])
     raw_groups = payload.get("groups", [])
     raw_regions = payload.get("regions", [])
+    raw_strokes = payload.get("strokes", [])
     if (
         not isinstance(raw_nodes, list)
         or not isinstance(raw_edges, list)
         or not isinstance(raw_arrows, list)
         or not isinstance(raw_groups, list)
         or not isinstance(raw_regions, list)
+        or not isinstance(raw_strokes, list)
     ):
         return None
     if (
-        (not raw_nodes and not raw_arrows)
+        (not raw_nodes and not raw_arrows and not raw_strokes)
         or len(raw_nodes) > MAX_NODES
         or len(raw_edges) > MAX_EDGES
         or len(raw_arrows) > MAX_FREE_ARROWS
         or len(raw_groups) > MAX_GROUPS
         or len(raw_regions) > MAX_REGIONS
+        or len(raw_strokes) > MAX_STROKES
     ):
         return None
 
@@ -505,12 +535,70 @@ def normalize_diagram_payload(payload):
         if arrow["end_anchor"] not in valid_anchors:
             arrow["end_anchor"] = ""
 
+    strokes = []
+    stroke_ids = set()
+    total_stroke_points = 0
+    for index, raw_stroke in enumerate(raw_strokes[:MAX_STROKES]):
+        if not isinstance(raw_stroke, dict):
+            continue
+        stroke_id = str(raw_stroke.get("id", f"s{index + 1}"))[:32]
+        if (
+            not stroke_id
+            or stroke_id in stroke_ids
+            or not stroke_id.replace("-", "").replace("_", "").isalnum()
+        ):
+            continue
+        tone = str(raw_stroke.get("tone", "neutral"))
+        if tone not in ALLOWED_TONES:
+            tone = "neutral"
+        try:
+            width = float(raw_stroke.get("width", 4))
+        except (TypeError, ValueError):
+            width = 4
+        if not math.isfinite(width):
+            width = 4
+        raw_points = raw_stroke.get("points", [])
+        if not isinstance(raw_points, list):
+            continue
+        points = []
+        remaining = MAX_TOTAL_STROKE_POINTS - total_stroke_points
+        if remaining < 2:
+            break
+        for raw_point in raw_points[: min(MAX_STROKE_POINTS, remaining)]:
+            if not isinstance(raw_point, (list, tuple)) or len(raw_point) < 2:
+                continue
+            try:
+                x = float(raw_point[0])
+                y = float(raw_point[1])
+            except (TypeError, ValueError):
+                continue
+            if not math.isfinite(x) or not math.isfinite(y):
+                continue
+            point = [
+                round(min(max(x, 0), CANVAS_WIDTH), 1),
+                round(min(max(y, 0), CANVAS_HEIGHT), 1),
+            ]
+            if not points or point != points[-1]:
+                points.append(point)
+        if len(points) < 2:
+            continue
+        strokes.append(
+            {
+                "id": stroke_id,
+                "tone": tone,
+                "width": round(min(max(width, MIN_STROKE_WIDTH), MAX_STROKE_WIDTH), 1),
+                "points": points,
+            }
+        )
+        stroke_ids.add(stroke_id)
+        total_stroke_points += len(points)
+
     uid = str(payload.get("uid", ""))[:32]
     if uid and not uid.replace("-", "").replace("_", "").isalnum():
         uid = ""
     title = " ".join(str(payload.get("title", "Diyagram")).split())[:80] or "Diyagram"
     return {
-        "version": 5,
+        "version": 6,
         "uid": uid,
         "title": title,
         "nodes": nodes,
@@ -518,6 +606,7 @@ def normalize_diagram_payload(payload):
         "arrows": arrows,
         "groups": groups,
         "regions": regions,
+        "strokes": strokes,
     }
 
 
@@ -1090,7 +1179,18 @@ def _render_regions(regions, nodes_by_id, digest):
     return "".join(definitions), "".join(rendered)
 
 
-def _diagram_viewbox(nodes, arrows=None, nodes_by_id=None, regions_by_id=None):
+def _render_strokes(strokes):
+    rendered = []
+    for stroke in strokes:
+        points = " ".join(f'{point[0]:.1f},{point[1]:.1f}' for point in stroke["points"])
+        rendered.append(
+            f'<polyline class="answer-diagram-stroke answer-diagram-stroke-{stroke["tone"]}" '
+            f'points="{points}" stroke-width="{stroke["width"]:.1f}" />'
+        )
+    return "".join(rendered)
+
+
+def _diagram_viewbox(nodes, arrows=None, nodes_by_id=None, regions_by_id=None, strokes=None):
     x_values = []
     y_values = []
     for node in nodes:
@@ -1115,6 +1215,11 @@ def _diagram_viewbox(nodes, arrows=None, nodes_by_id=None, regions_by_id=None):
             length = max(math.hypot(dx, dy), 1)
             x_values.append(((start_x + end_x) / 2) + (-dy / length * arrow["bend"]))
             y_values.append(((start_y + end_y) / 2) + (dx / length * arrow["bend"]))
+    for stroke in strokes or []:
+        half_width = stroke["width"] / 2
+        for x, y in stroke["points"]:
+            x_values.extend((x - half_width, x + half_width))
+            y_values.extend((y - half_width, y + half_width))
 
     if not x_values or not y_values:
         return 0, 0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT
@@ -1257,16 +1362,19 @@ def render_diagram_html(payload, encoded_payload):
         key=lambda item: (layer_priority.get(item[1]["shape"], 2), item[0]),
     )
     nodes_html = "".join(_render_node(node) for _, node in ordered_nodes)
+    strokes_html = _render_strokes(normalized["strokes"])
     viewbox = _diagram_viewbox(
         normalized["nodes"],
         normalized["arrows"],
         nodes_by_id,
         regions_by_id,
+        normalized["strokes"],
     )
     title = escape(normalized["title"])
     summary = escape(
         f'{normalized["title"]}: {len(normalized["nodes"])} adım, '
         f'{len(normalized["edges"]) + len(normalized["arrows"])} bağlantı'
+        f', {len(normalized["strokes"])} serbest çizim'
     )
     return (
         f'<figure class="answer-diagram" data-diagram-payload="{encoded_payload}" '
@@ -1298,6 +1406,7 @@ def render_diagram_html(payload, encoded_payload):
         f'<g class="answer-diagram-edges">{"".join(edge_html)}</g>'
         f'<g class="answer-diagram-nodes">{nodes_html}</g>'
         f'<g class="answer-diagram-regions">{regions_html}</g>'
+        f'<g class="answer-diagram-strokes">{strokes_html}</g>'
         '</svg>'
         '</div>'
         f'<figcaption class="visually-hidden">{summary}</figcaption>'
