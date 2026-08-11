@@ -36,6 +36,18 @@ STAGE_C_SOURCE_REFERENCES = {
         "title": "forall x: Calgary - Logical concepts",
         "url": "https://forallx.openlogicproject.org/html/Ch12.html",
     },
+    "forallx-expressiveness": {
+        "title": "forall x: Calgary - Expressive limitations of TFL",
+        "url": "https://forallx.openlogicproject.org/html/Ch13.html",
+    },
+    "forallx-table-shortcuts": {
+        "title": "forall x: Calgary - Shortcuts in truth tables",
+        "url": "https://forallx.openlogicproject.org/html/Ch14.html",
+    },
+    "forallx-partial-tables": {
+        "title": "forall x: Calgary - Partial truth tables",
+        "url": "https://forallx.openlogicproject.org/html/Ch15.html",
+    },
     "mit-logic-sequence": {
         "title": "MIT OpenCourseWare Logic I - Calendar",
         "url": "https://ocw.mit.edu/courses/24-241-logic-i-fall-2009/pages/calendar",
@@ -2839,12 +2851,761 @@ def _candidate_c18():
     return lesson
 
 
+def _candidate_c19():
+    lesson = _lesson(
+        "C19",
+        "ders-kismi-tablolar-ve-tfl-sinirlari",
+        "Kısmi Tablolar ve TFL'nin Sınırları",
+        "Semantik iddianın kanıt yüküne göre tam, kısaltılmış tam veya hedefli kısmi tablo seçer; tablo sonucunu yalnız sembolleştirilen doğruluk işlevsel yapı içinde yorumlar.",
+        "Yöntem seçimi, hedefli tanık ve ifade gücü sınırı",
+        50,
+        [
+            "ders-belirsizlik-bulaniklik-savunulabilir-okumalar",
+            "ders-kademeli-sembollestirme-atolyesi",
+            "ders-gecerlilik-ve-karsi-degerleme",
+        ],
+        [
+            "tfl.table_method_select",
+            "tfl.partial_table_construct",
+            "tfl.proof_burden_explain",
+            "tfl.expressiveness_limit_diagnose",
+        ],
+        [
+            "Tam tablo, kısaltılmış tam tablo ve tek tanıklık kısmi tabloyu satır kapsamına göre ayırmak.",
+            "Evrensel ve varlık bildiren semantik iddialarda tek tanığın hangi yönde yeterli olduğunu belirlemek.",
+            "Hedef T/F koşullarını atomik atamalardan başlayarak birlikte gerçekleştirilebilir tek bir değerlemede kurmak.",
+            "Totoloji olmama, eşdeğer olmama, doyurulabilirlik ve geçersizlik için ekonomik fakat yeterli tanık üretmek.",
+            "Sembolleştirme kaybını tablo hesap hatasından ayırmak ve TFL'nin ifade sınırlarını örneklerle teşhis etmek.",
+            "Tablo sonucunu seçilen okuma ve sembol anahtarına bağlı, sınırlı bir semantik sonuç olarak raporlamak.",
+        ],
+        [
+            (
+                "Tam doğruluk tablosu",
+                "İlgili atomlar üzerindeki bütün değerlemeleri ve gereken bütün hedef sütunları hesaplayan tablo.",
+            ),
+            (
+                "Kısaltılmış tam tablo",
+                "Bütün değerleme satırlarını koruyup sonuç açısından belirleyici olmayan bazı ara hücre hesaplarını gerekçeyle atlayan tam-kapsam yöntemi.",
+            ),
+            (
+                "Kısmi doğruluk tablosu",
+                "Belirli bir semantik iddia için gereken bir veya birkaç hedef değerlemeyi kuran, bütün satırları listelemeyen yöntem.",
+            ),
+            (
+                "Kanıt yükü",
+                "Bir iddianın doğruluğunu veya yanlışlığını göstermeye yetecek semantik kapsamın türü ve miktarı.",
+            ),
+            (
+                "Evrensel iddia",
+                "İlgili bütün değerlemeler hakkında bir koşul ileri süren ve olumlu kanıtı genel olarak tam kapsam gerektiren iddia.",
+            ),
+            (
+                "Varlık iddiası",
+                "Belirli koşulu sağlayan en az bir değerleme bulunduğunu söyleyen ve tek uygun tanıkla kanıtlanabilen iddia.",
+            ),
+            (
+                "Hedef koşul",
+                "Kısmi tabloda kurulması istenen formül ve doğruluk değeri birleşimi.",
+            ),
+            (
+                "Sembolleştirme kaybı",
+                "Doğal dilde bulunan fakat seçilen TFL atomları ve bağlaçları içinde temsil edilmeyen yapı veya anlam ilişkisi.",
+            ),
+            (
+                "İfade gücü sınırı",
+                "Bir biçimsel dilin kendi söz varlığı ve yapısıyla ayırt edemediği anlam farklarının oluşturduğu sınır.",
+            ),
+        ],
+        [
+            _section(
+                "Kanıt yükü iddianın yönüne göre değişir",
+                "Bir evrensel iddiayı doğrulamak bütün ilgili değerlemeleri, çürütmek ise tek karşı tanığı gerektirebilir. Bir varlık iddiasında bu asimetri ters yönde çalışır.",
+                "Tablo kurmadan önce kaç satırın gerçekten yeterli olacağını belirlerken.",
+                "evrensel evet → tam kapsam; evrensel hayır → tek karşı tanık; varlık evet → tek tanık; varlık hayır → tam kapsam",
+                "'Totolojidir', 'eşdeğerdir' ve 'geçerlidir' bütün değerlemeler hakkında iddialardır. 'Doyurulabilirdir' en az bir ortak doğru değerleme ister. Sorunun evet/hayır yönü hangi kanıtın yeterli olduğunu değiştirir.",
+                "Tek başarılı satırı evrensel iddianın kanıtı veya birkaç başarısız denemeyi varlık iddiasının çürütülmesi sanma.",
+                [
+                    (
+                        "A→B totoloji değildir; A=T, B=F",
+                        "Tek F tanığı bütün-satırlar T iddiasını çürütür.",
+                    ),
+                    (
+                        "{A∨B, ¬A} doyurulabilirdir; A=F, B=T",
+                        "Tek ortak doğru değerleme varlık iddiasını kanıtlar.",
+                    ),
+                    (
+                        "A→B, A ⊨ B argümanı geçerlidir demek",
+                        "Bütün kötü satır adaylarının yokluğu tam kapsamla gösterilmelidir.",
+                    ),
+                ],
+                (
+                    "Önce iddiayı evrensel veya varlık bildiren biçimde yeniden yazıp sonra kanıt yönünü seçmek.",
+                    "Her semantik soru için otomatik olarak ya tam tablo ya tek satır kullanmak.",
+                    "Yeterli yöntem, konu başlığından değil iddianın nicelik yapısı ve olumlu/olumsuz yönünden çıkar.",
+                ),
+            ),
+            _section(
+                "Kısaltılmış tam tablo bütün satırları korur",
+                "Kısaltılmış tam tabloda hiçbir değerleme satırı atılmaz. Yalnız bir bağlacın sonucu belirlenmişse artık sonucu etkileyemeyecek ara hücreler gerekçeli olarak boş bırakılabilir.",
+                "Evrensel iddia için tam değerleme kapsamını korurken gereksiz ara hesapları azaltmak için.",
+                "satırlar tam; belirleyici hücreler hesaplı; atlanan hücreler gerekçeli",
+                "Örneğin bir birleşimin bir tarafı F ise birleşim F'dir; öteki tarafın bazı ara hücreleri hedef sonuç için hesaplanmayabilir. Ancak atom ataması ve bu kısaltmayı haklı çıkaran belirleyici değer görünür kalır.",
+                "Boş hücreyi bilinmeyen, önemsiz veya rastgele sanma. O hücre yalnız belirli hedef sütunun o satırdaki değerini değiştiremeyeceği kanıtlandığı için atlanır.",
+                [
+                    (
+                        "(A∨B)∧(C↔D) satırında A∨B=F",
+                        "Ana birleşim F olduğundan C↔D ara sütunu bu hedef için atlanabilir; atom değerleri ve satır yine tabloda kalır.",
+                    ),
+                    (
+                        "(A∧B)∨(C→D) satırında A∧B=T",
+                        "Ana ayrık birleşim T'dir; C→D ara sütunu hedefe etkisiz olduğu için gerekçeyle atlanabilir.",
+                    ),
+                    (
+                        "(A↔B)→(C∨D) satırında A↔B=F",
+                        "Ana maddi koşul T'dir; C∨D ara sütunu hedef koşul için hesaplanmayabilir.",
+                    ),
+                ],
+                (
+                    "Her boş hücre için hangi belirleyici bağlaç koşulunun sonucu sabitlediğini açıklamak.",
+                    "İstenmeyen veya zor hücreleri gerekçesiz boş bırakıp yöntemi kısaltılmış tam tablo saymak.",
+                    "Kısaltma hesap sayısını azaltır, değerleme uzayını veya kanıt yükünü azaltmaz.",
+                ),
+            ),
+            _section(
+                "Kısmi tablo hedeflenen tanığı kurar",
+                "Kısmi tablo bütün değerlemeleri listelemek yerine istenen formül değerlerinden atomlara doğru koşullar çıkarır ve gerçekleştirilebilir bir tanık değerleme kurar.",
+                "Tek bir yanlışlayıcı, ayırıcı, ortak doğru veya karşı değerleme iddiayı kanıtlamaya yettiğinde.",
+                "hedef değer → bağlaç koşulları → alt cümle hedefleri → atom ataması → ileri doğrulama",
+                "A→B'nin F olması hedeflenirse A=T ve B=F zorunludur. Daha karmaşık formüllerde dallanan olasılıklardan biri seçilir; seçilen atom ataması bütün hedef formüller ileri yönde yeniden hesaplanarak doğrulanır.",
+                "Hedef hücreleri birbirinden bağımsız seçip aynı atomu hem T hem F yapma veya bağlaç koşullarının birlikte gerçekleştirilebilirliğini denetlemeden tanık ilan etme.",
+                [
+                    (
+                        "A→B = F",
+                        "Tek mümkün hedef atama A=T, B=F'dir.",
+                    ),
+                    (
+                        "A∨B = T ve A = F",
+                        "B=T seçilince iki hedef aynı değerlemede gerçekleşir.",
+                    ),
+                    (
+                        "A→B = T, A = T, B = F",
+                        "Koşullar birlikte gerçekleştirilemez; ilk hedef yeniden hesapta F çıkar.",
+                    ),
+                ],
+                (
+                    "Hedeften atomlara geri çöz, sonra atomlardan hedefe ileri hesapla ve aynı değerlemeyi koru.",
+                    "Yalnız istenen T/F harflerini yazıp bunları üreten tutarlı atom atamasını göstermemek.",
+                    "Kısmi tablo ekonomik olabilir; fakat tanığın semantik olarak gerçek olması tam hesap kadar sıkı denetlenir.",
+                ),
+            ),
+            _section(
+                "Beş temel soruda yöntem seçimi",
+                "Totoloji, çelişki, eşdeğerlik, birlikte doyurulabilirlik ve geçerlilik sorularında evet ile hayır yönleri farklı kanıt yükleri taşır.",
+                "Bir semantik soruya başlamadan önce yöntem gerekçesini kısa ve standart biçimde yazarken.",
+                "totoloji/çelişki/eşdeğerlik/geçerlilik evet: tam kapsam; doyurulabilirlik evet: tanık",
+                "Totoloji hayırı bir F satırı, çelişki hayırı bir T satırı, eşdeğerlik hayırı ayırıcı satır, doyurulabilirlik eveti ortak doğru satır ve geçerlilik hayırı karşı değerleme ile gösterilebilir. Ters yönler ilgili uzayın tamamını tüketir.",
+                "Sorunun yalnız konu adını okuyup yönünü atlama. 'Geçerli mi?' sorusuna hayır cevabı ile evet cevabının aynı kanıt yükü yoktur.",
+                [
+                    (
+                        "Eşdeğer değiller",
+                        "İki sütunu farklı yapan tek ayırıcı değerleme yeterlidir.",
+                    ),
+                    (
+                        "Küme birlikte doyurulamaz",
+                        "Hiç ortak doğru değerleme kalmadığını tam veya kısaltılmış tam tabloyla göstermek gerekir.",
+                    ),
+                    (
+                        "Argüman geçersiz",
+                        "Bütün öncülleri T ve sonucu F yapan tek karşı değerleme yeterlidir.",
+                    ),
+                ],
+                (
+                    "Cevap yönünü yazıp seçilen yöntemin bu yöndeki kanıt yükünü nasıl karşıladığını belirtmek.",
+                    "Yöntem adını yazıp neden yeterli olduğuna dair nicelik gerekçesi vermemek.",
+                    "Yöntem seçimi bir hız tercihi değil, iddiayı gerçekten kanıtlayacak kapsam kararıdır.",
+                ),
+            ),
+            _section(
+                "Tablo hatası ile sembolleştirme kaybı farklıdır",
+                "Doğru kurulmuş bir tablo, verilen TFL biçimi hakkında kesin sonuç verebilir; fakat doğal dildeki ilişki atomlaştırma sırasında kaybolmuşsa bu sonuç özgün argümanı eksik temsil eder.",
+                "Tablo sonucu doğal dil sezgisiyle çatıştığında önce hesap mı, sembolleştirme mi sorunlu diye teşhis koyarken.",
+                "doğal dil → açık okuma → sembol anahtarı → TFL formülü → doğru tablo → sınırlı yorum",
+                "'Daisy'nin dört bacağı vardır; öyleyse ikiden fazla bacağı vardır' iki bağımsız atomla yazılırsa TFL aralarındaki sayısal içermeyi göremez. Tablo hesap hatası yapmaz; sembolleştirme ilişkiyi taşımamıştır.",
+                "TFL'de geçersiz çıkan her doğal dil argümanını kötü argüman veya TFL'yi keyfi yöntem sayma. Önce korunan yapıyı denetle.",
+                [
+                    (
+                        "D: Daisy'nin dört bacağı vardır; I: Daisy'nin ikiden fazla bacağı vardır",
+                        "D ile I atomik bırakıldığında D⊨I çıkmaz; sayısal yapı temsil edilmemiştir.",
+                    ),
+                    (
+                        "A: Ali uzundur",
+                        "İki değerli atom, 'uzun' yükleminin bağlama ve dereceye bağlı bulanıklığını göstermez.",
+                    ),
+                    (
+                        "A→B maddi koşulu",
+                        "Nedensel, zamansal veya karşıolgusal doğal dil koşullarının bütün anlamını kodlamaz.",
+                    ),
+                ],
+                (
+                    "Tablonun hedef TFL biçimi için doğruluğunu kabul edip doğal dil sonucunu temsil kaybı kaydıyla sınırlandırmak.",
+                    "Doğal dil bağlantısı kaybolduğunda tablo aritmetiğini değiştirerek sezgisel sonucu zorlamak.",
+                    "Biçimsel kesinlik, yalnız biçimsel dilde açıkça temsil edilen ayrımlar üzerinde geçerlidir.",
+                ),
+            ),
+            _section(
+                "TFL'nin başlıca ifade sınırları",
+                "TFL atomların iç yapısını, derece bulanıklığını, zorunluluk kipini, karşıolgusal yakınlığı, nedenselliği, zaman sırasını ve pragmatik vurguyu kendi bağlaçlarıyla çözümlemez.",
+                "Bir doğal dil metninin TFL için uygun olup olmadığını ve hangi ek çözümleme aracına ihtiyaç duyduğunu değerlendirirken.",
+                "sınırı adlandır → kaybolan bilgiyi göster → tablo sonucuna etkisini açıkla → daha zengin aracı belirt",
+                "Her sınır TFL'nin yararsız olduğunu değil belirli bir amaç için tasarlandığını gösterir. İç yapı için yüklem ve niceleme, zorunluluk için kip, zaman için zamansal yapı gibi daha zengin araçlar gerekebilir; hangi aracın gerektiği kaybolan bilgi türüne bağlıdır.",
+                "Her anlam farkı için gelişigüzel yeni atom eklemenin ilişkiyi koruduğunu sanma. Ayrı atomlar çoğu zaman bağımsız değerlenerek bağlantıyı daha da görünmez yapar.",
+                [
+                    (
+                        "Eğer kibrit çakılsaydı yanardı.",
+                        "Karşıolgusal yakınlık ve arka plan koşulları maddi koşulun T/F tablosunda temsil edilmez.",
+                    ),
+                    (
+                        "Düğmeye bastı ve ışık yandı.",
+                        "∧ birlikte doğruluğu verir; neden-sonuç ve önce-sonra sırasını vermez.",
+                    ),
+                    (
+                        "Fakir ama dürüsttür.",
+                        "Doğruluk koşulları birleşime benzese de 'ama' sözcüğünün karşıtlık vurgusu kaybolur.",
+                    ),
+                ],
+                (
+                    "Kaybolan anlam türünü somut cümle parçasıyla eşleyip TFL sonucunun kapsamını açıkça sınırlamak.",
+                    "TFL'nin ifade etmediği ayrımı tablonun gizlice hesaba kattığını varsaymak.",
+                    "Modelleme kalitesi, yalnız doğru hesap değil doğru temsil kapsamı ve açık sınırlılık raporu gerektirir.",
+                ),
+            ),
+        ],
+        [
+            _worked(
+                "A→B totoloji değildir: A=T, B=F",
+                "Tek yanlışlayıcı değerleme evrensel totoloji iddiasını çürütür.",
+                "Kısmi tanık",
+            ),
+            _worked(
+                "A∨B çelişki değildir: A=T, B=F",
+                "Tek T satırı bütün-satırlar F iddiasını çürütür.",
+                "Doğru tanık",
+            ),
+            _worked(
+                "A∨B ile A∧B eşdeğer değildir: A=T, B=F",
+                "Aynı satırda ilk cümle T, ikincisi F olur.",
+                "Ayırıcı tanık",
+            ),
+            _worked(
+                "{A∨B, ¬A} doyurulabilirdir: A=F, B=T",
+                "Tek ortak doğru değerleme varlık iddiasını kanıtlar.",
+                "Ortak tanık",
+            ),
+            _worked(
+                "A∨B ⊭ A: A=F, B=T",
+                "Öncül T ve sonuç F olan tek karşı değerleme yeterlidir.",
+                "Geçersizlik",
+            ),
+            _worked(
+                "A∨¬A totolojidir çünkü A=T satırında T'dir.",
+                "Tek iyi satır evrensel iddiaya yetmez; iki satırın tamamı gerekir.",
+                "Kanıt yükü hatası",
+                "bad",
+            ),
+            _worked(
+                "Kısaltılmış tabloda dört satırdan üçünü silmek",
+                "Satır silinirse yöntem artık tam kapsamlı değildir; yalnız ara hücreler gerekçeyle atlanabilir.",
+                "Kısaltma hatası",
+                "bad",
+            ),
+            _worked(
+                "A→B=F hedefinden A=T, B=F çıkarma",
+                "Maddi koşulun tek yanlış koşulu tanığı doğrudan belirler.",
+                "Geri çözüm",
+            ),
+            _worked(
+                "Daisy örneğinin TFL'de geçersiz çıkması",
+                "Sayısal içerme atomlar arasında temsil edilmediği için sonuç doğal dil argümanını bütünüyle değerlendirmez.",
+                "Temsil sınırı",
+            ),
+            _worked(
+                "'Ama' bağlacını ∧ ile temsil etmek",
+                "Doğruluk koşulu korunabilir; pragmatik karşıtlık vurgusu kaybolur ve raporlanmalıdır.",
+                "Pragmatik kayıp",
+            ),
+        ],
+        [
+            "Tek başarılı satırla totoloji, eşdeğerlik veya geçerlilik kanıtlamak.",
+            "Tek başarısız denemeyle birlikte doyurulabilirliğin yokluğunu kanıtladığını sanmak.",
+            "Kısaltılmış tam tablo ile yalnız hedef satırları kuran kısmi tabloyu aynı yöntem saymak.",
+            "Boş bırakılan ara hücre için sonucu sabitleyen bağlaç koşulunu açıklamamak.",
+            "Kısmi tabloda hedef değerleri atomik atamalara kadar geri çözmemek.",
+            "Aynı atomu farklı hedeflerde hem T hem F yaparak gerçekleştirilemez tanık kurmak.",
+            "Karşı değerleme veya ortak tanığı ileri hesapla yeniden doğrulamamak.",
+            "Tablo hesap hatası ile sembolleştirme kaybını aynı sorun saymak.",
+            "TFL'nin geçersiz bulduğu her doğal dil argümanını kesin olarak kötü argüman ilan etmek.",
+            "Nedensellik, zaman, zorunluluk veya pragmatik vurgunun TFL bağlaçlarında kendiliğinden korunduğunu varsaymak.",
+        ],
+        _practice(
+            [
+                (
+                    "Bir cümlenin totoloji olmadığını göstermeye ne yeter?",
+                    [
+                        "Cümleyi F yapan tek değerleme",
+                        "Cümleyi T yapan tek değerleme",
+                        "Bir iyi örnek",
+                        "Yalnız formülün uzunluğu",
+                    ],
+                    "Cümleyi F yapan tek değerleme",
+                    "Tek karşı tanık her-satır T iddiasını çürütür.",
+                    "Temel",
+                ),
+                (
+                    "Bir cümlenin totoloji olduğunu göstermeye genel olarak ne gerekir?",
+                    [
+                        "Tek T satırı",
+                        "Tam veya kısaltılmış tam tablo",
+                        "Tek F satırı",
+                        "Bir doğal dil örneği",
+                    ],
+                    "Tam veya kısaltılmış tam tablo",
+                    "Olumlu evrensel iddia bütün ilgili değerlemeleri kapsamalıdır.",
+                    "Temel",
+                ),
+                (
+                    "Bir kümenin birlikte doyurulabilir olduğunu ne kanıtlar?",
+                    [
+                        "Bütün üyeleri aynı anda T yapan tek değerleme",
+                        "Her üyeyi farklı satırda T yapmak",
+                        "Bir başarısız satır",
+                        "Bütün satırları silmek",
+                    ],
+                    "Bütün üyeleri aynı anda T yapan tek değerleme",
+                    "Varlık iddiası ortak doğru tanıkla kanıtlanır.",
+                    "Temel",
+                ),
+                (
+                    "Bir kümenin birlikte doyurulamaz olduğunu göstermeye ne gerekir?",
+                    [
+                        "Tek ortak olmayan satır",
+                        "Tam kapsamda hiçbir ortak doğru satır kalmadığını göstermek",
+                        "Üyelerden birini yanlış yapmak",
+                        "Bir ortak doğru tanık",
+                    ],
+                    "Tam kapsamda hiçbir ortak doğru satır kalmadığını göstermek",
+                    "Yokluk iddiası bütün aday değerlemelerin elenmesini gerektirir.",
+                    "Orta",
+                ),
+                (
+                    "Kısaltılmış tam tabloda hangisi korunur?",
+                    [
+                        "Bütün değerleme satırları",
+                        "Yalnız tek tanık satır",
+                        "Hiçbir atom sütunu",
+                        "Yalnız sonuç etiketi",
+                    ],
+                    "Bütün değerleme satırları",
+                    "Kısaltma ara hesapları azaltır, değerleme kapsamını değil.",
+                    "Temel",
+                ),
+                (
+                    "Kısmi tablonun temel amacı nedir?",
+                    [
+                        "Her zaman bütün satırları listelemek",
+                        "Belirli hedef koşulu gerçekleştiren tanık değerleme kurmak",
+                        "Bağlaç kurallarını değiştirmek",
+                        "Doğal dili eksiksiz çevirmek",
+                    ],
+                    "Belirli hedef koşulu gerçekleştiren tanık değerleme kurmak",
+                    "Kısmi tablo iddianın gerektirdiği bir veya birkaç satırı hedefler.",
+                    "Orta",
+                ),
+                (
+                    "A→B formülünü F yapmak için hangi atama zorunludur?",
+                    [
+                        "A=T, B=F",
+                        "A=F, B=T",
+                        "A=T, B=T",
+                        "A=F, B=F",
+                    ],
+                    "A=T, B=F",
+                    "Maddi koşul yalnız doğru önbileşen ve yanlış artbileşende F olur.",
+                    "Temel",
+                ),
+                (
+                    "İki cümlenin eşdeğer olmadığını hangi yöntem ekonomik biçimde gösterir?",
+                    [
+                        "Farklı değer aldıkları tek ayırıcı satır",
+                        "Tek aynı satır",
+                        "Yalnız cümle uzunlukları",
+                        "Bir ortak doğru satır",
+                    ],
+                    "Farklı değer aldıkları tek ayırıcı satır",
+                    "Tek ayırıcı değerleme evrensel eşleşme iddiasını çürütür.",
+                    "Orta",
+                ),
+                (
+                    "Geçersizliği göstermeye ne yeter?",
+                    [
+                        "Öncülleri T, sonucu F yapan tek karşı değerleme",
+                        "Öncülleri ve sonucu T yapan tek satır",
+                        "Sonucu F yapan herhangi bir satır",
+                        "Bir yanlış öncül",
+                    ],
+                    "Öncülleri T, sonucu F yapan tek karşı değerleme",
+                    "Geçersizlik uygun tek kötü satırla kanıtlanabilen varlık iddiasıdır.",
+                    "Orta",
+                ),
+                (
+                    "Bir boş hücre kısaltılmış tabloda ne zaman meşrudur?",
+                    [
+                        "Hesap zor olduğunda",
+                        "Belirleyici bağlaç değeri hedef sonucu zaten sabitlediğinde",
+                        "Öğrenci değeri bilmediğinde",
+                        "Satır fazla geldiğinde",
+                    ],
+                    "Belirleyici bağlaç değeri hedef sonucu zaten sabitlediğinde",
+                    "Atlama hedef sonuç açısından semantik etkisizlik gerekçesine dayanmalıdır.",
+                    "İleri",
+                ),
+                (
+                    "Daisy'nin dört bacağı örneğinde TFL neden içermeyi göremez?",
+                    [
+                        "Tablo satır sayısı azdır",
+                        "Sayısal iç yapı bağımsız atomlarda temsil edilmemiştir",
+                        "∧ bağlacı yanlıştır",
+                        "TFL'de F değeri yoktur",
+                    ],
+                    "Sayısal iç yapı bağımsız atomlarda temsil edilmemiştir",
+                    "Sorun tablo hesabı değil sembolleştirme kaybıdır.",
+                    "İleri",
+                ),
+                (
+                    "'Düğmeye bastı ve ışık yandı' cümlesinde ∧ neyi korumaz?",
+                    [
+                        "İki bildirimin birlikte doğruluğunu",
+                        "Nedensellik ve zaman sırasını",
+                        "Her bildirimin bir atomla gösterilmesini",
+                        "T/F değerlerini",
+                    ],
+                    "Nedensellik ve zaman sırasını",
+                    "Birleşim birlikte doğruluğu verir; neden ve önce-sonra ilişkisini kodlamaz.",
+                    "İleri",
+                ),
+                (
+                    "'Fakir ama dürüsttür' ifadesinde ∧ ile hangi bilgi kaybolur?",
+                    [
+                        "İki tarafın doğruluk değerleri",
+                        "Karşıtlık veya şaşırtıcılık vurgusu",
+                        "Cümlenin iki parçası olduğu",
+                        "Birleşimin doğruluk koşulu",
+                    ],
+                    "Karşıtlık veya şaşırtıcılık vurgusu",
+                    "'Ama' çoğu bağlamda ∧ ile aynı doğruluk koşuluna sahip olsa da pragmatik vurgu taşır.",
+                    "İleri",
+                ),
+                (
+                    "Tablo doğru, doğal dil sonucu yetersiz görünüyorsa ilk ayrım ne olmalıdır?",
+                    [
+                        "Hesap hatası mı sembolleştirme kaybı mı?",
+                        "Yazı tipi mi renk mi?",
+                        "Atomlar kısa mı uzun mu?",
+                        "Sonuç popüler mi?",
+                    ],
+                    "Hesap hatası mı sembolleştirme kaybı mı?",
+                    "Doğru biçimsel hesap, eksik temsil edilmiş doğal dil ilişkisini geri getiremez.",
+                    "Zor",
+                ),
+            ]
+        ),
+        {
+            "prompt": "Beş semantik iddianın kanıt yükünü sınıflandır; ardından dört hedef için en ekonomik yeterli tanığı kur ve ileri hesapla doğrula.",
+            "starter": "İddialar: totolojidir; çelişki değildir; eşdeğer değildir; küme doyurulabilirdir; argüman geçerlidir.\nHedefler: A→B=F; A∨B=T; A∨B ile A∧B farklı; A∨B öncülü T ve A sonucu F.",
+            "checks": [
+                "Her iddia evrensel veya varlık yönüyle sınıflandırılır",
+                "Tam, kısaltılmış tam ve kısmi tablo birbirinden satır kapsamıyla ayrılır",
+                "A→B=F hedefi A=T, B=F atamasına kadar geri çözülür",
+                "Eşdeğer olmama için aynı değerlemede iki farklı sonuç gösterilir",
+                "Geçersizlik için öncül T ve sonuç F aynı satırda doğrulanır",
+                "Her kısmi tanık atomlardan hedef formüllere ileri yönde yeniden hesaplanır",
+                "Tek satırın neden yeterli olduğu iddianın kanıt yüküyle açıklanır",
+            ],
+            "solution": "Totolojidir ve argüman geçerlidir iddiaları tam veya kısaltılmış tam kapsam ister. Çelişki değildir, eşdeğer değildir ve küme doyurulabilirdir iddiaları uygun tek tanıkla gösterilebilir. Kısmi hedefler hükümden atomlara geri çözülür: A→B=F için A=T, B=F; A∨B=T için örneğin A=T, B=F; A∨B ile A∧B'yi ayırmak için A=T, B=F; A∨B ⊭ A için A=F, B=T seçilir. Her atama atomlardan hedefe ileri hesaplanarak yeniden doğrulanır.",
+        },
+        [
+            _production_task(
+                "Dört semantik iddia için en ekonomik yeterli yöntemi seçip uygula; ardından TFL'nin eksik temsil ettiği bir doğal dil argümanına sınır raporu yaz.",
+                [
+                    "Bir cümlenin totoloji olmadığı yanlışlayıcı tek değerlemeyle gösterilir.",
+                    "İki cümlenin eşdeğer olmadığı ayırıcı tek değerlemeyle gösterilir.",
+                    "Bir cümle kümesinin birlikte doyurulabilir olduğu ortak doğru tek değerlemeyle gösterilir.",
+                    "Bir argümanın geçersiz olduğu gerçek bir karşı değerlemeyle gösterilir.",
+                    "Her tanık hedef değerlerden atom atamalarına geri çözülür ve ileri hesapla doğrulanır.",
+                    "Her yöntemin neden yeterli olduğu evrensel/varlık kanıt yüküyle açıklanır.",
+                    "Doğal dil örneğinde kaybolan yapı, TFL tablosunun sonucu ve gereken daha zengin bilgi türü ayrı raporlanır.",
+                ],
+                "Ekonomik yöntemi yalnız kısa olduğu için değil, iddiayı mantıksal olarak kanıtlamaya yettiği için seç.",
+                "Zorunlu dört tanık ve sınır raporu",
+                [
+                    "Totoloji değil: bir F değerleme",
+                    "Eşdeğer değil: iki farklı sütun değeri",
+                    "Doyurulabilir: bütün üyeler T",
+                    "Geçersiz: bütün öncüller T, sonuç F",
+                ],
+                "Sınır raporu en az üç başlık taşımalıdır: kaybolan doğal dil ilişkisi, doğru TFL hesabı, sonucu değerlendirmek için gereken ek temsil veya alan bilgisi.",
+            ),
+        ],
+        [
+            "Yöntem seçimini iddianın evrensel veya varlık bildiren kanıt yüküyle gerekçelendirir.",
+            "Tam, kısaltılmış tam ve kısmi tabloyu değerleme satırı kapsamına göre doğru ayırır.",
+            "Her kısmi tanığı atomik atamalardan hedef ana sütunlara kadar tutarlı biçimde kurar ve ileri doğrular.",
+            "Tek tanığın yeterli olmadığı en az iki olumlu evrensel iddiayı doğru belirler.",
+            "Sembolleştirme kaybı ile tablo hesap hatasını farklı teşhis ve düzeltme yollarıyla ayırır.",
+            "TFL'nin iç yapı, bulanıklık, kip, nedensellik, zaman veya pragmatik vurgu sınırlarından en az üçünü doğru örneklerle açıklar.",
+        ],
+        [
+            "Geçersizlik için tek karşı değerleme yeterliyken geçerlilik için tek iyi satır neden yetmez?",
+            "Kısaltılmış tam tablo ile kısmi tablo arasındaki satır kapsamı farkı nedir?",
+            "Bir hedef değerlemeyi kurduktan sonra neden ileri yönde yeniden hesaplamak gerekir?",
+            "TFL'de geçersiz görünen doğal dil argümanı hangi temsil kaybı durumunda yine de iyi olabilir?",
+        ],
+        "Sonraki aşamada semantik sonuç ile biçimsel türetimi ayırarak doğal türetim kurallarına, satır gerekçelerine ve denetlenebilir kanıt yapılarına geçeceğiz.",
+        [
+            "forallx-truth-functionality",
+            "forallx-logical-concepts",
+            "forallx-expressiveness",
+            "forallx-table-shortcuts",
+            "forallx-partial-tables",
+            "mit-logic-sequence",
+            "mit-logic-study-guide",
+        ],
+        "Bu ders klasik iki değerli TFL semantiğinin yöntem seçimi ve ifade sınırlarıyla biter. Kısaltılmış tam tablo değerleme uzayını korur; kısmi tablo hedef tanık kurar. Doğal türetim ve kanıt kuralları sonraki aşamaya, niceleyici ve yüklem iç yapısı daha sonraki birinci derece mantık aşamasına bırakılır.",
+        [
+            "ders-20-dogruluk-tablolari-i",
+            "ders-21-dogruluk-tablolari-ii-ve-gecerlilik",
+        ],
+    )
+
+    lesson["reading_note"] = (
+        "Önce iddianın evrensel mi varlık bildiren mi olduğunu ve cevabın yönünü yaz. Yöntemi buna göre seç; tek tanığı geri çöz ve ileri doğrula, tam-kapsam iddiasında bütün satırları koru."
+    )
+    lesson["symbol_set"] = [
+        "A",
+        "B",
+        "C",
+        "T",
+        "F",
+        "¬",
+        "∧",
+        "∨",
+        "→",
+        "↔",
+        "⊨",
+        "⊭",
+        "(",
+        ")",
+    ]
+    lesson["proof_tools"] = [
+        "Kanıt yükü matrisi",
+        "Tam tablo",
+        "Kısaltılmış tam tablo",
+        "Hedefli kısmi tablo",
+        "Hedeften atomlara geri çözüm",
+        "Atomlardan hedefe ileri doğrulama",
+        "Sembolleştirme kaybı raporu",
+    ]
+    lesson["method_checks"] = [
+        {
+            "id": "tautology-yes",
+            "question": "tautology",
+            "answer": "yes",
+            "expected_burden": "exhaustive",
+            "acceptable_methods": ["complete", "shortened_complete"],
+        },
+        {
+            "id": "tautology-no",
+            "question": "tautology",
+            "answer": "no",
+            "expected_burden": "witness",
+            "acceptable_methods": ["partial"],
+        },
+        {
+            "id": "contradiction-yes",
+            "question": "contradiction",
+            "answer": "yes",
+            "expected_burden": "exhaustive",
+            "acceptable_methods": ["complete", "shortened_complete"],
+        },
+        {
+            "id": "contradiction-no",
+            "question": "contradiction",
+            "answer": "no",
+            "expected_burden": "witness",
+            "acceptable_methods": ["partial"],
+        },
+        {
+            "id": "equivalence-yes",
+            "question": "equivalence",
+            "answer": "yes",
+            "expected_burden": "exhaustive",
+            "acceptable_methods": ["complete", "shortened_complete"],
+        },
+        {
+            "id": "equivalence-no",
+            "question": "equivalence",
+            "answer": "no",
+            "expected_burden": "witness",
+            "acceptable_methods": ["partial"],
+        },
+        {
+            "id": "satisfiable-yes",
+            "question": "joint_satisfiability",
+            "answer": "yes",
+            "expected_burden": "witness",
+            "acceptable_methods": ["partial"],
+        },
+        {
+            "id": "satisfiable-no",
+            "question": "joint_satisfiability",
+            "answer": "no",
+            "expected_burden": "exhaustive",
+            "acceptable_methods": ["complete", "shortened_complete"],
+        },
+        {
+            "id": "validity-yes",
+            "question": "validity",
+            "answer": "yes",
+            "expected_burden": "exhaustive",
+            "acceptable_methods": ["complete", "shortened_complete"],
+        },
+        {
+            "id": "validity-no",
+            "question": "validity",
+            "answer": "no",
+            "expected_burden": "witness",
+            "acceptable_methods": ["partial"],
+        },
+    ]
+    lesson["partial_target_checks"] = [
+        {
+            "id": "conditional-false-witness",
+            "requirements": [("A → B", "F")],
+            "expected_matching_valuations": [
+                {"A": "T", "B": "F"},
+            ],
+        },
+        {
+            "id": "disjunction-true-witnesses",
+            "requirements": [("A ∨ B", "T")],
+            "expected_matching_valuations": [
+                {"A": "T", "B": "T"},
+                {"A": "T", "B": "F"},
+                {"A": "F", "B": "T"},
+            ],
+        },
+        {
+            "id": "shared-true-target",
+            "requirements": [("A ∨ B", "T"), ("¬A", "T")],
+            "expected_matching_valuations": [
+                {"A": "F", "B": "T"},
+            ],
+        },
+        {
+            "id": "unrealizable-target",
+            "requirements": [("A → B", "T"), ("A", "T"), ("B", "F")],
+            "expected_matching_valuations": [],
+        },
+        {
+            "id": "biconditional-separator-target",
+            "requirements": [("A ↔ B", "F"), ("A", "T")],
+            "expected_matching_valuations": [
+                {"A": "T", "B": "F"},
+            ],
+        },
+    ]
+    lesson["witness_checks"] = [
+        {
+            "id": "not-equivalent-witness",
+            "kind": "non_equivalence",
+            "left": "A ∨ B",
+            "right": "A ∧ B",
+            "expected_witness": {"A": "T", "B": "F"},
+        },
+        {
+            "id": "jointly-satisfiable-witness",
+            "kind": "joint_satisfiability",
+            "formulas": ["A ∨ B", "¬A"],
+            "expected_witness": {"A": "F", "B": "T"},
+        },
+        {
+            "id": "invalidity-witness",
+            "kind": "countervaluation",
+            "premises": ["A ∨ B"],
+            "conclusion": "A",
+            "expected_witness": {"A": "F", "B": "T"},
+        },
+    ]
+    lesson["expressiveness_cases"] = [
+        {
+            "id": "internal-quantitative-structure",
+            "category": "internal_structure",
+            "example": "Daisy'nin dört bacağı vardır; öyleyse ikiden fazla bacağı vardır.",
+            "loss": "Dört ile ikiden fazla arasındaki sayısal içerme bağımsız atomlarda görünmez.",
+            "needed_information": "Nesnelerin özelliklerini ve sayısal ilişkileri çözümleyen daha zengin iç yapı.",
+        },
+        {
+            "id": "vagueness",
+            "category": "vagueness",
+            "example": "Ali uzundur.",
+            "loss": "Uzunluğun bağlama, karşılaştırma sınıfına ve dereceye bağlı sınırı T/F atomunda görünmez.",
+            "needed_information": "Bağlam, ölçüt ve derece bilgisini taşıyan çözümleme.",
+        },
+        {
+            "id": "necessity",
+            "category": "modality",
+            "example": "2+2=4 zorunlu olarak doğrudur.",
+            "loss": "Atomik TFL biçimi fiili doğruluk ile zorunluluk kipini ayırmaz.",
+            "needed_information": "Zorunluluk ve imkân kiplerini temsil eden daha zengin semantik.",
+        },
+        {
+            "id": "counterfactual",
+            "category": "counterfactual",
+            "example": "Kibrit çakılsaydı yanardı.",
+            "loss": "Maddi koşul karşıolgusal yakınlık ve arka plan koşullarını kodlamaz.",
+            "needed_information": "Karşıolgusal senaryoları ve ilgili arka planı karşılaştıran semantik.",
+        },
+        {
+            "id": "causation",
+            "category": "causation",
+            "example": "Düğmeye bastığı için ışık yandı.",
+            "loss": "Birlikte doğruluk neden-sonuç yönünü göstermez.",
+            "needed_information": "Nedensel mekanizma veya müdahale ilişkisi.",
+        },
+        {
+            "id": "temporal-order",
+            "category": "time",
+            "example": "Düğmeye bastı ve sonra ışık yandı.",
+            "loss": "Birleşim önce-sonra sırasını korumaz.",
+            "needed_information": "Zamansal sıralama ve olay yapısı.",
+        },
+        {
+            "id": "pragmatic-contrast",
+            "category": "pragmatics",
+            "example": "Fakirdir ama dürüsttür.",
+            "loss": "∧ doğruluk koşulunu korusa da karşıtlık ve beklenti vurgusunu taşımaz.",
+            "needed_information": "Söylem bağlamı, beklenti ve pragmatik vurgu.",
+        },
+    ]
+    return lesson
+
+
 STAGE_C_CANDIDATE_LESSONS = [
     _candidate_c14(),
     _candidate_c15(),
     _candidate_c16(),
     _candidate_c17(),
     _candidate_c18(),
+    _candidate_c19(),
 ]
 
 STAGE_C_CANDIDATE_MAP = {

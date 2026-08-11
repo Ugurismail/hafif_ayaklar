@@ -502,3 +502,50 @@ def analyze_semantic_consequence(
         "premise_true_valuations": premise_true_valuations,
         "countervaluations": countervaluations,
     }
+
+
+def find_target_valuations(
+    requirements: Iterable[tuple[str | TFLFormula, bool | str]],
+    *,
+    max_atoms: int = MAX_COMPLETE_TABLE_ATOMS,
+) -> dict:
+    """Find valuations satisfying a non-empty set of formula/value targets."""
+
+    parsed_requirements = []
+    for formula, target_value in requirements:
+        parsed = parse_tfl(formula) if isinstance(formula, str) else formula
+        parsed_requirements.append(
+            (
+                parsed,
+                _normalise_truth_value(target_value, parsed.render()),
+            )
+        )
+    if not parsed_requirements:
+        raise ValueError("En az bir hedef doğruluk koşulu gereklidir.")
+
+    atoms = sorted(
+        set().union(*(formula.atoms for formula, _ in parsed_requirements)),
+        key=_atom_sort_key,
+    )
+    valuations = generate_valuations(atoms, max_atoms=max_atoms)
+    matching_valuations = [
+        dict(valuation)
+        for valuation in valuations
+        if all(
+            evaluate_tfl(formula, valuation) == target
+            for formula, target in parsed_requirements
+        )
+    ]
+
+    return {
+        "requirements": [
+            {
+                "formula": formula.render(),
+                "target": "T" if target else "F",
+            }
+            for formula, target in parsed_requirements
+        ],
+        "atoms": atoms,
+        "row_count": len(valuations),
+        "matching_valuations": matching_valuations,
+    }

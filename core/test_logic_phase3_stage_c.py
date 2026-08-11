@@ -18,6 +18,7 @@ from .logic_tfl_semantics import (
     compound_subformulas,
     evaluate_tfl,
     evaluation_trace,
+    find_target_valuations,
     generate_valuations,
     ordered_atoms,
     parse_tfl,
@@ -59,11 +60,11 @@ class LogicPhase3StageCIntegrityTests(SimpleTestCase):
     def test_stage_c_candidate_ids_orders_and_slugs_are_unique(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_C_CANDIDATE_LESSONS],
-            ["C14", "C15", "C16", "C17", "C18"],
+            ["C14", "C15", "C16", "C17", "C18", "C19"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_C_CANDIDATE_LESSONS],
-            [14, 15, 16, 17, 18],
+            [14, 15, 16, 17, 18, 19],
         )
         self.assertEqual(
             len({lesson["slug"] for lesson in STAGE_C_CANDIDATE_LESSONS}),
@@ -365,6 +366,37 @@ class TFLSemanticCoreTests(SimpleTestCase):
         self.assertEqual(incompatible["premise_true_valuations"], [])
         self.assertEqual(incompatible["countervaluations"], [])
 
+    def test_target_valuations_construct_exact_partial_table_witnesses(self):
+        conditional = find_target_valuations([("A → B", "F")])
+        shared = find_target_valuations(
+            [("A ∨ B", "T"), ("¬A", "T")]
+        )
+
+        self.assertEqual(conditional["atoms"], ["A", "B"])
+        self.assertEqual(conditional["row_count"], 4)
+        self.assertEqual(
+            conditional["matching_valuations"],
+            [{"A": "T", "B": "F"}],
+        )
+        self.assertEqual(
+            shared["matching_valuations"],
+            [{"A": "F", "B": "T"}],
+        )
+
+    def test_target_valuations_can_report_an_unrealizable_target(self):
+        result = find_target_valuations(
+            [("A → B", "T"), ("A", "T"), ("B", "F")]
+        )
+
+        self.assertEqual(result["matching_valuations"], [])
+
+    def test_target_valuations_require_at_least_one_condition(self):
+        with self.assertRaisesRegex(
+            ValueError,
+            "En az bir hedef doğruluk koşulu",
+        ):
+            find_target_valuations([])
+
 
 class LogicPhase3StageCC14CandidateTests(SimpleTestCase):
     required_fields = {
@@ -403,8 +435,8 @@ class LogicPhase3StageCC14CandidateTests(SimpleTestCase):
         self.lesson = STAGE_C_CANDIDATE_LESSONS[0]
 
     def test_c14_remains_the_first_candidate_as_stage_c_grows(self):
-        self.assertEqual(len(STAGE_C_CANDIDATE_LESSONS), 5)
-        self.assertEqual(len(STAGE_C_CANDIDATE_MAP), 5)
+        self.assertEqual(len(STAGE_C_CANDIDATE_LESSONS), 6)
+        self.assertEqual(len(STAGE_C_CANDIDATE_MAP), 6)
         self.assertEqual(self.lesson["curriculum_id"], "C14")
         self.assertEqual(self.lesson["order"], 14)
         self.assertEqual(self.lesson["release_status"], "candidate")
@@ -1349,6 +1381,314 @@ class LogicPhase3StageCC18CandidateTests(SimpleTestCase):
                 "forallx-use-mention",
                 "forallx-valuations",
                 "forallx-logical-concepts",
+                "mit-logic-sequence",
+                "mit-logic-study-guide",
+            ],
+        )
+        self.assertTrue(
+            set(self.lesson["source_ids"]).issubset(
+                STAGE_C_SOURCE_REFERENCES
+            )
+        )
+
+
+class LogicPhase3StageCC19CandidateTests(SimpleTestCase):
+    def setUp(self):
+        self.lesson = STAGE_C_CANDIDATE_MAP[
+            "ders-kismi-tablolar-ve-tfl-sinirlari"
+        ]
+
+    def test_c19_identity_order_duration_and_method_data_are_stable(self):
+        self.assertEqual(self.lesson["curriculum_id"], "C19")
+        self.assertEqual(self.lesson["order"], 19)
+        self.assertEqual(self.lesson["release_status"], "candidate")
+        self.assertEqual(self.lesson["estimated_minutes"], 50)
+        self.assertEqual(self.lesson["duration"], "50 dk")
+        self.assertIn("method_checks", self.lesson)
+        self.assertIn("partial_target_checks", self.lesson)
+        self.assertIn("witness_checks", self.lesson)
+        self.assertIn("expressiveness_cases", self.lesson)
+
+    def test_c19_is_not_activated_in_the_learner_facing_course(self):
+        visible_slugs = {lesson["slug"] for lesson in VISIBLE_LOGIC_LESSONS}
+
+        self.assertNotIn(self.lesson["slug"], visible_slugs)
+
+    def test_c19_prerequisites_bridge_stage_b_and_c18(self):
+        expected = [
+            "ders-belirsizlik-bulaniklik-savunulabilir-okumalar",
+            "ders-kademeli-sembollestirme-atolyesi",
+            "ders-gecerlilik-ve-karsi-degerleme",
+        ]
+
+        self.assertEqual(self.lesson["prerequisites"], expected)
+        self.assertTrue(set(expected[:2]).issubset(STAGE_B_CANDIDATE_MAP))
+        self.assertIn(expected[2], STAGE_C_CANDIDATE_MAP)
+        self.assertLess(
+            STAGE_C_CANDIDATE_MAP[expected[2]]["order"],
+            self.lesson["order"],
+        )
+
+    def test_c19_has_a_complete_instructional_sequence(self):
+        self.assertGreaterEqual(len(self.lesson["goals"]), 6)
+        self.assertGreaterEqual(len(self.lesson["sections"]), 6)
+        self.assertGreaterEqual(len(self.lesson["worked_examples"]), 10)
+        self.assertGreaterEqual(len(self.lesson["mistakes"]), 10)
+        self.assertGreaterEqual(len(self.lesson["practice"]), 12)
+        self.assertEqual(len(self.lesson["production_tasks"]), 1)
+        self.assertGreaterEqual(len(self.lesson["mastery_evidence"]), 6)
+        self.assertGreaterEqual(len(self.lesson["review_prompts"]), 4)
+
+        guided = self.lesson["guided_practice"]
+        self.assertEqual(
+            set(guided),
+            {"prompt", "starter", "checks", "solution"},
+        )
+        self.assertGreaterEqual(len(guided["checks"]), 7)
+        self.assertIn("geri çöz", guided["solution"].lower())
+        self.assertIn("ileri hesap", guided["solution"].lower())
+
+        production = self.lesson["production_tasks"][0]
+        self.assertGreaterEqual(len(production["checkpoints"]), 7)
+        self.assertEqual(len(production["stimulus"]["items"]), 4)
+        self.assertIn("sınır raporu", str(production).lower())
+        self.assertIn("kanıt yükü", str(production).lower())
+
+    def test_c19_practice_answers_are_valid_unique_and_explained(self):
+        for item in self.lesson["practice"]:
+            with self.subTest(prompt=item["prompt"]):
+                self.assertIn(item["answer"], item["choices"])
+                self.assertEqual(len(item["choices"]), len(set(item["choices"])))
+                self.assertTrue(item["explanation"].strip())
+                self.assertIn(
+                    item["difficulty_label"],
+                    {"Temel", "Orta", "İleri", "Zor", "Çok Zor"},
+                )
+
+    def test_c19_closes_table_semantics_without_entering_proof_or_quantifiers(self):
+        searchable = str(self.lesson)
+        production = str(self.lesson["production_tasks"][0]).lower()
+        blocked_symbols = {"⊢", "∀", "∃", "≡"}
+
+        self.assertTrue(blocked_symbols.isdisjoint(searchable))
+        self.assertIn("⊨", searchable)
+        self.assertIn("⊭", searchable)
+        self.assertNotIn("doğal türetim", production)
+        self.assertNotIn("çıkarım kuralı", production)
+        self.assertNotIn("türetim kuralı", production)
+        self.assertNotIn("niceleyici", production)
+        self.assertTrue(
+            {
+                "tfl.table_method_select",
+                "tfl.partial_table_construct",
+                "tfl.proof_burden_explain",
+                "tfl.expressiveness_limit_diagnose",
+            }.issubset(self.lesson["competencies"])
+        )
+
+    def test_c19_teaches_method_scope_and_representation_boundaries(self):
+        searchable = str(self.lesson).lower()
+
+        for target in [
+            "tam doğruluk tablosu",
+            "kısaltılmış tam tablo",
+            "kısmi doğruluk tablosu",
+            "kanıt yükü",
+            "evrensel iddia",
+            "varlık iddiası",
+            "geri çöz",
+            "ileri doğrulama",
+            "sembolleştirme kaybı",
+            "ifade gücü sınırı",
+            "bulanıklık",
+            "zorunluluk",
+            "karşıolgusal",
+            "nedensellik",
+            "zaman sırası",
+            "pragmatik",
+        ]:
+            with self.subTest(target=target):
+                self.assertIn(target, searchable)
+
+        self.assertIn("bütün değerleme satırlarını koru", searchable)
+        self.assertIn("tek karşı tanık", searchable)
+        self.assertIn("tablo hesap hatası", searchable)
+
+    def test_method_matrix_covers_both_answers_with_the_correct_burden(self):
+        expected = {
+            "tautology": {
+                "yes": ("exhaustive", {"complete", "shortened_complete"}),
+                "no": ("witness", {"partial"}),
+            },
+            "contradiction": {
+                "yes": ("exhaustive", {"complete", "shortened_complete"}),
+                "no": ("witness", {"partial"}),
+            },
+            "equivalence": {
+                "yes": ("exhaustive", {"complete", "shortened_complete"}),
+                "no": ("witness", {"partial"}),
+            },
+            "joint_satisfiability": {
+                "yes": ("witness", {"partial"}),
+                "no": ("exhaustive", {"complete", "shortened_complete"}),
+            },
+            "validity": {
+                "yes": ("exhaustive", {"complete", "shortened_complete"}),
+                "no": ("witness", {"partial"}),
+            },
+        }
+        observed = {}
+        ids = set()
+
+        for check in self.lesson["method_checks"]:
+            with self.subTest(check=check["id"]):
+                self.assertNotIn(check["id"], ids)
+                ids.add(check["id"])
+                key = (check["question"], check["answer"])
+                self.assertNotIn(key, observed)
+                observed[key] = (
+                    check["expected_burden"],
+                    set(check["acceptable_methods"]),
+                )
+
+        self.assertEqual(len(ids), 10)
+        self.assertEqual(
+            observed,
+            {
+                (question, answer): result
+                for question, answers in expected.items()
+                for answer, result in answers.items()
+            },
+        )
+
+    def test_every_partial_target_fixture_is_independently_recomputed(self):
+        check_ids = set()
+
+        for check in self.lesson["partial_target_checks"]:
+            with self.subTest(check=check["id"]):
+                self.assertNotIn(check["id"], check_ids)
+                check_ids.add(check["id"])
+                parsed_requirements = [
+                    (parse_tfl(formula), target == "T")
+                    for formula, target in check["requirements"]
+                ]
+                atoms = sorted(
+                    set().union(
+                        *(formula.atoms for formula, _ in parsed_requirements)
+                    )
+                )
+                independently_matching = [
+                    dict(valuation)
+                    for valuation in generate_valuations(atoms)
+                    if all(
+                        evaluate_tfl(formula, valuation) == target
+                        for formula, target in parsed_requirements
+                    )
+                ]
+
+                self.assertEqual(
+                    independently_matching,
+                    check["expected_matching_valuations"],
+                )
+                analyzed = find_target_valuations(check["requirements"])
+                self.assertEqual(analyzed["atoms"], atoms)
+                self.assertEqual(analyzed["row_count"], 2 ** len(atoms))
+                self.assertEqual(
+                    analyzed["matching_valuations"],
+                    independently_matching,
+                )
+
+        self.assertEqual(len(check_ids), 5)
+        self.assertIn("unrealizable-target", check_ids)
+
+    def test_every_economic_witness_is_independently_verified(self):
+        check_ids = set()
+        kinds = set()
+
+        for check in self.lesson["witness_checks"]:
+            with self.subTest(check=check["id"]):
+                self.assertNotIn(check["id"], check_ids)
+                check_ids.add(check["id"])
+                kinds.add(check["kind"])
+                witness = check["expected_witness"]
+
+                if check["kind"] == "non_equivalence":
+                    self.assertNotEqual(
+                        evaluate_tfl(check["left"], witness),
+                        evaluate_tfl(check["right"], witness),
+                    )
+                    result = analyze_semantic_equivalence(
+                        check["left"],
+                        check["right"],
+                    )
+                    self.assertIn(witness, result["separating_valuations"])
+                elif check["kind"] == "joint_satisfiability":
+                    self.assertTrue(
+                        all(
+                            evaluate_tfl(formula, witness)
+                            for formula in check["formulas"]
+                        )
+                    )
+                    result = analyze_joint_satisfiability(check["formulas"])
+                    self.assertIn(witness, result["satisfying_valuations"])
+                elif check["kind"] == "countervaluation":
+                    self.assertTrue(
+                        all(
+                            evaluate_tfl(premise, witness)
+                            for premise in check["premises"]
+                        )
+                    )
+                    self.assertFalse(
+                        evaluate_tfl(check["conclusion"], witness)
+                    )
+                    result = analyze_semantic_consequence(
+                        check["premises"],
+                        check["conclusion"],
+                    )
+                    self.assertIn(witness, result["countervaluations"])
+                else:
+                    self.fail(f'Bilinmeyen tanık türü: {check["kind"]}')
+
+        self.assertEqual(
+            kinds,
+            {"non_equivalence", "joint_satisfiability", "countervaluation"},
+        )
+
+    def test_expressiveness_cases_cover_the_required_loss_categories(self):
+        categories = set()
+        ids = set()
+
+        for case in self.lesson["expressiveness_cases"]:
+            with self.subTest(case=case["id"]):
+                self.assertNotIn(case["id"], ids)
+                ids.add(case["id"])
+                categories.add(case["category"])
+                self.assertTrue(case["example"].strip())
+                self.assertTrue(case["loss"].strip())
+                self.assertTrue(case["needed_information"].strip())
+
+        self.assertEqual(
+            categories,
+            {
+                "internal_structure",
+                "vagueness",
+                "modality",
+                "counterfactual",
+                "causation",
+                "time",
+                "pragmatics",
+            },
+        )
+
+    def test_c19_sources_are_explicit_and_known(self):
+        self.assertEqual(
+            self.lesson["source_ids"],
+            [
+                "forallx-truth-functionality",
+                "forallx-logical-concepts",
+                "forallx-expressiveness",
+                "forallx-table-shortcuts",
+                "forallx-partial-tables",
                 "mit-logic-sequence",
                 "mit-logic-study-guide",
             ],

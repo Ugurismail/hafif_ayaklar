@@ -2,7 +2,7 @@
 
 ## Statü
 
-Bu belge Faz C'nin kaynaklara dayalı **aday ders sözleşmesidir**. Kaynak, kapsam, gösterim, ölçme ve ders sınırları sabitlenmiştir. C14-C18 aday verisi ile bunları bağımsız doğrulayan tek-değerleme, tam-tablo, tek-cümle statüsü, eşdeğerlik, ortak doyurulabilirlik ve semantik sonuç çekirdeği hazırlanmıştır; C19 aday verisi, etkileşimli tablo uygulaması, Faz C yetkili önizlemesi ve öğrenciye açık ekran henüz üretilmemiştir.
+Bu belge Faz C'nin kaynaklara dayalı **aday ders sözleşmesidir**. Kaynak, kapsam, gösterim, ölçme ve ders sınırları sabitlenmiştir. C14-C19 aday verisi ile bunları bağımsız doğrulayan tek-değerleme, tam-tablo, tek-cümle statüsü, eşdeğerlik, ortak doyurulabilirlik, semantik sonuç, kanıt yükü ve hedefli değerleme çekirdeği hazırlanmıştır. Etkileşimli tablo uygulaması, Faz C yetkili önizlemesi ve öğrenciye açık ekran henüz üretilmemiştir.
 
 Faz C altı dersten oluşur. Mevcut canlı rotada iki derse sıkışan doğruluk tablosu içeriği burada altı ayrı öğrenme eşiğine bölünür: tek değerleme altında hesaplama, bütün değerlemeleri listeleme, tek cümleyi sınıflandırma, cümleler arasındaki semantik ilişkileri sınama, argüman geçerliliği ve son olarak hedefli/kısmi tablolar ile TFL'nin sınırları.
 
@@ -482,16 +482,16 @@ Aday ders verisi yazılırken aşağıdaki sınırlar otomatik test edilecektir:
 
 ## Ders üretim kaydı
 
-Bu tablo Faz C'nin **aday geliştirme** durumunu gösterir; canlıya hazır olduğu anlamına gelmez. Kaynak ve ders sözleşmesi tamamlanmıştır. C14-C18, yalıtılmış aday veri ve semantik sınır testi düzeyindedir; Faz C'nin yetkili önizlemesi ancak aşamanın tamamı üretildikten sonra açılacaktır.
+Bu tablo Faz C'nin **aday geliştirme** durumunu gösterir; canlıya hazır olduğu anlamına gelmez. Kaynak ve ders sözleşmesi tamamlanmıştır. C14-C19, yalıtılmış aday veri ve semantik/yöntem sınır testi düzeyindedir. Bir sonraki kapı, bu adayları mevcut öğrenci rotasına bağlamadan salt okunur yetkili önizlemede incelemektir.
 
 | Ders | Aday veri | Otomatik sınır testi | Yetkili aşama önizlemesi |
 | --- | --- | --- | --- |
-| C14 Değerlemeler ve Doğruluk İşlevleri | Hazır | Hazır | Aşama tamamlanmasını bekliyor |
-| C15 Tam Doğruluk Tablosu Kurma | Hazır | Hazır | Aşama tamamlanmasını bekliyor |
-| C16 Totoloji, Çelişki ve Olumsallık | Hazır | Hazır | Aşama tamamlanmasını bekliyor |
-| C17 Mantıksal Eşdeğerlik ve Tutarlılık | Hazır | Hazır | Aşama tamamlanmasını bekliyor |
-| C18 Geçerlilik ve Karşı Değerleme | Hazır | Hazır | Aşama tamamlanmasını bekliyor |
-| C19 Kısmi Tablolar ve TFL'nin Sınırları | Bekliyor | Bekliyor | Bekliyor |
+| C14 Değerlemeler ve Doğruluk İşlevleri | Hazır | Hazır | Yetkili önizleme bekliyor |
+| C15 Tam Doğruluk Tablosu Kurma | Hazır | Hazır | Yetkili önizleme bekliyor |
+| C16 Totoloji, Çelişki ve Olumsallık | Hazır | Hazır | Yetkili önizleme bekliyor |
+| C17 Mantıksal Eşdeğerlik ve Tutarlılık | Hazır | Hazır | Yetkili önizleme bekliyor |
+| C18 Geçerlilik ve Karşı Değerleme | Hazır | Hazır | Yetkili önizleme bekliyor |
+| C19 Kısmi Tablolar ve TFL'nin Sınırları | Hazır | Hazır | Yetkili önizleme bekliyor |
 
 ## Aday geliştirme kapıları
 
@@ -500,9 +500,9 @@ Bu tablo Faz C'nin **aday geliştirme** durumunu gösterir; canlıya hazır oldu
 - [x] Gösterim, üst dil ve semantik terim sözleşmesi yazıldı.
 - [x] Her dersin önkoşulu, ölçülebilir yetkinliği ve üretim kanıtı tanımlandı.
 - [x] Tam, kısaltılmış tam ve kısmi tablo yöntemlerinin kanıt yükü sınırı yazıldı.
-- [ ] Aday ders verisi yazıldı.
-- [ ] Aday doğruluk tablosu değerlendiricisi ve sınır testleri yazıldı.
-- [ ] Aday veri ve önkoşul grafiği otomatik test edildi.
+- [x] Aday ders verisi yazıldı.
+- [x] Aday doğruluk tablosu değerlendiricisi ve sınır testleri yazıldı.
+- [x] Aday veri ve önkoşul grafiği otomatik test edildi.
 - [ ] Aday içerik yalıtılmış, salt okunur yetkili önizlemede doğrulandı.
 - [ ] Mevcut öğrenci rotasının ve ilerleme verisinin değişmediği regresyonla kanıtlandı.
 
