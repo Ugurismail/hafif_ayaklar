@@ -1,0 +1,349 @@
+"""Small, strict semantic core for release-candidate TFL lessons.
+
+The learner-facing logic course does not import this module. It exists so
+candidate examples and answer keys can be checked independently instead of
+trusting hand-written truth values.
+"""
+
+from dataclasses import dataclass
+from itertools import product
+from typing import Iterable
+
+
+BINARY_CONNECTIVES = frozenset({"∧", "∨", "→", "↔"})
+TFL_SYMBOLS = frozenset({"¬", *BINARY_CONNECTIVES, "(", ")"})
+SUBSCRIPT_DIGITS = frozenset("₀₁₂₃₄₅₆₇₈₉")
+SUBSCRIPT_TO_ASCII = str.maketrans("₀₁₂₃₄₅₆₇₈₉", "0123456789")
+MAX_COMPLETE_TABLE_ATOMS = 8
+
+
+class TFLParseError(ValueError):
+    """Raised when a string is not a sentence of the supported TFL syntax."""
+
+
+@dataclass(frozen=True)
+class TFLFormula:
+    """Parsed TFL sentence.
+
+    ``operator`` is ``"atom"`` for sentence letters, ``"¬"`` for negation,
+    or one of the binary connectives. Binary nodes use ``left`` and ``right``;
+    negations use ``right``.
+    """
+
+    operator: str
+    atom: str | None = None
+    left: "TFLFormula | None" = None
+    right: "TFLFormula | None" = None
+
+    @property
+    def main_connective(self) -> str | None:
+        return None if self.operator == "atom" else self.operator
+
+    @property
+    def atoms(self) -> frozenset[str]:
+        if self.operator == "atom":
+            return frozenset({self.atom})
+        if self.operator == "¬":
+            return self.right.atoms
+        return self.left.atoms | self.right.atoms
+
+    def render(self) -> str:
+        if self.operator == "atom":
+            return self.atom
+        if self.operator == "¬":
+            child = self.right.render()
+            return f"¬{child}"
+        return f"({self.left.render()} {self.operator} {self.right.render()})"
+
+
+def _tokenize(source: str) -> list[str]:
+    if not isinstance(source, str) or not source.strip():
+        raise TFLParseError("TFL cümlesi boş olamaz.")
+
+    tokens = []
+    index = 0
+    while index < len(source):
+        char = source[index]
+        if char.isspace():
+            index += 1
+            continue
+        if char in TFL_SYMBOLS:
+            tokens.append(char)
+            index += 1
+            continue
+        if "A" <= char <= "Z":
+            end = index + 1
+            while end < len(source) and source[end] in SUBSCRIPT_DIGITS:
+                end += 1
+            if end < len(source) and source[end] == "_":
+                digit_start = end + 1
+                end = digit_start
+                while end < len(source) and source[end].isdigit():
+                    end += 1
+                if end == digit_start:
+                    raise TFLParseError(
+                        "Alt indis alt çizgiden sonra en az bir rakam içermelidir."
+                    )
+            tokens.append(source[index:end])
+            index = end
+            continue
+        raise TFLParseError(
+            f"Desteklenmeyen TFL sembolü: {char!r}."
+        )
+    return tokens
+
+
+class _Parser:
+    def __init__(self, tokens: list[str]):
+        self.tokens = tokens
+        self.position = 0
+
+    def parse(self) -> TFLFormula:
+        formula = self._parse_expression()
+        if self._peek() is not None:
+            raise TFLParseError(
+                f"Beklenmeyen sembol: {self._peek()!r}. "
+                "Her ikili kurulumda kapsamı parantezle açıkça göster."
+            )
+        return formula
+
+    def _parse_expression(self) -> TFLFormula:
+        left = self._parse_unit()
+        if self._peek() not in BINARY_CONNECTIVES:
+            return left
+
+        operator = self._take()
+        right = self._parse_unit()
+        if self._peek() in BINARY_CONNECTIVES:
+            raise TFLParseError(
+                "Bir kapsamda birden fazla ikili bağlaç parantezsiz bırakılamaz."
+            )
+        return TFLFormula(operator=operator, left=left, right=right)
+
+    def _parse_unit(self) -> TFLFormula:
+        token = self._peek()
+        if token is None:
+            raise TFLParseError("TFL cümlesi tamamlanmadan sona erdi.")
+        if token == "¬":
+            self._take()
+            return TFLFormula(operator="¬", right=self._parse_unit())
+        if token == "(":
+            self._take()
+            formula = self._parse_expression()
+            if self._peek() != ")":
+                raise TFLParseError("Açılan parantezin kapanışı bulunamadı.")
+            self._take()
+            return formula
+        if token == ")":
+            raise TFLParseError("Karşılıksız kapanış parantezi bulundu.")
+        if token in BINARY_CONNECTIVES:
+            raise TFLParseError(
+                f"{token} bağlacının solunda bir TFL cümlesi bulunmalıdır."
+            )
+
+        self._take()
+        return TFLFormula(operator="atom", atom=token)
+
+    def _peek(self) -> str | None:
+        if self.position >= len(self.tokens):
+            return None
+        return self.tokens[self.position]
+
+    def _take(self) -> str:
+        token = self._peek()
+        if token is None:
+            raise TFLParseError("TFL cümlesi tamamlanmadan sona erdi.")
+        self.position += 1
+        return token
+
+
+def parse_tfl(source: str) -> TFLFormula:
+    """Parse a strict TFL sentence, allowing only the outer parentheses to drop."""
+
+    return _Parser(_tokenize(source)).parse()
+
+
+def _normalise_truth_value(value: bool | str, atom: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    if value == "T":
+        return True
+    if value == "F":
+        return False
+    raise ValueError(
+        f"{atom} için doğruluk değeri bool, 'T' veya 'F' olmalıdır."
+    )
+
+
+def _evaluate_node(node: TFLFormula, valuation: dict[str, bool | str]) -> bool:
+    if node.operator == "atom":
+        if node.atom not in valuation:
+            raise ValueError(f"Değerlemede {node.atom} atomu eksik.")
+        return _normalise_truth_value(valuation[node.atom], node.atom)
+
+    if node.operator == "¬":
+        return not _evaluate_node(node.right, valuation)
+
+    left = _evaluate_node(node.left, valuation)
+    right = _evaluate_node(node.right, valuation)
+    if node.operator == "∧":
+        return left and right
+    if node.operator == "∨":
+        return left or right
+    if node.operator == "→":
+        return (not left) or right
+    if node.operator == "↔":
+        return left == right
+    raise ValueError(f"Bilinmeyen TFL bağlacı: {node.operator}")
+
+
+def evaluate_tfl(
+    formula: str | TFLFormula,
+    valuation: dict[str, bool | str],
+) -> bool:
+    """Evaluate one TFL sentence under one supplied valuation."""
+
+    parsed = parse_tfl(formula) if isinstance(formula, str) else formula
+    return _evaluate_node(parsed, valuation)
+
+
+def evaluation_trace(
+    formula: str | TFLFormula,
+    valuation: dict[str, bool | str],
+) -> list[dict[str, str]]:
+    """Return a post-order, inside-out evaluation trace for one valuation."""
+
+    parsed = parse_tfl(formula) if isinstance(formula, str) else formula
+    steps = []
+
+    def visit(node: TFLFormula) -> None:
+        if node.left is not None:
+            visit(node.left)
+        if node.right is not None:
+            visit(node.right)
+        steps.append(
+            {
+                "formula": node.render(),
+                "value": "T" if _evaluate_node(node, valuation) else "F",
+            }
+        )
+
+    visit(parsed)
+    return steps
+
+
+def _atom_sort_key(atom: str) -> tuple[str, int, str]:
+    suffix = atom[1:]
+    if not suffix:
+        return atom[0], -1, atom
+    if suffix.startswith("_"):
+        suffix = suffix[1:]
+    else:
+        suffix = suffix.translate(SUBSCRIPT_TO_ASCII)
+    return atom[0], int(suffix), atom
+
+
+def ordered_atoms(formula: str | TFLFormula) -> list[str]:
+    """Return distinct sentence letters in stable alphabetical/index order."""
+
+    parsed = parse_tfl(formula) if isinstance(formula, str) else formula
+    return sorted(parsed.atoms, key=_atom_sort_key)
+
+
+def generate_valuations(
+    atoms: Iterable[str],
+    *,
+    max_atoms: int = MAX_COMPLETE_TABLE_ATOMS,
+) -> list[dict[str, str]]:
+    """Generate every valuation in the standard T-first block pattern."""
+
+    unique_atoms = sorted(set(atoms), key=_atom_sort_key)
+    if not unique_atoms:
+        raise ValueError("En az bir TFL cümle harfi gereklidir.")
+    if len(unique_atoms) > max_atoms:
+        raise ValueError(
+            "Tam tablo güvenlik sınırını aşıyor: "
+            f"en fazla {max_atoms} farklı atom kullanılabilir."
+        )
+    for atom in unique_atoms:
+        parsed = parse_tfl(atom)
+        if parsed.operator != "atom" or parsed.atom != atom:
+            raise ValueError(f"Geçersiz TFL cümle harfi: {atom!r}.")
+
+    return [
+        {
+            atom: "T" if value else "F"
+            for atom, value in zip(unique_atoms, values)
+        }
+        for values in product((True, False), repeat=len(unique_atoms))
+    ]
+
+
+def compound_subformulas(
+    formula: str | TFLFormula,
+) -> list[TFLFormula]:
+    """Return distinct compound subformulas in dependency order."""
+
+    parsed = parse_tfl(formula) if isinstance(formula, str) else formula
+    ordered = []
+    seen = set()
+
+    def visit(node: TFLFormula) -> None:
+        if node.left is not None:
+            visit(node.left)
+        if node.right is not None:
+            visit(node.right)
+        if node.operator != "atom" and node not in seen:
+            seen.add(node)
+            ordered.append(node)
+
+    visit(parsed)
+    return ordered
+
+
+def complete_truth_table(
+    formula: str | TFLFormula,
+    *,
+    max_atoms: int = MAX_COMPLETE_TABLE_ATOMS,
+) -> dict:
+    """Build a complete table without assigning a later semantic-status label."""
+
+    parsed = parse_tfl(formula) if isinstance(formula, str) else formula
+    atoms = ordered_atoms(parsed)
+    valuations = generate_valuations(atoms, max_atoms=max_atoms)
+    compounds = compound_subformulas(parsed)
+    main_column = parsed.render()
+    columns = [
+        {
+            "formula": atom,
+            "kind": "atom",
+            "is_main": parsed.operator == "atom" and atom == main_column,
+        }
+        for atom in atoms
+    ]
+    columns.extend(
+        {
+            "formula": node.render(),
+            "kind": "subformula",
+            "is_main": node == parsed,
+        }
+        for node in compounds
+    )
+
+    rows = []
+    for valuation in valuations:
+        values = dict(valuation)
+        for node in compounds:
+            values[node.render()] = (
+                "T" if evaluate_tfl(node, valuation) else "F"
+            )
+        rows.append({"valuation": valuation, "values": values})
+
+    return {
+        "formula": parsed.render(),
+        "atoms": atoms,
+        "row_count": len(rows),
+        "columns": columns,
+        "main_column": main_column,
+        "rows": rows,
+    }

@@ -9,6 +9,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 import datetime
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 import re
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
@@ -1434,6 +1435,61 @@ def notify_user_followers_on_new_entry(sender, instance, created, **kwargs):
                 )
         except UserProfile.DoesNotExist:
             pass
+
+
+# ==================== MANTIK DERSİ İLERLEMESİ ====================
+
+class LogicLessonProgress(models.Model):
+    STATUS_NOT_STARTED = 'not_started'
+    STATUS_STARTED = 'started'
+    STATUS_COMPLETED = 'completed'
+    STATUS_CHOICES = [
+        (STATUS_NOT_STARTED, 'Başlanmadı'),
+        (STATUS_STARTED, 'Devam ediyor'),
+        (STATUS_COMPLETED, 'Tamamlandı'),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='logic_lesson_progress',
+    )
+    lesson_slug = models.CharField(max_length=120)
+    status = models.CharField(
+        max_length=16,
+        choices=STATUS_CHOICES,
+        default=STATUS_NOT_STARTED,
+    )
+    last_score = models.PositiveSmallIntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    best_score = models.PositiveSmallIntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    attempt_count = models.PositiveIntegerField(default=0)
+    started_at = models.DateTimeField(auto_now_add=True)
+    last_opened_at = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-last_opened_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'lesson_slug'],
+                name='unique_logic_progress_per_user_lesson',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['user', 'status']),
+            models.Index(fields=['user', '-last_opened_at']),
+        ]
+        verbose_name = 'Mantık dersi ilerlemesi'
+        verbose_name_plural = 'Mantık dersi ilerlemeleri'
+
+    def __str__(self):
+        return f'{self.user.username} · {self.lesson_slug} · {self.status}'
 
 
 # ==================== RADYO SİSTEMİ ====================

@@ -1,5 +1,14 @@
 from copy import deepcopy
 
+from .logic_curriculum import (
+    LOGIC_CURRICULUM_SOURCES,
+    LOGIC_CURRICULUM_VERSION,
+    LOGIC_MASTERY_THRESHOLD,
+    build_logic_curriculum,
+    get_logic_pathways,
+)
+from .logic_production_tasks import LOGIC_CORE_PRODUCTION_TASKS
+
 
 LOGIC_LEGACY_SLUG_REDIRECTS = {
     "ders-6-temel-seri-toparlama": "ders-6-gecerli-kaliplar-ve-yon-hatalari",
@@ -16,54 +25,15 @@ LOGIC_LEGACY_SLUG_REDIRECTS = {
 
 LOGIC_COURSE = {
     "hero": {
-        "kicker": "Dersler",
+        "kicker": "Mantık Atölyesi",
         "title": "Mantık",
-        "description": "Bu modül, kavram ayıklamadan doğal türetime ve Wittgenstein köprüsüne kadar ilerleyen sıkı bir mantık akışı kurar. İlk blokta temel ayrımlar sıkıştırıldı; asıl ağırlık sembolik mantığın doğal bir dil gibi okunup yazılmasına verildi.",
+        "description": "Argüman çözümlemeden önerme ve yüklem mantığına, doğal türetimden metateoriye uzanan uygulamalı bir öğrenme yolu. Her aşama açık kazanımlar, örnekler ve ustalık kontrolüyle ilerler.",
     },
     "teaching_model": [
-        "İlk blokta yalnız terim tanıtımı yapılmaz; her ayrım hemen örnek, karşı örnek ve küçük çürütme denemesiyle pekiştirilir.",
-        "Metin okuma derslerinde amaç yalnız savı bulmak değil, zinciri, ara sonucu ve gizli varsayımı görünür kılmaktır.",
-        "Sembolik blokta her ders notasyon, kural repertuvarı ve okuma disipliniyle birlikte gider; formüller çıplak bırakılmaz.",
-        "Alıştırmalar kademeli sertleşir; son sorular özellikle formel okuryazarlık ve ispat refleksi ister.",
-        "Wittgenstein dersi gevşek bir kapanış değil, önceki bütün formel aparatın felsefi anlamını disipline eden köprü dersidir.",
-    ],
-    "levels": [
-        {
-            "title": "Temel Ayrımlar",
-            "summary": "Önerme, argüman, geçerlilik, bağlaçlar, koşullar ve geçerli kalıplar.",
-            "lessons": 6,
-            "status": "Açık",
-        },
-        {
-            "title": "Metin ve Safsata Analizi",
-            "summary": "Sav ayıklama, gizli varsayım, karşı örnek, tanım sorunları ve temel safsata kümeleri.",
-            "lessons": 8,
-            "status": "Açık",
-        },
-        {
-            "title": "Önerme Mantığı Çekirdeği",
-            "summary": "Sembolleştirme, bağlaçlar, doğruluk tabloları, eşdeğerlik kuralları ve çıkarım kuralları.",
-            "lessons": 9,
-            "status": "Açık",
-        },
-        {
-            "title": "Yüklem Mantığı ve Çeviri",
-            "summary": "Niceleyiciler, kapsam, kimlik, alan ve doğal dilden sembole çeviri.",
-            "lessons": 6,
-            "status": "Açık",
-        },
-        {
-            "title": "İleri Biçimsel Mantık ve Wittgenstein",
-            "summary": "Biçimsel sözdizim, semantik, doğal türetim, truth-tree, function symbols, prenex ve Wittgenstein.",
-            "lessons": 11,
-            "status": "Açık",
-        },
-        {
-            "title": "Aksiyomatik Sistem ve Metateori",
-            "summary": "Hilbert tarzı aksiyom şemaları, teorem üretimi, predicate calculus aksiyomları ve metateoremlerin sert omurgası.",
-            "lessons": 5,
-            "status": "Açık",
-        },
+        "Yeni kavram önce kısa bir örnekle kurulur, ardından karşı örnek ve üretim göreviyle sınanır.",
+        "Biçimsel dil ezberlenecek semboller olarak değil; sözdizimi, semantik ve kanıtın birlikte çalıştığı bir sistem olarak öğretilir.",
+        "Çoktan seçmeli sorular yalnız ilk kontrol katmanıdır; aşama sonlarında çeviri, tablo, model veya kanıt üretmek gerekir.",
+        "İleri metateori ve felsefi tartışmalar çekirdek yeterlikten ayrılır; başlangıç rotası gereksiz bilişsel yük taşımaz.",
     ],
 }
 
@@ -95,13 +65,20 @@ def worked(text, reason, badge_label, badge_variant="good"):
 
 
 def practice(items):
-    labels = {
-        4: ["Temel", "Temel", "Orta", "İleri"],
-        5: ["Temel", "Temel", "Orta", "İleri", "Zor"],
-        6: ["Temel", "Temel", "Orta", "Orta", "İleri", "Zor"],
-        8: ["Temel", "Temel", "Orta", "Orta", "İleri", "İleri", "Zor", "Çok Zor"],
-    }
-    lesson_labels = labels[len(items)]
+    item_count = len(items)
+
+    def difficulty_label(index):
+        progress = (index + 1) / max(item_count, 1)
+        if progress <= 0.3:
+            return "Temel"
+        if progress <= 0.58:
+            return "Orta"
+        if progress <= 0.82:
+            return "İleri"
+        if item_count >= 8 and index == item_count - 1:
+            return "Çok Zor"
+        return "Zor"
+
     built = []
     for index, item in enumerate(items):
         prompt, choices, answer, explanation = item
@@ -111,7 +88,7 @@ def practice(items):
                 "choices": choices,
                 "answer": answer,
                 "explanation": explanation,
-                "difficulty_label": lesson_labels[index],
+                "difficulty_label": difficulty_label(index),
             }
         )
     return built
@@ -1433,8 +1410,8 @@ LOGIC_LESSONS.extend([
                 "Olumsuzlama tüm yapıya uygulandığında bağlaç da tersine döner.",
                 "Yalnız bileşenleri olumsuzlayıp bağlacı sabit bırakmak klasik De Morgan hatasıdır.",
                 [
-                    ("¬(p∨q) → ¬p∧¬q", "Bağlaç değişir."),
-                    ("¬(p∧q) → ¬p∨¬q", "Birleşim ayrığa döner."),
+                    ("¬(p∨q) ≡ ¬p∧¬q", "Bağlaç değişir ve iki taraf aynı doğruluk koşullarını taşır."),
+                    ("¬(p∧q) ≡ ¬p∨¬q", "Birleşim ayrığa döner ve eşdeğerlik korunur."),
                 ],
                 (
                     "De Morgan dönüşümünde hem olumsuzlama dağılır hem bağlaç değişir.",
@@ -3895,15 +3872,140 @@ def _append_advanced_production_tasks():
 _append_advanced_production_tasks()
 
 
+def _append_core_production_tasks():
+    for lesson in LOGIC_LESSONS:
+        if lesson.get("production_tasks"):
+            continue
+        tasks = LOGIC_CORE_PRODUCTION_TASKS.get(lesson["slug"])
+        if tasks:
+            lesson["production_tasks"] = [deepcopy(task) for task in tasks]
+
+
+_append_core_production_tasks()
+
+
+LOGIC_TERMINOLOGY_REPLACEMENTS = (
+    ("Identity Rules ve Eşitlik", "Kimlik Kuralları ve Eşitlik"),
+    ("Function Symbols ve Terimler", "Fonksiyon Sembolleri ve Terimler"),
+    ("Prenex Normal Form", "Önek Normal Biçim"),
+    ("Definite Descriptions ve Referans Sorunları", "Belirli Betimlemeler ve Gönderim Sorunları"),
+    ("Teoremler, Derived Rules ve Kanıt Kütüphanesi", "Teoremler, Türetilmiş Kurallar ve Kanıt Kütüphanesi"),
+    ("Doğal Türetim II ve Reductio", "Doğal Türetim II ve Çelişkiye İndirgeme"),
+    ("Doğruluk Ağaçları ve Meta-Teori", "Doğruluk Ağaçları ve Metateori"),
+    ("Premise /", "Öncül /"),
+    ("premise'i", "öncülü"),
+    ("premise belirtmek", "öncül belirtmek"),
+    ("premise olur", "öncül olur"),
+    ("premise'li", "öncüllü"),
+    ("premiss bağı", "öncül bağı"),
+    ("Premise", "Öncül"),
+    ("premise", "öncül"),
+    ("Reductio'nun", "Çelişkiye indirgemenin"),
+    ("Reductio'yu", "Çelişkiye indirgemeyi"),
+    ("Reductio'da", "Çelişkiye indirgemede"),
+    ("reductio ile", "çelişkiye indirgeme ile"),
+    ("Reductio ile", "Çelişkiye indirgeme ile"),
+    ("Reductio", "Çelişkiye indirgeme"),
+    ("reductio", "çelişkiye indirgeme"),
+    ("Natural deduction", "Doğal türetim"),
+    ("natural deduction", "doğal türetim"),
+    ("Prenex normal form", "Önek normal biçim"),
+    ("prenex normal form", "önek normal biçim"),
+    ("Prenex'te", "Önek biçimde"),
+    ("Prenex'e", "Önek biçime"),
+    ("Prenex'i", "Önek biçimi"),
+    ("Prenex dönüşüm", "Önek biçim dönüşümü"),
+    ("prenex dönüşüm", "önek biçim dönüşümü"),
+    ("Prenex", "Önek biçim"),
+    ("prenex", "önek biçim"),
+    ("definite descriptions'ı", "belirli betimlemeleri"),
+    ("Definite descriptions", "Belirli betimlemeler"),
+    ("definite descriptions", "belirli betimlemeler"),
+    ("Identity rules", "Kimlik kuralları"),
+    ("identity rules", "kimlik kuralları"),
+    ("Identity", "Kimlik"),
+    ("identity", "kimlik"),
+    ("contradiction", "çelişki"),
+    ("Contradiction", "Çelişki"),
+    ("Tautology", "Totoloji"),
+    ("tautology", "totoloji"),
+    ("Contingency", "Olumsallık"),
+    ("contingency", "olumsallık"),
+    ("Unsatisfiable", "Doyurulamaz"),
+    ("unsatisfiable", "doyurulamaz"),
+    ("Satisfiable", "Doyurulabilir"),
+    ("satisfiable", "doyurulabilir"),
+    ("validity", "geçerlilik"),
+    ("capture", "değişken yakalanması"),
+    ("standardize etmek", "standartlaştırmak"),
+    ("deduction theorem", "türetim teoremi"),
+    ("Deduction theorem", "Türetim teoremi"),
+    ("Derived rule", "Türetilmiş kural"),
+    ("derived rule", "türetilmiş kural"),
+    ("Derived Rule", "Türetilmiş Kural"),
+    ("theorem library", "teorem kütüphanesi"),
+    ("Theoremhood", "Teorem olma"),
+    ("theoremhood", "teorem olma"),
+    ("Theorem", "Teorem"),
+    ("theorem", "teorem"),
+    ("Soundness", "Güvenirlik"),
+    ("soundness", "güvenirlik"),
+    ("Completeness", "Tamlık"),
+    ("completeness", "tamlık"),
+    ("Compactness", "Kompaktlık"),
+    ("compactness", "kompaktlık"),
+    ("Decidability", "Karar verilebilirlik"),
+    ("decidability", "karar verilebilirlik"),
+    ("Consistency", "Tutarlılık"),
+    ("consistency", "tutarlılık"),
+    ("truth-tree", "doğruluk ağacı"),
+    ("Truth-tree", "Doğruluk ağacı"),
+    ("function symbols", "fonksiyon sembolleri"),
+    ("function symbol", "fonksiyon sembolü"),
+    ("Function symbol", "Fonksiyon sembolü"),
+    ("predicate", "yüklem"),
+    ("Predicate", "Yüklem"),
+    ("substitution instance", "yerine koyma örneği"),
+    ("Instantiation", "Örnekleme"),
+    ("premissiz", "öncülsüz"),
+    ("premissli", "öncüllü"),
+)
+
+
+def _normalize_logic_terminology(value):
+    if isinstance(value, str):
+        for source, target in LOGIC_TERMINOLOGY_REPLACEMENTS:
+            value = value.replace(source, target)
+        return value
+    if isinstance(value, list):
+        return [_normalize_logic_terminology(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_normalize_logic_terminology(item) for item in value)
+    if isinstance(value, dict):
+        return {
+            key: item if key in {"slug", "legacy_slug", "id"} else _normalize_logic_terminology(item)
+            for key, item in value.items()
+        }
+    return value
+
+
+for lesson_index, logic_lesson in enumerate(LOGIC_LESSONS):
+    LOGIC_LESSONS[lesson_index] = _normalize_logic_terminology(logic_lesson)
+
+VISIBLE_LOGIC_LESSONS = [
+    lesson for lesson in sorted(LOGIC_LESSONS, key=lambda item: item["order"])
+    if lesson.get("active") and not lesson.get("hidden")
+]
+LOGIC_LESSON_MAP = {lesson["slug"]: lesson for lesson in LOGIC_LESSONS}
+
+
 def _clone_lesson(lesson):
     return deepcopy(lesson)
 
 
 def _clone_visible_lessons():
-    cloned = [_clone_lesson(lesson) for lesson in VISIBLE_LOGIC_LESSONS]
-    for index, lesson in enumerate(cloned, start=1):
-        lesson["display_order"] = index
-    return cloned
+    _, lessons = build_logic_curriculum(VISIBLE_LOGIC_LESSONS)
+    return lessons
 
 
 def get_logic_redirect_slug(lesson_slug):
@@ -3912,9 +4014,15 @@ def get_logic_redirect_slug(lesson_slug):
 
 def get_logic_course():
     course = deepcopy(LOGIC_COURSE)
-    course["lessons"] = _clone_visible_lessons()
-    course["active_lesson_count"] = len(VISIBLE_LOGIC_LESSONS)
-    course["lesson_count"] = len(VISIBLE_LOGIC_LESSONS)
+    levels, lessons = build_logic_curriculum(VISIBLE_LOGIC_LESSONS)
+    course["levels"] = levels
+    course["lessons"] = lessons
+    course["pathways"] = get_logic_pathways(levels)
+    course["sources"] = deepcopy(LOGIC_CURRICULUM_SOURCES)
+    course["curriculum_version"] = LOGIC_CURRICULUM_VERSION
+    course["mastery_threshold"] = LOGIC_MASTERY_THRESHOLD
+    course["active_lesson_count"] = len(lessons)
+    course["lesson_count"] = len(lessons)
     return course
 
 
@@ -3927,11 +4035,24 @@ def resolve_logic_lesson(lesson_slug):
     if not lesson or lesson.get("hidden"):
         return None, None
 
-    visible_lessons = _clone_visible_lessons()
+    levels, visible_lessons = build_logic_curriculum(VISIBLE_LOGIC_LESSONS)
     visible_slugs = [item["slug"] for item in visible_lessons]
     index = visible_slugs.index(lesson_slug)
     payload = visible_lessons[index]
     payload["active_lesson_count"] = len(VISIBLE_LOGIC_LESSONS)
+    payload["stage_lessons"] = next(
+        stage["lessons"] for stage in levels if stage["id"] == payload["stage_id"]
+    )
+    payload["course_stages"] = [
+        {
+            "id": stage["id"],
+            "number": stage["number"],
+            "title": stage["title"],
+            "short_title": stage["short_title"],
+            "lesson_count": stage["lesson_count"],
+        }
+        for stage in levels
+    ]
     payload["previous_lesson"] = visible_lessons[index - 1] if index > 0 else None
     payload["next_lesson"] = visible_lessons[index + 1] if index < len(visible_lessons) - 1 else None
     return payload, None

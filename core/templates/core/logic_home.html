@@ -1,279 +1,252 @@
 {% extends 'core/base.html' %}
+{% load static %}
 
-{% block title %}Mantık | Hafif Ayaklar{% endblock %}
+{% block title %}Mantık Atölyesi | Hafif Ayaklar{% endblock %}
+{% block meta_description %}Argüman çözümleme, önermeler mantığı, doğal türetim, yüklem mantığı ve metateori için aşamalı ve uygulamalı mantık eğitimi.{% endblock %}
+{% block meta_keywords %}mantık dersi, argüman, önermeler mantığı, yüklem mantığı, doğal türetim, doğruluk tablosu{% endblock %}
+{% block article_section %}Mantık Eğitimi{% endblock %}
 
 {% block extra_css %}
-<style>
-  .logic-shell {
-    padding: 2rem 0 3.5rem;
-  }
-
-  .logic-hero {
-    border-radius: 30px;
-    padding: 2.2rem;
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 18%, transparent);
-    background:
-      radial-gradient(circle at top left, rgba(181, 153, 103, 0.16), transparent 34%),
-      radial-gradient(circle at bottom right, rgba(70, 97, 86, 0.12), transparent 36%),
-      linear-gradient(140deg, color-mix(in srgb, var(--content-background-color) 94%, white 6%), color-mix(in srgb, var(--background-color) 91%, white 9%));
-    box-shadow: 0 24px 54px color-mix(in srgb, var(--text-color) 10%, transparent);
-  }
-
-  .logic-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.48rem 0.88rem;
-    border-radius: 999px;
-    font-size: 0.88rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    background: color-mix(in srgb, var(--button-background-color) 12%, white 88%);
-  }
-
-  .logic-hero h1 {
-    margin: 1rem 0 0.7rem;
-    font-size: clamp(2.3rem, 4vw, 4.2rem);
-    line-height: 0.94;
-    letter-spacing: -0.04em;
-  }
-
-  .logic-hero p {
-    max-width: 760px;
-    color: color-mix(in srgb, var(--text-color) 74%, transparent);
-    font-size: 1.04rem;
-  }
-
-  .logic-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
-    gap: 1.2rem;
-    margin-top: 2rem;
-  }
-
-  .logic-overview {
-    display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
-    gap: 1.2rem;
-    margin-top: 1.2rem;
-  }
-
-  .logic-card {
-    border-radius: 24px;
-    padding: 1.3rem;
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent);
-    background: color-mix(in srgb, var(--content-background-color) 92%, white 8%);
-  }
-
-  .logic-card h2 {
-    margin: 0 0 0.85rem;
-    font-size: 1.25rem;
-    letter-spacing: -0.02em;
-  }
-
-  .logic-levels {
-    display: grid;
-    gap: 0.9rem;
-  }
-
-  .logic-level {
-    border-radius: 18px;
-    padding: 1rem 1.05rem;
-    background: color-mix(in srgb, var(--background-color) 92%, white 8%);
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
-  }
-
-  .logic-level-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 0.45rem;
-  }
-
-  .logic-level-top strong {
-    font-size: 1.08rem;
-  }
-
-  .logic-badge {
-    padding: 0.28rem 0.6rem;
-    border-radius: 999px;
-    font-size: 0.76rem;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    background: color-mix(in srgb, var(--button-background-color) 10%, white 90%);
-  }
-
-  .logic-level p {
-    margin: 0 0 0.7rem;
-    color: color-mix(in srgb, var(--text-color) 72%, transparent);
-  }
-
-  .logic-meta {
-    font-size: 0.92rem;
-    color: color-mix(in srgb, var(--text-color) 60%, transparent);
-  }
-
-  .logic-list {
-    margin: 0;
-    padding-left: 1.1rem;
-  }
-
-  .logic-list li + li {
-    margin-top: 0.7rem;
-  }
-
-  .logic-lesson-list {
-    display: grid;
-    gap: 0.85rem;
-  }
-
-  .logic-lesson-card {
-    border-radius: 18px;
-    padding: 1rem 1.05rem;
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
-    background: color-mix(in srgb, var(--background-color) 94%, white 6%);
-  }
-
-  .logic-lesson-card--active {
-    box-shadow: 0 16px 36px color-mix(in srgb, var(--text-color) 10%, transparent);
-  }
-
-  .logic-lesson-card h3 {
-    margin: 0 0 0.35rem;
-    font-size: 1.08rem;
-    letter-spacing: -0.02em;
-  }
-
-  .logic-lesson-card p {
-    margin: 0 0 0.75rem;
-    color: color-mix(in srgb, var(--text-color) 72%, transparent);
-  }
-
-  .logic-lesson-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.8rem;
-    font-size: 0.86rem;
-    color: color-mix(in srgb, var(--text-color) 60%, transparent);
-  }
-
-  .logic-pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.28rem 0.62rem;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--button-background-color) 10%, white 90%);
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-
-  .logic-note {
-    margin-top: 0.85rem;
-    padding: 0.85rem 0.95rem;
-    border-radius: 16px;
-    background: color-mix(in srgb, var(--button-background-color) 8%, white 92%);
-    color: color-mix(in srgb, var(--text-color) 74%, transparent);
-  }
-
-  @media (max-width: 991.98px) {
-    .logic-shell {
-      padding: 1.2rem 0 2.4rem;
-    }
-
-    .logic-hero {
-      padding: 1.4rem;
-      border-radius: 22px;
-    }
-
-    .logic-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .logic-overview {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
+<link rel="stylesheet" href="{% static 'css/logic_course.css' %}?v={{ STATIC_ASSET_VERSION }}-curriculum1">
 {% endblock %}
 
 {% block content %}
-<div class="container logic-shell">
-  <section class="logic-hero">
-    <div class="logic-kicker">
-      <i class="bi bi-lightbulb"></i>
-      <span>{{ logic_hero.kicker }}</span>
+<main
+  class="container-fluid logic-course-shell"
+  data-logic-course
+  data-storage-key="hafifayaklar.logic.progress.v2"
+  data-total-lessons="{{ logic_progress.total }}"
+  data-mastery-threshold="{{ logic_mastery_threshold }}"
+>
+  <header class="logic-course-header">
+    <div>
+      <span class="logic-eyebrow"><i class="bi bi-bezier2"></i> {{ logic_hero.kicker }}</span>
+      <h1>{{ logic_hero.title }}</h1>
+      <p class="logic-course-lede">{{ logic_hero.description }}</p>
     </div>
-    <h1>{{ logic_hero.title }}</h1>
-    <p>{{ logic_hero.description }}</p>
-  </section>
 
-  <div class="logic-overview">
-    <section class="logic-card">
-      <h2>Ders Akışı</h2>
-      <div class="logic-lesson-list">
-        {% for lesson in logic_lessons %}
-          <article class="logic-lesson-card {% if lesson.active %}logic-lesson-card--active{% endif %}">
-            <div class="logic-lesson-meta">
-              <span>Ders {{ lesson.display_order }}</span>
-              <span class="logic-pill">{{ lesson.focus }}</span>
-              <span>{{ lesson.duration }}</span>
-              <span>{{ lesson.status }}</span>
-            </div>
-            <h3>{{ lesson.title }}</h3>
-            <p>{{ lesson.summary }}</p>
-            {% if lesson.active %}
-              <a href="{% url 'logic_lesson_detail' lesson.slug %}" class="btn btn-primary">Derse Gir</a>
-            {% else %}
-              <span class="logic-note">Bu ders sırada. Önce aktif dersleri tamamlayacağız.</span>
-            {% endif %}
-          </article>
-        {% endfor %}
+    <div class="logic-progress-overview" aria-label="Kurs ilerlemesi">
+      <div class="logic-progress-copy">
+        <span>Genel ilerleme</span>
+        <strong><span data-logic-completed>{{ logic_progress.completed }}</span> / {{ logic_progress.total }} ders</strong>
+        <span>
+          {% if user.is_authenticated %}
+            İlerlemen hesabına kaydedilir.
+          {% else %}
+            İlerlemen bu cihazda korunur.
+          {% endif %}
+        </span>
       </div>
-    </section>
-
-    <section class="logic-card">
-      <h2>Seviye Omurgası</h2>
-      <div class="logic-levels">
-        {% for level in logic_levels %}
-          <article class="logic-level">
-            <div class="logic-level-top">
-              <strong>{{ level.title }}</strong>
-              <span class="logic-badge">{{ level.status }}</span>
-            </div>
-            <p>{{ level.summary }}</p>
-            <div class="logic-meta">{{ level.lessons }} ders</div>
-          </article>
-        {% endfor %}
+      <div class="logic-progress-number" data-logic-progress-number>%{{ logic_progress.percent }}</div>
+      <div class="logic-progress-track" style="--progress: {{ logic_progress.percent }}%" aria-hidden="true">
+        <span data-logic-progress-bar></span>
       </div>
-    </section>
+    </div>
+  </header>
 
+  <div class="logic-course-toolbar" aria-label="Dersleri bul ve filtrele">
+    <label class="logic-search">
+      <i class="bi bi-search"></i>
+      <span class="visually-hidden">Ders ara</span>
+      <input type="search" placeholder="Ders, kavram veya beceri ara" autocomplete="off" data-logic-search>
+      <button type="button" class="logic-search-clear" aria-label="Aramayı temizle" title="Aramayı temizle" data-logic-search-clear>
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </label>
+
+    <div class="logic-filter-group" role="group" aria-label="Ders filtresi">
+      <button type="button" class="logic-filter-button is-active" data-logic-filter="all">Tümü</button>
+      <button type="button" class="logic-filter-button" data-logic-filter="core">Çekirdek</button>
+      <button type="button" class="logic-filter-button" data-logic-filter="advanced">İleri</button>
+      <button type="button" class="logic-filter-button" data-logic-filter="started">Başladıklarım</button>
+      <button type="button" class="logic-filter-button" data-logic-filter="completed">Tamamlanan</button>
+    </div>
   </div>
 
-  <section class="logic-card mt-4">
-    <h2>Öğretim Modeli</h2>
-    <ul class="logic-list">
-      {% for item in logic_model %}
-        <li>{{ item }}</li>
+  {% if logic_continue_lesson %}
+    <section class="logic-continue-band" data-logic-continue>
+      <span class="logic-continue-icon" aria-hidden="true"><i class="bi bi-play-fill"></i></span>
+      <div class="logic-continue-copy">
+        <span data-logic-continue-label>
+          {% if logic_continue_lesson.is_started %}Kaldığın yer{% else %}Önerilen başlangıç{% endif %}
+        </span>
+        <strong data-logic-continue-title>{{ logic_continue_lesson.title }}</strong>
+        <small data-logic-continue-meta>{{ logic_continue_lesson.stage_title }} · {{ logic_continue_lesson.duration }}</small>
+      </div>
+      <a href="{% url 'logic_lesson_detail' logic_continue_lesson.slug %}" class="logic-primary-link" data-logic-continue-link>
+        Derse geç <i class="bi bi-arrow-right"></i>
+      </a>
+    </section>
+  {% endif %}
+
+  <section aria-labelledby="logic-pathways-title">
+    <div class="logic-section-heading">
+      <div>
+        <span class="logic-section-label">Üç ayrı hedef</span>
+        <h2 id="logic-pathways-title">Kendine uygun rotayı bil</h2>
+      </div>
+      <p>İleri metateori başlangıç derslerinin önüne geçmez. Önce gündelik çözümleme, sonra biçimsel çekirdek, en son seçmeli ileri rota gelir.</p>
+    </div>
+
+    <div class="logic-pathway-band">
+      {% for pathway in logic_pathways %}
+        <article class="logic-pathway">
+          <h3>{{ pathway.title }}</h3>
+          <p>{{ pathway.description }}</p>
+          <div class="logic-pathway-meta">
+            <span>{{ pathway.stage_count }} aşama</span>
+            <span>{{ pathway.lesson_count }} ders</span>
+          </div>
+        </article>
       {% endfor %}
-    </ul>
-    <div class="logic-note mt-3">
-      Program toplam <strong>{{ logic_lessons|length }}</strong> ders. Şu an açık ders sayısı: <strong>{{ active_logic_lessons }}</strong>.
-      İlk <strong>16 ders</strong> temel ayrımları sıkıştırır; geri kalan blok önerme mantığı, yüklem mantığı, doğal türetim, aksiyomatik sistem ve metateoriyi ağır biçimde kurar.
+    </div>
+  </section>
+
+  <section aria-labelledby="logic-curriculum-title">
+    <div class="logic-section-heading">
+      <div>
+        <span class="logic-section-label">Müfredat {{ logic_curriculum_version }}</span>
+        <h2 id="logic-curriculum-title">Ders akışı</h2>
+      </div>
+      <p>Her aşama bir beceri kümesi ve somut yeterlik kontrolü taşır. Aşama başlığına basarak dersleri açıp kapatabilirsin.</p>
+    </div>
+
+    <div class="logic-stage-list" data-logic-stage-list>
+      {% for stage in logic_levels %}
+        <details
+          class="logic-stage"
+          data-stage-id="{{ stage.id }}"
+          data-track="{{ stage.track }}"
+          {% if stage.is_current %}open{% endif %}
+        >
+          <summary class="logic-stage-summary">
+            <span class="logic-stage-number">0{{ stage.number }}</span>
+            <div class="logic-stage-title">
+              <span class="logic-stage-label">
+                {% if stage.track == 'advanced' %}Seçmeli ileri rota{% else %}Çekirdek aşama{% endif %}
+              </span>
+              <h3>{{ stage.title }}</h3>
+              <p>{{ stage.summary }}</p>
+            </div>
+            <div class="logic-stage-meta">
+              <div class="logic-stage-meta-line">
+                <span>{{ stage.completed_count }}/{{ stage.lesson_count }} tamamlandı</span>
+                <span>{{ stage.estimated_weeks }}</span>
+              </div>
+              <div class="logic-stage-progress-track" style="--progress: {{ stage.progress_percent }}%" aria-hidden="true">
+                <span data-stage-progress-bar></span>
+              </div>
+            </div>
+            <span class="logic-stage-chevron"><i class="bi bi-chevron-down"></i></span>
+          </summary>
+
+          <div class="logic-stage-body">
+            <aside class="logic-stage-outcomes">
+              <h4>Bu aşamanın sonunda</h4>
+              <ul>
+                {% for outcome in stage.outcomes %}
+                  <li>{{ outcome }}</li>
+                {% endfor %}
+              </ul>
+              <div class="logic-checkpoint">
+                <strong>Yeterlik kontrolü:</strong><br>
+                {{ stage.checkpoint }}
+              </div>
+            </aside>
+
+            <div class="logic-lessons">
+              {% for lesson in stage.lessons %}
+                <a
+                  href="{% url 'logic_lesson_detail' lesson.slug %}"
+                  class="logic-lesson-row"
+                  data-logic-lesson
+                  data-lesson-slug="{{ lesson.slug }}"
+                  data-stage-id="{{ stage.id }}"
+                  data-track="{{ lesson.track }}"
+                  data-status="{{ lesson.progress_status }}"
+                  data-best-score="{{ lesson.best_score }}"
+                  data-search-text="{{ lesson.title|lower }} {{ lesson.summary|lower }} {{ lesson.focus|lower }}"
+                >
+                  <span class="logic-lesson-order">
+                    <span data-logic-order>{{ lesson.display_order }}</span>
+                  </span>
+                  <span class="logic-lesson-content">
+                    <h4>{{ lesson.title }}</h4>
+                    <p>{{ lesson.summary }}</p>
+                    <span class="logic-lesson-foot">
+                      <span>{{ lesson.duration }}</span>
+                      <span>{{ lesson.focus }}</span>
+                      {% if lesson.best_score %}<span>En iyi: %{{ lesson.best_score }}</span>{% endif %}
+                    </span>
+                  </span>
+                  <span class="logic-lesson-status" aria-label="İlerleme durumu" data-logic-status-icon>
+                    {% if lesson.is_completed %}
+                      <i class="bi bi-check-circle-fill"></i>
+                    {% elif lesson.is_started %}
+                      <i class="bi bi-circle-half"></i>
+                    {% else %}
+                      <i class="bi bi-arrow-up-right"></i>
+                    {% endif %}
+                  </span>
+                </a>
+              {% endfor %}
+            </div>
+          </div>
+        </details>
+      {% endfor %}
+    </div>
+    <div class="logic-empty-result" data-logic-empty>
+      <i class="bi bi-search"></i>
+      <p class="mt-2 mb-0">Bu arama ve filtreyle eşleşen ders yok.</p>
     </div>
   </section>
 
   {% if logic_test_bank_size %}
-  <section class="logic-card mt-4">
-    <h2>Mantık Bitirme Testi</h2>
-    <p class="mb-2">Ders akışını bitirdikten sonra burada bütün aparatı tek oturumda yoklayabilirsin. Test bankası rastgele seçkiyle çalışır; sabit bir kâğıt değildir.</p>
-    <div class="logic-level-top">
-      <div class="logic-meta">{{ logic_test_bank_size }} soruluk havuz · 50 soruluk oturum · 40 doğru barajı</div>
-      <a href="{% url 'logic_level_test' %}" class="btn btn-primary">Teste Gir</a>
+    <section class="logic-assessment-band" aria-labelledby="logic-assessment-title">
+      <div>
+        <span class="logic-section-label" style="color: #d9bc82;">Ölçme ve geri bildirim</span>
+        <h2 id="logic-assessment-title">Bitirme testinden önce neyi bildiğini gör</h2>
+        <p>{{ logic_test_bank_size }} soruluk havuzdan gelen oturum, beş beceri alanını ayrı ayrı raporlar. Çekirdek derslerde önerilen ustalık eşiği %{{ logic_mastery_threshold }}.</p>
+      </div>
+      <a href="{% url 'logic_level_test' %}" class="logic-primary-link">
+        Teste gir <i class="bi bi-arrow-right"></i>
+      </a>
+    </section>
+  {% endif %}
+
+  <section aria-labelledby="logic-method-title">
+    <div class="logic-section-heading">
+      <div>
+        <span class="logic-section-label">Şeffaf öğretim tasarımı</span>
+        <h2 id="logic-method-title">Bu program nasıl kuruldu?</h2>
+      </div>
+      <p>Ders yapısı açık üniversite kaynaklarının ortak çekirdeğiyle karşılaştırıldı; içerik birebir kopyalanmadı, Türkçe öğrenme akışına göre yeniden tasarlandı.</p>
+    </div>
+
+    <div class="logic-pathway-band">
+      {% for item in logic_model %}
+        <article class="logic-pathway">
+          <span class="logic-stage-label">{{ forloop.counter|stringformat:'02d' }}</span>
+          <p class="mt-2">{{ item }}</p>
+        </article>
+      {% endfor %}
+    </div>
+
+    <div class="logic-reference-list">
+      {% for source in logic_sources %}
+        <article class="logic-reference">
+          <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">
+            {{ source.title }} <i class="bi bi-box-arrow-up-right"></i>
+          </a>
+          <small>{{ source.publisher }}</small>
+          <p>{{ source.role }}</p>
+        </article>
+      {% endfor %}
     </div>
   </section>
-  {% endif %}
-</div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/logic_course.js' %}?v={{ STATIC_ASSET_VERSION }}-curriculum1"></script>
 {% endblock %}

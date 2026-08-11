@@ -1,0 +1,256 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ review_stage_code }} İncelemesi | Mantık Atölyesi{% endblock %}
+{% block meta_description %}Mantık müfredatı {{ review_stage_code }} ders adayları için yetkili içerik inceleme ekranı.{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/logic_curriculum_review.css' %}?v={{ STATIC_ASSET_VERSION }}-stagea1">
+{% endblock %}
+
+{% block content %}
+<main class="logic-review-shell" data-logic-curriculum-review>
+  <nav class="logic-review-breadcrumbs" aria-label="Sayfa yolu">
+    <a href="{% url 'logic_home' %}">Mantık Atölyesi</a>
+    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+    <span>Yetkili inceleme</span>
+  </nav>
+
+  <header class="logic-review-hero">
+    <div class="logic-review-hero-copy">
+      <span class="logic-review-kicker"><i class="bi bi-shield-check" aria-hidden="true"></i> Yayına kapalı çalışma kopyası</span>
+      <h1>{{ review_stage_code }}: {{ review_stage_title }}</h1>
+      <p>{{ review_lesson_range }} derslerinin akademik doğruluğu, öğretim sırası ve gerçek kullanıcıya açıklığı bu ekranda birlikte incelenir.</p>
+    </div>
+    <div class="logic-review-status" aria-label="Yayın durumu">
+      <span>Aday sürüm</span>
+      <strong>Öğrencilere açık değil</strong>
+      <small>İlerleme ve ders tamamlama verisi yazılmaz.</small>
+    </div>
+  </header>
+
+  <section class="logic-review-metrics" aria-label="Aday aşama özeti">
+    <div><strong>{{ candidate_lessons|length }}</strong><span>ders</span></div>
+    <div><strong>{{ candidate_total_minutes }}</strong><span>dakika</span></div>
+    <div><strong>{{ candidate_practice_count }}</strong><span>kontrollü soru</span></div>
+    <div><strong>{{ candidate_production_count }}</strong><span>üretim görevi</span></div>
+  </section>
+
+  <div class="logic-review-layout">
+    <aside class="logic-review-index" aria-label="Ders indeksi">
+      <div class="logic-review-index-heading">
+        <span>{{ review_stage_code }}</span>
+        <strong>İnceleme sırası</strong>
+      </div>
+      <nav>
+        {% for lesson in candidate_lessons %}
+          <a href="#aday-{{ lesson.curriculum_id|lower }}">
+            <span>{{ lesson.curriculum_id }}</span>
+            <span>{{ lesson.title }}</span>
+          </a>
+        {% endfor %}
+      </nav>
+      <div class="logic-review-gate">
+        <i class="bi bi-lock" aria-hidden="true"></i>
+        <span>İnsan incelemesi tamamlanmadan etkinleştirilmez.</span>
+      </div>
+    </aside>
+
+    <section class="logic-review-lessons" aria-label="Aday dersler">
+      {% for lesson in candidate_lessons %}
+        <details class="logic-review-lesson" id="aday-{{ lesson.curriculum_id|lower }}" {% if forloop.first %}open{% endif %}>
+          <summary>
+            <span class="logic-review-lesson-id">{{ lesson.curriculum_id }}</span>
+            <span class="logic-review-lesson-summary">
+              <strong>{{ lesson.title }}</strong>
+              <small>{{ lesson.focus }} · {{ lesson.duration }}</small>
+            </span>
+            <span class="logic-review-release">Aday</span>
+            <i class="bi bi-chevron-down" aria-hidden="true"></i>
+          </summary>
+
+          <div class="logic-review-lesson-body">
+            <div class="logic-review-lede">
+              <p>{{ lesson.summary }}</p>
+              {% if lesson.prerequisite_details %}
+                <div class="logic-review-prerequisites">
+                  <span>Önkoşul</span>
+                  {% for prerequisite in lesson.prerequisite_details %}
+                    <a href="#aday-{{ prerequisite.curriculum_id|lower }}">{{ prerequisite.curriculum_id }} · {{ prerequisite.title }}</a>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="logic-review-prerequisites"><span>Önkoşul</span><strong>Yok</strong></div>
+              {% endif %}
+            </div>
+
+            <section class="logic-review-dual" aria-label="Hedef ve yeterlikler">
+              <div>
+                <span class="logic-review-section-label">Öğrenme hedefleri</span>
+                <ul class="logic-review-check-list">
+                  {% for goal in lesson.goals %}<li>{{ goal }}</li>{% endfor %}
+                </ul>
+              </div>
+              <div>
+                <span class="logic-review-section-label">Başarı kanıtı</span>
+                <ul class="logic-review-evidence-list">
+                  {% for evidence in lesson.mastery_evidence %}<li>{{ evidence }}</li>{% endfor %}
+                </ul>
+              </div>
+            </section>
+
+            <section class="logic-review-competencies" aria-label="Beceri kimlikleri">
+              <span class="logic-review-section-label">Ölçülen beceriler</span>
+              <div>
+                {% for competency in lesson.competencies %}<code>{{ competency }}</code>{% endfor %}
+              </div>
+            </section>
+
+            <section class="logic-review-terms" aria-labelledby="terms-{{ lesson.curriculum_id|lower }}">
+              <span class="logic-review-section-label">Terim disiplini</span>
+              <h3 id="terms-{{ lesson.curriculum_id|lower }}">Temel kavramlar</h3>
+              <dl>
+                {% for term in lesson.key_terms %}
+                  <div><dt>{{ term.term }}</dt><dd>{{ term.definition }}</dd></div>
+                {% endfor %}
+              </dl>
+              {% if lesson.rigor_note %}
+                <div class="logic-review-academic-note">
+                  <i class="bi bi-journal-check" aria-hidden="true"></i>
+                  <div><strong>Akademik sınır notu</strong><p>{{ lesson.rigor_note }}</p></div>
+                </div>
+              {% endif %}
+            </section>
+
+            <details class="logic-review-disclosure" open>
+              <summary><span>Ders anlatımı</span><small>{{ lesson.sections|length }} bölüm</small><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+              <div class="logic-review-disclosure-body logic-review-section-stack">
+                {% for section in lesson.sections %}
+                  <article class="logic-review-concept">
+                    <header><span>{{ forloop.counter|stringformat:'02d' }}</span><h3>{{ section.title }}</h3></header>
+                    <p>{{ section.summary }}</p>
+                    <div class="logic-review-concept-grid">
+                      <div><strong>Ne zaman kullanılır?</strong><span>{{ section.when_to_use }}</span></div>
+                      <div><strong>Kısa formül</strong><span>{{ section.formula }}</span></div>
+                      <div><strong>Mantıksal gerekçe</strong><span>{{ section.logic }}</span></div>
+                      <div class="is-caution"><strong>Dikkat</strong><span>{{ section.watch_out }}</span></div>
+                    </div>
+                    <div class="logic-review-example-grid">
+                      {% for example in section.examples %}
+                        <div><strong>{{ example.text }}</strong><span>{{ example.note }}</span></div>
+                      {% endfor %}
+                    </div>
+                    <div class="logic-review-contrast">
+                      <p><strong>Doğru kullanım</strong>{{ section.contrast.correct }}</p>
+                      <p><strong>Yanlış kullanım</strong>{{ section.contrast.wrong }}</p>
+                      <p><strong>Ayırıcı gerekçe</strong>{{ section.contrast.reason }}</p>
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+            </details>
+
+            <details class="logic-review-disclosure">
+              <summary><span>Çözümlü örnekler ve tipik hatalar</span><small>{{ lesson.worked_examples|length }} örnek</small><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+              <div class="logic-review-disclosure-body">
+                <div class="logic-review-worked-list">
+                  {% for item in lesson.worked_examples %}
+                    <article>
+                      <span class="logic-review-badge {% if item.badge_variant == 'bad' %}is-warning{% endif %}">{{ item.badge_label }}</span>
+                      <div><strong>{{ item.text }}</strong><p>{{ item.reason }}</p></div>
+                    </article>
+                  {% endfor %}
+                </div>
+                <div class="logic-review-mistakes">
+                  <h3>Tipik hatalar</h3>
+                  <ol>{% for mistake in lesson.mistakes %}<li>{{ mistake }}</li>{% endfor %}</ol>
+                </div>
+              </div>
+            </details>
+
+            <details class="logic-review-disclosure">
+              <summary><span>Yönlendirmeli alıştırma</span><small>Kısmi destek</small><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+              <div class="logic-review-disclosure-body">
+                <div class="logic-review-guided">
+                  <div>
+                    <span>Soru</span>
+                    <h3>{{ lesson.guided_practice.prompt }}</h3>
+                    <p>{{ lesson.guided_practice.starter }}</p>
+                  </div>
+                  <ul>{% for check in lesson.guided_practice.checks %}<li>{{ check }}</li>{% endfor %}</ul>
+                  <details>
+                    <summary>Örnek çözümü göster</summary>
+                    <p>{{ lesson.guided_practice.solution }}</p>
+                  </details>
+                </div>
+              </div>
+            </details>
+
+            <details class="logic-review-disclosure">
+              <summary><span>Kontrollü sorular</span><small>{{ lesson.practice|length }} soru</small><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+              <div class="logic-review-disclosure-body logic-review-question-list">
+                {% for item in lesson.practice %}
+                  <details>
+                    <summary>
+                      <span>{{ forloop.counter|stringformat:'02d' }}</span>
+                      <strong>{{ item.prompt }}</strong>
+                      <small>{{ item.difficulty_label }}</small>
+                    </summary>
+                    <div>
+                      <ol type="A">{% for choice in item.choices %}<li>{{ choice }}</li>{% endfor %}</ol>
+                      <p class="logic-review-answer"><strong>Doğru yanıt: {{ item.answer }}</strong>{{ item.explanation }}</p>
+                    </div>
+                  </details>
+                {% endfor %}
+              </div>
+            </details>
+
+            <details class="logic-review-disclosure">
+              <summary><span>Bağımsız üretim ve geri çağırma</span><small>{{ lesson.production_tasks|length }} görev</small><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+              <div class="logic-review-disclosure-body">
+                <div class="logic-review-production-list">
+                  {% for task in lesson.production_tasks %}
+                    <article>
+                      <span>Görev {{ forloop.counter|stringformat:'02d' }}</span>
+                      <h3>{{ task.prompt }}</h3>
+                      <div class="logic-review-stimulus">
+                        <strong>{{ task.stimulus.label }}</strong>
+                        <ol>
+                          {% for item in task.stimulus.items %}<li>{{ item }}</li>{% endfor %}
+                        </ol>
+                        {% if task.stimulus.note %}<p>{{ task.stimulus.note }}</p>{% endif %}
+                      </div>
+                      <ul>{% for checkpoint in task.checkpoints %}<li>{{ checkpoint }}</li>{% endfor %}</ul>
+                      <p><strong>Örnek çözüm odağı</strong>{{ task.sample_focus }}</p>
+                    </article>
+                  {% endfor %}
+                </div>
+                <div class="logic-review-retrieval">
+                  <h3>Geri çağırma soruları</h3>
+                  <ol>{% for prompt in lesson.review_prompts %}<li>{{ prompt }}</li>{% endfor %}</ol>
+                </div>
+              </div>
+            </details>
+
+            <footer class="logic-review-lesson-footer">
+              <div>
+                <span class="logic-review-section-label">Bir sonraki adım</span>
+                <p>{{ lesson.next_step }}</p>
+              </div>
+              <div>
+                <span class="logic-review-section-label">Akademik dayanaklar</span>
+                <ul>
+                  {% for source in lesson.source_details %}
+                    <li><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title }} <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </footer>
+          </div>
+        </details>
+      {% endfor %}
+    </section>
+  </div>
+</main>
+{% endblock %}

@@ -1,690 +1,500 @@
 {% extends 'core/base.html' %}
+{% load static %}
 
-{% block title %}{{ lesson.title }} | Mantık{% endblock %}
+{% block title %}{{ lesson.title }} | Mantık Atölyesi{% endblock %}
+{% block meta_description %}{{ lesson.summary }}{% endblock %}
+{% block meta_keywords %}mantık dersi, {{ lesson.title }}, {{ lesson.focus }}, argüman, biçimsel mantık{% endblock %}
+{% block article_section %}Mantık Eğitimi{% endblock %}
 
 {% block extra_css %}
-<style>
-  .logic-lesson-shell {
-    padding: 1.6rem 0 3rem;
-  }
-
-  .logic-lesson-hero {
-    border-radius: 28px;
-    padding: 1.8rem;
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 14%, transparent);
-    background:
-      radial-gradient(circle at top right, rgba(176, 141, 87, 0.14), transparent 34%),
-      linear-gradient(140deg, color-mix(in srgb, var(--content-background-color) 95%, white 5%), color-mix(in srgb, var(--background-color) 92%, white 8%));
-    box-shadow: 0 22px 50px color-mix(in srgb, var(--text-color) 10%, transparent);
-  }
-
-  .logic-lesson-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.45rem 0.8rem;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--button-background-color) 11%, white 89%);
-    font-size: 0.84rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .logic-lesson-hero h1 {
-    margin: 0.95rem 0 0.5rem;
-    font-size: clamp(2rem, 4vw, 3.4rem);
-    line-height: 0.96;
-    letter-spacing: -0.04em;
-  }
-
-  .logic-lesson-hero p {
-    max-width: 760px;
-    margin: 0;
-    color: color-mix(in srgb, var(--text-color) 74%, transparent);
-  }
-
-  .logic-hero-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.55rem;
-    margin-top: 1rem;
-  }
-
-  .logic-meta-pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.34rem 0.72rem;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--header-background-color) 8%, white 92%);
-    font-size: 0.82rem;
-  }
-
-  .logic-nav-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.7rem;
-    justify-content: space-between;
-    align-items: center;
-    margin: 1.2rem 0;
-  }
-
-  .logic-nav-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.55rem;
-  }
-
-  .logic-outline {
-    display: grid;
-    grid-template-columns: 0.95fr 1.05fr;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-
-  .logic-rigor-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-
-  .logic-box {
-    border-radius: 22px;
-    padding: 1.2rem;
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
-    background: color-mix(in srgb, var(--content-background-color) 94%, white 6%);
-  }
-
-  .logic-box h2,
-  .logic-box h3 {
-    margin: 0 0 0.8rem;
-    letter-spacing: -0.02em;
-  }
-
-  .logic-chip-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.55rem;
-  }
-
-  .logic-chip {
-    padding: 0.5rem 0.72rem;
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--background-color) 92%, white 8%);
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
-  }
-
-  .logic-term-list,
-  .logic-goal-list,
-  .logic-mistake-list {
-    margin: 0;
-    padding-left: 1.1rem;
-  }
-
-  .logic-term-list li + li,
-  .logic-goal-list li + li,
-  .logic-mistake-list li + li {
-    margin-top: 0.55rem;
-  }
-
-  .logic-section {
-    margin-top: 1rem;
-  }
-
-  .logic-section-grid {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .logic-section-card {
-    border-radius: 22px;
-    padding: 1.25rem;
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 12%, transparent);
-    background: color-mix(in srgb, var(--content-background-color) 95%, white 5%);
-  }
-
-  .logic-section-card p {
-    color: color-mix(in srgb, var(--text-color) 78%, transparent);
-  }
-
-  .logic-section-meta {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.8rem;
-    margin: 0.95rem 0;
-  }
-
-  .logic-subcard {
-    border-radius: 16px;
-    padding: 0.85rem 0.95rem;
-    background: color-mix(in srgb, var(--background-color) 92%, white 8%);
-  }
-
-  .logic-subcard strong {
-    display: block;
-    margin-bottom: 0.25rem;
-    font-size: 0.94rem;
-  }
-
-  .logic-example-list {
-    display: grid;
-    gap: 0.75rem;
-    margin-top: 0.9rem;
-  }
-
-  .logic-example {
-    border-radius: 16px;
-    padding: 0.9rem 1rem;
-    background: color-mix(in srgb, var(--background-color) 94%, white 6%);
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
-  }
-
-  .logic-example-text {
-    font-weight: 700;
-    margin-bottom: 0.35rem;
-  }
-
-  .logic-contrast {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.85rem;
-    margin-top: 1rem;
-  }
-
-  .logic-contrast-card {
-    border-radius: 16px;
-    padding: 0.95rem 1rem;
-  }
-
-  .logic-contrast-card--good {
-    background: color-mix(in srgb, #d8efe1 74%, white 26%);
-    border: 1px solid color-mix(in srgb, #2f6b4f 32%, transparent);
-  }
-
-  .logic-contrast-card--bad {
-    background: color-mix(in srgb, #f5e2dd 76%, white 24%);
-    border: 1px solid color-mix(in srgb, #b86d5b 30%, transparent);
-  }
-
-  .logic-reason {
-    margin-top: 0.7rem;
-    padding: 0.8rem 0.95rem;
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--button-background-color) 8%, white 92%);
-    color: color-mix(in srgb, var(--text-color) 76%, transparent);
-  }
-
-  .logic-worked-grid {
-    display: grid;
-    gap: 0.75rem;
-    margin-top: 0.9rem;
-  }
-
-  .logic-worked-card {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.8rem;
-    align-items: start;
-    border-radius: 16px;
-    padding: 0.95rem 1rem;
-    background: color-mix(in srgb, var(--background-color) 94%, white 6%);
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
-  }
-
-  .logic-status-badge {
-    min-width: 76px;
-    justify-content: center;
-    font-size: 0.74rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-radius: 999px;
-    padding: 0.35rem 0.6rem;
-    display: inline-flex;
-  }
-
-  .logic-status-badge--good {
-    background: color-mix(in srgb, #d8efe1 72%, white 28%);
-    color: #234e39;
-  }
-
-  .logic-status-badge--bad {
-    background: color-mix(in srgb, #f5e2dd 72%, white 28%);
-    color: #894c3f;
-  }
-
-  .logic-practice-list {
-    display: grid;
-    gap: 0.9rem;
-    margin-top: 1rem;
-  }
-
-  .logic-practice-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.8rem;
-    margin-top: 1rem;
-  }
-
-  .logic-practice-summary {
-    display: none;
-    padding: 0.8rem 0.95rem;
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--button-background-color) 8%, white 92%);
-    color: color-mix(in srgb, var(--text-color) 78%, transparent);
-  }
-
-  .logic-practice-summary.is-visible {
-    display: block;
-  }
-
-  .logic-production-grid {
-    display: grid;
-    gap: 0.95rem;
-    margin-top: 1rem;
-  }
-
-  .logic-production-card {
-    border-radius: 20px;
-    padding: 1.05rem 1.1rem;
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 11%, transparent);
-    background: color-mix(in srgb, var(--content-background-color) 95%, white 5%);
-  }
-
-  .logic-production-card h4 {
-    margin: 0 0 0.8rem;
-    font-size: 1rem;
-    line-height: 1.55;
-  }
-
-  .logic-production-card ul {
-    margin: 0.8rem 0 0;
-    padding-left: 1.1rem;
-  }
-
-  .logic-production-card li + li {
-    margin-top: 0.4rem;
-  }
-
-  .logic-production-note {
-    margin-top: 0.9rem;
-    padding: 0.85rem 0.95rem;
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--button-background-color) 8%, white 92%);
-    color: color-mix(in srgb, var(--text-color) 76%, transparent);
-  }
-
-  .logic-practice-card {
-    border-radius: 20px;
-    padding: 1.05rem;
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 11%, transparent);
-    background: color-mix(in srgb, var(--content-background-color) 95%, white 5%);
-  }
-
-  .logic-practice-card h4 {
-    margin: 0 0 0.85rem;
-    font-size: 1.02rem;
-  }
-
-  .logic-practice-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    margin-bottom: 0.7rem;
-  }
-
-  .logic-difficulty-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.26rem 0.62rem;
-    border-radius: 999px;
-    font-size: 0.74rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    background: color-mix(in srgb, var(--button-background-color) 12%, white 88%);
-  }
-
-  .logic-choice-list {
-    display: grid;
-    gap: 0.55rem;
-  }
-
-  .logic-choice {
-    border-radius: 14px;
-    padding: 0.78rem 0.9rem;
-    border: 1px solid color-mix(in srgb, var(--header-background-color) 10%, transparent);
-    background: color-mix(in srgb, var(--background-color) 94%, white 6%);
-    cursor: pointer;
-  }
-
-  .logic-choice input {
-    margin-right: 0.55rem;
-  }
-
-  .logic-feedback {
-    display: none;
-    margin-top: 0.8rem;
-    padding: 0.85rem 0.95rem;
-    border-radius: 14px;
-  }
-
-  .logic-feedback.is-correct {
-    display: block;
-    background: color-mix(in srgb, #d8efe1 75%, white 25%);
-    border: 1px solid color-mix(in srgb, #2f6b4f 32%, transparent);
-  }
-
-  .logic-feedback.is-wrong {
-    display: block;
-    background: color-mix(in srgb, #f5e2dd 76%, white 24%);
-    border: 1px solid color-mix(in srgb, #b86d5b 30%, transparent);
-  }
-
-  @media (max-width: 991.98px) {
-    .logic-outline,
-    .logic-rigor-grid,
-    .logic-section-meta,
-    .logic-contrast {
-      grid-template-columns: 1fr;
-    }
-
-    .logic-lesson-hero {
-      padding: 1.35rem;
-      border-radius: 22px;
-    }
-  }
-</style>
+<link rel="stylesheet" href="{% static 'css/logic_course.css' %}?v={{ STATIC_ASSET_VERSION }}-curriculum3">
 {% endblock %}
 
 {% block content %}
-<div class="container logic-lesson-shell">
-  <section class="logic-lesson-hero">
-    <div class="logic-lesson-kicker">
-      <i class="bi bi-lightbulb"></i>
-      <span>{{ lesson.focus }}</span>
-    </div>
-    <h1>{{ lesson.title }}</h1>
-    <p>{{ lesson.summary }}</p>
-    <div class="logic-hero-meta">
-      <span class="logic-meta-pill">Ders {{ lesson.display_order }}</span>
-      <span class="logic-meta-pill">{{ lesson.duration }}</span>
-      <span class="logic-meta-pill">{{ lesson.status }}</span>
-      <span class="logic-meta-pill">{{ lesson.active_lesson_count }} aktif ders</span>
-    </div>
-  </section>
-
-  <div class="logic-nav-row">
-    <a href="{% url 'logic_home' %}" class="btn btn-outline-theme-secondary">
-      <i class="bi bi-arrow-left"></i> Mantık Ana Sayfası
+<main
+  class="container-fluid logic-lesson-shell"
+  data-logic-lesson-page
+  data-lesson-slug="{{ lesson.slug }}"
+  data-storage-key="hafifayaklar.logic.progress.v2"
+  data-response-storage-key="hafifayaklar.logic.responses.v1"
+  data-progress-url="{% url 'logic_lesson_progress' %}"
+  data-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
+  data-progress-status="{% if logic_progress %}{{ logic_progress.status }}{% else %}not_started{% endif %}"
+  data-best-score="{% if logic_progress %}{{ logic_progress.best_score }}{% else %}0{% endif %}"
+  data-attempt-count="{% if logic_progress %}{{ logic_progress.attempt_count }}{% else %}0{% endif %}"
+  data-mastery-threshold="{{ logic_mastery_threshold }}"
+>
+  <div class="logic-lesson-topbar">
+    <nav class="logic-breadcrumbs" aria-label="Sayfa yolu">
+      <a href="{% url 'logic_home' %}">Mantık</a>
+      <i class="bi bi-chevron-right" aria-hidden="true"></i>
+      <span>{{ lesson.stage_short_title }}</span>
+      <i class="bi bi-chevron-right" aria-hidden="true"></i>
+      <span>Ders {{ lesson.display_order }}</span>
+    </nav>
+    <a href="{% url 'logic_home' %}#logic-curriculum-title" class="logic-secondary-link">
+      <i class="bi bi-list-ul"></i> Tüm dersler
     </a>
-    <div class="logic-nav-links">
-      {% if lesson.previous_lesson %}
-        <a href="{% url 'logic_lesson_detail' lesson.previous_lesson.slug %}" class="btn btn-outline-theme-secondary">
-          <i class="bi bi-chevron-left"></i> Önceki: Ders {{ lesson.previous_lesson.display_order }}
-        </a>
-      {% endif %}
-      {% if lesson.next_lesson %}
-        <a href="{% url 'logic_lesson_detail' lesson.next_lesson.slug %}" class="btn btn-outline-theme-secondary">
-          Sıradaki: Ders {{ lesson.next_lesson.display_order }} <i class="bi bi-chevron-right"></i>
-        </a>
-      {% endif %}
-    </div>
   </div>
 
-  <div class="logic-outline">
-    <section class="logic-box">
-      <h2>Bu Derste Ne Kuruyoruz?</h2>
-      <ul class="logic-goal-list">
-        {% for goal in lesson.goals %}
-          <li>{{ goal }}</li>
+  <div class="logic-lesson-layout">
+    <aside class="logic-lesson-rail" aria-label="Ders içeriği">
+      <span class="logic-rail-title">Bu derste</span>
+      <nav class="logic-rail-links">
+        <a href="#ders-ozeti" class="logic-rail-link is-active" data-logic-toc-link>
+          <span>01</span><span>Ders özeti</span>
+        </a>
+        {% if lesson.symbol_set or lesson.proof_tools or lesson.reading_note or lesson.rigor_note %}
+          <a href="#calisma-araclari" class="logic-rail-link" data-logic-toc-link>
+            <span>02</span><span>Çalışma araçları</span>
+          </a>
+        {% endif %}
+        {% for section in lesson.sections %}
+          <a href="#kavram-{{ forloop.counter }}" class="logic-rail-link" data-logic-toc-link>
+            <span>{{ forloop.counter|stringformat:'02d' }}</span><span>{{ section.title }}</span>
+          </a>
         {% endfor %}
-      </ul>
-    </section>
+        <a href="#ornekler" class="logic-rail-link" data-logic-toc-link>
+          <span><i class="bi bi-eye"></i></span><span>Çözümlü örnekler</span>
+        </a>
+        {% if logic_interactive %}
+          <a href="#etkilesimli-laboratuvar" class="logic-rail-link" data-logic-toc-link>
+            <span><i class="bi bi-grid-3x3"></i></span><span>Etkileşimli laboratuvar</span>
+          </a>
+        {% endif %}
+        <a href="#kontrollu-alistirma" class="logic-rail-link" data-logic-toc-link>
+          <span><i class="bi bi-check2-square"></i></span><span>Bilgini dene</span>
+        </a>
+        {% if lesson.production_tasks %}
+          <a href="#uretim-alistirmasi" class="logic-rail-link" data-logic-toc-link>
+            <span><i class="bi bi-pencil-square"></i></span><span>Kendin üret</span>
+          </a>
+        {% endif %}
+      </nav>
+    </aside>
 
-    <section class="logic-box">
-      <h2>Ana Kavramlar</h2>
-      <ul class="logic-term-list">
-        {% for term in lesson.key_terms %}
-          <li><strong>{{ term.term }}:</strong> {{ term.definition }}</li>
-        {% endfor %}
-      </ul>
-    </section>
-  </div>
+    <article class="logic-lesson-main">
+      <header class="logic-lesson-hero" id="ders-ozeti" data-logic-section>
+        <span class="logic-eyebrow"><i class="bi bi-bezier2"></i> {{ lesson.stage_title }}</span>
+        <h1>{{ lesson.title }}</h1>
+        <p>{{ lesson.summary }}</p>
+        <div class="logic-lesson-meta">
+          <span><i class="bi bi-clock"></i> {{ lesson.duration }}</span>
+          <span><i class="bi bi-bullseye"></i> {{ lesson.focus }}</span>
+          <span><i class="bi bi-layers"></i> Ders {{ lesson.display_order }} / {{ lesson.active_lesson_count }}</span>
+        </div>
+      </header>
 
-  {% if lesson.symbol_set or lesson.proof_tools or lesson.reading_note or lesson.rigor_note %}
-    <div class="logic-rigor-grid">
-      {% if lesson.symbol_set %}
-        <section class="logic-box">
-          <h2>Sembol Seti</h2>
-          <div class="logic-chip-list">
-            {% for item in lesson.symbol_set %}
-              <span class="logic-chip">{{ item }}</span>
-            {% endfor %}
-          </div>
-        </section>
-      {% endif %}
-
-      {% if lesson.proof_tools %}
-        <section class="logic-box">
-          <h2>Kural Repertuvarı</h2>
-          <div class="logic-chip-list">
-            {% for item in lesson.proof_tools %}
-              <span class="logic-chip">{{ item }}</span>
-            {% endfor %}
-          </div>
-        </section>
-      {% endif %}
-
-      {% if lesson.reading_note %}
-        <section class="logic-box">
-          <h2>Okuma Disiplini</h2>
-          <p class="mb-0">{{ lesson.reading_note }}</p>
-        </section>
-      {% endif %}
-
-      {% if lesson.rigor_note %}
-        <section class="logic-box">
-          <h2>Akademik Not</h2>
-          <p class="mb-0">{{ lesson.rigor_note }}</p>
-        </section>
-      {% endif %}
-    </div>
-  {% endif %}
-
-  <section class="logic-section">
-    <div class="logic-section-grid">
-      {% for section in lesson.sections %}
-        <article class="logic-section-card">
-          <h3>{{ section.title }}</h3>
-          <p>{{ section.summary }}</p>
-
-          <div class="logic-section-meta">
-            <div class="logic-subcard">
-              <strong>Ne zaman kullanılır?</strong>
-              <span>{{ section.when_to_use }}</span>
-            </div>
-            <div class="logic-subcard">
-              <strong>Kısa formül</strong>
-              <span>{{ section.formula }}</span>
-            </div>
-            <div class="logic-subcard">
-              <strong>Mantık</strong>
-              <span>{{ section.logic }}</span>
-            </div>
-            <div class="logic-subcard">
-              <strong>Sık karışan nokta</strong>
-              <span>{{ section.watch_out }}</span>
-            </div>
-          </div>
-
-          <div class="logic-example-list">
-            {% for example in section.examples %}
-              <div class="logic-example">
-                <div class="logic-example-text">{{ example.text }}</div>
-                <div>{{ example.note }}</div>
-              </div>
-            {% endfor %}
-          </div>
-
-          <div class="logic-contrast">
-            <div class="logic-contrast-card logic-contrast-card--good">
-              <strong>Doğru kullanım</strong>
-              <div class="mt-2">{{ section.contrast.correct }}</div>
-            </div>
-            <div class="logic-contrast-card logic-contrast-card--bad">
-              <strong>Yanlış örnek</strong>
-              <div class="mt-2">{{ section.contrast.wrong }}</div>
-            </div>
-          </div>
-          <div class="logic-reason">{{ section.contrast.reason }}</div>
-        </article>
-      {% endfor %}
-    </div>
-  </section>
-
-  <section class="logic-box mt-4">
-    <h2>Hızlı Ayırt Etme Çalışması</h2>
-    <div class="logic-worked-grid">
-      {% for item in lesson.worked_examples %}
-        <article class="logic-worked-card">
-          <span class="logic-status-badge {% if item.badge_variant == 'bad' or item.is_proposition is False %}logic-status-badge--bad{% else %}logic-status-badge--good{% endif %}">
-            {% if item.badge_label %}
-              {{ item.badge_label }}
-            {% elif item.is_proposition %}
-              Önerme
-            {% else %}
-              Önerme değil
-            {% endif %}
-          </span>
+      <section class="logic-content-section" aria-labelledby="intro-title">
+        <span class="logic-section-label">Önce hedefi gör</span>
+        <h2 id="intro-title">Bu dersten ne kazanacaksın?</h2>
+        <div class="logic-intro-grid">
           <div>
-            <strong>{{ item.text }}</strong>
-            <div class="mt-2">{{ item.reason }}</div>
+            <h3 class="logic-compact-heading">Ders hedefleri</h3>
+            <ul class="logic-plain-list">
+              {% for goal in lesson.goals %}<li>{{ goal }}</li>{% endfor %}
+            </ul>
           </div>
-        </article>
-      {% endfor %}
-    </div>
-  </section>
+          <div>
+            <h3 class="logic-compact-heading">Temel kavramlar</h3>
+            <dl class="logic-definition-list">
+              {% for term in lesson.key_terms %}
+                <div><dt>{{ term.term }}</dt><dd>{{ term.definition }}</dd></div>
+              {% endfor %}
+            </dl>
+          </div>
+        </div>
+      </section>
 
-  <section class="logic-box mt-4">
-    <h2>Sık Hatalar</h2>
-    <ul class="logic-mistake-list">
-      {% for item in lesson.mistakes %}
-        <li>{{ item }}</li>
-      {% endfor %}
-    </ul>
-  </section>
+      {% if lesson.symbol_set or lesson.proof_tools or lesson.reading_note or lesson.rigor_note %}
+        <section class="logic-content-section" id="calisma-araclari" data-logic-section aria-labelledby="tools-title">
+          <span class="logic-section-label">Derse hazırlan</span>
+          <h2 id="tools-title">Çalışma araçları</h2>
+          <div class="logic-rigor-strip">
+            {% if lesson.symbol_set %}
+              <div class="logic-rigor-item">
+                <h3>Sembol seti</h3>
+                <div class="logic-chip-list">
+                  {% for item in lesson.symbol_set %}<span class="logic-chip">{{ item }}</span>{% endfor %}
+                </div>
+              </div>
+            {% endif %}
+            {% if lesson.proof_tools %}
+              <div class="logic-rigor-item">
+                <h3>Kural repertuvarı</h3>
+                <div class="logic-chip-list">
+                  {% for item in lesson.proof_tools %}<span class="logic-chip">{{ item }}</span>{% endfor %}
+                </div>
+              </div>
+            {% endif %}
+            {% if lesson.reading_note %}
+              <div class="logic-rigor-item"><h3>Okuma disiplini</h3><p>{{ lesson.reading_note }}</p></div>
+            {% endif %}
+            {% if lesson.rigor_note %}
+              <div class="logic-rigor-item"><h3>Akademik not</h3><p>{{ lesson.rigor_note }}</p></div>
+            {% endif %}
+          </div>
+        </section>
+      {% endif %}
 
-  <section class="logic-box mt-4">
-    <h2>Kontrollü Alıştırmalar</h2>
-    <div class="logic-practice-list">
-      {% for item in lesson.practice %}
-        <article class="logic-practice-card" data-answer="{{ item.answer }}">
-          {% if item.difficulty_label %}
-            <div class="logic-practice-meta">
-              <span class="logic-difficulty-badge">{{ item.difficulty_label }}</span>
+      <section class="logic-content-section" aria-labelledby="concepts-title">
+        <span class="logic-section-label">Kavramı kur, örnekle sınırla</span>
+        <h2 id="concepts-title">Ders anlatımı</h2>
+        {% for section in lesson.sections %}
+          <div class="logic-concept" id="kavram-{{ forloop.counter }}" data-logic-section>
+            <h3>{{ section.title }}</h3>
+            <p>{{ section.summary }}</p>
+            <div class="logic-concept-meta">
+              <div><strong>Ne zaman kullanılır?</strong>{{ section.when_to_use }}</div>
+              <div><strong>Kısa formül</strong>{{ section.formula }}</div>
+              <div><strong>Mantıksal gerekçe</strong>{{ section.logic }}</div>
+              <div><strong>Dikkat</strong>{{ section.watch_out }}</div>
             </div>
-          {% endif %}
-          <h4>{{ forloop.counter }}. {{ item.prompt }}</h4>
-          <div class="logic-choice-list">
-            {% for choice in item.choices %}
-              <label class="logic-choice">
-                <input type="radio" name="logic-practice-{{ forloop.parentloop.counter }}" value="{{ choice }}">
-                <span>{{ choice }}</span>
-              </label>
+            <div class="logic-example-list">
+              {% for example in section.examples %}
+                <div class="logic-example"><strong>{{ example.text }}</strong><span>{{ example.note }}</span></div>
+              {% endfor %}
+            </div>
+            <div class="logic-contrast">
+              <div class="logic-contrast-item"><strong>Doğru kullanım</strong><p>{{ section.contrast.correct }}</p></div>
+              <div class="logic-contrast-item is-wrong"><strong>Yanlış kullanım</strong><p>{{ section.contrast.wrong }}</p></div>
+            </div>
+            <p class="logic-contrast-reason"><strong>Neden?</strong> {{ section.contrast.reason }}</p>
+          </div>
+        {% endfor %}
+      </section>
+
+      <section class="logic-content-section" id="ornekler" data-logic-section aria-labelledby="examples-title">
+        <span class="logic-section-label">Kararı gerekçesiyle gör</span>
+        <h2 id="examples-title">Çözümlü ayırt etme örnekleri</h2>
+        <div class="logic-worked-list">
+          {% for item in lesson.worked_examples %}
+            <div class="logic-worked-item">
+              <span class="logic-status-tag {% if item.badge_variant == 'bad' or item.is_proposition is False %}is-bad{% endif %}">
+                {% if item.badge_label %}{{ item.badge_label }}{% elif item.is_proposition %}Önerme{% else %}Önerme değil{% endif %}
+              </span>
+              <div><strong>{{ item.text }}</strong><p>{{ item.reason }}</p></div>
+            </div>
+          {% endfor %}
+        </div>
+        {% if lesson.mistakes %}
+          <div class="logic-mistake-panel">
+            <h3><i class="bi bi-exclamation-triangle"></i> Sık yapılan hatalar</h3>
+            <ul class="logic-plain-list">{% for item in lesson.mistakes %}<li>{{ item }}</li>{% endfor %}</ul>
+          </div>
+        {% endif %}
+      </section>
+
+      {% if logic_interactive %}
+        <section class="logic-content-section" id="etkilesimli-laboratuvar" data-logic-section aria-labelledby="lab-title">
+          <span class="logic-section-label">Yaparak doğrula</span>
+          <h2 id="lab-title">{{ logic_interactive.title }}</h2>
+          <p class="logic-section-intro">{{ logic_interactive.description }}</p>
+          {{ logic_interactive|json_script:"logic-interactive-config" }}
+          <div class="logic-lab-shell" data-logic-interactive-root data-interactive-type="{{ logic_interactive.type }}">
+            <div class="logic-lab-statusbar">
+              <span><i class="bi bi-activity" aria-hidden="true"></i> Etkileşimli çalışma</span>
+              <strong data-logic-lab-status>Başlamaya hazır</strong>
+            </div>
+
+            {% if logic_interactive.type == 'truth_table' %}
+              <div
+                class="logic-truth-lab"
+                data-truth-table-lab
+                data-success-message="{{ logic_interactive.success }}"
+                data-review-message="{{ logic_interactive.review }}"
+              >
+                <div class="logic-truth-lab-head">
+                  <span>Değerlendirilecek formül</span>
+                  <strong>{{ logic_interactive.formula }}</strong>
+                </div>
+                <div class="logic-truth-table-wrap">
+                  <table class="logic-truth-table">
+                    <thead>
+                      <tr>
+                        {% for atom in logic_interactive.atoms %}<th scope="col">{{ atom }}</th>{% endfor %}
+                        <th scope="col">{{ logic_interactive.result_label }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for row in logic_interactive.rows %}
+                        <tr>
+                          {% for value in row.values %}<td>{{ value }}</td>{% endfor %}
+                          <td>
+                            <button
+                              type="button"
+                              class="logic-truth-cell"
+                              data-truth-cell="{{ forloop.counter0 }}"
+                              data-answer="{{ row.answer }}"
+                              aria-label="{{ forloop.counter }}. satırın sonucunu değiştir"
+                            >-</button>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+                <div class="logic-practice-toolbar">
+                  <button type="button" class="logic-primary-link" data-check-truth-table>
+                    Tabloyu kontrol et <i class="bi bi-check2"></i>
+                  </button>
+                  <button type="button" class="logic-text-button" data-reset-truth-table>Temizle</button>
+                  <div class="logic-practice-summary" data-truth-table-summary aria-live="polite"></div>
+                </div>
+              </div>
+            {% elif logic_interactive.type == 'symbolization' %}
+              <div class="logic-symbol-lab" data-symbolization-lab>
+                {% for task in logic_interactive.tasks %}
+                  <article class="logic-symbol-task" data-symbol-task data-task-index="{{ forloop.counter0 }}">
+                    <div class="logic-lab-task-head">
+                      <span>{{ forloop.counter|stringformat:'02d' }}</span>
+                      <div>
+                        <h3>{{ task.statement }}</h3>
+                        <div class="logic-symbol-key" aria-label="Sembol anahtarı">
+                          {% for item in task.key %}<span><strong>{{ item.symbol }}</strong> {{ item.meaning }}</span>{% endfor %}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="logic-formula-workbench">
+                      <div class="logic-formula-answer" data-symbol-answer aria-label="Oluşturulan formül">
+                        <span class="logic-empty-formula">Formülü aşağıdaki parçalardan kur</span>
+                      </div>
+                      <div class="logic-token-bank" aria-label="Kullanılabilir semboller">
+                        {% for token in logic_interactive.tokens %}
+                          <button type="button" data-symbol-token="{{ token }}" aria-label="{{ token }} sembolünü ekle">{{ token }}</button>
+                        {% endfor %}
+                      </div>
+                    </div>
+                    <div class="logic-lab-task-actions">
+                      <button type="button" class="logic-primary-link" data-check-symbol-task>
+                        Formülü kontrol et <i class="bi bi-check2"></i>
+                      </button>
+                      <button type="button" class="logic-text-button" data-undo-symbol-task>
+                        <i class="bi bi-arrow-counterclockwise"></i> Geri al
+                      </button>
+                      <button type="button" class="logic-text-button" data-clear-symbol-task>Temizle</button>
+                      <div class="logic-lab-feedback" data-symbol-feedback aria-live="polite"></div>
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+            {% elif logic_interactive.type == 'proof_builder' %}
+              <div class="logic-proof-lab" data-proof-builder>
+                <div class="logic-proof-brief">
+                  <span>Hedef</span>
+                  <strong>{{ logic_interactive.goal }}</strong>
+                  <p>Aday satıra basarak kanıta ekle. Eklediğin satırları oklarla yeniden sıralayabilirsin.</p>
+                </div>
+                <ol class="logic-proof-lines" data-proof-sequence>
+                  {% for premise in logic_interactive.premises %}
+                    <li class="logic-proof-line is-premise">
+                      <span>{{ premise.line }}</span><strong>{{ premise.formula }}</strong><small>{{ premise.rule }}</small>
+                    </li>
+                  {% endfor %}
+                </ol>
+                <div class="logic-proof-candidates" aria-label="Aday kanıt satırları">
+                  <span class="logic-lab-subtitle">Aday satırlar</span>
+                  <div>
+                    {% for step in logic_interactive.steps %}
+                      <button type="button" data-proof-candidate="{{ step.id }}" style="--proof-depth: {{ step.depth }}">
+                        <strong>{{ step.formula }}</strong><small>{{ step.rule }}</small>
+                      </button>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="logic-practice-toolbar">
+                  <button type="button" class="logic-primary-link" data-check-proof>
+                    Kanıtı denetle <i class="bi bi-check2"></i>
+                  </button>
+                  <button type="button" class="logic-text-button" data-undo-proof>Son satırı geri al</button>
+                  <button type="button" class="logic-text-button" data-reset-proof>Baştan başla</button>
+                  <div class="logic-practice-summary" data-proof-feedback aria-live="polite"></div>
+                </div>
+              </div>
+            {% elif logic_interactive.type == 'model_builder' %}
+              <div class="logic-model-lab" data-model-builder>
+                <div class="logic-model-challenge-tabs" role="tablist" aria-label="Model görevleri">
+                  {% for challenge in logic_interactive.challenges %}
+                    <button type="button" role="tab" data-model-challenge="{{ forloop.counter0 }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                      <span>{{ forloop.counter|stringformat:'02d' }}</span>{{ challenge.title }}
+                    </button>
+                  {% endfor %}
+                </div>
+                <div class="logic-model-brief">
+                  <div>
+                    <span class="logic-lab-subtitle" data-model-challenge-title>{{ logic_interactive.challenges.0.title }}</span>
+                    <p data-model-challenge-prompt>{{ logic_interactive.challenges.0.prompt }}</p>
+                  </div>
+                  <strong data-model-formula>{{ logic_interactive.challenges.0.formula }}</strong>
+                </div>
+                <div class="logic-model-workspace">
+                  <div class="logic-model-objects" aria-label="Modelin nesneleri">
+                    {% for object in logic_interactive.objects %}
+                      <article class="logic-model-object" data-model-object="{{ object.id }}">
+                        <strong>{{ object.label }}</strong>
+                        <div>
+                          {% for predicate in logic_interactive.predicates %}
+                            <button
+                              type="button"
+                              data-model-predicate="{{ predicate.id }}"
+                              data-object-id="{{ object.id }}"
+                              aria-pressed="false"
+                            >{{ predicate.label }}</button>
+                          {% endfor %}
+                        </div>
+                      </article>
+                    {% endfor %}
+                  </div>
+                  <div class="logic-relation-panel" data-model-relations hidden>
+                    <div class="logic-relation-heading">
+                      <span class="logic-lab-subtitle">İlişki matrisi</span>
+                      <p>Satırdaki nesnenin sütundaki nesneyi tanıdığını işaretle.</p>
+                    </div>
+                    <div class="logic-truth-table-wrap">
+                      <table class="logic-relation-table">
+                        <thead><tr><th scope="col">{{ logic_interactive.relations.0.label }}</th>{% for object in logic_interactive.objects %}<th scope="col">{{ object.label }}</th>{% endfor %}</tr></thead>
+                        <tbody>
+                          {% for source in logic_interactive.objects %}
+                            <tr>
+                              <th scope="row">{{ source.label }}</th>
+                              {% for target in logic_interactive.objects %}
+                                <td><button type="button" data-model-relation="{{ logic_interactive.relations.0.id }}" data-source-id="{{ source.id }}" data-target-id="{{ target.id }}" aria-pressed="false" aria-label="{{ source.label }}, {{ target.label }} nesnesini {{ logic_interactive.relations.0.label }}">-</button></td>
+                              {% endfor %}
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <ul class="logic-model-conditions" data-model-condition-list aria-label="Görev koşulları"></ul>
+                <div class="logic-practice-toolbar">
+                  <button type="button" class="logic-primary-link" data-check-model>
+                    Modeli denetle <i class="bi bi-check2"></i>
+                  </button>
+                  <button type="button" class="logic-text-button" data-reset-model>Bu modeli temizle</button>
+                  <div class="logic-practice-summary" data-model-feedback aria-live="polite"></div>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </section>
+      {% endif %}
+
+      <section class="logic-content-section" id="kontrollu-alistirma" data-logic-section aria-labelledby="practice-title">
+        <span class="logic-section-label">Anında geri bildirim</span>
+        <h2 id="practice-title">Bilgini dene</h2>
+        <p class="logic-section-intro">Cevaplarını seç, ardından tümünü birlikte kontrol et. Dersi tamamlamak için önerilen eşik %{{ logic_mastery_threshold }}.</p>
+        <div class="logic-practice-list">
+          {% for item in lesson.practice %}
+            <article class="logic-practice-card" data-logic-practice-card data-question-index="{{ forloop.counter0 }}" data-answer="{{ item.answer }}">
+              <span class="logic-difficulty">{{ item.difficulty_label }}</span>
+              <h3>{{ forloop.counter }}. {{ item.prompt }}</h3>
+              <div class="logic-choice-list">
+                {% for choice in item.choices %}
+                  <label class="logic-choice">
+                    <input type="radio" name="logic-practice-{{ forloop.parentloop.counter }}" value="{{ choice }}">
+                    <span>{{ choice }}</span>
+                  </label>
+                {% endfor %}
+              </div>
+              <div class="logic-feedback" aria-live="polite">
+                <strong data-logic-feedback-title></strong>
+                <div>{{ item.explanation }}</div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+        <div class="logic-practice-toolbar">
+          <button type="button" class="logic-primary-link" data-logic-check-all>
+            Yanıtları değerlendir <i class="bi bi-check2"></i>
+          </button>
+          <button type="button" class="logic-text-button" data-logic-reset-practice>
+            Seçimleri temizle
+          </button>
+          <div class="logic-practice-summary" data-logic-practice-summary aria-live="polite"></div>
+        </div>
+      </section>
+
+      {% if lesson.production_tasks %}
+        <section class="logic-content-section" id="uretim-alistirmasi" data-logic-section aria-labelledby="production-title">
+          <span class="logic-section-label">Tanımaktan üretmeye geç</span>
+          <h2 id="production-title">Kendin çöz</h2>
+          <p class="logic-section-intro">Bu alan otomatik puanlanmaz. Çözümünü yazarken kontrol listesini kullan; metnin bu cihazda saklanır.</p>
+          <div class="logic-production-list">
+            {% for task in lesson.production_tasks %}
+              <article class="logic-production-card">
+                <span class="logic-difficulty">Üretim görevi {{ forloop.counter }}</span>
+                <h3>{{ task.prompt }}</h3>
+                <textarea data-logic-production="{{ forloop.counter0 }}" aria-label="{{ forloop.counter }}. üretim görevi yanıtı" placeholder="Çözümünü ve gerekçeni buraya yaz..."></textarea>
+                <details class="logic-checklist">
+                  <summary>Kontrol listesi</summary>
+                  <ul class="logic-plain-list">{% for item in task.checkpoints %}<li>{{ item }}</li>{% endfor %}</ul>
+                  <p><strong>Odak:</strong> {{ task.sample_focus }}</p>
+                </details>
+              </article>
             {% endfor %}
           </div>
-          <div class="logic-feedback">
-            <strong class="logic-feedback-title"></strong>
-            <div class="logic-feedback-body mt-2">{{ item.explanation }}</div>
-          </div>
-        </article>
-      {% endfor %}
-    </div>
-    <div class="logic-practice-toolbar">
-      <button type="button" class="btn btn-primary logic-check-all-btn">Tümünü Kontrol Et</button>
-      <div class="logic-practice-summary"></div>
-    </div>
-  </section>
+        </section>
+      {% endif %}
 
-  {% if lesson.production_tasks %}
-  <section class="logic-box mt-4">
-    <h2>Üretim Alıştırmaları</h2>
-    <div class="logic-production-grid">
-      {% for task in lesson.production_tasks %}
-        <article class="logic-production-card">
-          <h4>{{ forloop.counter }}. {{ task.prompt }}</h4>
-          <strong>Kontrol listesi</strong>
-          <ul>
-            {% for item in task.checkpoints %}
-              <li>{{ item }}</li>
-            {% endfor %}
-          </ul>
-          <div class="logic-production-note">
-            <strong>Odak:</strong> {{ task.sample_focus }}
-          </div>
-        </article>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
+      <section class="logic-content-section logic-next-step" aria-labelledby="next-step-title">
+        <span class="logic-section-label">Bağlantıyı kur</span>
+        <h2 id="next-step-title">Sonraki adım</h2>
+        <p>{{ lesson.next_step }}</p>
+        {% if logic_test_available and not lesson.next_lesson %}
+          <a href="{% url 'logic_level_test' %}" class="logic-primary-link">Bitirme testine geç <i class="bi bi-arrow-right"></i></a>
+        {% endif %}
+      </section>
 
-  <section class="logic-box mt-4">
-    <h2>Sonraki Adım</h2>
-    <p class="mb-0">{{ lesson.next_step }}</p>
-    {% if logic_test_available and not lesson.next_lesson %}
-      <div class="mt-3">
-        <a href="{% url 'logic_level_test' %}" class="btn btn-primary">Bitirme Testine Geç</a>
-      </div>
-    {% endif %}
-  </section>
-</div>
+      <nav class="logic-lesson-bottom-nav" aria-label="Dersler arası geçiş">
+        {% if lesson.previous_lesson %}
+          <a href="{% url 'logic_lesson_detail' lesson.previous_lesson.slug %}">
+            <span><i class="bi bi-arrow-left"></i> Önceki ders</span><strong>{{ lesson.previous_lesson.title }}</strong>
+          </a>
+        {% else %}<span></span>{% endif %}
+        {% if lesson.next_lesson %}
+          <a href="{% url 'logic_lesson_detail' lesson.next_lesson.slug %}">
+            <span>Sıradaki ders <i class="bi bi-arrow-right"></i></span><strong>{{ lesson.next_lesson.title }}</strong>
+          </a>
+        {% endif %}
+      </nav>
+    </article>
+
+    <aside class="logic-lesson-side" aria-label="Ders ilerlemesi">
+      <section class="logic-side-progress">
+        <span class="logic-section-label">Bu ders</span>
+        <strong data-logic-progress-label>
+          {% if logic_progress.status == 'completed' %}Tamamlandı{% elif logic_progress.status == 'started' %}Devam ediyor{% else %}Henüz başlanmadı{% endif %}
+        </strong>
+        <p data-logic-progress-detail>
+          {% if logic_progress.best_score %}En iyi alıştırma puanın %{{ logic_progress.best_score }}.{% else %}Alıştırmayı tamamladığında ilerlemen güncellenecek.{% endif %}
+        </p>
+        <div class="logic-progress-track" style="--progress: {% if logic_progress.best_score %}{{ logic_progress.best_score }}{% else %}0{% endif %}%" aria-hidden="true">
+          <span data-logic-lesson-progress-bar></span>
+        </div>
+        <small data-logic-save-state>{% if user.is_authenticated %}Hesabına kaydedilir{% else %}Bu cihazda saklanır{% endif %}</small>
+      </section>
+
+      <section class="logic-side-next">
+        <span class="logic-section-label">{{ lesson.stage_short_title }}</span>
+        <strong>Aşamadaki dersler</strong>
+        <div class="logic-stage-mini-list">
+          {% for stage_lesson in lesson.stage_lessons %}
+            <a href="{% url 'logic_lesson_detail' stage_lesson.slug %}" class="{% if stage_lesson.slug == lesson.slug %}is-current{% endif %}">
+              <span>{% if stage_lesson.progress_status == 'completed' %}<i class="bi bi-check-circle-fill"></i>{% else %}{{ stage_lesson.stage_lesson_order }}{% endif %}</span>
+              <span>{{ stage_lesson.title }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </section>
+    </aside>
+  </div>
+</main>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const checkAllButton = document.querySelector('.logic-check-all-btn');
-    const summary = document.querySelector('.logic-practice-summary');
-
-    if (!checkAllButton) {
-      return;
-    }
-
-    checkAllButton.addEventListener('click', function () {
-      let correctCount = 0;
-      let unansweredCount = 0;
-      const cards = document.querySelectorAll('.logic-practice-card');
-
-      cards.forEach(function (card) {
-        const answer = card.dataset.answer;
-        const selected = card.querySelector('input[type="radio"]:checked');
-        const feedback = card.querySelector('.logic-feedback');
-        const title = card.querySelector('.logic-feedback-title');
-
-        if (!selected) {
-          unansweredCount += 1;
-          feedback.className = 'logic-feedback is-wrong';
-          title.textContent = 'Bu soru boş bırakıldı.';
-          return;
-        }
-
-        if (selected.value === answer) {
-          correctCount += 1;
-          feedback.className = 'logic-feedback is-correct';
-          title.textContent = 'Doğru.';
-          return;
-        }
-
-        feedback.className = 'logic-feedback is-wrong';
-        title.textContent = 'Yanlış. Doğru cevap: ' + answer;
-      });
-
-      summary.classList.add('is-visible');
-      summary.innerHTML =
-        '<strong>Sonuç:</strong> ' + correctCount + ' / ' + cards.length +
-        ' doğru' +
-        (unansweredCount ? ' · ' + unansweredCount + ' soru boş bırakıldı' : '');
-    });
-  });
-</script>
+<script src="{% static 'js/logic_course.js' %}?v={{ STATIC_ASSET_VERSION }}-curriculum3"></script>
+<script src="{% static 'js/logic_lesson.js' %}?v={{ STATIC_ASSET_VERSION }}-curriculum3"></script>
+{% if logic_interactive %}<script src="{% static 'js/logic_interactives.js' %}?v={{ STATIC_ASSET_VERSION }}-lab2"></script>{% endif %}
 {% endblock %}

@@ -1,0 +1,2098 @@
+.logic-course-shell,
+.logic-lesson-shell,
+.logic-assessment-shell {
+  --logic-ink: color-mix(in srgb, var(--header-background-color) 82%, #15241f 18%);
+  --logic-paper: color-mix(in srgb, var(--content-background-color) 94%, #ffffff 6%);
+  --logic-wash: color-mix(in srgb, var(--background-color) 88%, #f2f5f3 12%);
+  --logic-line: color-mix(in srgb, var(--text-color) 17%, transparent);
+  --logic-muted: color-mix(in srgb, var(--text-color) 66%, transparent);
+  --logic-green: #287556;
+  --logic-cobalt: #315fa8;
+  --logic-coral: #b95f4d;
+  --logic-gold: #b58a43;
+  --logic-success: #237553;
+  --logic-radius: 8px;
+  color: var(--text-color);
+}
+
+.logic-course-shell {
+  max-width: 1480px;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.logic-course-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 0.72fr);
+  gap: 3.5rem;
+  align-items: end;
+  padding: 1.25rem 0 2rem;
+  border-bottom: 1px solid var(--logic-line);
+}
+
+.logic-eyebrow,
+.logic-stage-label,
+.logic-section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--logic-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.logic-course-header h1 {
+  max-width: 820px;
+  margin: 0.65rem 0 0.8rem;
+  font-size: clamp(2.8rem, 7vw, 6.3rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+}
+
+.logic-course-lede {
+  max-width: 760px;
+  margin: 0;
+  color: var(--logic-muted);
+  font-size: clamp(1rem, 1.3vw, 1.22rem);
+  line-height: 1.65;
+}
+
+.logic-progress-overview {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.2rem;
+  align-items: end;
+  padding-left: 1.5rem;
+  border-left: 3px solid var(--logic-gold);
+}
+
+.logic-progress-copy strong {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 1.35rem;
+}
+
+.logic-progress-copy span {
+  color: var(--logic-muted);
+}
+
+.logic-progress-number {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: clamp(2.8rem, 5vw, 5.5rem);
+  font-weight: 750;
+  line-height: 0.78;
+  color: var(--logic-ink);
+}
+
+.logic-progress-track,
+.logic-stage-progress-track {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--logic-line) 58%, transparent);
+}
+
+.logic-progress-track span,
+.logic-stage-progress-track span {
+  display: block;
+  width: var(--progress, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--logic-green), var(--logic-cobalt));
+  transition: width 240ms ease;
+}
+
+.logic-course-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 0;
+  background: color-mix(in srgb, var(--background-color) 94%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.logic-search {
+  position: relative;
+  max-width: 620px;
+}
+
+.logic-search i {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  color: var(--logic-muted);
+  pointer-events: none;
+}
+
+.logic-search input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0.68rem 2.8rem;
+  border: 1px solid var(--logic-line);
+  border-radius: var(--logic-radius);
+  background: var(--logic-paper);
+  color: var(--text-color);
+  outline: 0;
+}
+
+.logic-search input:focus {
+  border-color: var(--logic-green);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--logic-green) 18%, transparent);
+}
+
+.logic-search-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.55rem;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--logic-muted);
+  place-items: center;
+  transform: translateY(-50%);
+}
+
+.logic-filter-group {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--logic-line);
+  border-radius: var(--logic-radius);
+  background: var(--logic-paper);
+}
+
+.logic-filter-button {
+  min-height: 38px;
+  padding: 0.45rem 0.8rem;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.logic-filter-button.is-active {
+  background: var(--logic-ink);
+  color: #fffdf8;
+}
+
+.logic-continue-band {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1.1rem;
+  align-items: center;
+  margin: 0.5rem 0 2.2rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid color-mix(in srgb, var(--logic-green) 30%, var(--logic-line));
+  border-radius: var(--logic-radius);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--logic-green) 10%, var(--logic-paper)), var(--logic-paper));
+}
+
+.logic-continue-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--logic-green);
+  color: #fff;
+  place-items: center;
+}
+
+.logic-continue-copy span,
+.logic-continue-copy small {
+  display: block;
+  color: var(--logic-muted);
+}
+
+.logic-continue-copy strong {
+  display: block;
+  margin: 0.1rem 0;
+  font-size: 1.08rem;
+}
+
+.logic-primary-link,
+.logic-secondary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.86rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.logic-primary-link {
+  background: var(--logic-ink);
+  color: #fffdf8;
+}
+
+.logic-primary-link:hover {
+  background: var(--logic-green);
+  color: #fff;
+}
+
+.logic-secondary-link {
+  border-color: var(--logic-line);
+  background: transparent;
+  color: var(--text-color);
+}
+
+.logic-secondary-link:hover {
+  border-color: var(--logic-green);
+  color: var(--logic-green);
+}
+
+.logic-section-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  align-items: end;
+  margin: 2.5rem 0 1rem;
+}
+
+.logic-section-heading h2 {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  letter-spacing: 0;
+}
+
+.logic-section-heading p {
+  max-width: 580px;
+  margin: 0;
+  color: var(--logic-muted);
+  line-height: 1.55;
+}
+
+.logic-stage-list {
+  border-top: 1px solid var(--logic-line);
+}
+
+.logic-stage {
+  border-bottom: 1px solid var(--logic-line);
+}
+
+.logic-stage[hidden],
+.logic-lesson-row[hidden] {
+  display: none;
+}
+
+.logic-stage-summary {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) minmax(220px, 0.4fr) 34px;
+  gap: 1.2rem;
+  align-items: center;
+  min-height: 118px;
+  padding: 1rem 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.logic-stage-summary::-webkit-details-marker {
+  display: none;
+}
+
+.logic-stage-number {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 2.8rem;
+  font-weight: 750;
+  line-height: 1;
+  color: color-mix(in srgb, var(--logic-green) 64%, var(--text-color));
+}
+
+.logic-stage-title h3 {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
+  letter-spacing: 0;
+}
+
+.logic-stage-title p {
+  max-width: 730px;
+  margin: 0;
+  color: var(--logic-muted);
+  line-height: 1.5;
+}
+
+.logic-stage-meta {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.logic-stage-meta-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+}
+
+.logic-stage-chevron {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--logic-line);
+  border-radius: 50%;
+  place-items: center;
+  transition: transform 180ms ease;
+}
+
+.logic-stage[open] .logic-stage-chevron {
+  transform: rotate(180deg);
+}
+
+.logic-stage-body {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.36fr) minmax(0, 1fr);
+  gap: 2.25rem;
+  padding: 0.4rem 0 2rem 76px;
+}
+
+.logic-stage-outcomes {
+  padding-top: 0.4rem;
+}
+
+.logic-stage-outcomes h4 {
+  margin: 0 0 0.7rem;
+  font-size: 0.94rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.logic-stage-outcomes ul {
+  margin: 0;
+  padding-left: 1.05rem;
+  color: var(--logic-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.logic-stage-outcomes li + li {
+  margin-top: 0.48rem;
+}
+
+.logic-checkpoint {
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--logic-line);
+  color: var(--logic-muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.logic-lessons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--logic-line);
+  border-left: 1px solid var(--logic-line);
+}
+
+.logic-lesson-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  min-height: 132px;
+  padding: 1rem;
+  border-right: 1px solid var(--logic-line);
+  border-bottom: 1px solid var(--logic-line);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.logic-lesson-row:hover {
+  background: color-mix(in srgb, var(--logic-green) 8%, var(--logic-paper));
+  color: inherit;
+}
+
+.logic-lesson-order {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  border: 1px solid var(--logic-line);
+  border-radius: 50%;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 750;
+  place-items: center;
+}
+
+.logic-lesson-row[data-status="completed"] .logic-lesson-order {
+  border-color: var(--logic-success);
+  background: var(--logic-success);
+  color: #fff;
+}
+
+.logic-lesson-row[data-status="started"] .logic-lesson-order {
+  border-color: var(--logic-gold);
+  color: var(--logic-gold);
+}
+
+.logic-lesson-content h4 {
+  margin: 0 0 0.35rem;
+  font-size: 1.02rem;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.logic-lesson-content p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--logic-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.logic-lesson-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.7rem;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.74rem;
+}
+
+.logic-lesson-status {
+  align-self: start;
+  color: var(--logic-muted);
+  font-size: 1rem;
+}
+
+.logic-empty-result {
+  display: none;
+  padding: 3rem 0;
+  color: var(--logic-muted);
+  text-align: center;
+}
+
+.logic-empty-result.is-visible {
+  display: block;
+}
+
+.logic-pathway-band {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 1rem 0 3rem;
+  border-top: 1px solid var(--logic-line);
+  border-left: 1px solid var(--logic-line);
+}
+
+.logic-pathway {
+  min-height: 180px;
+  padding: 1.2rem;
+  border-right: 1px solid var(--logic-line);
+  border-bottom: 1px solid var(--logic-line);
+}
+
+.logic-pathway:nth-child(1) {
+  border-top: 4px solid var(--logic-green);
+}
+
+.logic-pathway:nth-child(2) {
+  border-top: 4px solid var(--logic-cobalt);
+}
+
+.logic-pathway:nth-child(3) {
+  border-top: 4px solid var(--logic-coral);
+}
+
+.logic-pathway h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1.15rem;
+}
+
+.logic-pathway p {
+  margin: 0;
+  color: var(--logic-muted);
+  line-height: 1.5;
+}
+
+.logic-pathway-meta {
+  display: flex;
+  gap: 0.9rem;
+  margin-top: 1rem;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+}
+
+.logic-assessment-band {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2rem;
+  align-items: center;
+  margin-top: 3rem;
+  padding: 2rem;
+  border-radius: var(--logic-radius);
+  background: var(--logic-ink);
+  color: #fffdf8;
+}
+
+.logic-assessment-band h2 {
+  margin: 0.25rem 0 0.55rem;
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+}
+
+.logic-assessment-band p {
+  max-width: 760px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.logic-assessment-band .logic-primary-link {
+  background: #fffdf8;
+  color: var(--logic-ink);
+}
+
+.logic-reference-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 1rem;
+  border-top: 1px solid var(--logic-line);
+  border-left: 1px solid var(--logic-line);
+}
+
+.logic-reference {
+  min-height: 132px;
+  padding: 1rem;
+  border-right: 1px solid var(--logic-line);
+  border-bottom: 1px solid var(--logic-line);
+}
+
+.logic-reference a {
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: center;
+  font-weight: 750;
+}
+
+.logic-reference p {
+  margin: 0.55rem 0 0;
+  color: var(--logic-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Lesson */
+.logic-lesson-shell {
+  max-width: 1540px;
+  padding: 1.5rem 1.5rem 4rem;
+}
+
+.logic-lesson-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--logic-line);
+}
+
+.logic-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.82rem;
+}
+
+.logic-breadcrumbs a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.logic-lesson-layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 880px) minmax(190px, 1fr);
+  gap: 2.3rem;
+  align-items: start;
+  margin-top: 1.5rem;
+}
+
+.logic-lesson-rail {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding-right: 0.75rem;
+  scrollbar-width: thin;
+}
+
+.logic-rail-title {
+  display: block;
+  margin-bottom: 0.7rem;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.logic-rail-links {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.logic-rail-link {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  padding: 0.55rem 0.6rem;
+  border-left: 2px solid transparent;
+  border-radius: 0 5px 5px 0;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.logic-rail-link:hover,
+.logic-rail-link.is-active {
+  border-left-color: var(--logic-green);
+  background: color-mix(in srgb, var(--logic-green) 8%, transparent);
+  color: var(--text-color);
+}
+
+.logic-rail-link span:first-child {
+  min-width: 1.4rem;
+  color: var(--logic-green);
+  font-weight: 750;
+}
+
+.logic-lesson-main {
+  min-width: 0;
+}
+
+.logic-lesson-hero {
+  padding: 0.5rem 0 2rem;
+  border-bottom: 1px solid var(--logic-line);
+}
+
+.logic-lesson-hero h1 {
+  max-width: 860px;
+  margin: 0.65rem 0 0.65rem;
+  font-size: clamp(2.2rem, 5vw, 4.5rem);
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.logic-lesson-hero p {
+  max-width: 760px;
+  margin: 0;
+  color: var(--logic-muted);
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.logic-lesson-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+  margin-top: 1rem;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+}
+
+.logic-lesson-meta span {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.logic-content-section {
+  scroll-margin-top: 1rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--logic-line);
+}
+
+.logic-content-section > h2 {
+  margin: 0.25rem 0 1rem;
+  font-size: clamp(1.45rem, 2.6vw, 2.05rem);
+  letter-spacing: 0;
+}
+
+.logic-compact-heading {
+  margin: 0 0 0.85rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.84rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.logic-section-intro {
+  max-width: 700px;
+  margin: -0.35rem 0 1rem;
+  color: var(--logic-muted);
+  line-height: 1.6;
+}
+
+.logic-intro-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+.logic-plain-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  line-height: 1.6;
+}
+
+.logic-plain-list li + li {
+  margin-top: 0.5rem;
+}
+
+.logic-definition-list {
+  margin: 0;
+}
+
+.logic-definition-list div {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.34fr) minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--logic-line);
+}
+
+.logic-definition-list dt {
+  font-weight: 750;
+}
+
+.logic-definition-list dd {
+  margin: 0;
+  color: var(--logic-muted);
+}
+
+.logic-rigor-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--logic-line);
+  border-left: 1px solid var(--logic-line);
+}
+
+.logic-rigor-item {
+  min-height: 130px;
+  padding: 1rem;
+  border-right: 1px solid var(--logic-line);
+  border-bottom: 1px solid var(--logic-line);
+}
+
+.logic-rigor-item h3 {
+  margin: 0 0 0.55rem;
+  color: var(--logic-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+}
+
+.logic-rigor-item p {
+  margin: 0;
+  color: var(--logic-muted);
+  line-height: 1.55;
+}
+
+.logic-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.logic-chip {
+  padding: 0.28rem 0.55rem;
+  border: 1px solid var(--logic-line);
+  border-radius: 999px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+}
+
+.logic-concept {
+  padding: 1.75rem 0;
+  border-top: 1px solid var(--logic-line);
+}
+
+.logic-concept:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.logic-concept h3 {
+  margin: 0 0 0.55rem;
+  font-size: 1.35rem;
+  letter-spacing: 0;
+}
+
+.logic-concept > p {
+  color: var(--logic-muted);
+  line-height: 1.65;
+}
+
+.logic-concept-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+  border-top: 1px solid var(--logic-line);
+  border-left: 1px solid var(--logic-line);
+}
+
+.logic-concept-meta div {
+  min-height: 105px;
+  padding: 0.85rem;
+  border-right: 1px solid var(--logic-line);
+  border-bottom: 1px solid var(--logic-line);
+}
+
+.logic-concept-meta strong {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--logic-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.logic-example-list,
+.logic-worked-list,
+.logic-production-list,
+.logic-practice-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.logic-example,
+.logic-worked-item {
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--logic-cobalt);
+  background: color-mix(in srgb, var(--logic-cobalt) 5%, var(--logic-paper));
+}
+
+.logic-mistake-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-left: 3px solid var(--logic-coral);
+  background: color-mix(in srgb, var(--logic-coral) 6%, var(--logic-paper));
+}
+
+.logic-mistake-panel h3 {
+  margin: 0 0 0.75rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.9rem;
+}
+
+.logic-example strong,
+.logic-worked-item strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.logic-example span,
+.logic-worked-item p {
+  margin: 0;
+  color: var(--logic-muted);
+}
+
+.logic-contrast {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.logic-contrast-item {
+  min-height: 120px;
+  padding: 1rem;
+  border: 1px solid var(--logic-line);
+  border-top: 4px solid var(--logic-success);
+  border-radius: var(--logic-radius);
+}
+
+.logic-contrast-item.is-wrong {
+  border-top-color: var(--logic-coral);
+}
+
+.logic-contrast-reason {
+  margin-top: 0.75rem;
+  color: var(--logic-muted);
+  font-size: 0.9rem;
+}
+
+.logic-status-tag {
+  display: inline-flex;
+  min-width: 82px;
+  justify-content: center;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--logic-success) 12%, transparent);
+  color: var(--logic-success);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.logic-status-tag.is-bad {
+  background: color-mix(in srgb, var(--logic-coral) 12%, transparent);
+  color: var(--logic-coral);
+}
+
+.logic-worked-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: start;
+  border-left-color: var(--logic-green);
+}
+
+.logic-practice-card,
+.logic-production-card {
+  padding: 1rem;
+  border: 1px solid var(--logic-line);
+  border-radius: var(--logic-radius);
+  background: var(--logic-paper);
+}
+
+.logic-practice-card h3,
+.logic-production-card h3 {
+  margin: 0.4rem 0 0.85rem;
+  font-size: 1.02rem;
+  line-height: 1.45;
+}
+
+.logic-difficulty {
+  color: var(--logic-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.logic-choice-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.logic-choice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.7rem;
+  align-items: start;
+  padding: 0.68rem 0.75rem;
+  border: 1px solid var(--logic-line);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.logic-choice:hover {
+  border-color: var(--logic-green);
+}
+
+.logic-choice:has(input:checked) {
+  border-color: var(--logic-green);
+  background: color-mix(in srgb, var(--logic-green) 7%, var(--logic-paper));
+}
+
+.logic-choice input {
+  margin-top: 0.3rem;
+}
+
+.logic-feedback {
+  display: none;
+  margin-top: 0.7rem;
+  padding: 0.75rem;
+  border-left: 3px solid var(--logic-coral);
+  background: color-mix(in srgb, var(--logic-coral) 7%, var(--logic-paper));
+}
+
+.logic-feedback.is-correct,
+.logic-feedback.is-wrong {
+  display: block;
+}
+
+.logic-feedback.is-correct {
+  border-left-color: var(--logic-success);
+  background: color-mix(in srgb, var(--logic-success) 7%, var(--logic-paper));
+}
+
+.logic-practice-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.logic-text-button {
+  padding: 0.45rem 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.logic-text-button:hover {
+  color: var(--text-color);
+}
+
+.logic-practice-summary {
+  display: none;
+  color: var(--logic-muted);
+}
+
+.logic-practice-summary.is-visible {
+  display: block;
+}
+
+.logic-production-card textarea {
+  width: 100%;
+  min-height: 130px;
+  margin-top: 0.8rem;
+  padding: 0.75rem;
+  border: 1px solid var(--logic-line);
+  border-radius: 5px;
+  background: var(--logic-wash);
+  color: var(--text-color);
+  resize: vertical;
+}
+
+.logic-production-card textarea:focus {
+  border-color: var(--logic-green);
+  outline: 3px solid color-mix(in srgb, var(--logic-green) 14%, transparent);
+}
+
+.logic-checklist {
+  margin-top: 0.75rem;
+  color: var(--logic-muted);
+  font-size: 0.9rem;
+}
+
+.logic-checklist summary {
+  width: fit-content;
+  color: var(--logic-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.logic-checklist p {
+  margin: 0.8rem 0 0;
+}
+
+.logic-next-step {
+  border-bottom: 0;
+}
+
+.logic-lab-shell {
+  border: 1px solid var(--logic-line);
+  border-radius: var(--logic-radius);
+  background: var(--logic-paper);
+  overflow: hidden;
+}
+
+.logic-lab-shell.is-complete {
+  border-color: color-mix(in srgb, var(--logic-success) 55%, var(--logic-line));
+}
+
+.logic-lab-statusbar {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--logic-line);
+  background: color-mix(in srgb, var(--logic-wash) 70%, var(--logic-paper));
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.logic-lab-statusbar span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-transform: uppercase;
+}
+
+.logic-lab-statusbar strong {
+  color: var(--logic-muted);
+  font-size: 0.76rem;
+}
+
+.logic-lab-statusbar strong.is-active {
+  color: var(--logic-cobalt);
+}
+
+.logic-lab-statusbar strong.is-complete {
+  color: var(--logic-success);
+}
+
+.logic-lab-subtitle {
+  display: block;
+  color: var(--logic-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.logic-lab-task-head {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 0.8rem;
+  align-items: start;
+}
+
+.logic-lab-task-head > span {
+  padding-top: 0.15rem;
+  color: var(--logic-gold);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.logic-lab-task-head h3 {
+  margin: 0;
+  font-size: 1.08rem;
+  line-height: 1.45;
+}
+
+.logic-symbol-task {
+  padding: 1.2rem;
+  border-bottom: 1px solid var(--logic-line);
+  box-shadow: inset 3px 0 transparent;
+}
+
+.logic-symbol-task:last-child {
+  border-bottom: 0;
+}
+
+.logic-symbol-task.is-correct {
+  box-shadow: inset 3px 0 var(--logic-success);
+}
+
+.logic-symbol-task.is-wrong {
+  box-shadow: inset 3px 0 var(--logic-coral);
+}
+
+.logic-symbol-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  margin-top: 0.45rem;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+}
+
+.logic-symbol-key span {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: baseline;
+}
+
+.logic-symbol-key strong {
+  color: var(--logic-cobalt);
+  font-size: 0.88rem;
+}
+
+.logic-formula-workbench {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1rem 0 0 46px;
+}
+
+.logic-formula-answer {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--logic-line);
+  border-left: 3px solid var(--logic-cobalt);
+  border-radius: 4px;
+  background: var(--logic-wash);
+}
+
+.logic-empty-formula {
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+}
+
+.logic-token-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.logic-token-bank button,
+.logic-answer-token {
+  min-width: 42px;
+  height: 38px;
+  padding: 0 0.55rem;
+  border: 1px solid var(--logic-line);
+  border-radius: 4px;
+  background: var(--logic-paper);
+  color: var(--text-color);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.logic-token-bank button:hover,
+.logic-token-bank button:focus-visible {
+  border-color: var(--logic-cobalt);
+  outline: 2px solid color-mix(in srgb, var(--logic-cobalt) 14%, transparent);
+}
+
+.logic-answer-token {
+  border-color: color-mix(in srgb, var(--logic-cobalt) 35%, var(--logic-line));
+  background: color-mix(in srgb, var(--logic-cobalt) 7%, var(--logic-paper));
+}
+
+.logic-answer-token:hover,
+.logic-answer-token:focus-visible {
+  border-color: var(--logic-coral);
+  color: var(--logic-coral);
+  outline: 2px solid color-mix(in srgb, var(--logic-coral) 12%, transparent);
+}
+
+.logic-lab-task-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.8rem 0 0 46px;
+}
+
+.logic-lab-feedback {
+  display: none;
+  flex: 1 1 100%;
+  padding: 0.65rem 0.75rem;
+  border-left: 3px solid var(--logic-line);
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.logic-lab-feedback.is-visible {
+  display: block;
+}
+
+.logic-lab-feedback.is-success {
+  border-left-color: var(--logic-success);
+  color: var(--logic-success);
+}
+
+.logic-lab-feedback.is-warning {
+  border-left-color: var(--logic-coral);
+  color: var(--logic-coral);
+}
+
+.logic-proof-brief,
+.logic-model-brief {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--logic-line);
+}
+
+.logic-proof-brief > span {
+  align-self: start;
+  color: var(--logic-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.logic-proof-brief > strong {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  min-width: 100px;
+  padding: 0.65rem 0.8rem;
+  border-left: 3px solid var(--logic-gold);
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.logic-proof-brief p,
+.logic-model-brief p,
+.logic-relation-heading p {
+  margin: 0;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.logic-proof-lines {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0.8rem 1rem;
+  list-style: none;
+}
+
+.logic-proof-line {
+  display: grid;
+  grid-template-columns: 34px minmax(100px, 1fr) minmax(110px, 0.7fr) auto;
+  gap: 0.7rem;
+  align-items: center;
+  min-height: 48px;
+  margin-left: calc(var(--proof-depth, 0) * 34px);
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--logic-line);
+  box-shadow: inset 3px 0 transparent;
+}
+
+.logic-proof-line.is-user-step {
+  background: color-mix(in srgb, var(--logic-cobalt) 4%, transparent);
+}
+
+.logic-proof-line.is-user-step[style*="--proof-depth: 1"] {
+  border-left: 2px solid color-mix(in srgb, var(--logic-gold) 65%, var(--logic-line));
+}
+
+.logic-proof-line.is-correct {
+  box-shadow: inset 3px 0 var(--logic-success);
+}
+
+.logic-proof-line.is-wrong {
+  box-shadow: inset 3px 0 var(--logic-coral);
+}
+
+.logic-proof-line > span,
+.logic-proof-line > small {
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+}
+
+.logic-proof-line > strong {
+  font-size: 1rem;
+}
+
+.logic-proof-line-controls {
+  display: flex;
+  gap: 0.18rem;
+}
+
+.logic-proof-line-controls button {
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--logic-muted);
+  cursor: pointer;
+}
+
+.logic-proof-line-controls button:hover:not(:disabled),
+.logic-proof-line-controls button:focus-visible:not(:disabled) {
+  color: var(--logic-green);
+  outline: 2px solid color-mix(in srgb, var(--logic-green) 14%, transparent);
+}
+
+.logic-proof-line-controls button:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.logic-proof-candidates {
+  padding: 0.9rem 1rem 1rem;
+  border-top: 1px solid var(--logic-line);
+  background: color-mix(in srgb, var(--logic-wash) 56%, var(--logic-paper));
+}
+
+.logic-proof-candidates > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.logic-proof-candidates button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: center;
+  min-height: 48px;
+  padding: 0.55rem 0.7rem 0.55rem calc(0.7rem + var(--proof-depth, 0) * 18px);
+  border: 1px solid var(--logic-line);
+  border-radius: 4px;
+  background: var(--logic-paper);
+  color: var(--text-color);
+  text-align: left;
+  cursor: pointer;
+}
+
+.logic-proof-candidates button:hover:not(:disabled),
+.logic-proof-candidates button:focus-visible:not(:disabled) {
+  border-color: var(--logic-cobalt);
+  outline: 2px solid color-mix(in srgb, var(--logic-cobalt) 13%, transparent);
+}
+
+.logic-proof-candidates button:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.logic-proof-candidates button small {
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+}
+
+.logic-model-challenge-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid var(--logic-line);
+}
+
+.logic-model-challenge-tabs button {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border: 0;
+  border-right: 1px solid var(--logic-line);
+  background: transparent;
+  color: var(--logic-muted);
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.logic-model-challenge-tabs button:last-child {
+  border-right: 0;
+}
+
+.logic-model-challenge-tabs button span {
+  color: var(--logic-gold);
+  font-size: 0.7rem;
+}
+
+.logic-model-challenge-tabs button.is-active {
+  background: color-mix(in srgb, var(--logic-cobalt) 7%, var(--logic-paper));
+  color: var(--text-color);
+  box-shadow: inset 0 -3px var(--logic-cobalt);
+}
+
+.logic-model-challenge-tabs button.is-complete span {
+  color: var(--logic-success);
+}
+
+.logic-model-brief > strong {
+  max-width: 320px;
+  padding: 0.55rem 0.7rem;
+  border-left: 3px solid var(--logic-gold);
+  background: var(--logic-wash);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.logic-model-brief p {
+  margin-top: 0.35rem;
+}
+
+.logic-model-workspace {
+  padding: 1rem;
+}
+
+.logic-model-objects {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.logic-model-object {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  min-height: 84px;
+  padding: 0.7rem;
+  border: 1px solid var(--logic-line);
+  border-radius: 5px;
+  background: var(--logic-wash);
+}
+
+.logic-model-object > strong {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 2px solid var(--logic-line);
+  border-radius: 50%;
+  background: var(--logic-paper);
+  font-size: 1.05rem;
+}
+
+.logic-model-object.has-predicate > strong {
+  border-color: var(--logic-green);
+  color: var(--logic-green);
+}
+
+.logic-model-object > div {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.logic-model-object button {
+  min-height: 30px;
+  padding: 0.3rem 0.45rem;
+  border: 1px solid var(--logic-line);
+  border-radius: 4px;
+  background: var(--logic-paper);
+  color: var(--logic-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.logic-model-object button.is-active {
+  border-color: var(--logic-green);
+  background: color-mix(in srgb, var(--logic-green) 10%, var(--logic-paper));
+  color: var(--logic-green);
+}
+
+.logic-relation-panel {
+  margin-top: 1rem;
+  border-top: 1px solid var(--logic-line);
+  padding-top: 0.9rem;
+}
+
+.logic-relation-panel[hidden] {
+  display: none;
+}
+
+.logic-relation-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.55rem;
+}
+
+.logic-relation-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.logic-relation-table th,
+.logic-relation-table td {
+  padding: 0.45rem;
+  border: 1px solid var(--logic-line);
+}
+
+.logic-relation-table th {
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.75rem;
+}
+
+.logic-relation-table button {
+  width: 36px;
+  height: 32px;
+  border: 1px solid var(--logic-line);
+  border-radius: 4px;
+  background: var(--logic-paper);
+  color: var(--logic-muted);
+  cursor: pointer;
+}
+
+.logic-relation-table button.is-active {
+  border-color: var(--logic-cobalt);
+  background: color-mix(in srgb, var(--logic-cobalt) 10%, var(--logic-paper));
+  color: var(--logic-cobalt);
+}
+
+.logic-model-conditions {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0 1rem 1rem;
+  list-style: none;
+}
+
+.logic-model-conditions li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+}
+
+.logic-model-conditions li.is-correct {
+  color: var(--logic-success);
+}
+
+.logic-model-conditions li.is-wrong {
+  color: var(--logic-coral);
+}
+
+.logic-lab-shell > .logic-truth-lab {
+  border: 0;
+  border-radius: 0;
+}
+
+.logic-truth-lab {
+  border: 1px solid var(--logic-line);
+  border-radius: var(--logic-radius);
+  background: var(--logic-paper);
+}
+
+.logic-truth-lab-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--logic-line);
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+}
+
+.logic-truth-lab-head strong {
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
+.logic-truth-table-wrap {
+  overflow-x: auto;
+}
+
+.logic-truth-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.logic-truth-table th,
+.logic-truth-table td {
+  min-width: 72px;
+  padding: 0.75rem;
+  border-right: 1px solid var(--logic-line);
+  border-bottom: 1px solid var(--logic-line);
+}
+
+.logic-truth-table th:last-child,
+.logic-truth-table td:last-child {
+  min-width: 160px;
+  border-right: 0;
+  background: color-mix(in srgb, var(--logic-cobalt) 5%, var(--logic-paper));
+}
+
+.logic-truth-cell {
+  width: 42px;
+  height: 36px;
+  border: 1px solid var(--logic-line);
+  border-radius: 4px;
+  background: var(--logic-wash);
+  color: var(--text-color);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.logic-truth-cell:hover,
+.logic-truth-cell:focus-visible {
+  border-color: var(--logic-green);
+  outline: 2px solid color-mix(in srgb, var(--logic-green) 14%, transparent);
+}
+
+.logic-truth-cell.is-correct {
+  border-color: var(--logic-success);
+  background: color-mix(in srgb, var(--logic-success) 12%, var(--logic-paper));
+}
+
+.logic-truth-cell.is-wrong {
+  border-color: var(--logic-coral);
+  background: color-mix(in srgb, var(--logic-coral) 12%, var(--logic-paper));
+}
+
+.logic-truth-lab > .logic-practice-toolbar {
+  padding: 0.85rem 1rem;
+  margin-top: 0;
+}
+
+.logic-lesson-side {
+  position: sticky;
+  top: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.logic-side-progress,
+.logic-side-next {
+  padding: 1rem 0 1rem 1rem;
+  border-left: 3px solid var(--logic-gold);
+}
+
+.logic-side-progress strong,
+.logic-side-next strong {
+  display: block;
+  margin: 0.2rem 0 0.45rem;
+}
+
+.logic-side-progress p,
+.logic-side-next p {
+  margin: 0 0 0.8rem;
+  color: var(--logic-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.logic-side-progress small {
+  display: block;
+  margin-top: 0.55rem;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+}
+
+.logic-stage-mini-list {
+  display: grid;
+  gap: 0.2rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--logic-line);
+}
+
+.logic-stage-mini-list a {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 0.55rem;
+  padding: 0.42rem;
+  border-radius: 4px;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.logic-stage-mini-list a.is-current {
+  background: color-mix(in srgb, var(--logic-green) 9%, transparent);
+  color: var(--text-color);
+  font-weight: 750;
+}
+
+.logic-lesson-bottom-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.logic-lesson-bottom-nav a {
+  display: flex;
+  min-height: 86px;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem;
+  border: 1px solid var(--logic-line);
+  border-radius: var(--logic-radius);
+  color: inherit;
+  text-decoration: none;
+}
+
+.logic-lesson-bottom-nav a:last-child {
+  text-align: right;
+}
+
+.logic-lesson-bottom-nav span {
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+}
+
+.logic-lesson-bottom-nav strong {
+  margin-top: 0.3rem;
+}
+
+@media (max-width: 1199.98px) {
+  .logic-lesson-layout {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .logic-lesson-side {
+    position: static;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 991.98px) {
+  .logic-course-header {
+    grid-template-columns: 1fr;
+    gap: 1.8rem;
+  }
+
+  .logic-progress-overview {
+    max-width: 640px;
+  }
+
+  .logic-course-toolbar {
+    position: static;
+    grid-template-columns: 1fr;
+  }
+
+  .logic-filter-group {
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .logic-stage-summary {
+    grid-template-columns: 54px minmax(0, 1fr) 34px;
+  }
+
+  .logic-stage-number {
+    font-size: 2rem;
+  }
+
+  .logic-stage-meta {
+    grid-column: 2;
+  }
+
+  .logic-stage-chevron {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+
+  .logic-stage-body {
+    grid-template-columns: 1fr;
+    padding-left: 54px;
+  }
+
+  .logic-pathway-band {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-lesson-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-lesson-rail {
+    position: static;
+    display: none;
+  }
+
+  .logic-lesson-side {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .logic-course-shell,
+  .logic-lesson-shell {
+    padding: 1rem 0.85rem 2.8rem;
+  }
+
+  .logic-course-header h1 {
+    font-size: clamp(2.7rem, 16vw, 4.5rem);
+  }
+
+  .logic-progress-overview {
+    grid-template-columns: 1fr auto;
+    padding-left: 1rem;
+  }
+
+  .logic-continue-band {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .logic-continue-band .logic-primary-link {
+    grid-column: 1 / -1;
+  }
+
+  .logic-section-heading {
+    display: block;
+  }
+
+  .logic-section-heading p {
+    margin-top: 0.6rem;
+  }
+
+  .logic-stage-summary {
+    grid-template-columns: 42px minmax(0, 1fr) 30px;
+    gap: 0.7rem;
+    min-height: 100px;
+  }
+
+  .logic-stage-title p {
+    display: none;
+  }
+
+  .logic-stage-body {
+    padding-left: 0;
+  }
+
+  .logic-lessons,
+  .logic-reference-list {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-lesson-row {
+    min-height: 116px;
+  }
+
+  .logic-assessment-band {
+    grid-template-columns: 1fr;
+    padding: 1.3rem;
+  }
+
+  .logic-intro-grid,
+  .logic-rigor-strip,
+  .logic-concept-meta,
+  .logic-contrast,
+  .logic-lesson-bottom-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-definition-list div {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .logic-lesson-bottom-nav a:last-child {
+    text-align: left;
+  }
+
+  .logic-lab-statusbar,
+  .logic-proof-brief,
+  .logic-model-brief {
+    align-items: start;
+  }
+
+  .logic-lab-task-head {
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  .logic-formula-workbench,
+  .logic-lab-task-actions {
+    margin-left: 0;
+  }
+
+  .logic-formula-answer {
+    min-height: 64px;
+  }
+
+  .logic-token-bank button,
+  .logic-answer-token {
+    min-width: 40px;
+  }
+
+  .logic-proof-brief,
+  .logic-model-brief {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-proof-brief > strong {
+    grid-row: auto;
+    grid-column: auto;
+    width: 100%;
+    text-align: left;
+  }
+
+  .logic-proof-line {
+    grid-template-columns: 26px minmax(70px, 1fr) minmax(80px, 0.8fr);
+    gap: 0.4rem;
+    margin-left: calc(var(--proof-depth, 0) * 16px);
+    padding: 0.4rem 0.2rem;
+  }
+
+  .logic-proof-line-controls {
+    grid-column: 2 / -1;
+    justify-content: flex-end;
+  }
+
+  .logic-proof-candidates > div,
+  .logic-model-objects {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-model-challenge-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-model-challenge-tabs button {
+    min-height: 46px;
+    border-right: 0;
+    border-bottom: 1px solid var(--logic-line);
+  }
+
+  .logic-model-challenge-tabs button.is-active {
+    box-shadow: inset 3px 0 var(--logic-cobalt);
+  }
+
+  .logic-model-brief > strong {
+    max-width: none;
+    text-align: left;
+  }
+
+  .logic-relation-heading {
+    display: block;
+  }
+
+  .logic-relation-heading p {
+    margin-top: 0.3rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logic-stage-chevron,
+  .logic-progress-track span,
+  .logic-stage-progress-track span,
+  .logic-lesson-row {
+    transition: none;
+  }
+}

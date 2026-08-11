@@ -18,7 +18,8 @@ from core.models import (
     CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy,
     QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage, OnlineChatMessage,
     LibraryFile, DailyVisitor, VisitSession, AttendanceSheetConfig, AttendanceDayState,
-    SavedCollection, SavedCollectionItem, ContentReport, EntryBook, EntryBookItem
+    SavedCollection, SavedCollectionItem, ContentReport, EntryBook, EntryBookItem,
+    LogicLessonProgress
 )
 
 # =============================================================================
@@ -50,6 +51,15 @@ admin.site.register(Entry)
 admin.site.register(RandomSentence)
 admin.site.register(OnlineChatMessage)
 admin.site.register(LibraryFile)
+
+
+@admin.register(LogicLessonProgress)
+class LogicLessonProgressAdmin(admin.ModelAdmin):
+    list_display = ('user', 'lesson_slug', 'status', 'best_score', 'attempt_count', 'last_opened_at')
+    list_filter = ('status', 'last_opened_at')
+    search_fields = ('user__username', 'lesson_slug')
+    ordering = ('-last_opened_at',)
+    readonly_fields = ('started_at', 'last_opened_at', 'completed_at')
 
 
 class EntryBookItemInline(admin.TabularInline):

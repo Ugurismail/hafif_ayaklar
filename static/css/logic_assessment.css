@@ -1,0 +1,390 @@
+.logic-assessment-shell {
+  --assessment-line: color-mix(in srgb, var(--text-color) 14%, transparent);
+  max-width: 1540px;
+  padding: 1.5rem 1.5rem 4rem;
+}
+
+.logic-assessment-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--assessment-line);
+}
+
+.logic-assessment-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.75fr);
+  gap: 3rem;
+  align-items: end;
+  padding: 2.5rem 0;
+  border-bottom: 1px solid var(--assessment-line);
+}
+
+.logic-assessment-header h1 {
+  margin: 0.7rem 0;
+  font-size: clamp(2.6rem, 6vw, 5.5rem);
+  line-height: 0.96;
+  letter-spacing: 0;
+}
+
+.logic-assessment-header p {
+  max-width: 760px;
+  margin: 0;
+  color: var(--logic-muted);
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.logic-assessment-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  border-top: 1px solid var(--assessment-line);
+  border-left: 1px solid var(--assessment-line);
+}
+
+.logic-assessment-facts div {
+  min-height: 94px;
+  padding: 0.85rem;
+  border-right: 1px solid var(--assessment-line);
+  border-bottom: 1px solid var(--assessment-line);
+}
+
+.logic-assessment-facts dt,
+.logic-assessment-status-grid dt,
+.logic-assessment-recommendation span {
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.logic-assessment-facts dd {
+  margin: 0.35rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 750;
+}
+
+.logic-assessment-guidance {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.4fr) minmax(0, 1fr);
+  gap: 3rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--assessment-line);
+}
+
+.logic-assessment-guidance h2 {
+  margin: 0.4rem 0 0;
+  font-size: 1.7rem;
+}
+
+.logic-assessment-guidance-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+.logic-assessment-guidance-grid h3 {
+  margin: 0 0 0.75rem;
+  color: var(--logic-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+}
+
+.logic-assessment-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 900px) minmax(220px, 1fr);
+  gap: 2rem;
+  align-items: start;
+  padding-top: 2rem;
+}
+
+.logic-assessment-nav,
+.logic-assessment-status {
+  position: sticky;
+  top: 1rem;
+}
+
+.logic-assessment-nav {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.logic-assessment-nav a {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: start;
+  padding: 0.65rem 0.55rem;
+  border-left: 2px solid transparent;
+  border-radius: 0 5px 5px 0;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.logic-assessment-nav a:hover,
+.logic-assessment-nav a.is-current {
+  border-left-color: var(--logic-green);
+  background: color-mix(in srgb, var(--logic-green) 8%, transparent);
+  color: var(--text-color);
+}
+
+.logic-assessment-nav a.is-completed [data-module-nav-status] {
+  color: var(--logic-success);
+}
+
+.logic-assessment-modules {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.logic-assessment-module {
+  scroll-margin-top: 1rem;
+  border: 1px solid var(--assessment-line);
+  border-radius: var(--logic-radius);
+  background: var(--logic-paper);
+}
+
+.logic-assessment-module > summary {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  align-items: center;
+  padding: 1rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.logic-assessment-module > summary::-webkit-details-marker {
+  display: none;
+}
+
+.logic-assessment-module-number {
+  color: var(--logic-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.logic-assessment-module-title strong,
+.logic-assessment-module-title small {
+  display: block;
+}
+
+.logic-assessment-module-title strong {
+  font-size: 1.12rem;
+}
+
+.logic-assessment-module-title small,
+.logic-assessment-module-meta {
+  margin-top: 0.25rem;
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+}
+
+.logic-assessment-module-meta {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.logic-assessment-module-meta i {
+  transition: transform 180ms ease;
+}
+
+.logic-assessment-module[open] .logic-assessment-module-meta i {
+  transform: rotate(180deg);
+}
+
+.logic-assessment-module-body {
+  padding: 0 1rem 1rem 58px;
+  border-top: 1px solid var(--assessment-line);
+}
+
+.logic-assessment-question {
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--assessment-line);
+}
+
+.logic-assessment-question h3 {
+  margin: 0.35rem 0 0.8rem;
+  font-size: 1.02rem;
+  line-height: 1.5;
+}
+
+.logic-assessment-question .logic-feedback div {
+  margin-top: 0.25rem;
+}
+
+.logic-assessment-question .logic-choice.is-correct-choice {
+  border-color: var(--logic-success);
+  background: color-mix(in srgb, var(--logic-success) 8%, var(--logic-paper));
+}
+
+.logic-assessment-question .logic-choice.is-wrong-choice {
+  border-color: var(--logic-coral);
+  background: color-mix(in srgb, var(--logic-coral) 8%, var(--logic-paper));
+}
+
+.logic-assessment-module-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: center;
+  padding-top: 1rem;
+}
+
+.logic-assessment-module-actions > span {
+  color: var(--logic-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.78rem;
+}
+
+.logic-assessment-status {
+  padding: 1rem 0 1rem 1rem;
+  border-left: 3px solid var(--logic-gold);
+}
+
+.logic-assessment-status-title {
+  display: block;
+  margin-top: 0.3rem;
+}
+
+.logic-assessment-score {
+  margin: 0.6rem 0;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.logic-assessment-status-grid {
+  display: grid;
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+
+.logic-assessment-status-grid div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--assessment-line);
+}
+
+.logic-assessment-status-grid dd {
+  margin: 0;
+  font-weight: 750;
+}
+
+.logic-assessment-recommendation {
+  margin: 1rem 0;
+  padding: 0.8rem;
+  background: color-mix(in srgb, var(--logic-cobalt) 6%, var(--logic-paper));
+}
+
+.logic-assessment-recommendation strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.logic-assessment-status .logic-primary-link {
+  width: 100%;
+}
+
+.logic-assessment-status .logic-text-button {
+  margin-top: 0.7rem;
+}
+
+@media (max-width: 1199.98px) {
+  .logic-assessment-layout {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+
+  .logic-assessment-status {
+    position: static;
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(150px, 0.4fr) minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .logic-assessment-status .logic-section-label,
+  .logic-assessment-status-title,
+  .logic-assessment-score {
+    grid-column: 1;
+  }
+
+  .logic-assessment-status-grid,
+  .logic-assessment-recommendation {
+    grid-row: 1 / span 3;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .logic-assessment-header,
+  .logic-assessment-guidance,
+  .logic-assessment-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-assessment-nav {
+    position: static;
+    display: none;
+  }
+
+  .logic-assessment-status {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .logic-assessment-shell {
+    padding: 1rem 0.8rem 3rem;
+  }
+
+  .logic-assessment-topbar {
+    align-items: flex-start;
+  }
+
+  .logic-assessment-header {
+    gap: 1.5rem;
+    padding: 1.8rem 0;
+  }
+
+  .logic-assessment-guidance-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-assessment-facts div {
+    min-height: 84px;
+    padding: 0.75rem;
+  }
+
+  .logic-assessment-module > summary {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .logic-assessment-module-meta {
+    grid-column: 2;
+    justify-content: space-between;
+  }
+
+  .logic-assessment-module-body {
+    padding: 0 0.8rem 0.8rem;
+  }
+
+  .logic-assessment-status {
+    display: block;
+  }
+}

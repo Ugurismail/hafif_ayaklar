@@ -1,0 +1,1131 @@
+:root {
+  --review-ink: #201f1b;
+  --review-muted: #67665f;
+  --review-line: #d8d4c9;
+  --review-soft-line: #e9e5dc;
+  --review-paper: #fbfaf6;
+  --review-surface: #ffffff;
+  --review-green: #265f4a;
+  --review-green-soft: #e7f0eb;
+  --review-ochre: #a8752b;
+  --review-ochre-soft: #f7edda;
+  --review-rust: #9d4c3c;
+  --review-rust-soft: #f8e9e5;
+  --review-shadow: 0 14px 40px rgba(38, 34, 26, 0.08);
+}
+
+.logic-review-shell {
+  width: min(1540px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 32px 0 72px;
+  color: var(--review-ink);
+}
+
+.logic-review-shell *,
+.logic-review-shell *::before,
+.logic-review-shell *::after {
+  box-sizing: border-box;
+}
+
+.logic-review-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  color: var(--review-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+}
+
+.logic-review-breadcrumbs a {
+  color: var(--review-green);
+  text-decoration: none;
+}
+
+.logic-review-breadcrumbs a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.logic-review-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 40px;
+  align-items: end;
+  padding: 36px 40px;
+  border: 1px solid #35463f;
+  border-radius: 6px;
+  background: #1f302a;
+  color: #fffdf8;
+  box-shadow: var(--review-shadow);
+}
+
+.logic-review-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: #d8b879;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.logic-review-hero h1 {
+  max-width: 900px;
+  margin: 0;
+  color: inherit;
+  font-size: 58px;
+  line-height: 1.02;
+  letter-spacing: 0;
+}
+
+.logic-review-hero-copy > p {
+  max-width: 840px;
+  margin: 18px 0 0;
+  color: #d7ddd9;
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+.logic-review-status {
+  display: grid;
+  gap: 7px;
+  padding: 20px 22px;
+  border-left: 3px solid #d8b879;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.logic-review-status span,
+.logic-review-status small {
+  color: #ced6d2;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+}
+
+.logic-review-status strong {
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.logic-review-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--review-line);
+  border-top: 0;
+  background: var(--review-surface);
+}
+
+.logic-review-metrics > div {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  min-width: 0;
+  padding: 18px 24px;
+  border-right: 1px solid var(--review-soft-line);
+}
+
+.logic-review-metrics > div:last-child {
+  border-right: 0;
+}
+
+.logic-review-metrics strong {
+  color: var(--review-green);
+  font-size: 28px;
+}
+
+.logic-review-metrics span {
+  color: var(--review-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+}
+
+.logic-review-layout {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 28px;
+  margin-top: 32px;
+  align-items: start;
+}
+
+.logic-review-index {
+  position: sticky;
+  top: 24px;
+  overflow: hidden;
+  border: 1px solid var(--review-line);
+  border-radius: 6px;
+  background: var(--review-surface);
+}
+
+.logic-review-index-heading {
+  display: grid;
+  gap: 3px;
+  padding: 20px;
+  border-bottom: 1px solid var(--review-soft-line);
+  background: var(--review-paper);
+}
+
+.logic-review-index-heading span,
+.logic-review-section-label {
+  color: var(--review-ochre);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.logic-review-index-heading strong {
+  font-size: 20px;
+}
+
+.logic-review-index nav {
+  display: grid;
+}
+
+.logic-review-index nav a {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--review-soft-line);
+  color: var(--review-ink);
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.logic-review-index nav a:hover,
+.logic-review-index nav a:focus-visible {
+  background: var(--review-green-soft);
+  color: var(--review-green);
+}
+
+.logic-review-index nav a span:first-child {
+  color: var(--review-ochre);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.logic-review-index nav a span:last-child {
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.logic-review-gate {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 9px;
+  padding: 17px 18px;
+  color: var(--review-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.logic-review-gate i {
+  color: var(--review-green);
+  font-size: 16px;
+}
+
+.logic-review-lessons {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.logic-review-lesson {
+  scroll-margin-top: 24px;
+  overflow: clip;
+  border: 1px solid var(--review-line);
+  border-radius: 6px;
+  background: var(--review-surface);
+  box-shadow: 0 8px 28px rgba(38, 34, 26, 0.05);
+}
+
+.logic-review-lesson > summary,
+.logic-review-disclosure > summary,
+.logic-review-question-list > details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.logic-review-lesson > summary::-webkit-details-marker,
+.logic-review-disclosure > summary::-webkit-details-marker,
+.logic-review-question-list > details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.logic-review-lesson > summary {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto 20px;
+  gap: 16px;
+  align-items: center;
+  min-height: 96px;
+  padding: 20px 24px;
+  background: var(--review-paper);
+}
+
+.logic-review-lesson[open] > summary {
+  border-bottom: 1px solid var(--review-line);
+  background: #f5f3ec;
+}
+
+.logic-review-lesson > summary:focus-visible,
+.logic-review-disclosure > summary:focus-visible,
+.logic-review-question-list > details > summary:focus-visible {
+  outline: 3px solid rgba(38, 95, 74, 0.24);
+  outline-offset: -3px;
+}
+
+.logic-review-lesson-id {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid #b4c9be;
+  border-radius: 4px;
+  background: var(--review-green-soft);
+  color: var(--review-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 800;
+}
+
+.logic-review-lesson-summary {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.logic-review-lesson-summary strong {
+  overflow-wrap: anywhere;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.logic-review-lesson-summary small {
+  color: var(--review-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+}
+
+.logic-review-release {
+  padding: 6px 10px;
+  border: 1px solid #d8bf92;
+  border-radius: 999px;
+  background: var(--review-ochre-soft);
+  color: #775018;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.logic-review-lesson > summary > i,
+.logic-review-disclosure > summary > i {
+  color: var(--review-muted);
+  transition: transform 160ms ease;
+}
+
+.logic-review-lesson[open] > summary > i,
+.logic-review-disclosure[open] > summary > i {
+  transform: rotate(180deg);
+}
+
+.logic-review-lesson-body {
+  display: grid;
+  gap: 26px;
+  padding: 30px;
+}
+
+.logic-review-lede {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 28px;
+  align-items: start;
+}
+
+.logic-review-lede > p {
+  max-width: 900px;
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.55;
+}
+
+.logic-review-prerequisites {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+  max-width: 390px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+}
+
+.logic-review-prerequisites > span {
+  color: var(--review-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.logic-review-prerequisites a,
+.logic-review-prerequisites strong {
+  color: var(--review-green);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.logic-review-prerequisites a:hover {
+  text-decoration: underline;
+}
+
+.logic-review-dual {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--review-line);
+  background: var(--review-paper);
+}
+
+.logic-review-dual > div {
+  padding: 22px 24px;
+}
+
+.logic-review-dual > div + div {
+  border-left: 1px solid var(--review-line);
+}
+
+.logic-review-check-list,
+.logic-review-evidence-list,
+.logic-review-mistakes ol,
+.logic-review-retrieval ol,
+.logic-review-production-list ul {
+  display: grid;
+  gap: 9px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.logic-review-check-list li,
+.logic-review-evidence-list li,
+.logic-review-production-list li {
+  position: relative;
+  padding-left: 24px;
+  line-height: 1.45;
+}
+
+.logic-review-check-list li::before,
+.logic-review-evidence-list li::before,
+.logic-review-production-list li::before {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  color: var(--review-green);
+  font-family: "bootstrap-icons";
+  content: "\f633";
+}
+
+.logic-review-competencies {
+  display: grid;
+  gap: 10px;
+}
+
+.logic-review-competencies > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.logic-review-competencies code {
+  padding: 7px 9px;
+  border: 1px solid #ccd9d2;
+  border-radius: 3px;
+  background: var(--review-green-soft);
+  color: #214e3e;
+  font-size: 12px;
+}
+
+.logic-review-terms {
+  display: grid;
+  gap: 12px;
+}
+
+.logic-review-terms h3 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.logic-review-terms dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  background: var(--review-line);
+  border: 1px solid var(--review-line);
+}
+
+.logic-review-terms dl > div {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.42fr) minmax(0, 1fr);
+  gap: 14px;
+  padding: 16px;
+  background: var(--review-surface);
+}
+
+.logic-review-terms dt {
+  color: var(--review-green);
+  font-weight: 700;
+}
+
+.logic-review-terms dd {
+  margin: 0;
+  color: #4d4b45;
+  line-height: 1.4;
+}
+
+.logic-review-academic-note {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px 18px;
+  border-left: 3px solid var(--review-ochre);
+  background: var(--review-ochre-soft);
+}
+
+.logic-review-academic-note > i {
+  color: var(--review-ochre);
+  font-size: 20px;
+}
+
+.logic-review-academic-note strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.logic-review-academic-note p {
+  margin: 0;
+  color: #554936;
+  line-height: 1.45;
+}
+
+.logic-review-disclosure {
+  border: 1px solid var(--review-line);
+  border-radius: 4px;
+  overflow: clip;
+}
+
+.logic-review-disclosure > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 18px;
+  gap: 12px;
+  align-items: center;
+  min-height: 60px;
+  padding: 14px 18px;
+  background: var(--review-paper);
+}
+
+.logic-review-disclosure[open] > summary {
+  border-bottom: 1px solid var(--review-line);
+}
+
+.logic-review-disclosure > summary > span {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.logic-review-disclosure > summary > small {
+  color: var(--review-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+}
+
+.logic-review-disclosure-body {
+  padding: 22px;
+}
+
+.logic-review-section-stack {
+  display: grid;
+  gap: 22px;
+}
+
+.logic-review-concept {
+  display: grid;
+  gap: 16px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--review-soft-line);
+}
+
+.logic-review-concept:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.logic-review-concept > header {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.logic-review-concept > header > span {
+  color: var(--review-ochre);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.logic-review-concept h3 {
+  margin: 0;
+  font-size: 23px;
+}
+
+.logic-review-concept > p {
+  max-width: 980px;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.logic-review-concept-grid,
+.logic-review-example-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.logic-review-concept-grid > div,
+.logic-review-example-grid > div {
+  display: grid;
+  gap: 5px;
+  padding: 14px 16px;
+  border: 1px solid var(--review-soft-line);
+  background: var(--review-paper);
+}
+
+.logic-review-concept-grid strong,
+.logic-review-example-grid strong {
+  color: var(--review-green);
+  font-size: 14px;
+}
+
+.logic-review-concept-grid span,
+.logic-review-example-grid span {
+  color: #504e48;
+  line-height: 1.4;
+}
+
+.logic-review-concept-grid .is-caution {
+  border-color: #e4c7be;
+  background: var(--review-rust-soft);
+}
+
+.logic-review-concept-grid .is-caution strong {
+  color: var(--review-rust);
+}
+
+.logic-review-contrast {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--review-line);
+  border-bottom: 1px solid var(--review-line);
+}
+
+.logic-review-contrast p {
+  margin: 0;
+  padding: 14px 16px;
+  line-height: 1.4;
+}
+
+.logic-review-contrast p + p {
+  border-left: 1px solid var(--review-line);
+}
+
+.logic-review-contrast strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--review-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.logic-review-worked-list {
+  display: grid;
+  gap: 10px;
+}
+
+.logic-review-worked-list article {
+  display: grid;
+  grid-template-columns: minmax(90px, auto) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 14px;
+  border-bottom: 1px solid var(--review-soft-line);
+}
+
+.logic-review-worked-list article:last-child {
+  border-bottom: 0;
+}
+
+.logic-review-badge {
+  justify-self: start;
+  padding: 5px 8px;
+  border-radius: 3px;
+  background: var(--review-green-soft);
+  color: var(--review-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.logic-review-badge.is-warning {
+  background: var(--review-rust-soft);
+  color: var(--review-rust);
+}
+
+.logic-review-worked-list p {
+  margin: 4px 0 0;
+  color: var(--review-muted);
+  line-height: 1.4;
+}
+
+.logic-review-mistakes,
+.logic-review-retrieval {
+  margin-top: 18px;
+  padding: 18px 20px;
+  border-left: 3px solid var(--review-rust);
+  background: var(--review-rust-soft);
+}
+
+.logic-review-mistakes h3,
+.logic-review-retrieval h3 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.logic-review-mistakes ol,
+.logic-review-retrieval ol {
+  counter-reset: review-list;
+}
+
+.logic-review-mistakes li,
+.logic-review-retrieval li {
+  counter-increment: review-list;
+  position: relative;
+  padding-left: 30px;
+  line-height: 1.4;
+}
+
+.logic-review-mistakes li::before,
+.logic-review-retrieval li::before {
+  content: counter(review-list, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  color: var(--review-rust);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.logic-review-guided {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(230px, 0.5fr);
+  gap: 22px;
+}
+
+.logic-review-guided > div > span,
+.logic-review-production-list article > span {
+  color: var(--review-ochre);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.logic-review-guided h3 {
+  margin: 7px 0 8px;
+  font-size: 22px;
+}
+
+.logic-review-guided p {
+  margin: 0;
+  color: var(--review-muted);
+  line-height: 1.45;
+}
+
+.logic-review-guided > ul {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.logic-review-guided > ul li {
+  padding: 9px 12px;
+  border-left: 3px solid var(--review-green);
+  background: var(--review-green-soft);
+}
+
+.logic-review-guided > details {
+  grid-column: 1 / -1;
+  padding: 14px 16px;
+  border: 1px solid var(--review-line);
+  background: var(--review-paper);
+}
+
+.logic-review-guided > details summary {
+  color: var(--review-green);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.logic-review-guided > details p {
+  margin-top: 12px;
+  color: var(--review-ink);
+}
+
+.logic-review-question-list {
+  display: grid;
+  gap: 8px;
+}
+
+.logic-review-question-list > details {
+  border: 1px solid var(--review-soft-line);
+}
+
+.logic-review-question-list > details > summary {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 13px 14px;
+}
+
+.logic-review-question-list > details[open] > summary {
+  border-bottom: 1px solid var(--review-soft-line);
+  background: var(--review-paper);
+}
+
+.logic-review-question-list > details > summary > span {
+  color: var(--review-ochre);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.logic-review-question-list > details > summary > small {
+  padding: 3px 7px;
+  background: var(--review-green-soft);
+  color: var(--review-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.logic-review-question-list > details > div {
+  padding: 14px 18px 18px 60px;
+}
+
+.logic-review-question-list ol {
+  margin: 0;
+  padding-left: 22px;
+}
+
+.logic-review-question-list li {
+  margin: 5px 0;
+}
+
+.logic-review-answer {
+  display: grid;
+  gap: 4px;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--review-green);
+  background: var(--review-green-soft);
+  line-height: 1.4;
+}
+
+.logic-review-production-list {
+  display: grid;
+  gap: 14px;
+}
+
+.logic-review-production-list article {
+  padding: 18px 20px;
+  border: 1px solid var(--review-line);
+  background: var(--review-paper);
+}
+
+.logic-review-production-list h3 {
+  margin: 7px 0 0;
+  font-size: 21px;
+}
+
+.logic-review-stimulus {
+  display: grid;
+  gap: 9px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  border: 1px solid #d8c49d;
+  background: #fffaf0;
+}
+
+.logic-review-stimulus > strong {
+  color: #775018;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.logic-review-stimulus ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.logic-review-stimulus li {
+  padding-left: 4px;
+  line-height: 1.45;
+}
+
+.logic-review-stimulus > p {
+  margin: 2px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid #ead9b8;
+  color: #655438;
+  line-height: 1.45;
+}
+
+.logic-review-production-list p {
+  display: grid;
+  gap: 4px;
+  margin: 15px 0 0;
+  color: var(--review-muted);
+}
+
+.logic-review-production-list .logic-review-stimulus > p {
+  display: block;
+  margin: 2px 0 0;
+}
+
+.logic-review-retrieval {
+  border-left-color: var(--review-ochre);
+  background: var(--review-ochre-soft);
+}
+
+.logic-review-retrieval li::before {
+  color: var(--review-ochre);
+}
+
+.logic-review-lesson-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr);
+  gap: 24px;
+  padding: 22px 24px;
+  border-top: 1px solid var(--review-line);
+  background: #f5f3ec;
+}
+
+.logic-review-lesson-footer p {
+  margin: 7px 0 0;
+  line-height: 1.45;
+}
+
+.logic-review-lesson-footer ul {
+  display: grid;
+  gap: 6px;
+  margin: 7px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.logic-review-lesson-footer a {
+  color: var(--review-green);
+  text-decoration: none;
+}
+
+.logic-review-lesson-footer a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 1100px) {
+  .logic-review-shell {
+    width: min(100% - 32px, 1180px);
+  }
+
+  .logic-review-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-review-index {
+    position: static;
+  }
+
+  .logic-review-index nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .logic-review-index nav a:nth-last-child(-n + 3) {
+    border-bottom: 0;
+  }
+
+  .logic-review-gate {
+    border-top: 1px solid var(--review-soft-line);
+  }
+}
+
+@media (max-width: 760px) {
+  .logic-review-shell {
+    width: 100%;
+    padding-top: 18px;
+  }
+
+  .logic-review-breadcrumbs,
+  .logic-review-layout {
+    margin-right: 14px;
+    margin-left: 14px;
+  }
+
+  .logic-review-hero {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 28px 20px;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+
+  .logic-review-hero h1 {
+    font-size: 38px;
+  }
+
+  .logic-review-hero-copy > p {
+    font-size: 17px;
+  }
+
+  .logic-review-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-right: 0;
+    border-left: 0;
+  }
+
+  .logic-review-metrics > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .logic-review-metrics > div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--review-soft-line);
+  }
+
+  .logic-review-index nav {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-review-index nav a:nth-last-child(-n + 3) {
+    border-bottom: 1px solid var(--review-soft-line);
+  }
+
+  .logic-review-index nav a:last-child {
+    border-bottom: 0;
+  }
+
+  .logic-review-lesson > summary {
+    grid-template-columns: 48px minmax(0, 1fr) 16px;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .logic-review-lesson-id {
+    width: 44px;
+    height: 44px;
+  }
+
+  .logic-review-lesson-summary strong {
+    font-size: 19px;
+  }
+
+  .logic-review-release {
+    display: none;
+  }
+
+  .logic-review-lesson-body {
+    gap: 22px;
+    padding: 20px 16px;
+  }
+
+  .logic-review-lede,
+  .logic-review-dual,
+  .logic-review-terms dl,
+  .logic-review-concept-grid,
+  .logic-review-example-grid,
+  .logic-review-contrast,
+  .logic-review-guided,
+  .logic-review-lesson-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-review-lede > p {
+    font-size: 18px;
+  }
+
+  .logic-review-prerequisites {
+    justify-content: flex-start;
+  }
+
+  .logic-review-dual > div + div,
+  .logic-review-contrast p + p {
+    border-top: 1px solid var(--review-line);
+    border-left: 0;
+  }
+
+  .logic-review-terms dl > div {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .logic-review-disclosure > summary {
+    grid-template-columns: minmax(0, 1fr) 18px;
+  }
+
+  .logic-review-disclosure > summary > small {
+    display: none;
+  }
+
+  .logic-review-disclosure-body {
+    padding: 16px;
+  }
+
+  .logic-review-worked-list article {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-review-guided > details {
+    grid-column: auto;
+  }
+
+  .logic-review-question-list > details > summary {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+
+  .logic-review-question-list > details > summary > small {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .logic-review-question-list > details > div {
+    padding: 14px 14px 16px 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logic-review-index nav a,
+  .logic-review-lesson > summary > i,
+  .logic-review-disclosure > summary > i {
+    transition: none;
+  }
+}
