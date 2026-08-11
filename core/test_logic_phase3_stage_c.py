@@ -10,6 +10,8 @@ from .logic_phase3_stage_c import (
 )
 from .logic_tfl_semantics import (
     TFLParseError,
+    analyze_joint_satisfiability,
+    analyze_semantic_equivalence,
     classify_semantic_status,
     complete_truth_table,
     compound_subformulas,
@@ -56,11 +58,11 @@ class LogicPhase3StageCIntegrityTests(SimpleTestCase):
     def test_stage_c_candidate_ids_orders_and_slugs_are_unique(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_C_CANDIDATE_LESSONS],
-            ["C14", "C15", "C16"],
+            ["C14", "C15", "C16", "C17"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_C_CANDIDATE_LESSONS],
-            [14, 15, 16],
+            [14, 15, 16, 17],
         )
         self.assertEqual(
             len({lesson["slug"] for lesson in STAGE_C_CANDIDATE_LESSONS}),
@@ -310,6 +312,36 @@ class TFLSemanticCoreTests(SimpleTestCase):
             [{"A": "T", "B": "F"}],
         )
 
+    def test_equivalence_uses_the_union_of_both_atom_sets(self):
+        equivalent = analyze_semantic_equivalence("A → B", "¬A ∨ B")
+        separated = analyze_semantic_equivalence("A", "A ∨ B")
+
+        self.assertTrue(equivalent["equivalent"])
+        self.assertEqual(equivalent["atoms"], ["A", "B"])
+        self.assertEqual(equivalent["separating_valuations"], [])
+        self.assertFalse(separated["equivalent"])
+        self.assertEqual(separated["atoms"], ["A", "B"])
+        self.assertEqual(
+            separated["separating_valuations"],
+            [{"A": "F", "B": "T"}],
+        )
+
+    def test_joint_satisfiability_requires_one_shared_true_valuation(self):
+        satisfiable = analyze_joint_satisfiability(["A ∨ B", "¬A"])
+        unsatisfiable = analyze_joint_satisfiability(["A", "¬A"])
+
+        self.assertTrue(satisfiable["jointly_satisfiable"])
+        self.assertEqual(
+            satisfiable["satisfying_valuations"],
+            [{"A": "F", "B": "T"}],
+        )
+        self.assertFalse(unsatisfiable["jointly_satisfiable"])
+        self.assertEqual(unsatisfiable["satisfying_valuations"], [])
+
+    def test_joint_satisfiability_rejects_an_empty_formula_collection(self):
+        with self.assertRaisesRegex(ValueError, "En az bir TFL cümlesi"):
+            analyze_joint_satisfiability([])
+
 
 class LogicPhase3StageCC14CandidateTests(SimpleTestCase):
     required_fields = {
@@ -348,8 +380,8 @@ class LogicPhase3StageCC14CandidateTests(SimpleTestCase):
         self.lesson = STAGE_C_CANDIDATE_LESSONS[0]
 
     def test_c14_remains_the_first_candidate_as_stage_c_grows(self):
-        self.assertEqual(len(STAGE_C_CANDIDATE_LESSONS), 3)
-        self.assertEqual(len(STAGE_C_CANDIDATE_MAP), 3)
+        self.assertEqual(len(STAGE_C_CANDIDATE_LESSONS), 4)
+        self.assertEqual(len(STAGE_C_CANDIDATE_MAP), 4)
         self.assertEqual(self.lesson["curriculum_id"], "C14")
         self.assertEqual(self.lesson["order"], 14)
         self.assertEqual(self.lesson["release_status"], "candidate")
@@ -841,6 +873,249 @@ class LogicPhase3StageCC16CandidateTests(SimpleTestCase):
             [
                 "forallx-use-mention",
                 "forallx-truth-functionality",
+                "forallx-valuations",
+                "forallx-logical-concepts",
+                "mit-logic-sequence",
+                "mit-logic-study-guide",
+            ],
+        )
+        self.assertTrue(
+            set(self.lesson["source_ids"]).issubset(
+                STAGE_C_SOURCE_REFERENCES
+            )
+        )
+
+
+class LogicPhase3StageCC17CandidateTests(SimpleTestCase):
+    def setUp(self):
+        self.lesson = STAGE_C_CANDIDATE_MAP[
+            "ders-mantiksal-esdegerlik-ve-tutarlilik"
+        ]
+
+    def test_c17_identity_order_and_duration_are_stable(self):
+        self.assertEqual(self.lesson["curriculum_id"], "C17")
+        self.assertEqual(self.lesson["order"], 17)
+        self.assertEqual(self.lesson["release_status"], "candidate")
+        self.assertEqual(self.lesson["estimated_minutes"], 45)
+        self.assertEqual(self.lesson["duration"], "45 dk")
+        self.assertIn("equivalence_checks", self.lesson)
+        self.assertIn("satisfiability_checks", self.lesson)
+
+    def test_c17_is_not_activated_in_the_learner_facing_course(self):
+        visible_slugs = {lesson["slug"] for lesson in VISIBLE_LOGIC_LESSONS}
+
+        self.assertNotIn(self.lesson["slug"], visible_slugs)
+
+    def test_c17_prerequisites_are_c16_and_stage_b_scope(self):
+        expected = [
+            "ders-totoloji-celiski-ve-olumsallik",
+            "ders-tfl-cumlesi-ana-baglac-ve-kapsam",
+        ]
+
+        self.assertEqual(self.lesson["prerequisites"], expected)
+        self.assertIn(expected[0], STAGE_C_CANDIDATE_MAP)
+        self.assertIn(expected[1], STAGE_B_CANDIDATE_MAP)
+        self.assertLess(
+            STAGE_C_CANDIDATE_MAP[expected[0]]["order"],
+            self.lesson["order"],
+        )
+
+    def test_c17_has_a_complete_instructional_sequence(self):
+        self.assertGreaterEqual(len(self.lesson["goals"]), 5)
+        self.assertGreaterEqual(len(self.lesson["sections"]), 5)
+        self.assertGreaterEqual(len(self.lesson["worked_examples"]), 9)
+        self.assertGreaterEqual(len(self.lesson["mistakes"]), 10)
+        self.assertGreaterEqual(len(self.lesson["practice"]), 12)
+        self.assertEqual(len(self.lesson["production_tasks"]), 1)
+        self.assertGreaterEqual(len(self.lesson["mastery_evidence"]), 6)
+        self.assertGreaterEqual(len(self.lesson["review_prompts"]), 4)
+
+        guided = self.lesson["guided_practice"]
+        self.assertEqual(
+            set(guided),
+            {"prompt", "starter", "checks", "solution"},
+        )
+        self.assertGreaterEqual(len(guided["checks"]), 6)
+        self.assertIn("ayırıcı", guided["solution"].lower())
+        self.assertIn("birlikte doyurulamaz", guided["solution"].lower())
+
+        production = self.lesson["production_tasks"][0]
+        self.assertGreaterEqual(len(production["checkpoints"]), 7)
+        self.assertEqual(len(production["stimulus"]["items"]), 4)
+        self.assertIn("ortak değerleme", str(production).lower())
+        self.assertIn("ayırıcı", str(production).lower())
+
+    def test_c17_practice_answers_are_valid_unique_and_explained(self):
+        for item in self.lesson["practice"]:
+            with self.subTest(prompt=item["prompt"]):
+                self.assertIn(item["answer"], item["choices"])
+                self.assertEqual(len(item["choices"]), len(set(item["choices"])))
+                self.assertTrue(item["explanation"].strip())
+                self.assertIn(
+                    item["difficulty_label"],
+                    {"Temel", "Orta", "İleri", "Zor", "Çok Zor"},
+                )
+
+    def test_c17_stays_with_formula_relations_not_argument_validity(self):
+        searchable = str(self.lesson)
+        production = str(self.lesson["production_tasks"][0]).lower()
+        blocked_symbols = {"⊢", "⊨", "⊭", "∀", "∃", "≡"}
+
+        self.assertTrue(blocked_symbols.isdisjoint(searchable))
+        self.assertNotIn("karşı değerleme", production)
+        self.assertNotIn("geçerli argüman", production)
+        self.assertNotIn("semantik sonuç", production)
+        self.assertNotIn("doğal türetim", production)
+        self.assertNotIn("çıkarım kuralı", production)
+        self.assertNotIn("tfl.validity_test", self.lesson["competencies"])
+        self.assertNotIn("tfl.entailment_test", self.lesson["competencies"])
+
+    def test_c17_teaches_relation_set_and_witness_type_boundaries(self):
+        searchable = str(self.lesson).lower()
+
+        for target in [
+            "mantıksal eşdeğerlik",
+            "ortak değerleme uzayı",
+            "ayırıcı değerleme",
+            "birlikte doyurulabilir",
+            "birlikte doyurulamaz",
+            "ortak doğru tanığı",
+            "aynı satır",
+            "bütün satır",
+            "tek cümle",
+            "cümle kümesi",
+            "üst dil",
+        ]:
+            with self.subTest(target=target):
+                self.assertIn(target, searchable)
+
+        self.assertIn("a↔b", searchable)
+        self.assertIn("her biri olumsal", searchable)
+        self.assertIn("varlık iddiası", searchable)
+        self.assertIn("yokluk iddiası", searchable)
+
+    def test_every_equivalence_fixture_is_independently_recomputed(self):
+        check_ids = set()
+        saw_equivalent = False
+        saw_non_equivalent = False
+
+        for check in self.lesson["equivalence_checks"]:
+            with self.subTest(check=check["id"]):
+                self.assertNotIn(check["id"], check_ids)
+                check_ids.add(check["id"])
+                left = parse_tfl(check["left"])
+                right = parse_tfl(check["right"])
+                atoms = sorted(left.atoms | right.atoms)
+                valuations = generate_valuations(atoms)
+                separating = [
+                    dict(valuation)
+                    for valuation in valuations
+                    if evaluate_tfl(left, valuation)
+                    != evaluate_tfl(right, valuation)
+                ]
+                independently_equivalent = not separating
+
+                saw_equivalent |= independently_equivalent
+                saw_non_equivalent |= not independently_equivalent
+                self.assertEqual(
+                    independently_equivalent,
+                    check["expected_equivalent"],
+                )
+                self.assertEqual(
+                    separating,
+                    check["expected_separating_valuations"],
+                )
+
+                analyzed = analyze_semantic_equivalence(
+                    check["left"],
+                    check["right"],
+                )
+                self.assertEqual(analyzed["atoms"], atoms)
+                self.assertEqual(
+                    analyzed["row_count"],
+                    2 ** len(atoms),
+                )
+                self.assertEqual(
+                    analyzed["equivalent"],
+                    independently_equivalent,
+                )
+                self.assertEqual(
+                    analyzed["separating_valuations"],
+                    separating,
+                )
+
+        self.assertEqual(len(check_ids), 8)
+        self.assertTrue(saw_equivalent)
+        self.assertTrue(saw_non_equivalent)
+        self.assertIn("union-atom-space-separator", check_ids)
+
+    def test_every_satisfiability_fixture_is_independently_recomputed(self):
+        check_ids = set()
+        saw_satisfiable = False
+        saw_unsatisfiable = False
+
+        for check in self.lesson["satisfiability_checks"]:
+            with self.subTest(check=check["id"]):
+                self.assertNotIn(check["id"], check_ids)
+                check_ids.add(check["id"])
+                formulas = [parse_tfl(item) for item in check["formulas"]]
+                atoms = sorted(
+                    set().union(*(formula.atoms for formula in formulas))
+                )
+                valuations = generate_valuations(atoms)
+                satisfying = [
+                    dict(valuation)
+                    for valuation in valuations
+                    if all(
+                        evaluate_tfl(formula, valuation)
+                        for formula in formulas
+                    )
+                ]
+                independently_satisfiable = bool(satisfying)
+
+                saw_satisfiable |= independently_satisfiable
+                saw_unsatisfiable |= not independently_satisfiable
+                self.assertEqual(
+                    independently_satisfiable,
+                    check["expected_jointly_satisfiable"],
+                )
+                self.assertEqual(
+                    satisfying,
+                    check["expected_satisfying_valuations"],
+                )
+
+                analyzed = analyze_joint_satisfiability(check["formulas"])
+                self.assertEqual(analyzed["atoms"], atoms)
+                self.assertEqual(
+                    analyzed["row_count"],
+                    2 ** len(atoms),
+                )
+                self.assertEqual(
+                    analyzed["jointly_satisfiable"],
+                    independently_satisfiable,
+                )
+                self.assertEqual(
+                    analyzed["satisfying_valuations"],
+                    satisfying,
+                )
+
+        self.assertEqual(len(check_ids), 8)
+        self.assertTrue(saw_satisfiable)
+        self.assertTrue(saw_unsatisfiable)
+        self.assertTrue(
+            {
+                "direct-incompatibility",
+                "shared-consequent-set",
+                "modus-ponens-incompatibility",
+                "exhausted-disjunction",
+            }.issubset(check_ids)
+        )
+
+    def test_c17_sources_are_explicit_and_known(self):
+        self.assertEqual(
+            self.lesson["source_ids"],
+            [
+                "forallx-use-mention",
                 "forallx-valuations",
                 "forallx-logical-concepts",
                 "mit-logic-sequence",

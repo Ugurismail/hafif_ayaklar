@@ -1619,10 +1619,630 @@ def _candidate_c16():
     return lesson
 
 
+def _candidate_c17():
+    lesson = _lesson(
+        "C17",
+        "ders-mantiksal-esdegerlik-ve-tutarlilik",
+        "Mantıksal Eşdeğerlik ve Tutarlılık",
+        "İki TFL cümlesini ortak değerleme uzayındaki bütün satırlarda karşılaştırır; bir cümle kümesinin üyelerini aynı anda doğru yapan ortak bir değerleme bulunup bulunmadığını sınar.",
+        "Cümle ilişkileri ve cümle kümelerinin ortak doğruluğu",
+        45,
+        [
+            "ders-totoloji-celiski-ve-olumsallik",
+            "ders-tfl-cumlesi-ana-baglac-ve-kapsam",
+        ],
+        [
+            "tfl.equivalence_test",
+            "tfl.satisfiability_test",
+            "tfl.semantic_relation_witness",
+            "tfl.single_vs_set_property_distinguish",
+        ],
+        [
+            "İki TFL cümlesinin ortak atom uzayındaki bütün değerlemelerde aynı doğruluk değerini alıp almadığını sınamak.",
+            "Eşdeğer olmayan iki cümle için doğruluk değerlerini ayıran en az bir açık değerleme göstermek.",
+            "Bir cümle kümesinin bütün üyelerini aynı anda doğru yapan ortak değerleme bulunup bulunmadığını belirlemek.",
+            "Birlikte doyurulabilirliği tek ortak doğru satırla, birlikte doyurulamazlığı bütün satırların elenmesiyle gerekçelendirmek.",
+            "Tek cümlenin statüsü, iki cümlenin eşdeğerliği ve cümle kümesinin tutarlılığı için doğru semantik türü ve dil düzeyini korumak.",
+        ],
+        [
+            (
+                "Mantıksal eşdeğerlik",
+                "İki TFL cümlesinin ortak atomları üzerindeki her değerlemede aynı doğruluk değerini alması.",
+            ),
+            (
+                "Ortak değerleme uzayı",
+                "Karşılaştırılan bütün cümlelerde geçen farklı atomların birleşimi üzerinde üretilen tam değerleme kümesi.",
+            ),
+            (
+                "Ayırıcı değerleme",
+                "İki cümleden birini doğru, diğerini yanlış yaparak eşdeğer olmadıklarını gösteren değerleme.",
+            ),
+            (
+                "Cümle kümesi",
+                "Aynı değerleme altında birlikte incelenen bir veya daha çok TFL cümlesi.",
+            ),
+            (
+                "Birlikte doyurulabilir",
+                "Kümenin bütün üyelerini aynı anda doğru yapan en az bir ortak değerlemesi bulunan cümle kümesi.",
+            ),
+            (
+                "Birlikte doyurulamaz",
+                "Kümenin bütün üyelerini aynı anda doğru yapan hiçbir değerlemesi bulunmayan cümle kümesi.",
+            ),
+            (
+                "Semantik tutarlılık",
+                "Bu derste birlikte doyurulabilir cümle kümesi için kullanılan açıklayıcı eş anlamlı terim.",
+            ),
+            (
+                "Ortak doğru tanığı",
+                "Doyurulabilir bir kümenin bütün cümlelerini aynı satırda doğru yapan açık değerleme.",
+            ),
+        ],
+        [
+            _section(
+                "Eşdeğerlik bütün satırlarda sütun eşleşmesidir",
+                "İki TFL cümlesi, ortak atom uzayındaki her değerlemede aynı T/F değerini alıyorsa mantıksal olarak eşdeğerdir.",
+                "Farklı görünen iki formülün aynı doğruluk koşullarını taşıyıp taşımadığını sınarken.",
+                "her değerlemede v(𝒜)=v(ℬ) → 𝒜 ile ℬ mantıksal olarak eşdeğer",
+                "Önce iki formülde geçen bütün farklı atomlar birleştirilir. Sonra her değerlemede iki ana sütun yan yana karşılaştırılır. Tek satırdaki eşleşme değil, bütün satırlardaki eşleşme gerekir.",
+                "Formüllerin yalnız ortak görünen atomlarını tabloya alma veya birkaç örnek satır eşleşti diye eşdeğerlik ilan etme.",
+                [
+                    (
+                        "¬(A∨B): F,F,F,T; ¬A∧¬B: F,F,F,T",
+                        "Dört ortak satırın tamamında değerler aynı olduğu için cümleler eşdeğerdir.",
+                    ),
+                    (
+                        "A→B: T,F,T,T; ¬A∨B: T,F,T,T",
+                        "A ve B üzerindeki bütün satırlar eşleşir.",
+                    ),
+                    (
+                        "A ile A∨B karşılaştırılırken atomlar A ve B'dir.",
+                        "B yalnız ikinci formülde geçse de ortak değerleme uzayına alınır.",
+                    ),
+                ],
+                (
+                    "Her iki ana sütunu ortak ve eksiksiz değerleme sırasıyla satır satır karşılaştırmak.",
+                    "Formüller benzer göründüğü veya seçilen tek satırda aynı çıktığı için eşdeğer saymak.",
+                    "Eşdeğerlik evrensel bir semantik ilişkidir; görünüşe veya örnek çoğunluğuna değil bütün değerlemelere dayanır.",
+                ),
+            ),
+            _section(
+                "Eşdeğer olmamaya bir ayırıcı değerleme yeter",
+                "Bir satırda iki ana sütun farklıysa eşdeğerlik için gereken bütün-satırlar koşulu bozulur. Bu satır ayırıcı değerlemedir.",
+                "Eşdeğer olmadığı ileri sürülen iki cümle için kısa fakat kesin bir tanık sunarken.",
+                "v(𝒜)≠v(ℬ) olan en az bir satır → eşdeğer değiller",
+                "Eşdeğerlik evrensel iddia olduğu için tek ayırıcı değerleme onu çürütür. Ayırıcı satırda atom atamaları ve hangi cümlenin T, hangisinin F olduğu birlikte yazılmalıdır.",
+                "Yalnız 'sütunlar farklı' deme veya atom atamalarını gizleme. Tanık, çözümün yeniden hesaplanabilmesini sağlamalıdır.",
+                [
+                    (
+                        "A→B ile B→A; A=T, B=F",
+                        "İlk cümle F, ikinci cümle T olur; bu satır eşdeğer olmadıklarını gösterir.",
+                    ),
+                    (
+                        "A∨B ile A∧B; A=T, B=F",
+                        "A∨B T, A∧B F olur ve sütunlar ayrılır.",
+                    ),
+                    (
+                        "A ile A∨B; A=F, B=T",
+                        "A F iken A∨B T olur; ortak uzaydaki B değeri ayırıcıdır.",
+                    ),
+                ],
+                (
+                    "Ayırıcı değerlemeyi atom atamaları ve iki sonuç değeriyle açıkça raporlamak.",
+                    "Bir formülün tek başına yanlış çıktığı herhangi bir satırı ayırıcı sanmak.",
+                    "Ayırıcı değerleme aynı satırda iki hedef cümlenin farklı değerler almasını gerektirir.",
+                ),
+            ),
+            _section(
+                "Birlikte doyurulabilirlik ortak doğru satır arar",
+                "Bir cümle kümesi, bütün üyelerini aynı anda T yapan en az bir değerleme varsa birlikte doyurulabilirdir; bu satır ortak doğru tanığıdır.",
+                "Birden çok iddianın aynı olası durumda birlikte doğru olup olamayacağını sınarken.",
+                "en az bir v: kümedeki her cümle v altında T",
+                "Her formül için ayrı ayrı doğru satır bulmak yetmez. Aynı atom ataması, kümedeki bütün ana sütunları aynı satırda T yapmalıdır. Tek ortak doğru satır varlık iddiasını kanıtlar.",
+                "Kümenin her üyesi bir yerde doğru diye kümenin birlikte doyurulabilir olduğunu sanma; doğru satırların aynı değerleme olması gerekir.",
+                [
+                    (
+                        "{A∨B, ¬A}; A=F, B=T",
+                        "A∨B ve ¬A aynı satırda T olduğundan küme birlikte doyurulabilirdir.",
+                    ),
+                    (
+                        "{A, B}; A=T, B=T",
+                        "Tek ortak doğru tanığı iki cümleyi aynı anda sağlar.",
+                    ),
+                    (
+                        "{A→B, ¬B}; A=F, B=F",
+                        "Koşul ve ¬B aynı satırda T'dir; küme doyurulabilir.",
+                    ),
+                ],
+                (
+                    "Bir ortak doğru değerlemeyi bütün cümlelerin o satırdaki T değerleriyle göstermek.",
+                    "Her cümle için farklı bir doğru değerleme seçip bunları tek tanık gibi birleştirmek.",
+                    "Birlikte doğruluk tek ve aynı değerlemeye göre ölçülür.",
+                ),
+            ),
+            _section(
+                "Birlikte doyurulamazlık bütün ortak adayları eler",
+                "Bir cümle kümesi için hiçbir değerleme bütün üyeleri aynı anda T yapmıyorsa küme birlikte doyurulamazdır; semantik olarak tutarsızdır.",
+                "Ortak doğru tanığı bulunamadığında bunun arama eksikliği mi yoksa imkânsızlık mı olduğunu kanıtlarken.",
+                "her değerleme satırında en az bir küme üyesi F → birlikte doyurulamaz",
+                "Yokluk iddiası tek örnekle kanıtlanmaz. Ortak atom uzayındaki bütün satırlar taranır ve her satırda en az bir cümlenin F olduğu gösterilir. Üyelerin tek tek olumsal olması ortak doğruluğu garanti etmez.",
+                "İlk iki satırda ortak doğruluk bulamayınca aramayı bırakma veya kümeye bir bütün olarak 'çelişki cümlesi' deme.",
+                [
+                    (
+                        "{A, ¬A}",
+                        "A=T iken ¬A F; A=F iken A F. Ortak doğru satır yoktur.",
+                    ),
+                    (
+                        "{A→B, A, ¬B}",
+                        "A ve ¬B birlikte T olduğunda koşul F olur; diğer satırlarda A veya ¬B F'dir.",
+                    ),
+                    (
+                        "{A∨B, ¬A, ¬B}",
+                        "İki olumsuzlama T olduğunda ayrık birleşim F olur; başka satırlarda olumsuzlamalardan biri F'dir.",
+                    ),
+                ],
+                (
+                    "Bütün değerleme satırlarında en az bir üyenin neden F olduğunu görünür kılmak.",
+                    "Ortak tanık bulamamayı, tam tabloyu tüketmeden imkânsızlık kanıtı saymak.",
+                    "Birlikte doyurulamazlık ortak doğru satırın yokluğudur; her üyenin tek başına çelişki olması gerekmez.",
+                ),
+            ),
+            _section(
+                "Tek cümle, iki cümle ilişkisi ve cümle kümesi",
+                "Totoloji, çelişki ve olumsallık tek cümleyi; eşdeğerlik iki cümle arasındaki ilişkiyi; birlikte doyurulabilirlik ise cümle kümesini sınıflandırır.",
+                "Aynı tabloda farklı semantik sorular sorulduğunda doğru sonucu doğru nesneye yüklerken.",
+                "tek cümle statüsü | iki cümle ilişkisi | kümenin ortak doğruluğu",
+                "A↔B bir TFL cümlesidir ve kendi ana sütunu vardır. 'A ile B mantıksal olarak eşdeğerdir' ise iki cümlenin bütün değerlemelerde aynı davranmasını söyleyen üst dil iddiasıdır. Bu derste yeni bir eşdeğerlik işareti kullanılmaz.",
+                "A↔B formülünü eşdeğerlik iddiasının kendisi sanma; tek cümleye tutarlı küme, kümeye olumsal cümle etiketi verme.",
+                [
+                    (
+                        "A↔B olumsaldır.",
+                        "Bu, tek TFL cümlesinin ana sütun statüsüdür.",
+                    ),
+                    (
+                        "A→B ile ¬A∨B mantıksal olarak eşdeğerdir.",
+                        "Bu, iki farklı cümlenin bütün satırlardaki ilişkisini bildirir.",
+                    ),
+                    (
+                        "{A∨B, ¬A} birlikte doyurulabilirdir.",
+                        "Bu, cümle kümesinin ortak doğru değerleme özelliğidir.",
+                    ),
+                ],
+                (
+                    "Sonuç cümlesinde değerlendirilen nesneyi ve kullanılan semantik türü açıkça adlandırmak.",
+                    "TFL bağlacı, iki cümle ilişkisi ve cümle kümesi özelliğini tek işaret veya tek etiket altında toplamak.",
+                    "Dil düzeyi ve nesne türü ayrımı sonraki semantik sonuç dersinde işaretlerin görevlerini korumak için zorunludur.",
+                ),
+            ),
+        ],
+        [
+            _worked(
+                "¬(A∨B) ile ¬A∧¬B: F,F,F,T / F,F,F,T",
+                "Ortak dört satırın tamamında ana sütunlar eşleşir.",
+                "Eşdeğer",
+            ),
+            _worked(
+                "A→B ile ¬A∨B: T,F,T,T / T,F,T,T",
+                "İki cümle A ve B üzerindeki her değerlemede aynı sonucu verir.",
+                "Koşul biçimi",
+            ),
+            _worked(
+                "A→B ile B→A; A=T, B=F",
+                "İlk cümle F, ikinci cümle T olduğundan satır ayırıcıdır.",
+                "Ayırıcı tanık",
+            ),
+            _worked(
+                "A∨B ile A∧B; yalnız TT ve FF satırlarına bakmak",
+                "TF ve FT satırları sütunları ayırır; iki eşleşme bütün-satırlar koşuluna yetmez.",
+                "Eksik tarama",
+                "bad",
+            ),
+            _worked(
+                "{A∨B, ¬A}; A=F, B=T",
+                "Aynı satır iki cümleyi de T yapar.",
+                "Ortak tanık",
+            ),
+            _worked(
+                "{A, ¬A}: ortak doğru satır yok",
+                "İki atomik statü olumsal olsa da küme birlikte doyurulamazdır.",
+                "Küme özelliği",
+            ),
+            _worked(
+                "{A→B, A, ¬B}: ortak doğru satır yok",
+                "A ve ¬B'nin T olduğu tek adayda A→B F olur.",
+                "Bütün adaylar elenir",
+            ),
+            _worked(
+                "Her cümle ayrı bir satırda doğru; öyleyse küme doyurulabilir.",
+                "Birlikte doğruluk aynı değerlemeyi gerektirir; farklı satırlar tek ortak tanık oluşturmaz.",
+                "Satır birleştirme",
+                "bad",
+            ),
+            _worked(
+                "A↔B formülü ile 'A ve B eşdeğerdir' iddiası",
+                "İlki nesne dilinde tek cümle, ikincisi iki cümleden söz eden üst dil iddiasıdır.",
+                "Dil düzeyi",
+            ),
+        ],
+        [
+            "İki cümlenin bir veya çoğu satırda aynı değeri almasını eşdeğerlik için yeterli saymak.",
+            "Karşılaştırılan cümlelerin bütün atomlarının birleşimi yerine yalnız ortak görünen atomları tabloya almak.",
+            "Ayırıcı değerlemede yalnız atomları yazıp iki hedef cümlenin farklı sonuçlarını göstermemek.",
+            "Her cümle için farklı doğru satır seçip kümeyi birlikte doyurulabilir ilan etmek.",
+            "Bir ortak doğru tanık bulunmasına rağmen bütün tabloyu gereksiz yere varlık kanıtı için zorunlu sanmak.",
+            "Birkaç satırda ortak doğruluk bulamayınca kümeyi birlikte doyurulamaz saymak.",
+            "Tek tek olumsal cümlelerden oluşan her kümeyi otomatik olarak tutarlı saymak.",
+            "Birlikte doyurulamaz kümeye tek bir çelişki cümlesiymiş gibi davranmak.",
+            "A↔B cümlesini 'A ile B mantıksal olarak eşdeğerdir' üst dil iddiasıyla aynı tür sanmak.",
+            "Eşdeğerliği henüz tanıtılmamış kanıt içi yeniden yazma izni olarak kullanmak.",
+        ],
+        _practice(
+            [
+                (
+                    "İki cümlenin mantıksal olarak eşdeğer olması için ne gerekir?",
+                    [
+                        "En az bir satırda aynı değeri almaları",
+                        "Her ortak değerlemede aynı değeri almaları",
+                        "Aynı sembol sayısına sahip olmaları",
+                        "İkisinin de bir yerde doğru olması",
+                    ],
+                    "Her ortak değerlemede aynı değeri almaları",
+                    "Eşdeğerlik bütün ortak değerleme uzayında sütun eşleşmesi gerektirir.",
+                    "Temel",
+                ),
+                (
+                    "Eşdeğer olmadığını göstermeye ne yeter?",
+                    [
+                        "Bir ayırıcı değerleme",
+                        "İki aynı satır",
+                        "Formüllerin farklı uzunlukta olması",
+                        "Bir ortak doğru satır",
+                    ],
+                    "Bir ayırıcı değerleme",
+                    "Tek satırda farklı doğruluk değerleri evrensel eşleşme iddiasını çürütür.",
+                    "Temel",
+                ),
+                (
+                    "A ile A∨B karşılaştırılırken ortak atom uzayı hangisidir?",
+                    ["Yalnız A", "Yalnız B", "A ve B", "Hiçbiri"],
+                    "A ve B",
+                    "Karşılaştırılan iki cümlede geçen bütün farklı atomlar birleştirilir.",
+                    "Orta",
+                ),
+                (
+                    "A→B ile B→A için hangi satır ayırıcıdır?",
+                    [
+                        "A=T, B=T",
+                        "A=T, B=F",
+                        "A=F, B=F",
+                        "Hiçbir satır",
+                    ],
+                    "A=T, B=F",
+                    "Bu satırda A→B F, B→A T olur.",
+                    "Orta",
+                ),
+                (
+                    "Bir cümle kümesi ne zaman birlikte doyurulabilirdir?",
+                    [
+                        "Her üye farklı bir satırda doğruysa",
+                        "En az bir değerleme bütün üyeleri aynı anda doğru yapıyorsa",
+                        "Üyelerin çoğu totolojiyse",
+                        "Hiç ortak atom yoksa",
+                    ],
+                    "En az bir değerleme bütün üyeleri aynı anda doğru yapıyorsa",
+                    "Ortak doğru tanığı tek ve aynı atom atamasıdır.",
+                    "Temel",
+                ),
+                (
+                    "{A∨B, ¬A} kümesini hangi değerleme birlikte doğru yapar?",
+                    [
+                        "A=T, B=T",
+                        "A=T, B=F",
+                        "A=F, B=T",
+                        "A=F, B=F",
+                    ],
+                    "A=F, B=T",
+                    "A∨B ve ¬A bu satırda birlikte T olur.",
+                    "Orta",
+                ),
+                (
+                    "Birlikte doyurulamazlık nasıl kanıtlanır?",
+                    [
+                        "Tek bir başarısız satır gösterilerek",
+                        "Bütün değerlemelerde en az bir üyenin F olduğu gösterilerek",
+                        "Üyelerden biri olumsal bulunarak",
+                        "Kümenin adı değiştirilerek",
+                    ],
+                    "Bütün değerlemelerde en az bir üyenin F olduğu gösterilerek",
+                    "Ortak doğru satırın yokluğu bütün ortak uzayın taranmasını gerektirir.",
+                    "İleri",
+                ),
+                (
+                    "A ve ¬A tek tek hangi statüde, birlikte hangi durumdadır?",
+                    [
+                        "İkisi de olumsal; küme birlikte doyurulamaz",
+                        "İkisi de çelişki; küme doyurulabilir",
+                        "İkisi de totoloji; küme tutarlı",
+                        "Statüleri yoktur",
+                    ],
+                    "İkisi de olumsal; küme birlikte doyurulamaz",
+                    "Her biri ayrı ayrı T ve F alır, fakat aynı satırda ikisi birden T olamaz.",
+                    "İleri",
+                ),
+                (
+                    "A↔B ile 'A ve B eşdeğerdir' arasındaki doğru ayrım hangisidir?",
+                    [
+                        "İkisi de aynı TFL cümlesidir",
+                        "İlki TFL cümlesi, ikincisi iki cümle hakkındaki üst dil iddiasıdır",
+                        "İlki cümle kümesi, ikincisi atomdur",
+                        "Aralarında hiçbir fark yoktur",
+                    ],
+                    "İlki TFL cümlesi, ikincisi iki cümle hakkındaki üst dil iddiasıdır",
+                    "Nesne dili bağlacı ile semantik ilişki iddiası farklı dil düzeylerindedir.",
+                    "İleri",
+                ),
+                (
+                    "Doyurulabilir bir küme için en kısa kesin kanıt hangisidir?",
+                    [
+                        "Bir ortak doğru değerleme",
+                        "Bir ayırıcı değerleme",
+                        "Bir yanlış satır",
+                        "Her formülün uzunluğu",
+                    ],
+                    "Bir ortak doğru değerleme",
+                    "Varlık iddiasını bütün üyeleri aynı anda T yapan tek tanık kanıtlar.",
+                    "Temel",
+                ),
+                (
+                    "İki cümlenin ana sütunları üç satırda aynı, bir satırda farklıysa ne çıkar?",
+                    [
+                        "Eşdeğerdirler",
+                        "Eşdeğer değildirler",
+                        "İkisi de çelişkidir",
+                        "Küme doyurulamazdır",
+                    ],
+                    "Eşdeğer değildirler",
+                    "Tek farklı satır eşdeğerlik için gereken evrensel eşleşmeyi bozar.",
+                    "Orta",
+                ),
+                (
+                    "Hangisi tek cümlenin değil cümle kümesinin özelliğidir?",
+                    ["Olumsallık", "Totoloji", "Birlikte doyurulabilirlik", "Çelişki"],
+                    "Birlikte doyurulabilirlik",
+                    "Bu özellik kümenin bütün üyelerinin ortak bir doğru satırı olup olmadığını sorar.",
+                    "Zor",
+                ),
+            ]
+        ),
+        {
+            "prompt": "İki cümle çiftini ve iki cümle kümesini ortak atom tablolarıyla incele; gereken yerde ayırıcı veya ortak doğru tanığı ver.",
+            "starter": "Çift I: ¬(A∨B) / ¬A∧¬B\nÇift II: A→B / B→A\nKüme I: {A∨B, A→C, B→C}\nKüme II: {A→B, A, ¬B}",
+            "checks": [
+                "Her problem için bütün formüllerde geçen atomların birleşimi çıkarılır",
+                "Çift I'in iki ana sütunu bütün satırlarda karşılaştırılır",
+                "Çift II için en az bir ayırıcı değerleme iki sonuç değeriyle yazılır",
+                "Küme I için bütün üyeleri aynı anda T yapan ortak satır gösterilir",
+                "Küme II için bütün ortak doğru adaylarının neden elendiği gösterilir",
+                "Tek cümle statüsü, iki cümle ilişkisi ve küme özelliği doğru terimlerle ayrılır",
+            ],
+            "solution": "Çift I eşdeğerdir: iki ana sütun F,F,F,T'dir. Çift II eşdeğer değildir: A=T, B=F iken A→B F, B→A T olur; bu satır ayırıcı değerlemedir. Küme I birlikte doyurulabilirdir; A=T, B=T, C=T bütün üyeleri T yapar. Küme II birlikte doyurulamazdır: A ve ¬B'nin birlikte T olduğu A=T, B=F satırında A→B F olur; diğer satırlarda A veya ¬B zaten F'dir.",
+        },
+        [
+            _production_task(
+                "İki cümle çifti ve iki cümle kümesi tasarla; her birini ortak atom sütunlu tam tabloyla sınayıp semantik tanıklarıyla raporla.",
+                [
+                    "Bir çift mantıksal olarak eşdeğer, bir çift eşdeğer olmayan iyi biçimlenmiş TFL cümlelerinden oluşur.",
+                    "Eşdeğer çift için iki ana sütunun bütün satırlarda aynı olduğu gösterilir.",
+                    "Eşdeğer olmayan çift için atom atamaları ve iki farklı sonuç değeri taşıyan ayırıcı satır verilir.",
+                    "Bir küme birlikte doyurulabilir, bir küme birlikte doyurulamaz olacak biçimde en az ikişer cümle içerir.",
+                    "Doyurulabilir küme için bütün üyeleri aynı anda T yapan ortak değerleme verilir.",
+                    "Birlikte doyurulamaz küme için ortak atom uzayındaki bütün satırların neden elendiği gösterilir.",
+                    "Her sonuç cümlesinde değerlendirilen nesnenin tek cümle, cümle çifti veya cümle kümesi olduğu açıkça yazılır.",
+                ],
+                "Evrensel iddialarda bütün satırları, varlık iddialarında açık tanığı ve yokluk iddialarında tam eleme kaydını görünür kıl.",
+                "Üretim kısıtları",
+                [
+                    "Eşdeğer çift: yalnız aynı formülü iki kez yazma",
+                    "Eşdeğer olmayan çift: en az bir ayırıcı satır adlandır",
+                    "Doyurulabilir küme: en az üç cümle kullan",
+                    "Birlikte doyurulamaz küme: üyelerin hepsi tek başına olumsal olsun",
+                ],
+                "Örnek aileler yalnız denetim içindir: A→B / ¬A∨B; A∨B / A∧B; {A∨B, ¬A}; {A→B, A, ¬B}. Öğrenci farklı yapılar üretmelidir.",
+            ),
+        ],
+        [
+            "Eşdeğerlik kararını iki ana sütunun ortak değerleme uzayındaki bütün satırlarıyla gerekçelendirir.",
+            "Eşdeğer olmayan çift için en az bir ayırıcı değerlemeyi atom ve sonuç değerleriyle açıkça gösterir.",
+            "Doyurulabilir küme için bütün üyeleri aynı anda doğru yapan ortak değerleme sunar.",
+            "Birlikte doyurulamaz küme için hiçbir ortak doğru satır kalmadığını eksiksiz tabloyla gösterir.",
+            "Tek cümle statüsü, iki cümle ilişkisi ve cümle kümesi özelliğini doğru terimlerle ayırır.",
+            "A↔B TFL cümlesi ile iki cümlenin eşdeğer olduğunu söyleyen üst dil iddiasını birbirine dönüştürmeden açıklar.",
+        ],
+        [
+            "Her biri olumsal iki cümle neden birlikte doyurulamaz olabilir?",
+            "Eşdeğer olmadığını göstermek için nasıl bir değerleme gerekir?",
+            "Doyurulabilirliği bir satırla kanıtlayabilirken birlikte doyurulamazlık neden bütün satırları gerektirir?",
+            "A↔B ile 'A ve B mantıksal olarak eşdeğerdir' arasındaki dil düzeyi farkı nedir?",
+        ],
+        "Sonraki derste cümle kümelerinin ortak doğruluğundan öncül-sonuç ilişkisine geçerek argüman geçerliliğini ve karşı değerlemeyi sınayacağız.",
+        [
+            "forallx-use-mention",
+            "forallx-valuations",
+            "forallx-logical-concepts",
+            "mit-logic-sequence",
+            "mit-logic-study-guide",
+        ],
+        "Bu ders iki cümlenin semantik eşdeğerliği ile cümle kümelerinin birlikte doyurulabilirliğini ölçer. Argüman geçerliliği ve semantik sonuç C18'e, eşdeğerlikleri kanıt satırında yeniden yazma lisansı D aşamasına bırakılır. 'Çelişki' tek cümleye, 'birlikte doyurulamaz' ve açıklayıcı eş anlamlı olarak 'semantik tutarsız' cümle kümesine ayrılır.",
+        ["ders-21-dogruluk-tablolari-ii-ve-gecerlilik"],
+    )
+
+    lesson["reading_note"] = (
+        "İki cümle için ortak atom uzayında bütün sütunları karşılaştır; küme için aynı satırda bütün üyelerin T olmasını ara. Varlık iddiasına bir tanık, yokluk iddiasına tam tarama gerekir."
+    )
+    lesson["symbol_set"] = [
+        "A",
+        "B",
+        "C",
+        "𝒜",
+        "ℬ",
+        "v",
+        "T",
+        "F",
+        "¬",
+        "∧",
+        "∨",
+        "→",
+        "↔",
+        "{",
+        "}",
+        "(",
+        ")",
+    ]
+    lesson["proof_tools"] = [
+        "Ortak atom envanteri",
+        "Yan yana ana sütun karşılaştırması",
+        "Ayırıcı değerleme",
+        "Ortak doğru değerleme",
+        "Bütün satırları eleme kaydı",
+        "Tek cümle/çift/küme tür denetimi",
+        "Nesne dili/üst dil ayrımı",
+    ]
+    lesson["equivalence_checks"] = [
+        {
+            "id": "de-morgan-equivalence",
+            "left": "¬(A ∨ B)",
+            "right": "¬A ∧ ¬B",
+            "expected_equivalent": True,
+            "expected_separating_valuations": [],
+        },
+        {
+            "id": "conditional-equivalence",
+            "left": "A → B",
+            "right": "¬A ∨ B",
+            "expected_equivalent": True,
+            "expected_separating_valuations": [],
+        },
+        {
+            "id": "double-negation-equivalence",
+            "left": "¬¬A",
+            "right": "A",
+            "expected_equivalent": True,
+            "expected_separating_valuations": [],
+        },
+        {
+            "id": "disjunction-commutativity",
+            "left": "A ∨ B",
+            "right": "B ∨ A",
+            "expected_equivalent": True,
+            "expected_separating_valuations": [],
+        },
+        {
+            "id": "disjunction-vs-conjunction",
+            "left": "A ∨ B",
+            "right": "A ∧ B",
+            "expected_equivalent": False,
+            "expected_separating_valuations": [
+                {"A": "T", "B": "F"},
+                {"A": "F", "B": "T"},
+            ],
+        },
+        {
+            "id": "reversed-conditionals",
+            "left": "A → B",
+            "right": "B → A",
+            "expected_equivalent": False,
+            "expected_separating_valuations": [
+                {"A": "T", "B": "F"},
+                {"A": "F", "B": "T"},
+            ],
+        },
+        {
+            "id": "biconditional-expansion",
+            "left": "A ↔ B",
+            "right": "(A → B) ∧ (B → A)",
+            "expected_equivalent": True,
+            "expected_separating_valuations": [],
+        },
+        {
+            "id": "union-atom-space-separator",
+            "left": "A",
+            "right": "A ∨ B",
+            "expected_equivalent": False,
+            "expected_separating_valuations": [
+                {"A": "F", "B": "T"},
+            ],
+        },
+    ]
+    lesson["satisfiability_checks"] = [
+        {
+            "id": "direct-incompatibility",
+            "formulas": ["A", "¬A"],
+            "expected_jointly_satisfiable": False,
+            "expected_satisfying_valuations": [],
+        },
+        {
+            "id": "disjunction-with-negated-member",
+            "formulas": ["A ∨ B", "¬A"],
+            "expected_jointly_satisfiable": True,
+            "expected_satisfying_valuations": [
+                {"A": "F", "B": "T"},
+            ],
+        },
+        {
+            "id": "modus-ponens-incompatibility",
+            "formulas": ["A → B", "A", "¬B"],
+            "expected_jointly_satisfiable": False,
+            "expected_satisfying_valuations": [],
+        },
+        {
+            "id": "shared-consequent-set",
+            "formulas": ["A ∨ B", "A → C", "B → C"],
+            "expected_jointly_satisfiable": True,
+            "expected_satisfying_valuations": [
+                {"A": "T", "B": "T", "C": "T"},
+                {"A": "T", "B": "F", "C": "T"},
+                {"A": "F", "B": "T", "C": "T"},
+            ],
+        },
+        {
+            "id": "two-positive-atoms",
+            "formulas": ["A", "B"],
+            "expected_jointly_satisfiable": True,
+            "expected_satisfying_valuations": [
+                {"A": "T", "B": "T"},
+            ],
+        },
+        {
+            "id": "exhausted-disjunction",
+            "formulas": ["A ∨ B", "¬A", "¬B"],
+            "expected_jointly_satisfiable": False,
+            "expected_satisfying_valuations": [],
+        },
+        {
+            "id": "biconditional-with-positive-atom",
+            "formulas": ["A ↔ B", "A"],
+            "expected_jointly_satisfiable": True,
+            "expected_satisfying_valuations": [
+                {"A": "T", "B": "T"},
+            ],
+        },
+        {
+            "id": "conditional-with-negated-consequent",
+            "formulas": ["A → B", "¬B"],
+            "expected_jointly_satisfiable": True,
+            "expected_satisfying_valuations": [
+                {"A": "F", "B": "F"},
+            ],
+        },
+    ]
+    return lesson
+
+
 STAGE_C_CANDIDATE_LESSONS = [
     _candidate_c14(),
     _candidate_c15(),
     _candidate_c16(),
+    _candidate_c17(),
 ]
 
 STAGE_C_CANDIDATE_MAP = {

@@ -385,3 +385,74 @@ def classify_semantic_status(
         "true_valuations": true_valuations,
         "false_valuations": false_valuations,
     }
+
+
+def analyze_semantic_equivalence(
+    left: str | TFLFormula,
+    right: str | TFLFormula,
+    *,
+    max_atoms: int = MAX_COMPLETE_TABLE_ATOMS,
+) -> dict:
+    """Compare two TFL formulas under every valuation of their shared space."""
+
+    parsed_left = parse_tfl(left) if isinstance(left, str) else left
+    parsed_right = parse_tfl(right) if isinstance(right, str) else right
+    atoms = sorted(
+        parsed_left.atoms | parsed_right.atoms,
+        key=_atom_sort_key,
+    )
+    valuations = generate_valuations(atoms, max_atoms=max_atoms)
+    separating_valuations = []
+
+    for valuation in valuations:
+        if evaluate_tfl(parsed_left, valuation) != evaluate_tfl(
+            parsed_right,
+            valuation,
+        ):
+            separating_valuations.append(dict(valuation))
+
+    return {
+        "left_formula": parsed_left.render(),
+        "right_formula": parsed_right.render(),
+        "atoms": atoms,
+        "row_count": len(valuations),
+        "equivalent": not separating_valuations,
+        "separating_valuations": separating_valuations,
+    }
+
+
+def analyze_joint_satisfiability(
+    formulas: Iterable[str | TFLFormula],
+    *,
+    max_atoms: int = MAX_COMPLETE_TABLE_ATOMS,
+) -> dict:
+    """Find valuations that make every formula in a non-empty set true."""
+
+    parsed_formulas = [
+        parse_tfl(formula) if isinstance(formula, str) else formula
+        for formula in formulas
+    ]
+    if not parsed_formulas:
+        raise ValueError("En az bir TFL cümlesi gereklidir.")
+
+    atoms = sorted(
+        set().union(*(formula.atoms for formula in parsed_formulas)),
+        key=_atom_sort_key,
+    )
+    valuations = generate_valuations(atoms, max_atoms=max_atoms)
+    satisfying_valuations = [
+        dict(valuation)
+        for valuation in valuations
+        if all(
+            evaluate_tfl(formula, valuation)
+            for formula in parsed_formulas
+        )
+    ]
+
+    return {
+        "formulas": [formula.render() for formula in parsed_formulas],
+        "atoms": atoms,
+        "row_count": len(valuations),
+        "jointly_satisfiable": bool(satisfying_valuations),
+        "satisfying_valuations": satisfying_valuations,
+    }
