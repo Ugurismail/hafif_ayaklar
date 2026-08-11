@@ -347,3 +347,41 @@ def complete_truth_table(
         "main_column": main_column,
         "rows": rows,
     }
+
+
+def classify_semantic_status(
+    formula: str | TFLFormula,
+    *,
+    max_atoms: int = MAX_COMPLETE_TABLE_ATOMS,
+) -> dict:
+    """Classify one TFL formula from every row of its complete table."""
+
+    table = complete_truth_table(formula, max_atoms=max_atoms)
+    main_column = table["main_column"]
+    true_valuations = []
+    false_valuations = []
+
+    for row in table["rows"]:
+        target = (
+            true_valuations
+            if row["values"][main_column] == "T"
+            else false_valuations
+        )
+        target.append(dict(row["valuation"]))
+
+    if not false_valuations:
+        status = "tautology"
+    elif not true_valuations:
+        status = "contradiction"
+    else:
+        status = "contingency"
+
+    return {
+        "formula": table["formula"],
+        "status": status,
+        "row_count": table["row_count"],
+        "true_count": len(true_valuations),
+        "false_count": len(false_valuations),
+        "true_valuations": true_valuations,
+        "false_valuations": false_valuations,
+    }

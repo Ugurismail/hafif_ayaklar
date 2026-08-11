@@ -10,6 +10,7 @@ from .logic_phase3_stage_c import (
 )
 from .logic_tfl_semantics import (
     TFLParseError,
+    classify_semantic_status,
     complete_truth_table,
     compound_subformulas,
     evaluate_tfl,
@@ -55,11 +56,11 @@ class LogicPhase3StageCIntegrityTests(SimpleTestCase):
     def test_stage_c_candidate_ids_orders_and_slugs_are_unique(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_C_CANDIDATE_LESSONS],
-            ["C14", "C15"],
+            ["C14", "C15", "C16"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_C_CANDIDATE_LESSONS],
-            [14, 15],
+            [14, 15, 16],
         )
         self.assertEqual(
             len({lesson["slug"] for lesson in STAGE_C_CANDIDATE_LESSONS}),
@@ -282,6 +283,33 @@ class TFLSemanticCoreTests(SimpleTestCase):
             ["T", "T"],
         )
 
+    def test_semantic_status_uses_every_main_column_value(self):
+        cases = [
+            ("A ∨ ¬A", "tautology", 2, 0),
+            ("A ∧ ¬A", "contradiction", 0, 2),
+            ("A → B", "contingency", 3, 1),
+        ]
+
+        for formula, expected_status, true_count, false_count in cases:
+            with self.subTest(formula=formula):
+                result = classify_semantic_status(formula)
+                self.assertEqual(result["status"], expected_status)
+                self.assertEqual(result["true_count"], true_count)
+                self.assertEqual(result["false_count"], false_count)
+                self.assertEqual(
+                    result["true_count"] + result["false_count"],
+                    result["row_count"],
+                )
+
+    def test_contingency_exposes_both_witness_types(self):
+        result = classify_semantic_status("A → B")
+
+        self.assertIn({"A": "T", "B": "T"}, result["true_valuations"])
+        self.assertEqual(
+            result["false_valuations"],
+            [{"A": "T", "B": "F"}],
+        )
+
 
 class LogicPhase3StageCC14CandidateTests(SimpleTestCase):
     required_fields = {
@@ -320,8 +348,8 @@ class LogicPhase3StageCC14CandidateTests(SimpleTestCase):
         self.lesson = STAGE_C_CANDIDATE_LESSONS[0]
 
     def test_c14_remains_the_first_candidate_as_stage_c_grows(self):
-        self.assertEqual(len(STAGE_C_CANDIDATE_LESSONS), 2)
-        self.assertEqual(len(STAGE_C_CANDIDATE_MAP), 2)
+        self.assertEqual(len(STAGE_C_CANDIDATE_LESSONS), 3)
+        self.assertEqual(len(STAGE_C_CANDIDATE_MAP), 3)
         self.assertEqual(self.lesson["curriculum_id"], "C14")
         self.assertEqual(self.lesson["order"], 14)
         self.assertEqual(self.lesson["release_status"], "candidate")
@@ -626,6 +654,195 @@ class LogicPhase3StageCC15CandidateTests(SimpleTestCase):
                 "forallx-characteristic-tables",
                 "forallx-truth-functionality",
                 "forallx-valuations",
+                "mit-logic-sequence",
+                "mit-logic-study-guide",
+            ],
+        )
+        self.assertTrue(
+            set(self.lesson["source_ids"]).issubset(
+                STAGE_C_SOURCE_REFERENCES
+            )
+        )
+
+
+class LogicPhase3StageCC16CandidateTests(SimpleTestCase):
+    def setUp(self):
+        self.lesson = STAGE_C_CANDIDATE_MAP[
+            "ders-totoloji-celiski-ve-olumsallik"
+        ]
+
+    def test_c16_identity_order_and_duration_are_stable(self):
+        self.assertEqual(self.lesson["curriculum_id"], "C16")
+        self.assertEqual(self.lesson["order"], 16)
+        self.assertEqual(self.lesson["release_status"], "candidate")
+        self.assertEqual(self.lesson["estimated_minutes"], 35)
+        self.assertEqual(self.lesson["duration"], "35 dk")
+        self.assertIn("status_checks", self.lesson)
+
+    def test_c16_is_not_activated_in_the_learner_facing_course(self):
+        visible_slugs = {lesson["slug"] for lesson in VISIBLE_LOGIC_LESSONS}
+
+        self.assertNotIn(self.lesson["slug"], visible_slugs)
+
+    def test_c16_prerequisites_bridge_stage_a_and_c15(self):
+        expected = [
+            "ders-3-gecerlilik-ve-dogruluk",
+            "ders-kullanim-anma-ve-dil-duzeyleri",
+            "ders-tam-dogruluk-tablosu-kurma",
+        ]
+
+        self.assertEqual(self.lesson["prerequisites"], expected)
+        self.assertTrue(set(expected[:2]).issubset(STAGE_A_CANDIDATE_MAP))
+        self.assertIn(expected[2], STAGE_C_CANDIDATE_MAP)
+        self.assertLess(
+            STAGE_C_CANDIDATE_MAP[expected[2]]["order"],
+            self.lesson["order"],
+        )
+
+    def test_c16_has_a_complete_instructional_sequence(self):
+        self.assertGreaterEqual(len(self.lesson["goals"]), 5)
+        self.assertGreaterEqual(len(self.lesson["sections"]), 5)
+        self.assertGreaterEqual(len(self.lesson["worked_examples"]), 8)
+        self.assertGreaterEqual(len(self.lesson["mistakes"]), 9)
+        self.assertGreaterEqual(len(self.lesson["practice"]), 12)
+        self.assertEqual(len(self.lesson["production_tasks"]), 1)
+        self.assertGreaterEqual(len(self.lesson["mastery_evidence"]), 6)
+        self.assertGreaterEqual(len(self.lesson["review_prompts"]), 4)
+
+        guided = self.lesson["guided_practice"]
+        self.assertEqual(
+            set(guided),
+            {"prompt", "starter", "checks", "solution"},
+        )
+        self.assertGreaterEqual(len(guided["checks"]), 6)
+        self.assertIn("çoğunluk", guided["solution"].lower())
+        self.assertIn("olumsaldır", guided["solution"].lower())
+
+        production = self.lesson["production_tasks"][0]
+        self.assertGreaterEqual(len(production["checkpoints"]), 7)
+        self.assertEqual(len(production["stimulus"]["items"]), 4)
+        self.assertIn("bir doğru ve bir yanlış", str(production).lower())
+        self.assertIn("atom", str(production).lower())
+
+    def test_c16_practice_answers_are_valid_unique_and_explained(self):
+        for item in self.lesson["practice"]:
+            with self.subTest(prompt=item["prompt"]):
+                self.assertIn(item["answer"], item["choices"])
+                self.assertEqual(len(item["choices"]), len(set(item["choices"])))
+                self.assertTrue(item["explanation"].strip())
+                self.assertIn(
+                    item["difficulty_label"],
+                    {"Temel", "Orta", "İleri", "Zor", "Çok Zor"},
+                )
+
+    def test_c16_stays_with_single_formula_status_not_later_relations(self):
+        searchable = str(self.lesson)
+        production = str(self.lesson["production_tasks"][0]).lower()
+        blocked_symbols = {"⊢", "⊨", "∀", "∃", "≡"}
+
+        self.assertTrue(blocked_symbols.isdisjoint(searchable))
+        self.assertNotIn("karşı değerleme", searchable.lower())
+        self.assertNotIn("doğal türetim", searchable.lower())
+        self.assertNotIn("çıkarım kuralı", searchable.lower())
+        self.assertNotIn("eşdeğer", production)
+        self.assertNotIn("birlikte doyur", production)
+        self.assertNotIn("kısmi tablo", production)
+        self.assertNotIn("tfl.equivalence_test", self.lesson["competencies"])
+        self.assertNotIn("tfl.validity_test", self.lesson["competencies"])
+
+    def test_c16_teaches_quantified_status_and_representation_limits(self):
+        searchable = str(self.lesson).lower()
+
+        for target in [
+            "her değerlemede",
+            "en az bir değerlemede",
+            "totoloji",
+            "çelişki",
+            "olumsal",
+            "ana sütun",
+            "doğru tanığı",
+            "yanlış tanığı",
+            "üst dil",
+            "2+2=4",
+            "sembolleştirme",
+            "çoğunluk",
+        ]:
+            with self.subTest(target=target):
+                self.assertIn(target, searchable)
+
+        self.assertIn("tek bir değerleme", searchable)
+        self.assertIn("bütün değerlemeler", searchable)
+        self.assertIn("tfl bakımından", searchable)
+
+    def test_every_status_fixture_is_independently_recomputed(self):
+        check_ids = set()
+        statuses = set()
+
+        for check in self.lesson["status_checks"]:
+            with self.subTest(check=check["id"]):
+                self.assertNotIn(check["id"], check_ids)
+                check_ids.add(check["id"])
+                table = complete_truth_table(check["formula"])
+                main_values = [
+                    row["values"][table["main_column"]]
+                    for row in table["rows"]
+                ]
+                true_count = main_values.count("T")
+                false_count = main_values.count("F")
+
+                if false_count == 0:
+                    independently_derived = "tautology"
+                elif true_count == 0:
+                    independently_derived = "contradiction"
+                else:
+                    independently_derived = "contingency"
+
+                statuses.add(independently_derived)
+                self.assertEqual(
+                    main_values,
+                    check["expected_main_values"],
+                )
+                self.assertEqual(
+                    independently_derived,
+                    check["expected_status"],
+                )
+                self.assertEqual(true_count, check["expected_true_count"])
+                self.assertEqual(false_count, check["expected_false_count"])
+                self.assertEqual(true_count + false_count, table["row_count"])
+
+                classified = classify_semantic_status(check["formula"])
+                self.assertEqual(classified["status"], independently_derived)
+                self.assertEqual(classified["true_count"], true_count)
+                self.assertEqual(classified["false_count"], false_count)
+                if independently_derived == "contingency":
+                    self.assertTrue(classified["true_valuations"])
+                    self.assertTrue(classified["false_valuations"])
+
+        self.assertGreaterEqual(len(check_ids), 10)
+        self.assertEqual(
+            statuses,
+            {"tautology", "contradiction", "contingency"},
+        )
+        self.assertTrue(
+            {
+                "excluded-middle",
+                "direct-contradiction",
+                "material-conditional-contingent",
+                "atomic-contingency",
+                "sparse-contingency",
+                "conditional-cover",
+                "incompatible-conditional-conjunction",
+            }.issubset(check_ids)
+        )
+
+    def test_c16_sources_are_explicit_and_known(self):
+        self.assertEqual(
+            self.lesson["source_ids"],
+            [
+                "forallx-use-mention",
+                "forallx-truth-functionality",
+                "forallx-valuations",
+                "forallx-logical-concepts",
                 "mit-logic-sequence",
                 "mit-logic-study-guide",
             ],

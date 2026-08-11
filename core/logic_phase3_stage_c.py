@@ -32,6 +32,10 @@ STAGE_C_SOURCE_REFERENCES = {
         "title": "forall x: Calgary - Valuations",
         "url": "https://forallx.openlogicproject.org/html/Ch11.html",
     },
+    "forallx-logical-concepts": {
+        "title": "forall x: Calgary - Logical concepts",
+        "url": "https://forallx.openlogicproject.org/html/Ch12.html",
+    },
     "mit-logic-sequence": {
         "title": "MIT OpenCourseWare Logic I - Calendar",
         "url": "https://ocw.mit.edu/courses/24-241-logic-i-fall-2009/pages/calendar",
@@ -1065,7 +1069,561 @@ def _candidate_c15():
     return lesson
 
 
-STAGE_C_CANDIDATE_LESSONS = [_candidate_c14(), _candidate_c15()]
+def _candidate_c16():
+    lesson = _lesson(
+        "C16",
+        "ders-totoloji-celiski-ve-olumsallik",
+        "Totoloji, Çelişki ve Olumsallık",
+        "Bir TFL cümlesinin tek bir değerlemedeki doğruluk değerini bütün değerlemelerdeki davranışından ayırır; doğrulanmış ana sütunu totoloji, çelişki veya olumsallık olarak sınıflandırır.",
+        "Tek TFL cümlesinin semantik statüsü",
+        35,
+        [
+            "ders-3-gecerlilik-ve-dogruluk",
+            "ders-kullanim-anma-ve-dil-duzeyleri",
+            "ders-tam-dogruluk-tablosu-kurma",
+        ],
+        [
+            "tfl.status_classify",
+            "tfl.status_justify",
+            "tfl.truth_vs_tautology_distinguish",
+            "metalanguage.formula_status_state",
+        ],
+        [
+            "Totoloji, çelişki ve olumsallığı ana sütunun bütün satırlarını nicelikli ifadelerle tarayarak tanımlamak.",
+            "Tek bir değerlemede doğru veya yanlış çıkmayı, bir cümlenin bütün değerlemelerdeki semantik statüsünden ayırmak.",
+            "Olumsallığı en az bir doğru ve en az bir yanlış satırı açıkça göstererek gerekçelendirmek.",
+            "'Doğru cümle' ile 'totoloji', 'yanlış cümle' ile 'çelişki' arasındaki tür farkını açıklamak.",
+            "TFL'deki statünün yalnız sembolleştirilen doğruluk işlevsel yapıyı sınadığını ve doğal dildeki her zorunluluğu yakalamadığını belirtmek.",
+        ],
+        [
+            (
+                "Semantik statü",
+                "Tek bir TFL cümlesinin bütün olası değerlemelerde aldığı doğruluk değerlerinin oluşturduğu sınıf.",
+            ),
+            (
+                "Totoloji (tautology)",
+                "Her değerlemede Doğru (T) olan TFL cümlesi.",
+            ),
+            (
+                "Çelişki",
+                "Her değerlemede Yanlış (F) olan tek TFL cümlesi.",
+            ),
+            (
+                "Olumsal cümle",
+                "En az bir değerlemede Doğru (T) ve en az bir değerlemede Yanlış (F) olan TFL cümlesi.",
+            ),
+            (
+                "Ana sütun örüntüsü",
+                "Tam tabloda bütün formülün her değerlemede aldığı T/F değerlerinin sıralı dizisi.",
+            ),
+            (
+                "Doğru tanığı",
+                "Olumsal bir cümlenin Doğru (T) çıktığını gösteren açık bir değerleme satırı.",
+            ),
+            (
+                "Yanlış tanığı",
+                "Olumsal bir cümlenin Yanlış (F) çıktığını gösteren açık bir değerleme satırı.",
+            ),
+        ],
+        [
+            _section(
+                "Bir satırdaki değer ile bütün tablodaki statü",
+                "v(𝒜)=T, 𝒜 cümlesinin yalnız v değerlemesinde doğru olduğunu söyler. Totoloji, çelişki ve olumsallık ise aynı cümlenin bütün değerlemelerdeki davranışını sınıflandırır.",
+                "Bir tablo satırından elde edilen sonucu cümlenin genel statüsüyle karıştırmamak için.",
+                "tek satır: v(𝒜)=T veya F; statü: ana sütunun bütün satırları",
+                "Doğruluk değeri bir değerlemeye görelidir. Semantik statü ise tam değerleme uzayına bakılarak belirlenir. Bu yüzden tek doğru satır totolojiyi, tek yanlış satır çelişkiyi kanıtlamaz.",
+                "'Bu satırda doğru' cümlesinden 'totolojidir' sonucuna atlama. Önce tablonun tam ve ana sütunun doğrulanmış olması gerekir.",
+                [
+                    (
+                        "A→B, A=F ve B=F iken T'dir.",
+                        "Bu yalnız bir satır sonucudur; aynı formül A=T ve B=F iken F olur.",
+                    ),
+                    (
+                        "A∨¬A, A=T iken T ve A=F iken T'dir.",
+                        "Tek atomun iki değerlemesi de tarandığı için genel statü çıkarılabilir.",
+                    ),
+                    (
+                        "A∧¬A, A=T iken F ve A=F iken F'dir.",
+                        "Bütün satırlar F olduğunda tek cümle çelişki olarak sınıflandırılır.",
+                    ),
+                ],
+                (
+                    "Önce tek satırın değerini, sonra bütün ana sütunun statüsünü ayrı cümlelerle belirtmek.",
+                    "Bir satırdaki T veya F değerini doğrudan genel statü etiketi yapmak.",
+                    "Değerleme niceleyicisi değişir: satır iddiası 'bu değerlemede', statü iddiası 'bütün değerlemelerde' veya 'en az bir değerlemede' der.",
+                ),
+            ),
+            _section(
+                "Üç statüyü niceliklerle tanımlama",
+                "Totoloji için her satır T, çelişki için her satır F, olumsallık içinse en az bir T ve en az bir F gerekir.",
+                "Ana sütun örüntüsünü ezberlenmiş biçimlere değil tanımlara göre sınıflandırırken.",
+                "her T → totoloji; her F → çelişki; en az bir T ve en az bir F → olumsal",
+                "Üç sınıf klasik iki değerli TFL'de birbirini dışlar ve bütün tek-cümle ana sütun örüntülerini kapsar. T oranı değil, gerekli nicelik koşulunun karşılanması belirleyicidir.",
+                "'Çoğu satır T'yi totoloji, 'çoğu satır F'yi çelişki sanma. Tek karşı örnek bile ilk iki evrensel iddiayı bozar ve iki değerin de bulunduğu örüntüyü olumsal yapar.",
+                [
+                    (
+                        "T,T,T,T",
+                        "Dört satırın her biri T olduğu için totolojidir.",
+                    ),
+                    (
+                        "F,F,F,F",
+                        "Dört satırın her biri F olduğu için çelişkidir.",
+                    ),
+                    (
+                        "T,F,T,T",
+                        "Hem T hem F bulunduğu için olumsaldır; üç doğru satır totoloji için yeterli değildir.",
+                    ),
+                ],
+                (
+                    "Statü gerekçesinde 'her', 'hiçbir' veya iki ayrı 'en az bir' niceliğini açıkça kullanmak.",
+                    "T ve F hücrelerini sayıp çoğunluğa göre statü seçmek.",
+                    "Totoloji ve çelişki evrensel koşullardır; olumsallık iki farklı türde tanık gerektiren karma koşuldur.",
+                ),
+            ),
+            _section(
+                "Ana sütundan güvenli sınıflandırma akışı",
+                "Statü kararı, yalnız tamlığı ve hesabı denetlenmiş ana sütundan verilir: önce F var mı, sonra T var mı diye bakılır ve tanık satırlar kaydedilir.",
+                "Tam tabloyu bir semantik statü iddiasına dönüştürürken.",
+                "tamlık → ana sütun → F ara → T ara → statü ve tanık",
+                "Ana sütunda hiç F yoksa totoloji; hiç T yoksa çelişki; ikisi de varsa olumsallık bulunur. Olumsal sonuçta bir doğru ve bir yanlış değerleme açıkça yazılır. Evrensel statülerde bütün satır kapsamı denetlenir.",
+                "Ara sütunu ana sütun sanma veya eksik tabloda görünmeyen satırları yok sayma. Statü, doğru kurulmamış tablonun düzenli görünen son sütunundan güvenle çıkmaz.",
+                [
+                    (
+                        "(A∧B)→A ana sütunu T,T,T,T",
+                        "Hiç F yoktur; tam dört satır doğrulandığında formül totolojidir.",
+                    ),
+                    (
+                        "(A∨B)∧¬(A∨B) ana sütunu F,F,F,F",
+                        "Hiç T yoktur; formül çelişkidir.",
+                    ),
+                    (
+                        "A→B ana sütunu T,F,T,T",
+                        "TT doğru tanığı, TF yanlış tanığı olabilir; formül olumsaldır.",
+                    ),
+                ],
+                (
+                    "Statüden önce C15 denetimlerini tamamlamak ve olumsallıkta iki karşıt tanığı açıkça göstermek.",
+                    "Formülün görünüşüne bakıp tablo kurmadan etiketi tahmin etmek.",
+                    "Statü, sözdizimsel benzerlikten değil bütün değerlemelerde hesaplanan ana sütundan gelir.",
+                ),
+            ),
+            _section(
+                "Fiili doğruluk, zorunlu doğruluk ve TFL yapısı",
+                "Bir doğal dil cümlesi fiilen veya başka bir kuramda zorunlu doğru olabilir; fakat TFL'de yapısız bir atom olarak temsil edilirse hem T hem F değerlemesi alır ve olumsal görünür.",
+                "'Bu açıkça doğrudur, öyleyse totolojidir' türündeki doğal dil itirazlarını değerlendirirken.",
+                "Doğal dil içeriği → sembolleştirme seçimi → TFL'nin görebildiği doğruluk işlevsel yapı",
+                "TFL tablosu aritmetik, tanımsal, modal veya kavramsal zorunluluğu içeriden çözümlemez. `2+2=4` cümlesi A atomu olarak bırakılırsa A için T ve F satırları üretir; bu, aritmetiğin yanlış olabileceğini değil temsilin o yapıyı kodlamadığını gösterir.",
+                "TFL'deki olumsal etiketini doğal dil cümlesinin metafizik statüsü hakkında eksiksiz hüküm sanma. Sonuç sembol anahtarına ve korunan yapıya bağlıdır.",
+                [
+                    (
+                        "A: 2+2=4",
+                        "A atomik bırakıldığında TFL tablosu A'yı T ve F değerlemeleri altında tarar; formül TFL bakımından olumsaldır.",
+                    ),
+                    (
+                        "A∨¬A",
+                        "Totoloji, A'nın içeriğinden değil açık doğruluk işlevsel biçimden doğar.",
+                    ),
+                    (
+                        "A: Ankara Türkiye'nin başkentidir.",
+                        "Fiilen doğru olması, yalnız A biçiminin her değerlemede doğru olmasını sağlamaz.",
+                    ),
+                ],
+                (
+                    "Statüyü 'bu sembolleştirmede, TFL bakımından' kaydıyla ifade etmek.",
+                    "Doğal dilde doğru görünen her atomu totoloji ilan etmek.",
+                    "Doğruluk tablosu yalnız formülde temsil edilen doğruluk işlevsel yapıya duyarlıdır.",
+                ),
+            ),
+            _section(
+                "Cümlenin kendisi ile statü iddiasını ayırma",
+                "A∨¬A bir TFL cümlesidir; 'A∨¬A bir totolojidir' ise o cümleden söz eden üst dil iddiasıdır. Statü etiketi formülün içine yeni bir bağlaç gibi yazılmaz.",
+                "Çözümde nesne dili formülünü, tablo verisini ve sonuç cümlesini açık katmanlarda sunarken.",
+                "formül | tam tablo | üst dilde statü ve gerekçe",
+                "TFL cümlesi her satırda T veya F alır. Onun statüsünü söyleyen açıklama ise bütün satırları niceliklendiren üst dil cümlesidir. 'Totoloji' tek cümlenin, 'geçerli' ise argümanın değerlendirme türüdür.",
+                "Statü sözcüğünü formülün parçası sanma veya tek cümleye 'geçerli argüman' etiketi verme. Kullanılan ifade türünü koru.",
+                [
+                    (
+                        "Formül: A∨¬A",
+                        "Bu satır nesne dilindeki hedef TFL cümlesini gösterir.",
+                    ),
+                    (
+                        "Sonuç: 'A∨¬A' her değerlemede T olduğu için totolojidir.",
+                        "Tırnaklı formülden söz eden üst dil cümlesi statüyü ve gerekçeyi verir.",
+                    ),
+                    (
+                        "A→B olumsaldır.",
+                        "İddia tek cümlenin statüsüdür; bir argümanın sonucunu değerlendirmez.",
+                    ),
+                ],
+                (
+                    "Formülü, tablosunu ve formülden söz eden statü cümlesini ayrı göstermek.",
+                    "'Totoloji'yi nesne diline eklenmiş bir operatör ya da argüman etiketi gibi kullanmak.",
+                    "Kullanım/anma ayrımı, tablo hücresinin değeriyle formül hakkındaki genel iddiayı aynı satıra sıkıştırmayı önler.",
+                ),
+            ),
+        ],
+        [
+            _worked(
+                "A∨¬A: T,T; totoloji",
+                "A'nın bütün değerlemelerinde ana sütun T'dir.",
+                "Her satır T",
+            ),
+            _worked(
+                "A∧¬A: F,F; çelişki",
+                "A'nın bütün değerlemelerinde ana sütun F'dir.",
+                "Her satır F",
+            ),
+            _worked(
+                "A→B: T,F,T,T; olumsal",
+                "En az bir doğru ve en az bir yanlış değerleme vardır.",
+                "İki tanık",
+            ),
+            _worked(
+                "(A∧B)→A: T,T,T,T; totoloji",
+                "Önbileşenin doğru olduğu her durumda A zaten doğrudur; öteki satırlarda maddi koşul doğrudur.",
+                "Yapısal örnek",
+            ),
+            _worked(
+                "A↔¬A: F,F; çelişki",
+                "A ile ¬A hiçbir değerlemede aynı doğruluk değerini taşımaz.",
+                "Çift yönlü",
+            ),
+            _worked(
+                "A atomu: T,F; olumsal",
+                "Atomun fiili içeriği tabloya ek bir kısıt getirmez; iki değerleme de taranır.",
+                "Atomik örnek",
+            ),
+            _worked(
+                "A→B üç satırda T olduğu için totolojidir.",
+                "Bir F satırı evrensel doğruluk koşulunu bozar; doğru statü olumsaldır.",
+                "Çoğunluk hatası",
+                "bad",
+            ),
+            _worked(
+                "2+2=4 doğrudur; A olarak yazıldığı için A totolojidir.",
+                "Fiili veya aritmetik doğruluk, atomik TFL biçiminin bütün değerlemelerde T olmasını sağlamaz.",
+                "Temsil hatası",
+                "bad",
+            ),
+        ],
+        [
+            "Tek doğru satırı totoloji için yeterli saymak.",
+            "Tek yanlış satırı çelişki için yeterli saymak.",
+            "Dört satırın üçünün doğru olmasını çoğunlukla totoloji ilan etmek.",
+            "Olumsallık gerekçesinde yalnız doğru ya da yalnız yanlış tanığı göstermek.",
+            "Tamlığı denetlenmemiş veya bir değerlemesi eksik tabloya statü vermek.",
+            "Ara sütunun T/F örüntüsünü bütün formülün ana sütunu sanmak.",
+            "Fiilen doğru atomik bir doğal dil cümlesini TFL totolojisi saymak.",
+            "Tek TFL cümlesine 'geçerli', bir argümana 'totoloji' etiketi vermek.",
+            "Cümlenin kendisi ile o cümlenin statüsünü bildiren üst dil ifadesini karıştırmak.",
+        ],
+        _practice(
+            [
+                (
+                    "Ana sütunu T,T,T,T olan bir TFL cümlesinin statüsü nedir?",
+                    ["Totoloji", "Çelişki", "Olumsal", "Geçerli argüman"],
+                    "Totoloji",
+                    "Bütün değerlemelerde T olan tek cümle totolojidir.",
+                    "Temel",
+                ),
+                (
+                    "Ana sütunu F,F,F,F olan tek TFL cümlesinin statüsü nedir?",
+                    ["Totoloji", "Çelişki", "Olumsal", "Sağlam"],
+                    "Çelişki",
+                    "Bütün değerlemelerde F olan tek cümle çelişkidir.",
+                    "Temel",
+                ),
+                (
+                    "Ana sütunu T,F,T,T olan bir cümlenin statüsü nedir?",
+                    ["Totoloji", "Çelişki", "Olumsal", "Belirsiz"],
+                    "Olumsal",
+                    "En az bir T ve en az bir F satırı bulunduğu için cümle olumsaldır.",
+                    "Temel",
+                ),
+                (
+                    "A→B formülü A=F, B=F satırında T çıktı. Bundan tek başına ne çıkar?",
+                    [
+                        "A→B bir totolojidir",
+                        "A→B yalnız bu değerlemede doğrudur",
+                        "A→B bir çelişkidir",
+                        "Bütün tablo tamamlanmıştır",
+                    ],
+                    "A→B yalnız bu değerlemede doğrudur",
+                    "Tek satır sonucu, bütün değerlemeler üzerindeki statüyü belirlemez.",
+                    "Temel",
+                ),
+                (
+                    "Bir totolojiyi yanlışlamak için kaç yanlış satır bulmak yeterlidir?",
+                    ["Hiçbiri", "Bir", "Yarıdan fazlası", "Bütün satırlar"],
+                    "Bir",
+                    "Totoloji her değerlemede T olmalıdır; tek F satırı evrensel koşulu bozar.",
+                    "Orta",
+                ),
+                (
+                    "Olumsallığı göstermek için en az hangi kanıt çifti gerekir?",
+                    [
+                        "İki doğru satır",
+                        "İki yanlış satır",
+                        "Bir doğru ve bir yanlış değerleme",
+                        "Yalnız formülün görünüşü",
+                    ],
+                    "Bir doğru ve bir yanlış değerleme",
+                    "Olumsallık iki doğruluk değerinin de en az bir kez gerçekleşmesini gerektirir.",
+                    "Orta",
+                ),
+                (
+                    "A atomunun tam ana sütunu T,F ise TFL bakımından statüsü nedir?",
+                    ["Totoloji", "Çelişki", "Olumsal", "Geçerli"],
+                    "Olumsal",
+                    "Atomun bir T ve bir F değerlemesi vardır; doğal dildeki fiili doğruluk tablo düzenini değiştirmez.",
+                    "Orta",
+                ),
+                (
+                    "'2+2=4' cümlesi A atomuyla gösterildiğinde A neden TFL totolojisi çıkmaz?",
+                    [
+                        "Aritmetik yanlıştır",
+                        "A atomik biçimi aritmetik iç yapıyı temsil etmez",
+                        "Totoloji yalnız iki atomla kurulur",
+                        "TFL'de T değeri yoktur",
+                    ],
+                    "A atomik biçimi aritmetik iç yapıyı temsil etmez",
+                    "TFL yalnız açıkça sembolleştirilen doğruluk işlevsel yapıyı sınar.",
+                    "İleri",
+                ),
+                (
+                    "Statü kararından hemen önce hangi veri zorunludur?",
+                    [
+                        "Formülün günlük dilde ikna edici olması",
+                        "Tamlığı ve hesabı denetlenmiş ana sütun",
+                        "Yalnız ilk tablo satırı",
+                        "Yazarın niyeti",
+                    ],
+                    "Tamlığı ve hesabı denetlenmiş ana sütun",
+                    "Statü bütün değerlemelerdeki ana formül değerlerine dayanır.",
+                    "Orta",
+                ),
+                (
+                    "'A∨¬A bir totolojidir' ifadesi hangi düzeydedir?",
+                    [
+                        "A∨¬A formülünün içine eklenmiş yeni bağlaç",
+                        "TFL cümlesinden söz eden üst dil iddiası",
+                        "Yalnız bir değerleme satırı",
+                        "Bir argümanın sonucu",
+                    ],
+                    "TFL cümlesinden söz eden üst dil iddiası",
+                    "Statü cümlesi hedef formülün bütün değerlemelerdeki davranışından söz eder.",
+                    "İleri",
+                ),
+                (
+                    "Bir formül sekiz satırın yedisinde F, birinde T ise hangisi doğrudur?",
+                    [
+                        "Çelişkidir çünkü çoğu satır F'dir",
+                        "Olumsaldır çünkü hem T hem F vardır",
+                        "Totolojidir çünkü bir T vardır",
+                        "Statüsü yoktur",
+                    ],
+                    "Olumsaldır çünkü hem T hem F vardır",
+                    "Çoğunluk kullanılmaz; iki farklı değerin bulunması olumsallık için yeterlidir.",
+                    "İleri",
+                ),
+                (
+                    "Tek TFL cümlesinin semantik statüsü için uygun etiket hangisidir?",
+                    ["Totoloji", "Geçerli argüman", "Sağlam argüman", "Güçlü tümevarım"],
+                    "Totoloji",
+                    "Totoloji tek cümlenin bütün değerlemelerdeki statüsüdür; öteki seçenekler argüman değerlendirmeleridir.",
+                    "Zor",
+                ),
+            ]
+        ),
+        {
+            "prompt": "Ana sütunları verilen üç tam tabloyu sınıflandır; her statüyü tanımındaki nicelikle gerekçelendir ve hatalı çoğunluk yorumunu onar.",
+            "starter": "Tablo I: T,T,T,T\nTablo II: F,F,F,F\nTablo III: T,F,T,T\nHatalı yorum: Tablo III dört satırın üçünde doğru olduğundan totolojidir.",
+            "checks": [
+                "Tablo I için bütün satırların T olduğu açıkça belirtilir",
+                "Tablo II için bütün satırların F olduğu açıkça belirtilir",
+                "Tablo III için en az bir T ve en az bir F satırı gösterilir",
+                "Çoğunluğun statü ölçütü olmadığı açıklanır",
+                "Her etiket tek TFL cümlesinin ana sütununa bağlanır",
+                "Tek satır doğruluğu ile genel statü ayrı cümlelerle yazılır",
+            ],
+            "solution": "Tablo I totolojidir; her değerlemede T'dir. Tablo II çelişkidir; her değerlemede F'dir. Tablo III olumsaldır; ilk satır doğru tanığı, ikinci satır yanlış tanığıdır. Üç T hücresi çoğunluk sağlar ama totoloji için gereken her satırda T koşulunu sağlamaz.",
+        },
+        [
+            _production_task(
+                "Bir totoloji, bir çelişki ve bir olumsal TFL cümlesi üret; her biri için tam tablo, ana sütun etiketi ve nicelikli statü gerekçesi ver.",
+                [
+                    "Üç formülün her biri en az bir TFL bağlacı içerir ve iyi biçimlenmiştir.",
+                    "Her formül için farklı atomlar, 2^n satır ve eksiksiz değerlemeler gösterilir.",
+                    "Alt cümle sütunları bağımlılık sırasıyla hesaplanır ve ana sütun metinle işaretlenir.",
+                    "Totoloji gerekçesi bütün satırların T olduğunu söyler.",
+                    "Çelişki gerekçesi bütün satırların F olduğunu söyler.",
+                    "Olumsallık gerekçesi bir doğru ve bir yanlış değerlemeyi açıkça yazar.",
+                    "Fiilen doğru olabilecek bir doğal dil cümlesi ayrıca atomik sembolleştirilir ve TFL bakımından neden olumsal çıktığı açıklanır.",
+                ],
+                "Sonuç etiketinden önce tablo tamlığını; etiketten sonra doğru niceliği ve gerekiyorsa iki karşıt tanığı görünür kıl.",
+                "Üretim koşulları",
+                [
+                    "Totoloji: en az iki atom içersin",
+                    "Çelişki: yalnız A∧¬A örneğini kopyalama",
+                    "Olumsal: bir doğru ve bir yanlış satırını adlandır",
+                    "Doğal dil örneği: fiilen doğru olabilir fakat TFL'de atom olarak bırakılır",
+                ],
+                "Örnek cevap ailesi: (A∧B)→A; (A∨B)∧¬(A∨B); ¬(A↔B). Öğrenci aynı üç formülü kopyalamak yerine kendi örneklerini kurmalıdır.",
+            ),
+        ],
+        [
+            "Üç statüyü sırasıyla her T, her F ve hem en az bir T hem en az bir F nicelikleriyle tanımlar.",
+            "Sınıflandırmayı tamlığı ve hesabı denetlenmiş ana sütunun bütün satırlarına dayandırır.",
+            "Olumsal cümle için bir doğru ve bir yanlış değerlemeyi açık tanık olarak gösterir.",
+            "Tek değerlemedeki doğruluk değeri ile bütün değerlemelerdeki semantik statüyü ayrı ifadelerle açıklar.",
+            "Fiili doğruluk ile TFL totolojisini en az bir atomik sembolleştirme örneğiyle ayırır.",
+            "Formül, tablo ve formülden söz eden üst dil statü cümlesini ayrı katmanlarda sunar.",
+        ],
+        [
+            "Bir cümle üç satırda doğru, bir satırda yanlışsa hangi statüdedir ve neden?",
+            "Olumsal bir cümle için gereken iki tanık türü nedir?",
+            "Zorunlu doğru bir doğal dil cümlesi atomik bırakıldığında neden TFL totolojisi çıkmayabilir?",
+            "Tek satırda v(𝒜)=T yazmak ile 𝒜'nın totoloji olduğunu söylemek arasındaki fark nedir?",
+        ],
+        "Sonraki derste tek cümlenin statüsünden iki cümlenin bütün satırlardaki ilişkisine ve bir cümle kümesinin ortak doğruluk imkânına geçeceğiz.",
+        [
+            "forallx-use-mention",
+            "forallx-truth-functionality",
+            "forallx-valuations",
+            "forallx-logical-concepts",
+            "mit-logic-sequence",
+            "mit-logic-study-guide",
+        ],
+        "Bu ders yalnız tek bir TFL cümlesinin bütün değerlemelerdeki statüsünü ölçer. Eşdeğerlik ve cümle kümeleri C17'ye, argüman değerlendirmesi C18'e, kısmi tablo ve kanıt yöntemleri daha sonraki aşamalara bırakılır. TFL totolojisi, seçilen sembolleştirmenin doğruluk işlevsel yapısına göredir; doğal dildeki bütün zorunluluk türlerinin eksiksiz çözümlemesi değildir.",
+        ["ders-21-dogruluk-tablolari-ii-ve-gecerlilik"],
+    )
+
+    lesson["reading_note"] = (
+        "Önce tablonun tamlığını ve ana sütunu doğrula. Sonra T ve F dağılımını 'her', 'hiçbir' ve iki ayrı 'en az bir' koşuluyla sınıflandır."
+    )
+    lesson["symbol_set"] = [
+        "A",
+        "B",
+        "C",
+        "𝒜",
+        "v",
+        "T",
+        "F",
+        "¬",
+        "∧",
+        "∨",
+        "→",
+        "↔",
+        "(",
+        ")",
+    ]
+    lesson["proof_tools"] = [
+        "Tam tablo denetimi",
+        "Ana sütun örüntüsü",
+        "Bütün-satırlar T denetimi",
+        "Bütün-satırlar F denetimi",
+        "Doğru ve yanlış tanık çifti",
+        "Kullanım/anma katman ayrımı",
+        "Sembolleştirme sınırı notu",
+    ]
+    lesson["status_checks"] = [
+        {
+            "id": "excluded-middle",
+            "formula": "A ∨ ¬A",
+            "expected_status": "tautology",
+            "expected_main_values": ["T", "T"],
+            "expected_true_count": 2,
+            "expected_false_count": 0,
+        },
+        {
+            "id": "direct-contradiction",
+            "formula": "A ∧ ¬A",
+            "expected_status": "contradiction",
+            "expected_main_values": ["F", "F"],
+            "expected_true_count": 0,
+            "expected_false_count": 2,
+        },
+        {
+            "id": "material-conditional-contingent",
+            "formula": "A → B",
+            "expected_status": "contingency",
+            "expected_main_values": ["T", "F", "T", "T"],
+            "expected_true_count": 3,
+            "expected_false_count": 1,
+        },
+        {
+            "id": "conjunction-elimination-shape",
+            "formula": "(A ∧ B) → A",
+            "expected_status": "tautology",
+            "expected_main_values": ["T", "T", "T", "T"],
+            "expected_true_count": 4,
+            "expected_false_count": 0,
+        },
+        {
+            "id": "compound-contradiction",
+            "formula": "(A ∨ B) ∧ ¬(A ∨ B)",
+            "expected_status": "contradiction",
+            "expected_main_values": ["F", "F", "F", "F"],
+            "expected_true_count": 0,
+            "expected_false_count": 4,
+        },
+        {
+            "id": "atomic-contingency",
+            "formula": "A",
+            "expected_status": "contingency",
+            "expected_main_values": ["T", "F"],
+            "expected_true_count": 1,
+            "expected_false_count": 1,
+        },
+        {
+            "id": "opposite-biconditional",
+            "formula": "A ↔ ¬A",
+            "expected_status": "contradiction",
+            "expected_main_values": ["F", "F"],
+            "expected_true_count": 0,
+            "expected_false_count": 2,
+        },
+        {
+            "id": "sparse-contingency",
+            "formula": "(A ∨ B) ∧ ¬A",
+            "expected_status": "contingency",
+            "expected_main_values": ["F", "F", "T", "F"],
+            "expected_true_count": 1,
+            "expected_false_count": 3,
+        },
+        {
+            "id": "conditional-cover",
+            "formula": "(A → B) ∨ (B → A)",
+            "expected_status": "tautology",
+            "expected_main_values": ["T", "T", "T", "T"],
+            "expected_true_count": 4,
+            "expected_false_count": 0,
+        },
+        {
+            "id": "incompatible-conditional-conjunction",
+            "formula": "(A → B) ∧ (A ∧ ¬B)",
+            "expected_status": "contradiction",
+            "expected_main_values": ["F", "F", "F", "F"],
+            "expected_true_count": 0,
+            "expected_false_count": 4,
+        },
+        {
+            "id": "independent-production-contingency",
+            "formula": "¬(A ↔ B)",
+            "expected_status": "contingency",
+            "expected_main_values": ["F", "T", "T", "F"],
+            "expected_true_count": 2,
+            "expected_false_count": 2,
+        },
+    ]
+    return lesson
+
+
+STAGE_C_CANDIDATE_LESSONS = [
+    _candidate_c14(),
+    _candidate_c15(),
+    _candidate_c16(),
+]
 
 STAGE_C_CANDIDATE_MAP = {
     lesson["slug"]: lesson
