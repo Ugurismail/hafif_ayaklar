@@ -552,7 +552,7 @@ Bu tablo Faz D'nin **aday geliştirme** durumunu gösterir; canlıya hazır oldu
 
 | Ders | Sözleşme | Aday veri | Otomatik kural/sınır testi | Yetkili aşama önizlemesi |
 | --- | --- | --- | --- | --- |
-| D20 Kanıt Fikri, Satır Bağımlılığı ve Hedef Okuma | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| D20 Kanıt Fikri, Satır Bağımlılığı ve Hedef Okuma | Hazır | Hazır | Hazır | Bekliyor |
 | D21 Birleşim ve Koşul Kuralları | Hazır | Bekliyor | Bekliyor | Bekliyor |
 | D22 Olumsuzlama, Alt Kanıt ve Çelişkiye İndirgeme | Hazır | Bekliyor | Bekliyor | Bekliyor |
 | D23 Ayrık Bağlaç ve Çift Yönlülük Kuralları | Hazır | Bekliyor | Bekliyor | Bekliyor |
