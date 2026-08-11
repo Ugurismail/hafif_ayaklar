@@ -456,3 +456,49 @@ def analyze_joint_satisfiability(
         "jointly_satisfiable": bool(satisfying_valuations),
         "satisfying_valuations": satisfying_valuations,
     }
+
+
+def analyze_semantic_consequence(
+    premises: Iterable[str | TFLFormula],
+    conclusion: str | TFLFormula,
+    *,
+    max_atoms: int = MAX_COMPLETE_TABLE_ATOMS,
+) -> dict:
+    """Test whether every valuation making the premises true makes the conclusion true."""
+
+    parsed_premises = [
+        parse_tfl(premise) if isinstance(premise, str) else premise
+        for premise in premises
+    ]
+    parsed_conclusion = (
+        parse_tfl(conclusion) if isinstance(conclusion, str) else conclusion
+    )
+    atoms = sorted(
+        set().union(
+            parsed_conclusion.atoms,
+            *(premise.atoms for premise in parsed_premises),
+        ),
+        key=_atom_sort_key,
+    )
+    valuations = generate_valuations(atoms, max_atoms=max_atoms)
+    countervaluations = []
+    premise_true_valuations = []
+
+    for valuation in valuations:
+        if all(
+            evaluate_tfl(premise, valuation)
+            for premise in parsed_premises
+        ):
+            premise_true_valuations.append(dict(valuation))
+            if not evaluate_tfl(parsed_conclusion, valuation):
+                countervaluations.append(dict(valuation))
+
+    return {
+        "premises": [premise.render() for premise in parsed_premises],
+        "conclusion": parsed_conclusion.render(),
+        "atoms": atoms,
+        "row_count": len(valuations),
+        "entails": not countervaluations,
+        "premise_true_valuations": premise_true_valuations,
+        "countervaluations": countervaluations,
+    }

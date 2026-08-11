@@ -2238,11 +2238,613 @@ def _candidate_c17():
     return lesson
 
 
+def _candidate_c18():
+    lesson = _lesson(
+        "C18",
+        "ders-gecerlilik-ve-karsi-degerleme",
+        "Geçerlilik ve Karşı Değerleme",
+        "Bir TFL argümanını bütün öncüllerin doğru ve sonucun yanlış olduğu bir değerleme bulunup bulunmamasına göre sınar; semantik sonuç işaretini TFL bağlaçlarından ayırır.",
+        "Semantik sonuç, kötü satır ve karşı değerleme",
+        45,
+        [
+            "ders-3-gecerlilik-ve-dogruluk",
+            "ders-9-karsi-ornek-sema-ve-curutme-teknikleri",
+            "ders-kullanim-anma-ve-dil-duzeyleri",
+            "ders-mantiksal-esdegerlik-ve-tutarlilik",
+        ],
+        [
+            "tfl.entailment_test",
+            "tfl.validity_decide",
+            "tfl.countervaluation_construct",
+            "metalanguage.turnstile_distinguish",
+        ],
+        [
+            "Semantik sonucu, öncüllerin hepsini doğru ve sonucu yanlış yapan hiçbir değerleme bulunmamasıyla tanımlamak.",
+            "Tam tabloda yalnız bütün öncüllerin T ve sonucun F olduğu kötü satırları sistematik olarak aramak.",
+            "Geçersizliği atom atamalarıyla yazılmış tek bir karşı değerlemeyle göstermek.",
+            "Geçerliliği tek iyi örnekle değil, bütün kötü satır adaylarının elenmesiyle gerekçelendirmek.",
+            "→ ve ↔ TFL bağlaçlarını, ⊨ ve ⊭ üst dil işaretlerinden kullanım/anma düzeyinde ayırmak.",
+        ],
+        [
+            (
+                "Semantik sonuç",
+                "Bütün öncülleri doğru yapan her değerlemenin sonucu da doğru yapması ilişkisi.",
+            ),
+            (
+                "Semantik çift turnike",
+                "⊨ işareti; soldaki cümlelerin sağdaki cümleyi semantik olarak gerektirdiğini bildiren üst dil işareti.",
+            ),
+            (
+                "Semantik sonuç olmama",
+                "⊭ işareti; soldaki cümleleri doğru, sağdaki cümleyi yanlış yapan en az bir değerleme bulunduğunu bildiren üst dil işareti.",
+            ),
+            (
+                "Geçerli TFL argümanı",
+                "Öncüllerini doğru ve sonucunu yanlış yapan hiçbir değerlemesi bulunmayan argüman.",
+            ),
+            (
+                "Kötü satır",
+                "Bütün öncül sütunlarının T ve sonuç sütununun F olduğu tablo satırı.",
+            ),
+            (
+                "Karşı değerleme",
+                "Geçersiz bir argümanda bütün öncülleri doğru, sonucu yanlış yapan açık atom ataması.",
+            ),
+            (
+                "Öncül-doğru adayı",
+                "Bütün öncüllerin T olduğu ve sonucun karşı değerleme açısından denetlenmesi gereken satır.",
+            ),
+        ],
+        [
+            _section(
+                "Geçerlilik kötü satırın yokluğudur",
+                "𝒜₁, ..., 𝒜ₙ ⊨ 𝒞, bütün öncülleri T ve sonucu F yapan hiçbir değerleme olmadığını söyler. Böyle bir satır varsa argüman geçersizdir.",
+                "TFL'ye sembolleştirilmiş tümdengelimsel argümanın geçerliliğini tabloyla sınarken.",
+                "kötü satır = bütün öncüller T + sonuç F",
+                "Tablodaki her satır olası bir atom atamasıdır. Geçerlilik, öncüllerin hepsinin doğru olduğu satırlarda sonucun yanlış kalamamasıdır. Sonucun başka satırlarda yanlış olması tek başına sorun değildir.",
+                "Sonuç sütununda herhangi bir F görünce veya herhangi bir öncül F olunca geçersizlik ilan etme. Üç koşul aynı satırda birleşmelidir.",
+                [
+                    (
+                        "A→B, A ⊨ B",
+                        "A→B ve A'nın birlikte T olduğu satırda B de T'dir; kötü satır yoktur.",
+                    ),
+                    (
+                        "A→B, B ⊭ A",
+                        "A=F, B=T bütün öncülleri T, sonucu F yapar.",
+                    ),
+                    (
+                        "Sonuç F fakat bir öncül de F",
+                        "Bu satır karşı değerleme değildir; bütün öncüller T koşulu sağlanmaz.",
+                    ),
+                ],
+                (
+                    "Her satırda önce bütün öncüllerin T olup olmadığını, yalnız sonra sonucun F olup olmadığını denetlemek.",
+                    "Sonucu yanlış olan her satırı karşı değerleme saymak.",
+                    "Geçerlilik, sonuç doğruluğunun öncül doğruluğuna koşullu korunmasıdır.",
+                ),
+            ),
+            _section(
+                "Karşı değerleme geçersizliği tek satırda kanıtlar",
+                "Bütün öncülleri T, sonucu F yapan tek bir değerleme evrensel geçerlilik iddiasını çürütür. Atom atamaları ve hedef sütun değerleri açıkça yazılmalıdır.",
+                "Geçersiz bir argüman için kısa, yeniden hesaplanabilir ve kesin bir tanık sunarken.",
+                "v(öncül₁)=...=v(öncülₙ)=T; v(sonuç)=F",
+                "Karşı değerleme doğal dilde yalnız ikna edici bir hikâye değil, TFL atomlarına tutarlı T/F atamasıdır. Bileşik öncüllerin değerleri bu atamadan gerçekten hesaplanmalıdır.",
+                "Yalnız sonucu F yapıp öncüllerden birini de F bırakan satırı kullanma; formüllerin birlikte gerçekleştirilebilirliğini denetle.",
+                [
+                    (
+                        "A→B, B ⊭ A; A=F, B=T",
+                        "A→B T ve B T iken sonuç A F'dir.",
+                    ),
+                    (
+                        "A∨B ⊭ A; A=F, B=T",
+                        "Öncül T, sonuç F olduğu için tek satır geçersizliği gösterir.",
+                    ),
+                    (
+                        "A→B, ¬A ⊭ ¬B; A=F, B=T",
+                        "İki öncül T, sonuç ¬B F olur; bu değerce karşı durumdur.",
+                    ),
+                ],
+                (
+                    "Karşı değerlemeyi atom ataması, öncül değerleri ve sonuç değeriyle üç katmanlı raporlamak.",
+                    "Sonucun F olduğu fakat öncül koşullarını sağlamayan bir satırı tanık göstermek.",
+                    "Karşı değerleme, geçersizliği biçimsel olarak gerçekleştirilebilir tek bir durumla gösterir.",
+                ),
+            ),
+            _section(
+                "Geçerlilik için bütün kötü satır adayları elenir",
+                "Geçerli bir argümanda tek iyi satır yeterli değildir. Önce bütün öncüllerin T olduğu aday satırlar bulunur; her birinde sonuç T ise karşı değerleme yoktur.",
+                "Karşı değerleme bulunmadığında geçerlilik sonucunu eksiksiz gerekçelendirmek için.",
+                "öncül-doğru satırları filtrele → her birinde sonuç T mi?",
+                "Öncüllerden en az biri F olan satırlar geçerlilik açısından otomatik olarak kötü satır değildir. Kritik küme, bütün öncüllerin aynı anda T olduğu satırlardır. Bu kümedeki sonuç değerleri eksiksiz denetlenir.",
+                "Bir satırda öncüller ve sonuç T diye argümanı geçerli sayma; başka bir öncül-doğru satırı sonucu F bırakabilir.",
+                [
+                    (
+                        "A→B, A ⊨ B",
+                        "Tek öncül-doğru adayı A=T, B=T'dir ve sonuç T'dir.",
+                    ),
+                    (
+                        "A→B, B→C ⊨ A→C",
+                        "İki öncülün birlikte T olduğu bütün satırlarda ana koşul da T kalır.",
+                    ),
+                    (
+                        "A∨B, ¬A ⊨ B",
+                        "Öncüllerin birlikte T olduğu A=F, B=T satırında sonuç T'dir; başka aday yoktur.",
+                    ),
+                ],
+                (
+                    "Bütün öncül-doğru satırlarını sayıp sonuç sütunlarını tek tek denetlemek.",
+                    "Seçilmiş bir destekleyici örnekten evrensel geçerlilik sonucu çıkarmak.",
+                    "Geçerlilik yokluk iddiasıdır: hiçbir kötü satırın kalmadığı gösterilmelidir.",
+                ),
+            ),
+            _section(
+                "İlgisiz satırlar ve birlikte doyurulamaz öncüller",
+                "Bir öncülün F olduğu satır, sonuç F olsa bile karşı değerleme değildir. Öncüller hiçbir satırda birlikte T olamıyorsa kötü satır da oluşmaz ve argüman klasik semantikte geçerli çıkar.",
+                "Tabloda çok sayıda F görünmesine rağmen hangi satırların geçerlilik testine gerçekten girdiğini açıklarken.",
+                "bütün öncüller T değilse satır kötü satır olamaz",
+                "{A, ¬A} gibi birlikte doyurulamaz öncüllerin ortak doğru satırı yoktur. Dolayısıyla bu öncüllerle herhangi bir sonucu yanlış bırakan karşı değerleme de yoktur. Bu, öncüllerin iyi veya doğru olduğunu değil ilişkinin geçerlilik koşulunu boş biçimde sağladığını gösterir.",
+                "Birlikte doyurulamaz öncüllerden çıkan argümanı sağlam sanma. Geçerlilik ile öncüllerin fiili doğruluğu ve sağlamlık farklıdır.",
+                [
+                    (
+                        "A, ¬A ⊨ B",
+                        "A ile ¬A hiçbir satırda birlikte T olmadığı için karşı değerleme yoktur.",
+                    ),
+                    (
+                        "A=F satırında A ⊨ B testi",
+                        "Öncül F olduğu için B'nin değeri bu satırı karşı değerleme yapamaz.",
+                    ),
+                    (
+                        "Geçerli ama sağlam olmayan argüman",
+                        "Geçerlilik yapıyı; sağlamlık ayrıca öncüllerin doğruluğunu gerektirir.",
+                    ),
+                ],
+                (
+                    "Satırları öncül-doğru filtresiyle ayırmak ve geçerliliği sağlamlıkla karıştırmamak.",
+                    "Öncüller birlikte doğru olamıyorsa yöntemin bozulduğunu veya argümanın sağlam olduğunu sanmak.",
+                    "Klasik semantik sonuç yalnız karşı değerleme varlığına bakar; öncül kabul edilebilirliği ayrı değerlendirmedir.",
+                ),
+            ),
+            _section(
+                "→ ve ↔ nesne dilinde, ⊨ ve ⊭ üst dilde",
+                "A→B ve A↔B birer TFL cümlesidir; her değerlemede T veya F alır. A⊨B ve A⊭B ise cümleler arasındaki semantik ilişkiyi bildiren üst dil ifadeleridir.",
+                "Formül kurma ile formüller hakkında semantik sonuç yazmayı birbirinden ayırırken.",
+                "A→B: tek TFL cümlesi; A⊨B: iki cümle arasındaki üst dil ilişkisi",
+                "Tek öncül durumunda A⊨B ile A→B'nin totoloji olması bağlantılıdır; fakat işaretler aynı sözdizimsel görevde değildir. A⊭B, en az bir karşı değerleme olduğunu söyler; buradan B'nin olumsuzunun her değerlemede doğru olduğu çıkmaz.",
+                "⊨ işaretini parantez içinde ana bağlaç gibi hesaplama veya A⊭B sonucunu A⊨¬B diye güçlendirme.",
+                [
+                    (
+                        "A→B",
+                        "TFL formülüdür; ana bağlacı → ve her satırda doğruluk değeri vardır.",
+                    ),
+                    (
+                        "A⊨B",
+                        "A'yı doğru, B'yi yanlış yapan değerleme olmadığını söyleyen üst dil iddiasıdır.",
+                    ),
+                    (
+                        "⊭A ve ⊭¬A",
+                        "A olumsalsa ne A ne de ¬A öncülsüz semantik sonuçtur; birinin başarısızlığı diğerinin evrensel doğruluğunu vermez.",
+                    ),
+                ],
+                (
+                    "Her işaretin nesne dili bağlacı mı üst dil ilişki işareti mi olduğunu çözümden önce belirtmek.",
+                    "→, ↔, ⊨ ve ⊭ işaretlerini aynı tür doğruluk işlevi gibi tablo sütununa koymak.",
+                    "Dil düzeyi ayrımı, semantik ilişkiyi yeni bir TFL cümlesiyle karıştırmadan ifade etmeyi sağlar.",
+                ),
+            ),
+        ],
+        [
+            _worked(
+                "A→B, A ⊨ B",
+                "Bütün öncülleri T ve B'yi F yapan satır yoktur.",
+                "Geçerli",
+            ),
+            _worked(
+                "A→B, B ⊭ A; A=F, B=T",
+                "İki öncül T, sonuç F olduğu için değerleme karşı tanıktır.",
+                "Karşı değerleme",
+            ),
+            _worked(
+                "A∨B, ¬A ⊨ B",
+                "Öncüllerin birlikte T olduğu tek satırda B de T'dir.",
+                "Aday eleme",
+            ),
+            _worked(
+                "A→B, ¬B ⊨ ¬A",
+                "A=T, B=F koşulu ilk öncülü F yapar; kötü satır kurulamaz.",
+                "Modus tollens",
+            ),
+            _worked(
+                "A∨B ⊭ A; A=F, B=T",
+                "Öncül T ve sonuç F olan tek satır geçersizliği gösterir.",
+                "Tek tanık",
+            ),
+            _worked(
+                "A, ¬A ⊨ B",
+                "Öncüller hiçbir değerlemede birlikte T olmadığından karşı değerleme yoktur.",
+                "Boş geçerlilik",
+            ),
+            _worked(
+                "Bir satırda öncüller ve sonuç T; öyleyse argüman geçerlidir.",
+                "Başka bir öncül-doğru satırı sonucu F bırakabilir; tek iyi satır yetmez.",
+                "Eksik kanıt",
+                "bad",
+            ),
+            _worked(
+                "Sonuç F olan her satır karşı değerlemedir.",
+                "Bütün öncüllerin de aynı satırda T olması gerekir.",
+                "Kötü satır hatası",
+                "bad",
+            ),
+            _worked(
+                "A⊭B olduğundan A⊨¬B",
+                "Bir karşı değerleme yalnız B'nin bir yerde F olduğunu gösterir; ¬B'nin bütün A-doğru satırlarda T olduğunu göstermez.",
+                "İşaret hatası",
+                "bad",
+            ),
+        ],
+        [
+            "Sonuç fiilen doğru olduğu için argümanı geçerli saymak.",
+            "Bir öncülün F olduğu satırı geçersizlik kanıtı sanmak.",
+            "Sonucu F olan her satırı, öncülleri denetlemeden karşı değerleme saymak.",
+            "Öncüller ve sonuç T olan tek satırla geçerlilik kanıtlamak.",
+            "Karşı değerlemede atom atamalarını veya bileşik öncül hesaplarını göstermemek.",
+            "Birlikte doyurulamaz öncüllerden çıkan geçerli argümanı sağlam argüman sanmak.",
+            "⊨ işaretini TFL formülünün hesaplanan ana bağlacı gibi kullanmak.",
+            "A⊭B sonucunu otomatik olarak A⊨¬B biçiminde güçlendirmek.",
+            "→ ile ⊨, ↔ ile eşdeğerlik iddiası arasındaki dil düzeyi farkını silmek.",
+            "Geçersizliği doğal dil sezgisiyle söyleyip gerçekleştirilebilir TFL karşı değerlemesini denetlememek.",
+        ],
+        _practice(
+            [
+                (
+                    "Bir karşı değerleme hangi koşulu sağlar?",
+                    [
+                        "Bütün öncüller T, sonuç F",
+                        "Bütün öncüller F, sonuç T",
+                        "En az bir öncül T, sonuç T",
+                        "Yalnız sonuç F",
+                    ],
+                    "Bütün öncüller T, sonuç F",
+                    "Geçersizlik için kötü satırın üç koşulu aynı değerlemede birleşir.",
+                    "Temel",
+                ),
+                (
+                    "Geçerli bir argümanda ne bulunmaz?",
+                    ["Doğru sonuç", "Yanlış öncül", "Karşı değerleme", "Birden çok atom"],
+                    "Karşı değerleme",
+                    "Geçerlilik bütün öncülleri T, sonucu F yapan değerlemenin yokluğudur.",
+                    "Temel",
+                ),
+                (
+                    "A→B, B ⊭ A için karşı değerleme hangisidir?",
+                    [
+                        "A=T, B=T",
+                        "A=T, B=F",
+                        "A=F, B=T",
+                        "A=F, B=F",
+                    ],
+                    "A=F, B=T",
+                    "A→B ve B T, sonuç A F olur.",
+                    "Orta",
+                ),
+                (
+                    "Sonuç F fakat bir öncül de F olan satır için ne söylenir?",
+                    [
+                        "Kesin karşı değerlemedir",
+                        "Bütün öncüller T olmadığı için karşı değerleme değildir",
+                        "Argüman sağlamdır",
+                        "Sonuç totolojidir",
+                    ],
+                    "Bütün öncüller T olmadığı için karşı değerleme değildir",
+                    "Kötü satır bütün öncüllerin aynı anda T olmasını gerektirir.",
+                    "Temel",
+                ),
+                (
+                    "Geçerliliği göstermek için hangisi yeterlidir?",
+                    [
+                        "Bir iyi satır",
+                        "Bir karşı değerleme",
+                        "Bütün öncül-doğru satırlarda sonucun T olduğunu göstermek",
+                        "Sonucun fiilen doğru olduğunu söylemek",
+                    ],
+                    "Bütün öncül-doğru satırlarda sonucun T olduğunu göstermek",
+                    "Geçerlilik bütün kötü satır adaylarının elenmesini gerektirir.",
+                    "Orta",
+                ),
+                (
+                    "A∨B ⊭ A için hangi satır tanıktır?",
+                    [
+                        "A=T, B=T",
+                        "A=T, B=F",
+                        "A=F, B=T",
+                        "A=F, B=F",
+                    ],
+                    "A=F, B=T",
+                    "Öncül A∨B T, sonuç A F olur.",
+                    "Orta",
+                ),
+                (
+                    "A→B ile A⊨B arasındaki doğru ayrım hangisidir?",
+                    [
+                        "İkisi de TFL bağlacıdır",
+                        "İlki TFL cümlesi, ikincisi üst dilde semantik ilişki iddiasıdır",
+                        "İlki argüman, ikincisi atomdur",
+                        "Aralarında fark yoktur",
+                    ],
+                    "İlki TFL cümlesi, ikincisi üst dilde semantik ilişki iddiasıdır",
+                    "→ nesne dilinde bağlaç, ⊨ cümleler arasında üst dil işaretidir.",
+                    "İleri",
+                ),
+                (
+                    "A⊭B bilgisi tek başına hangisini vermez?",
+                    [
+                        "A'yı T, B'yi F yapan en az bir değerleme vardır",
+                        "A⊨¬B",
+                        "İlişki geçersizdir",
+                        "Bir karşı değerleme vardır",
+                    ],
+                    "A⊨¬B",
+                    "B'nin bir A-doğru satırında F olması, bütün A-doğru satırlarda F olmasını gerektirmez.",
+                    "İleri",
+                ),
+                (
+                    "A ve ¬A öncüllerinden B sonucu neden semantik olarak çıkar?",
+                    [
+                        "B her zaman doğrudur",
+                        "Öncülleri birlikte T yapan satır olmadığından karşı değerleme yoktur",
+                        "A bir totolojidir",
+                        "¬A bir çelişkidir",
+                    ],
+                    "Öncülleri birlikte T yapan satır olmadığından karşı değerleme yoktur",
+                    "Geçerlilik ölçütü kötü satırın yokluğudur; bu sağlamlık iddiası değildir.",
+                    "İleri",
+                ),
+                (
+                    "Bir satırda bütün öncüller T ve sonuç T ise bu satır nedir?",
+                    [
+                        "Karşı değerleme",
+                        "Öncül-doğru fakat kötü olmayan satır",
+                        "Geçersizlik kanıtı",
+                        "Çelişki",
+                    ],
+                    "Öncül-doğru fakat kötü olmayan satır",
+                    "Sonuç T olduğu için kötü satırın sonuç F koşulu sağlanmaz.",
+                    "Temel",
+                ),
+                (
+                    "Argüman tablosunda kötü satır bulunursa hangi ifade uygundur?",
+                    [
+                        "Öncüller sonucu semantik olarak gerektirir",
+                        "Öncüller sonucu semantik olarak gerektirmez",
+                        "Sonuç çelişkidir",
+                        "Bütün öncüller yanlıştır",
+                    ],
+                    "Öncüller sonucu semantik olarak gerektirmez",
+                    "Kötü satır, öncüllerin doğruluğunun sonucu zorunlu kılmadığını gösterir.",
+                    "Orta",
+                ),
+                (
+                    "Geçerlilik ile sağlamlık arasındaki fark hangisidir?",
+                    [
+                        "Geçerlilik yapısal doğruluk korumasıdır; sağlamlık ayrıca öncüllerin doğru olmasını ister",
+                        "İkisi tamamen aynıdır",
+                        "Sağlamlık yalnız sonucun doğru olmasıdır",
+                        "Geçerlilik yalnız öncüllerin doğru olmasıdır",
+                    ],
+                    "Geçerlilik yapısal doğruluk korumasıdır; sağlamlık ayrıca öncüllerin doğru olmasını ister",
+                    "Birlikte doyurulamaz öncüller geçerli ilişki oluşturabilir ama sağlam argüman oluşturmaz.",
+                    "Zor",
+                ),
+            ]
+        ),
+        {
+            "prompt": "Biri geçerli, biri geçersiz iki argüman tablosunu kötü satır ölçütüyle tamamla; işaretlerin dil düzeyini ayrıca açıkla.",
+            "starter": "Argüman I: A→B, A / B\nArgüman II: A→B, B / A\nTablo sütunları: A | B | A→B | ikinci öncül | sonuç | kötü satır mı?",
+            "checks": [
+                "Her argüman için bütün öncül ve sonuç sütunları doğru hesaplanır",
+                "Yalnız bütün öncüllerin T olduğu satırlar kötü satır adayı seçilir",
+                "Argüman I için hiçbir kötü satır kalmadığı gösterilir",
+                "Argüman II için A=F, B=T karşı değerlemesi açıkça yazılır",
+                "Karşı değerlemede bütün öncüllerin T ve sonucun F olduğu doğrulanır",
+                "→ işaretinin TFL bağlacı, ⊨ veya ⊭ işaretinin üst dil ilişkisi olduğu açıklanır",
+            ],
+            "solution": "Argüman I geçerlidir: A→B ve A'nın birlikte T olduğu A=T, B=T satırında B de T'dir; başka öncül-doğru aday yoktur. Bu nedenle A→B, A ⊨ B. Argüman II geçersizdir: A=F, B=T iken A→B T ve B T, sonuç A F'dir; bu karşı değerleme A→B, B ⊭ A sonucunu verir. → her satırda hesaplanan TFL bağlacıdır; ⊨ ve ⊭ ise tabloların tümü hakkında üst dilde ilişki bildirir.",
+        },
+        [
+            _production_task(
+                "Biri geçerli, biri geçersiz iki yeni TFL argümanı kur; ortak atom tablolarını, kötü satır denetimini ve dil düzeyi raporunu üret.",
+                [
+                    "Her argüman en az iki öncül ve bir sonuç içerir; bütün formüller iyi biçimlenmiştir.",
+                    "Ortak atom uzayı ve bütün değerlemeler eksiksiz üretilir.",
+                    "Her satırda bütün öncüllerin T olup olmadığı ayrı bir denetimle işaretlenir.",
+                    "Geçersiz argüman için atom atamaları, öncül değerleri ve sonuç F değeri taşıyan karşı değerleme verilir.",
+                    "Geçerli argüman için bütün öncül-doğru adaylarında sonucun T olduğu gösterilir.",
+                    "Sonuçlar uygun biçimde ⊨ veya ⊭ kullanılarak üst dilde yazılır.",
+                    "Her rapor → ya da ↔ bağlacı ile semantik ilişki işaretinin farklı görevini bir cümleyle açıklar.",
+                ],
+                "Geçersizlikte tek kesin tanığı, geçerlilikte ise tam kötü-satır yokluğu denetimini görünür kıl.",
+                "Üretim koşulları",
+                [
+                    "Geçerli argüman: yalnız aynı cümleyi sonuçta tekrar etme",
+                    "Geçersiz argüman: karşı değerleme en az iki atom içersin",
+                    "Her tabloda 'bütün öncüller T mi?' kontrol sütunu kullan",
+                    "İşaret raporunda nesne dili ve üst dil terimlerini yaz",
+                ],
+                "Denetim aileleri: A→B, A / B ve A→B, B / A yalnız örnektir; öğrenci farklı argümanlar kurmalıdır.",
+            ),
+        ],
+        [
+            "Bütün öncül ve sonuç sütunlarını ortak atom uzayında doğru hesaplar.",
+            "Kötü satırı bütün öncüller T ve sonuç F nicelikleriyle doğru tanımlar.",
+            "Geçersiz argüman için yeniden hesaplanabilir gerçek bir karşı değerleme gösterir.",
+            "Geçerli argümanı tek iyi örnekle değil bütün öncül-doğru satırların elenmesiyle gerekçelendirir.",
+            "Birlikte doyurulamaz öncüllerin geçerlilik ile sağlamlık üzerindeki farklı etkisini açıklar.",
+            "→ ve ↔ nesne dili bağlaçlarını, ⊨ ve ⊭ üst dil ilişki işaretlerinden ayırır.",
+        ],
+        [
+            "Bir karşı değerleme hangi sütunları hangi doğruluk değerlerinde bırakır?",
+            "Bir öncül yanlışken sonuç da yanlışsa bu satır neden geçersizlik kanıtı değildir?",
+            "A→B ile A⊨B neden aynı tür ifade değildir?",
+            "A⊭B neden tek başına A⊨¬B sonucunu vermez?",
+        ],
+        "Sonraki derste iddianın kanıt yüküne göre tam, kısaltılmış tam veya tek satırlık kısmi tablo seçecek ve TFL sonucunu ifade sınırları içinde yorumlayacağız.",
+        [
+            "forallx-use-mention",
+            "forallx-valuations",
+            "forallx-logical-concepts",
+            "mit-logic-sequence",
+            "mit-logic-study-guide",
+        ],
+        "Bu ders klasik iki değerli TFL'de semantik sonuç ve argüman geçerliliğini ölçer. ⊨ ve ⊭ üst dil işaretleridir; kanıt sisteminin türetim işareti ve çıkarım kuralları D aşamasına bırakılır. Geçerlilik, sağlamlık ve öncüllerin kabul edilebilirliği birbirine indirgenmez.",
+        ["ders-21-dogruluk-tablolari-ii-ve-gecerlilik"],
+    )
+
+    lesson["reading_note"] = (
+        "Önce bütün öncüllerin T olduğu satırları filtrele. Yalnız bu satırlarda sonuç F ise karşı değerleme vardır; hiçbiri kalmıyorsa semantik sonuç ilişkisi geçerlidir."
+    )
+    lesson["symbol_set"] = [
+        "A",
+        "B",
+        "C",
+        "𝒜",
+        "𝒞",
+        "v",
+        "T",
+        "F",
+        "¬",
+        "∧",
+        "∨",
+        "→",
+        "↔",
+        "⊨",
+        "⊭",
+        "(",
+        ")",
+    ]
+    lesson["proof_tools"] = [
+        "Ortak atom envanteri",
+        "Öncül-doğru satır filtresi",
+        "Kötü satır denetimi",
+        "Karşı değerleme raporu",
+        "Bütün adayları eleme kaydı",
+        "Geçerlilik/sağlamlık ayrımı",
+        "Nesne dili/üst dil işaret denetimi",
+    ]
+    lesson["consequence_checks"] = [
+        {
+            "id": "modus-ponens",
+            "premises": ["A → B", "A"],
+            "conclusion": "B",
+            "expected_entails": True,
+            "expected_premise_true_count": 1,
+            "expected_countervaluations": [],
+        },
+        {
+            "id": "affirming-the-consequent",
+            "premises": ["A → B", "B"],
+            "conclusion": "A",
+            "expected_entails": False,
+            "expected_premise_true_count": 2,
+            "expected_countervaluations": [
+                {"A": "F", "B": "T"},
+            ],
+        },
+        {
+            "id": "disjunctive-syllogism",
+            "premises": ["A ∨ B", "¬A"],
+            "conclusion": "B",
+            "expected_entails": True,
+            "expected_premise_true_count": 1,
+            "expected_countervaluations": [],
+        },
+        {
+            "id": "conditional-converse",
+            "premises": ["A → B"],
+            "conclusion": "B → A",
+            "expected_entails": False,
+            "expected_premise_true_count": 3,
+            "expected_countervaluations": [
+                {"A": "F", "B": "T"},
+            ],
+        },
+        {
+            "id": "hypothetical-syllogism",
+            "premises": ["A → B", "B → C"],
+            "conclusion": "A → C",
+            "expected_entails": True,
+            "expected_premise_true_count": 4,
+            "expected_countervaluations": [],
+        },
+        {
+            "id": "disjunction-introduction",
+            "premises": ["A"],
+            "conclusion": "A ∨ B",
+            "expected_entails": True,
+            "expected_premise_true_count": 2,
+            "expected_countervaluations": [],
+        },
+        {
+            "id": "invalid-disjunction-elimination",
+            "premises": ["A ∨ B"],
+            "conclusion": "A",
+            "expected_entails": False,
+            "expected_premise_true_count": 3,
+            "expected_countervaluations": [
+                {"A": "F", "B": "T"},
+            ],
+        },
+        {
+            "id": "biconditional-elimination",
+            "premises": ["A ↔ B", "A"],
+            "conclusion": "B",
+            "expected_entails": True,
+            "expected_premise_true_count": 1,
+            "expected_countervaluations": [],
+        },
+        {
+            "id": "modus-tollens",
+            "premises": ["A → B", "¬B"],
+            "conclusion": "¬A",
+            "expected_entails": True,
+            "expected_premise_true_count": 1,
+            "expected_countervaluations": [],
+        },
+        {
+            "id": "denying-the-antecedent",
+            "premises": ["A → B", "¬A"],
+            "conclusion": "¬B",
+            "expected_entails": False,
+            "expected_premise_true_count": 2,
+            "expected_countervaluations": [
+                {"A": "F", "B": "T"},
+            ],
+        },
+        {
+            "id": "incompatible-premises",
+            "premises": ["A", "¬A"],
+            "conclusion": "B",
+            "expected_entails": True,
+            "expected_premise_true_count": 0,
+            "expected_countervaluations": [],
+        },
+        {
+            "id": "premise-free-tautology",
+            "premises": [],
+            "conclusion": "A ∨ ¬A",
+            "expected_entails": True,
+            "expected_premise_true_count": 2,
+            "expected_countervaluations": [],
+        },
+    ]
+    return lesson
+
+
 STAGE_C_CANDIDATE_LESSONS = [
     _candidate_c14(),
     _candidate_c15(),
     _candidate_c16(),
     _candidate_c17(),
+    _candidate_c18(),
 ]
 
 STAGE_C_CANDIDATE_MAP = {

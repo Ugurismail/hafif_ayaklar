@@ -11,6 +11,7 @@ from .logic_phase3_stage_c import (
 from .logic_tfl_semantics import (
     TFLParseError,
     analyze_joint_satisfiability,
+    analyze_semantic_consequence,
     analyze_semantic_equivalence,
     classify_semantic_status,
     complete_truth_table,
@@ -58,11 +59,11 @@ class LogicPhase3StageCIntegrityTests(SimpleTestCase):
     def test_stage_c_candidate_ids_orders_and_slugs_are_unique(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_C_CANDIDATE_LESSONS],
-            ["C14", "C15", "C16", "C17"],
+            ["C14", "C15", "C16", "C17", "C18"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_C_CANDIDATE_LESSONS],
-            [14, 15, 16, 17],
+            [14, 15, 16, 17, 18],
         )
         self.assertEqual(
             len({lesson["slug"] for lesson in STAGE_C_CANDIDATE_LESSONS}),
@@ -342,6 +343,28 @@ class TFLSemanticCoreTests(SimpleTestCase):
         with self.assertRaisesRegex(ValueError, "En az bir TFL cümlesi"):
             analyze_joint_satisfiability([])
 
+    def test_semantic_consequence_returns_only_real_countervaluations(self):
+        valid = analyze_semantic_consequence(["A → B", "A"], "B")
+        invalid = analyze_semantic_consequence(["A → B", "B"], "A")
+
+        self.assertTrue(valid["entails"])
+        self.assertEqual(valid["countervaluations"], [])
+        self.assertFalse(invalid["entails"])
+        self.assertEqual(
+            invalid["countervaluations"],
+            [{"A": "F", "B": "T"}],
+        )
+
+    def test_semantic_consequence_handles_empty_and_incompatible_premises(self):
+        premise_free = analyze_semantic_consequence([], "A ∨ ¬A")
+        incompatible = analyze_semantic_consequence(["A", "¬A"], "B")
+
+        self.assertTrue(premise_free["entails"])
+        self.assertEqual(len(premise_free["premise_true_valuations"]), 2)
+        self.assertTrue(incompatible["entails"])
+        self.assertEqual(incompatible["premise_true_valuations"], [])
+        self.assertEqual(incompatible["countervaluations"], [])
+
 
 class LogicPhase3StageCC14CandidateTests(SimpleTestCase):
     required_fields = {
@@ -380,8 +403,8 @@ class LogicPhase3StageCC14CandidateTests(SimpleTestCase):
         self.lesson = STAGE_C_CANDIDATE_LESSONS[0]
 
     def test_c14_remains_the_first_candidate_as_stage_c_grows(self):
-        self.assertEqual(len(STAGE_C_CANDIDATE_LESSONS), 4)
-        self.assertEqual(len(STAGE_C_CANDIDATE_MAP), 4)
+        self.assertEqual(len(STAGE_C_CANDIDATE_LESSONS), 5)
+        self.assertEqual(len(STAGE_C_CANDIDATE_MAP), 5)
         self.assertEqual(self.lesson["curriculum_id"], "C14")
         self.assertEqual(self.lesson["order"], 14)
         self.assertEqual(self.lesson["release_status"], "candidate")
@@ -1112,6 +1135,214 @@ class LogicPhase3StageCC17CandidateTests(SimpleTestCase):
         )
 
     def test_c17_sources_are_explicit_and_known(self):
+        self.assertEqual(
+            self.lesson["source_ids"],
+            [
+                "forallx-use-mention",
+                "forallx-valuations",
+                "forallx-logical-concepts",
+                "mit-logic-sequence",
+                "mit-logic-study-guide",
+            ],
+        )
+        self.assertTrue(
+            set(self.lesson["source_ids"]).issubset(
+                STAGE_C_SOURCE_REFERENCES
+            )
+        )
+
+
+class LogicPhase3StageCC18CandidateTests(SimpleTestCase):
+    def setUp(self):
+        self.lesson = STAGE_C_CANDIDATE_MAP[
+            "ders-gecerlilik-ve-karsi-degerleme"
+        ]
+
+    def test_c18_identity_order_and_duration_are_stable(self):
+        self.assertEqual(self.lesson["curriculum_id"], "C18")
+        self.assertEqual(self.lesson["order"], 18)
+        self.assertEqual(self.lesson["release_status"], "candidate")
+        self.assertEqual(self.lesson["estimated_minutes"], 45)
+        self.assertEqual(self.lesson["duration"], "45 dk")
+        self.assertIn("consequence_checks", self.lesson)
+
+    def test_c18_is_not_activated_in_the_learner_facing_course(self):
+        visible_slugs = {lesson["slug"] for lesson in VISIBLE_LOGIC_LESSONS}
+
+        self.assertNotIn(self.lesson["slug"], visible_slugs)
+
+    def test_c18_prerequisites_bridge_stage_a_and_c17(self):
+        expected = [
+            "ders-3-gecerlilik-ve-dogruluk",
+            "ders-9-karsi-ornek-sema-ve-curutme-teknikleri",
+            "ders-kullanim-anma-ve-dil-duzeyleri",
+            "ders-mantiksal-esdegerlik-ve-tutarlilik",
+        ]
+
+        self.assertEqual(self.lesson["prerequisites"], expected)
+        self.assertTrue(set(expected[:3]).issubset(STAGE_A_CANDIDATE_MAP))
+        self.assertIn(expected[3], STAGE_C_CANDIDATE_MAP)
+        self.assertLess(
+            STAGE_C_CANDIDATE_MAP[expected[3]]["order"],
+            self.lesson["order"],
+        )
+
+    def test_c18_has_a_complete_instructional_sequence(self):
+        self.assertGreaterEqual(len(self.lesson["goals"]), 5)
+        self.assertGreaterEqual(len(self.lesson["sections"]), 5)
+        self.assertGreaterEqual(len(self.lesson["worked_examples"]), 9)
+        self.assertGreaterEqual(len(self.lesson["mistakes"]), 10)
+        self.assertGreaterEqual(len(self.lesson["practice"]), 12)
+        self.assertEqual(len(self.lesson["production_tasks"]), 1)
+        self.assertGreaterEqual(len(self.lesson["mastery_evidence"]), 6)
+        self.assertGreaterEqual(len(self.lesson["review_prompts"]), 4)
+
+        guided = self.lesson["guided_practice"]
+        self.assertEqual(
+            set(guided),
+            {"prompt", "starter", "checks", "solution"},
+        )
+        self.assertGreaterEqual(len(guided["checks"]), 6)
+        self.assertIn("karşı değerleme", guided["solution"].lower())
+        self.assertIn("üst dil", guided["solution"].lower())
+
+        production = self.lesson["production_tasks"][0]
+        self.assertGreaterEqual(len(production["checkpoints"]), 7)
+        self.assertEqual(len(production["stimulus"]["items"]), 4)
+        self.assertIn("kötü satır", str(production).lower())
+        self.assertIn("karşı değerleme", str(production).lower())
+
+    def test_c18_practice_answers_are_valid_unique_and_explained(self):
+        for item in self.lesson["practice"]:
+            with self.subTest(prompt=item["prompt"]):
+                self.assertIn(item["answer"], item["choices"])
+                self.assertEqual(len(item["choices"]), len(set(item["choices"])))
+                self.assertTrue(item["explanation"].strip())
+                self.assertIn(
+                    item["difficulty_label"],
+                    {"Temel", "Orta", "İleri", "Zor", "Çok Zor"},
+                )
+
+    def test_c18_uses_semantic_turnstiles_without_entering_proof_systems(self):
+        searchable = str(self.lesson)
+        production = str(self.lesson["production_tasks"][0]).lower()
+        blocked_symbols = {"⊢", "∀", "∃", "≡"}
+
+        self.assertTrue(blocked_symbols.isdisjoint(searchable))
+        self.assertIn("⊨", searchable)
+        self.assertIn("⊭", searchable)
+        self.assertNotIn("kısmi tablo", production)
+        self.assertNotIn("doğal türetim", production)
+        self.assertNotIn("çıkarım kuralı", production)
+        self.assertNotIn("yeniden yazma", production)
+        self.assertNotIn("tfl.partial_table_construct", self.lesson["competencies"])
+
+    def test_c18_teaches_bad_rows_and_language_levels(self):
+        searchable = str(self.lesson).lower()
+
+        for target in [
+            "bütün öncüller t",
+            "sonuç f",
+            "kötü satır",
+            "karşı değerleme",
+            "öncül-doğru",
+            "semantik sonuç",
+            "geçerli",
+            "sağlamlık",
+            "nesne dili",
+            "üst dil",
+            "a⊭b",
+            "a⊨¬b",
+        ]:
+            with self.subTest(target=target):
+                self.assertIn(target, searchable)
+
+        self.assertIn("birlikte doyurulamaz öncül", searchable)
+        self.assertIn("tek iyi satır", searchable)
+        self.assertIn("hiçbir kötü satır", searchable)
+
+    def test_every_consequence_fixture_is_independently_recomputed(self):
+        check_ids = set()
+        saw_valid = False
+        saw_invalid = False
+
+        for check in self.lesson["consequence_checks"]:
+            with self.subTest(check=check["id"]):
+                self.assertNotIn(check["id"], check_ids)
+                check_ids.add(check["id"])
+                premises = [parse_tfl(item) for item in check["premises"]]
+                conclusion = parse_tfl(check["conclusion"])
+                atoms = sorted(
+                    set().union(
+                        conclusion.atoms,
+                        *(premise.atoms for premise in premises),
+                    )
+                )
+                valuations = generate_valuations(atoms)
+                premise_true = [
+                    dict(valuation)
+                    for valuation in valuations
+                    if all(
+                        evaluate_tfl(premise, valuation)
+                        for premise in premises
+                    )
+                ]
+                countervaluations = [
+                    valuation
+                    for valuation in premise_true
+                    if not evaluate_tfl(conclusion, valuation)
+                ]
+                independently_entails = not countervaluations
+
+                saw_valid |= independently_entails
+                saw_invalid |= not independently_entails
+                self.assertEqual(
+                    independently_entails,
+                    check["expected_entails"],
+                )
+                self.assertEqual(
+                    len(premise_true),
+                    check["expected_premise_true_count"],
+                )
+                self.assertEqual(
+                    countervaluations,
+                    check["expected_countervaluations"],
+                )
+
+                analyzed = analyze_semantic_consequence(
+                    check["premises"],
+                    check["conclusion"],
+                )
+                self.assertEqual(analyzed["atoms"], atoms)
+                self.assertEqual(
+                    analyzed["row_count"],
+                    2 ** len(atoms),
+                )
+                self.assertEqual(analyzed["entails"], independently_entails)
+                self.assertEqual(
+                    analyzed["premise_true_valuations"],
+                    premise_true,
+                )
+                self.assertEqual(
+                    analyzed["countervaluations"],
+                    countervaluations,
+                )
+
+        self.assertEqual(len(check_ids), 12)
+        self.assertTrue(saw_valid)
+        self.assertTrue(saw_invalid)
+        self.assertTrue(
+            {
+                "modus-ponens",
+                "affirming-the-consequent",
+                "hypothetical-syllogism",
+                "denying-the-antecedent",
+                "incompatible-premises",
+                "premise-free-tautology",
+            }.issubset(check_ids)
+        )
+
+    def test_c18_sources_are_explicit_and_known(self):
         self.assertEqual(
             self.lesson["source_ids"],
             [
