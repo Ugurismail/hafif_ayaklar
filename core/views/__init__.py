@@ -130,6 +130,7 @@ _ATTR_TO_MODULE = {
     'logic_home': 'core.views.logic_views',
     'logic_stage_a_preview': 'core.views.logic_views',
     'logic_stage_b_preview': 'core.views.logic_views',
+    'logic_stage_c_preview': 'core.views.logic_views',
     'logic_lesson_detail': 'core.views.logic_views',
     'logic_lesson_progress': 'core.views.logic_views',
     'logic_level_test': 'core.views.logic_views',

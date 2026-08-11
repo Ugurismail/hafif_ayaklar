@@ -135,11 +135,13 @@ def _candidate_review_context(
     lesson_range,
 ):
     candidate_lessons = deepcopy(lessons)
+    current_stage_slugs = {lesson["slug"] for lesson in candidate_lessons}
     for lesson in candidate_lessons:
         lesson["prerequisite_details"] = [
             {
                 "curriculum_id": lesson_lookup[slug]["curriculum_id"],
                 "title": lesson_lookup[slug]["title"],
+                "in_review_stage": slug in current_stage_slugs,
             }
             for slug in lesson["prerequisites"]
         ]
@@ -210,6 +212,35 @@ def logic_stage_b_preview(request):
             stage_code="Faz 3B",
             stage_title="TFL dili ve sembolleştirme",
             lesson_range="B7-B13",
+        ),
+    )
+
+
+@staff_member_required
+def logic_stage_c_preview(request):
+    """Render the isolated Stage C candidate for human curriculum review."""
+    from core.logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
+    from core.logic_phase3_stage_b import STAGE_B_CANDIDATE_MAP
+    from core.logic_phase3_stage_c import (
+        STAGE_C_CANDIDATE_LESSONS,
+        STAGE_C_CANDIDATE_MAP,
+        STAGE_C_SOURCE_REFERENCES,
+    )
+
+    return render(
+        request,
+        "core/logic_stage_a_preview.html",
+        _candidate_review_context(
+            STAGE_C_CANDIDATE_LESSONS,
+            STAGE_C_SOURCE_REFERENCES,
+            {
+                **STAGE_A_CANDIDATE_MAP,
+                **STAGE_B_CANDIDATE_MAP,
+                **STAGE_C_CANDIDATE_MAP,
+            },
+            stage_code="Faz 3C",
+            stage_title="TFL semantiği ve yöntem seçimi",
+            lesson_range="C14-C19",
         ),
     )
 

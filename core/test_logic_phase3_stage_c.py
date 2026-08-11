@@ -1,4 +1,8 @@
-from django.test import SimpleTestCase
+from html import unescape
+
+from django.contrib.auth import get_user_model
+from django.test import SimpleTestCase, TestCase
+from django.urls import reverse
 
 from .logic_course_data import VISIBLE_LOGIC_LESSONS
 from .logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
@@ -23,6 +27,7 @@ from .logic_tfl_semantics import (
     ordered_atoms,
     parse_tfl,
 )
+from .models import LogicLessonProgress
 
 
 class LogicPhase3StageCIntegrityTests(SimpleTestCase):
@@ -1698,3 +1703,84 @@ class LogicPhase3StageCC19CandidateTests(SimpleTestCase):
                 STAGE_C_SOURCE_REFERENCES
             )
         )
+
+
+class LogicPhase3StageCPreviewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        user_model = get_user_model()
+        cls.staff_user = user_model.objects.create_user(
+            username="logic-stage-c-reviewer",
+            password="review-pass",
+            is_staff=True,
+        )
+        cls.regular_user = user_model.objects.create_user(
+            username="logic-stage-c-student",
+            password="student-pass",
+        )
+
+    def test_preview_requires_staff_access(self):
+        url = reverse("logic_stage_c_preview")
+
+        anonymous_response = self.client.get(url)
+        self.assertEqual(anonymous_response.status_code, 302)
+        self.assertIn(reverse("admin:login"), anonymous_response.url)
+
+        self.client.force_login(self.regular_user)
+        regular_response = self.client.get(url)
+        self.assertEqual(regular_response.status_code, 302)
+        self.assertIn(reverse("admin:login"), regular_response.url)
+
+    def test_staff_preview_contains_every_stage_c_candidate(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_c_preview"))
+        rendered_text = unescape(response.content.decode())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "core/logic_stage_a_preview.html")
+        self.assertIn(
+            "Faz 3C: TFL semantiği ve yöntem seçimi",
+            rendered_text,
+        )
+        for lesson in STAGE_C_CANDIDATE_LESSONS:
+            with self.subTest(lesson=lesson["curriculum_id"]):
+                self.assertIn(lesson["curriculum_id"], rendered_text)
+                self.assertIn(lesson["title"], rendered_text)
+
+    def test_staff_preview_contains_each_production_stimulus(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_c_preview"))
+        rendered_text = unescape(response.content.decode())
+
+        for lesson in STAGE_C_CANDIDATE_LESSONS:
+            for task in lesson["production_tasks"]:
+                stimulus = task["stimulus"]
+                with self.subTest(lesson=lesson["curriculum_id"]):
+                    self.assertIn(stimulus["label"], rendered_text)
+                    for item in stimulus["items"]:
+                        self.assertIn(item, rendered_text)
+
+    def test_preview_lists_cross_stage_prerequisites_without_live_links(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_c_preview"))
+        rendered_text = unescape(response.content.decode())
+
+        self.assertIn(
+            "B12 · Belirsizlik, Bulanıklık ve Savunulabilir Okumalar",
+            rendered_text,
+        )
+        self.assertIn("B13 · Kademeli Sembolleştirme Atölyesi", rendered_text)
+        self.assertIn("C18 · Geçerlilik ve Karşı Değerleme", rendered_text)
+        self.assertNotIn('href="#aday-b12"', rendered_text)
+        self.assertNotIn('href="#aday-b13"', rendered_text)
+        self.assertIn('href="#aday-c18"', rendered_text)
+
+    def test_preview_is_read_only_and_has_no_learner_progress_hooks(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_c_preview"))
+
+        self.assertEqual(LogicLessonProgress.objects.count(), 0)
+        self.assertNotContains(response, "data-logic-lesson-page")
+        self.assertNotContains(response, "data-progress-url")
+        self.assertNotContains(response, reverse("logic_lesson_progress"))
+        self.assertNotContains(response, "logic_lesson.js")

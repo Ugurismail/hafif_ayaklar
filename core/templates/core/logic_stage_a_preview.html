@@ -77,7 +77,11 @@
                 <div class="logic-review-prerequisites">
                   <span>Önkoşul</span>
                   {% for prerequisite in lesson.prerequisite_details %}
-                    <a href="#aday-{{ prerequisite.curriculum_id|lower }}">{{ prerequisite.curriculum_id }} · {{ prerequisite.title }}</a>
+                    {% if prerequisite.in_review_stage %}
+                      <a href="#aday-{{ prerequisite.curriculum_id|lower }}">{{ prerequisite.curriculum_id }} · {{ prerequisite.title }}</a>
+                    {% else %}
+                      <strong title="Önceki aşama önkoşulu">{{ prerequisite.curriculum_id }} · {{ prerequisite.title }}</strong>
+                    {% endif %}
                   {% endfor %}
                 </div>
               {% else %}
