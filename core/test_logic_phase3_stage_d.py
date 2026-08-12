@@ -3,7 +3,12 @@ from copy import deepcopy
 from django.test import SimpleTestCase
 
 from .logic_course_data import VISIBLE_LOGIC_LESSONS
-from .logic_fitch import D20_RULES, D21_RULES, audit_fitch_proof
+from .logic_fitch import (
+    D20_RULES,
+    D21_RULES,
+    D22_RULES,
+    audit_fitch_proof,
+)
 from .logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
 from .logic_phase3_stage_b import STAGE_B_CANDIDATE_MAP
 from .logic_phase3_stage_c import STAGE_C_CANDIDATE_MAP
@@ -12,6 +17,27 @@ from .logic_phase3_stage_d import (
     STAGE_D_CANDIDATE_MAP,
     STAGE_D_SOURCE_REFERENCES,
 )
+
+
+def _proof_line(
+    line_id,
+    formula,
+    rule,
+    *,
+    citations=None,
+    depth=0,
+    opens=None,
+    closes=None,
+):
+    return {
+        "id": line_id,
+        "formula": formula,
+        "rule": rule,
+        "citations": citations or [],
+        "depth": depth,
+        "opens": opens,
+        "closes": closes or [],
+    }
 
 
 class LogicPhase3StageDIntegrityTests(SimpleTestCase):
@@ -51,13 +77,13 @@ class LogicPhase3StageDIntegrityTests(SimpleTestCase):
     def test_stage_d_contains_only_the_reviewed_candidates_in_order(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_D_CANDIDATE_LESSONS],
-            ["D20", "D21"],
+            ["D20", "D21", "D22"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_D_CANDIDATE_LESSONS],
-            [20, 21],
+            [20, 21, 22],
         )
-        self.assertEqual(len(STAGE_D_CANDIDATE_MAP), 2)
+        self.assertEqual(len(STAGE_D_CANDIDATE_MAP), 3)
 
     def test_stage_d_candidates_have_complete_fields_and_known_sources(self):
         for lesson in STAGE_D_CANDIDATE_LESSONS:
@@ -146,6 +172,25 @@ class LogicPhase3StageDIntegrityTests(SimpleTestCase):
         self.assertEqual(
             set(lesson["rule_scope"]["review_only"]),
             D20_RULES,
+        )
+        self.assertEqual(
+            {fixture["kind"] for fixture in lesson["proof_fixtures"]},
+            {"complete", "incomplete", "error"},
+        )
+
+    def test_d22_has_rule_scope_depth_and_all_fixture_kinds(self):
+        lesson = STAGE_D_CANDIDATE_LESSONS[2]
+
+        self.assertGreaterEqual(len(lesson["sections"]), 6)
+        self.assertGreaterEqual(len(lesson["worked_examples"]), 8)
+        self.assertGreaterEqual(len(lesson["practice"]), 12)
+        self.assertEqual(
+            set(lesson["rule_scope"]["introduced"]),
+            {"¬I", "¬E", "X", "IP"},
+        )
+        self.assertEqual(
+            set(lesson["rule_scope"]["review_only"]),
+            D21_RULES,
         )
         self.assertEqual(
             {fixture["kind"] for fixture in lesson["proof_fixtures"]},
@@ -700,6 +745,237 @@ class D21RuleAuditTests(SimpleTestCase):
                 for issue in audit_fitch_proof(
                     proof,
                     allowed_rules=D21_RULES,
+                )
+            ],
+        )
+
+
+class D22RuleAuditTests(SimpleTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.lesson = STAGE_D_CANDIDATE_LESSONS[2]
+        cls.fixtures = {
+            fixture["id"]: fixture
+            for fixture in cls.lesson["proof_fixtures"]
+        }
+
+    def test_complete_d22_fixtures_pass_the_expanded_rule_set(self):
+        for fixture in self.lesson["proof_fixtures"]:
+            if fixture["kind"] != "complete":
+                continue
+            with self.subTest(fixture=fixture["id"]):
+                self.assertEqual(
+                    audit_fitch_proof(
+                        fixture["proof"],
+                        allowed_rules=D22_RULES,
+                    ),
+                    [],
+                )
+
+    def test_d22_incomplete_fixture_is_valid_before_negation_closure(self):
+        fixture = self.fixtures["d22-incomplete-negation-introduction"]
+
+        self.assertEqual(
+            audit_fitch_proof(
+                fixture["proof"],
+                allowed_rules=D22_RULES,
+                require_complete=False,
+            ),
+            [],
+        )
+        self.assertEqual(
+            {
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    fixture["proof"],
+                    allowed_rules=D22_RULES,
+                )
+            },
+            {
+                "proof.scope_unclosed",
+                "proof.target_in_subproof",
+                "proof.target_not_reached",
+            },
+        )
+
+    def test_error_fixture_rejects_different_atoms_as_a_contradiction(self):
+        fixture = self.fixtures["d22-false-contradiction"]
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    fixture["proof"],
+                    allowed_rules=D22_RULES,
+                )
+            ],
+            fixture["expected_issue_codes"],
+        )
+
+    def test_negation_elimination_accepts_compound_formulas_in_either_order(self):
+        for citations in (
+            [
+                {"kind": "line", "id": "l1"},
+                {"kind": "line", "id": "l2"},
+            ],
+            [
+                {"kind": "line", "id": "l2"},
+                {"kind": "line", "id": "l1"},
+            ],
+        ):
+            proof = {
+                "id": "compound-contradiction",
+                "premises": ["A ∧ B", "¬(A ∧ B)"],
+                "target": "⊥",
+                "lines": [
+                    _proof_line("l1", "A ∧ B", "PR"),
+                    _proof_line("l2", "¬(A ∧ B)", "PR"),
+                    _proof_line(
+                        "l3",
+                        "⊥",
+                        "¬E",
+                        citations=citations,
+                    ),
+                ],
+            }
+
+            with self.subTest(citations=citations):
+                self.assertEqual(
+                    audit_fitch_proof(proof, allowed_rules=D22_RULES),
+                    [],
+                )
+
+    def test_negation_elimination_can_only_conclude_bottom(self):
+        proof = deepcopy(self.fixtures["d22-complete-explosion"]["proof"])
+        proof["target"] = "C"
+        proof["lines"][2]["formula"] = "C"
+        proof["lines"] = proof["lines"][:3]
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D22_RULES,
+                )
+            ],
+            ["rule.negation_elimination_conclusion"],
+        )
+
+    def test_negation_introduction_requires_assumption_then_bottom(self):
+        proof = deepcopy(
+            self.fixtures["d22-complete-negation-introduction"]["proof"]
+        )
+        proof["lines"][-1]["formula"] = "¬B"
+        proof["target"] = "¬B"
+
+        self.assertIn(
+            "rule.negation_introduction_mismatch",
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D22_RULES,
+                )
+            ],
+        )
+
+    def test_indirect_proof_requires_the_targets_exact_negation(self):
+        proof = deepcopy(
+            self.fixtures["d22-complete-indirect-proof"]["proof"]
+        )
+        proof["lines"][-1]["formula"] = "B"
+        proof["target"] = "B"
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D22_RULES,
+                )
+            ],
+            ["rule.indirect_proof_mismatch"],
+        )
+
+    def test_explosion_requires_an_accessible_bottom_line(self):
+        proof = {
+            "id": "explosion-without-bottom",
+            "premises": ["A"],
+            "target": "C",
+            "lines": [
+                _proof_line("l1", "A", "PR"),
+                _proof_line(
+                    "l2",
+                    "C",
+                    "X",
+                    citations=[{"kind": "line", "id": "l1"}],
+                ),
+            ],
+        }
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D22_RULES,
+                )
+            ],
+            ["rule.explosion_source"],
+        )
+
+    def test_explosion_cannot_reach_into_a_closed_subproof(self):
+        proof = {
+            "id": "closed-bottom",
+            "premises": ["A", "¬A"],
+            "target": "C",
+            "lines": [
+                _proof_line("l1", "A", "PR"),
+                _proof_line("l2", "¬A", "PR"),
+                _proof_line(
+                    "l3",
+                    "B",
+                    "AS",
+                    depth=1,
+                    opens="s1",
+                ),
+                _proof_line(
+                    "l4",
+                    "⊥",
+                    "¬E",
+                    citations=[
+                        {"kind": "line", "id": "l1"},
+                        {"kind": "line", "id": "l2"},
+                    ],
+                    depth=1,
+                ),
+                _proof_line(
+                    "l5",
+                    "¬B",
+                    "¬I",
+                    citations=[
+                        {"kind": "subproof", "start": "l3", "end": "l4"}
+                    ],
+                    closes=["s1"],
+                ),
+                _proof_line(
+                    "l6",
+                    "C",
+                    "X",
+                    citations=[{"kind": "line", "id": "l4"}],
+                ),
+            ],
+        }
+
+        self.assertIn(
+            "citation.inaccessible",
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D22_RULES,
                 )
             ],
         )

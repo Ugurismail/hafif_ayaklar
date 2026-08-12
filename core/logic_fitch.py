@@ -6,15 +6,30 @@ interactive proof editor is introduced.
 """
 
 from collections.abc import Iterable
+from dataclasses import dataclass
 
 from .logic_tfl_semantics import TFLParseError, parse_tfl
 
 
 D20_RULES = frozenset({"PR", "AS", "R"})
 D21_RULES = D20_RULES | frozenset({"∧I", "∧E", "→I", "→E"})
+D22_RULES = D21_RULES | frozenset({"¬I", "¬E", "X", "IP"})
 REQUIRED_LINE_FIELDS = frozenset(
     {"id", "formula", "rule", "citations", "depth", "opens", "closes"}
 )
+
+
+@dataclass(frozen=True)
+class _ContradictionFormula:
+    """Proof-only representation of the contradiction marker ``⊥``."""
+
+    operator: str = "⊥"
+
+    def render(self):
+        return "⊥"
+
+
+CONTRADICTION = _ContradictionFormula()
 
 
 def _issue(code, message, *, line_id=None, severity="error"):
@@ -33,6 +48,8 @@ def _scope_is_accessible(source_path, current_path):
 
 
 def _parse_formula(source, *, label, line_id=None):
+    if source == "⊥":
+        return CONTRADICTION, None
     try:
         return parse_tfl(source), None
     except (TFLParseError, TypeError) as exc:
@@ -41,6 +58,16 @@ def _parse_formula(source, *, label, line_id=None):
             f"{label} geçerli bir TFL cümlesi değil: {exc}",
             line_id=line_id,
         )
+
+
+def _are_contradictories(first, second):
+    """Return whether the formulas are exactly ``A`` and ``¬A``."""
+
+    return (
+        getattr(first, "operator", None) == "¬" and first.right == second
+    ) or (
+        getattr(second, "operator", None) == "¬" and second.right == first
+    )
 
 
 def audit_fitch_proof(
@@ -715,6 +742,168 @@ def audit_fitch_proof(
                             line_id=issue_line_id,
                         )
                     )
+        elif rule == "¬E":
+            if len(citations) != 2:
+                issues.append(
+                    _issue(
+                        "rule.negation_elimination_citation_count",
+                        "¬E tam olarak iki erişilebilir satıra atıf yapmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_line_citations:
+                issues.append(
+                    _issue(
+                        "rule.negation_elimination_citation_type",
+                        "¬E yalnız satır atıfları kullanır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif parsed_formula != CONTRADICTION:
+                issues.append(
+                    _issue(
+                        "rule.negation_elimination_conclusion",
+                        "¬E sonucu yalnız çelişki işareti ⊥ olabilir.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif (
+                len(resolved_line_citations) == 2
+                and all(
+                    item["formula"] is not None
+                    for item in resolved_line_citations
+                )
+                and not _are_contradictories(
+                    resolved_line_citations[0]["formula"],
+                    resolved_line_citations[1]["formula"],
+                )
+            ):
+                issues.append(
+                    _issue(
+                        "rule.negation_elimination_mismatch",
+                        "¬E için aynı cümlenin olumlu ve olumsuz biçimleri gerekir.",
+                        line_id=issue_line_id,
+                    )
+                )
+        elif rule == "¬I":
+            if len(citations) != 1:
+                issues.append(
+                    _issue(
+                        "rule.negation_introduction_citation_count",
+                        "¬I tam olarak bir kapalı alt kanıt aralığı ister.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_subproof_citations:
+                issues.append(
+                    _issue(
+                        "rule.negation_introduction_citation_type",
+                        "¬I satır değil, alt kanıt aralığına atıf yapmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif getattr(parsed_formula, "operator", None) != "¬":
+                issues.append(
+                    _issue(
+                        "rule.negation_introduction_conclusion",
+                        "¬I sonucunun ana bağlacı ¬ olmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif len(resolved_subproof_citations) == 1:
+                cited_subproof = resolved_subproof_citations[0]
+                start_formula = cited_subproof["start"]["formula"]
+                end_formula = cited_subproof["end"]["formula"]
+                if (
+                    parsed_formula is not None
+                    and start_formula is not None
+                    and end_formula is not None
+                    and (
+                        parsed_formula.right != start_formula
+                        or end_formula != CONTRADICTION
+                    )
+                ):
+                    issues.append(
+                        _issue(
+                            "rule.negation_introduction_mismatch",
+                            "¬I, varsayılan cümlenin çelişkiye ulaştığı alt kanıttan onun olumsuzunu üretir.",
+                            line_id=issue_line_id,
+                        )
+                    )
+        elif rule == "IP":
+            if len(citations) != 1:
+                issues.append(
+                    _issue(
+                        "rule.indirect_proof_citation_count",
+                        "IP tam olarak bir kapalı alt kanıt aralığı ister.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_subproof_citations:
+                issues.append(
+                    _issue(
+                        "rule.indirect_proof_citation_type",
+                        "IP satır değil, alt kanıt aralığına atıf yapmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif parsed_formula == CONTRADICTION:
+                issues.append(
+                    _issue(
+                        "rule.indirect_proof_conclusion",
+                        "IP ile ⊥ değil, varsayılan olumsuzun içindeki cümle elde edilir.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif len(resolved_subproof_citations) == 1:
+                cited_subproof = resolved_subproof_citations[0]
+                start_formula = cited_subproof["start"]["formula"]
+                end_formula = cited_subproof["end"]["formula"]
+                if (
+                    parsed_formula is not None
+                    and start_formula is not None
+                    and end_formula is not None
+                    and (
+                        getattr(start_formula, "operator", None) != "¬"
+                        or start_formula.right != parsed_formula
+                        or end_formula != CONTRADICTION
+                    )
+                ):
+                    issues.append(
+                        _issue(
+                            "rule.indirect_proof_mismatch",
+                            "IP, hedefin olumsuzunu varsayıp çelişkiye ulaşan alt kanıtı boşaltmalıdır.",
+                            line_id=issue_line_id,
+                        )
+                    )
+        elif rule == "X":
+            if len(citations) != 1:
+                issues.append(
+                    _issue(
+                        "rule.explosion_citation_count",
+                        "X tam olarak bir erişilebilir ⊥ satırına atıf yapmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_line_citations:
+                issues.append(
+                    _issue(
+                        "rule.explosion_citation_type",
+                        "X yalnız bir satır atfı kullanır; alt kanıt kapatmaz.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif (
+                len(resolved_line_citations) == 1
+                and resolved_line_citations[0]["formula"] != CONTRADICTION
+            ):
+                issues.append(
+                    _issue(
+                        "rule.explosion_source",
+                        "X kaynağı erişilebilir bir ⊥ satırı olmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
 
         record = {
             "id": line_id,

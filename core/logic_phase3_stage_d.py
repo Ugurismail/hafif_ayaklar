@@ -1204,7 +1204,589 @@ def _candidate_d21():
     return lesson
 
 
-STAGE_D_CANDIDATE_LESSONS = [_candidate_d20(), _candidate_d21()]
+def _candidate_d22():
+    lesson = _lesson(
+        "D22",
+        "ders-olumsuzlama-alt-kanit-ve-celiskiye-indirgeme",
+        "Olumsuzlama, Alt Kanıt ve Çelişkiye İndirgeme",
+        "Açık bir cümle/olumsuzu çiftinden çelişki üretir; çelişkiyi olumsuzlama girişi, patlama ve klasik dolaylı kanıt içinde kapsamı bozmadan kullanır.",
+        "¬, ⊥ ve varsayım boşaltma biçimlerini ayırma",
+        55,
+        [
+            "ders-birlesim-ve-kosul-kurallari",
+            "ders-totoloji-celiski-ve-olumsallik",
+            "ders-mantiksal-esdegerlik-ve-tutarlilik",
+        ],
+        [
+            "nd.contradiction_build",
+            "nd.negation_rules",
+            "nd.explosion_apply",
+            "nd.indirect_proof",
+        ],
+        [
+            "Erişilebilir 𝒜 ve ¬𝒜 satırlarını tam sözdizimsel eşleşmeyle belirleyip ¬E ile ⊥ üretmek.",
+            "𝒜 varsayımından ⊥a ulaşan kapalı alt kanıtı ¬I ile boşaltıp ¬𝒜 kurmak.",
+            "Erişilebilir ⊥ satırından X ile herhangi bir TFL cümlesini üretirken X'in yeni bir alt kanıt kapatmadığını göstermek.",
+            "¬𝒜 varsayımından ⊥a ulaşan kapalı alt kanıtı klasik IP ile boşaltıp 𝒜 kurmak.",
+            "¬I, ¬E, X ve IP kurallarını girdi, çıktı, atıf türü ve boşalttıkları varsayım bakımından ayırmak.",
+        ],
+        [
+            (
+                "Açık çelişki",
+                "Aynı kapsamdan erişilebilen bir TFL cümlesi 𝒜 ile onun tam olumsuzu ¬𝒜'nın birlikte bulunması.",
+            ),
+            (
+                "Çelişki işareti (⊥)",
+                "Bir 𝒜/¬𝒜 çiftinin ¬E ile açıkça kaydedildiğini gösteren, kanıt satırlarında kullanılan özel işaret.",
+            ),
+            (
+                "Olumsuzlama eleme (¬E)",
+                "Erişilebilir 𝒜 ve ¬𝒜 satırlarından ⊥ üreten iki satırlı kural.",
+            ),
+            (
+                "Olumsuzlama giriş (¬I)",
+                "𝒜 varsayımı altında ⊥ türeten kapalı alt kanıttan ¬𝒜 çıkarıp 𝒜 varsayımını boşaltan kural.",
+            ),
+            (
+                "Patlama (X)",
+                "Erişilebilir ⊥ satırından istenen herhangi bir TFL cümlesini üreten, fakat tek başına alt kanıt kapatmayan kural.",
+            ),
+            (
+                "Dolaylı kanıt (IP)",
+                "¬𝒜 varsayımı altında ⊥ türeten kapalı alt kanıttan klasik olarak 𝒜 çıkaran kural.",
+            ),
+            (
+                "Varsayım boşaltma",
+                "Alt kanıt sonucunu dış kapsamda lisanslarken geçici başlangıç varsayımını artık doğrudan erişilebilir satır olmaktan çıkarma.",
+            ),
+        ],
+        [
+            _section(
+                "Çelişkiyi biçimsel olarak tanımak",
+                "Kanıt sisteminde iki cümlenin gerilimli görünmesi yetmez. ¬E için erişilebilir satırlardan biri tam olarak 𝒜, diğeri tam olarak ¬𝒜 olmalıdır; ancak o zaman ⊥ yazılır.",
+                "Bir alt kanıtı çelişkiyle bitirmek veya patlama için kaynak hazırlamak gerektiğinde.",
+                "𝒜, ¬𝒜 ⟹ ⊥ · ¬E",
+                "Atıfların sırası sonucu değiştirmez. Buna karşılık A ile ¬B, A ile ¬(A ∧ B) veya yalnız iki farklı atom açık çelişki değildir.",
+                "Semantik olarak birlikte yanlış olabilecek iki cümleyi, sözdizimsel 𝒜/¬𝒜 çifti göstermeden ¬E kaynağı saymak.",
+                [
+                    ("A; ¬A", "Tam olumlu/olumsuz çifti olduğu için ⊥ lisanslanır."),
+                    ("A ∧ B; ¬(A ∧ B)", "Bileşik cümlenin bütünü ile tam olumsuzu çelişir."),
+                    ("A; ¬B", "Atomlar farklı olduğu için ¬E uygulanamaz."),
+                ],
+                (
+                    "Önce iki formülün sözdizim ağaçlarını tam eşleştir, sonra ⊥ yaz.",
+                    "İki satır aynı anda doğru olamaz gibi göründüğü için doğrudan ⊥ yaz.",
+                    "¬E yerel ve açık bir çelişki çiftini belgeleyen biçimsel bir kuraldır.",
+                ),
+            ),
+            _section(
+                "Olumsuzlama eleme ile ⊥ üretmek",
+                "¬E iki erişilebilir satıra atıf yapar ve yalnız ⊥ sonucunu üretir. Çelişen satırlar bitişik olmak zorunda değildir; fakat ikisi de mevcut kapsamdan erişilebilir olmalıdır.",
+                "Çelişkiyi bir sonraki ¬I, IP veya X adımında kullanılabilecek açık bir satıra dönüştürmek için.",
+                "¬E m,n: m ve n satırları 𝒜/¬𝒜; sonuç ⊥",
+                "Kapanmış bir kardeş alt kanıttaki 𝒜 ile mevcut kapsamdaki ¬𝒜 birlikte kullanılamaz. Erişilebilirlik, formül eşleşmesi kadar kuralın parçasıdır.",
+                "¬E sonucuna hedef cümleyi yazmak veya yalnız bir olumsuz cümleye atıf yapmak.",
+                [
+                    ("l2 ¬B; l7 B; l8 ⊥ ¬E l2,l7", "Satırlar ayrı olsa da aynı kapsamdan erişilebilirdir."),
+                    ("l2 B; l7 ¬B; l8 ⊥ ¬E l2,l7", "Ters atıf sırası da lisanslıdır."),
+                    ("l2 ¬B; l7 B; l8 C ¬E l2,l7", "Sonuç ⊥ olmadığı için kural şemasını ihlal eder."),
+                ],
+                (
+                    "Çelişki çiftini ve ⊥ sonucunu ayrı satırlarda görünür kıl.",
+                    "Çelişen satırlardan istediğin hedefi doğrudan ¬E ile çıkar.",
+                    "Önce ¬E ile ⊥, gerekiyorsa sonraki satırda X kullanılır.",
+                ),
+            ),
+            _section(
+                "¬I ile varsayımı boşaltmak",
+                "Hedef ¬𝒜 ise 𝒜 geçici varsayılır. Bu varsayımın açık olduğu alt kanıtta ⊥ elde edilirse alt kanıt kapatılır ve dış kapsamda ¬𝒜 yazılır.",
+                "Olumsuz hedefi doğrudan kuracak erişilebilir bir kural yokken, hedefin olumlusunun çelişkiye götürülebildiği durumda.",
+                "[𝒜 AS ... ⊥] ⟹ ¬𝒜 · ¬I alt-kanıt-aralığı",
+                "¬I atfı varsayım satırından alt kanıtın son doğrudan ⊥ satırına kadar uzanır. İçeride bir yerde ⊥ görülmesi, ardından başka satırlar yazıldıysa eski aralığı kapatmaya yetmez.",
+                "¬𝒜'yı varsayıp yine ¬𝒜 sonucuna ulaşmak veya alt kanıt ⊥ yerine başka formülle biterken ¬I uygulamak.",
+                [
+                    ("A → B, A → ¬B ⊢ ¬A", "A varsayımı iki koşulla B ve ¬B üretir; ¬E sonrası ¬I A'yı boşaltır."),
+                    ("A AS ... ⊥; sonuç ¬A", "Başlangıç ve sonuç ¬I şemasına tam uyar."),
+                    ("¬A AS ... ⊥; sonuç ¬A", "Bu ¬I değil; aynı alt kanıt klasik IP ile A'yı lisanslayabilir."),
+                ],
+                (
+                    "Olumsuz hedefin içindeki cümleyi varsay ve alt kanıtı tam ⊥ ile bitir.",
+                    "Hedef olumsuz diye hedefin kendisini varsay.",
+                    "¬I, varsayılan cümlenin yanlışlığını göstererek onun olumsuzunu dışarı çıkarır.",
+                ),
+            ),
+            _section(
+                "Patlamayı sınırlı ve açık kullanmak",
+                "X, erişilebilir bir ⊥ satırından herhangi bir TFL cümlesini üretir. Gücü sınırsız görünen sonuç tarafındadır; kullanım koşulu ise son derece dardır: gerçek bir ⊥ satırı bulunmalıdır.",
+                "Özellikle bir vaka veya alt kanıt dalı çelişkiye ulaştığında o dalda ortak hedefi üretmek gerektiğinde.",
+                "⊥ ⟹ 𝒜 · X",
+                "X bir alt kanıt aralığına değil tek ⊥ satırına atıf yapar. ⊥ kapanmış bir alt kanıtta kalmışsa dışarıdan erişilemez; önce onu boşaltan uygun kural gerekir.",
+                "Birbirine uymayan iki öncülden doğrudan hedefe sıçramak veya kapanmış alt kanıtın ⊥ satırını dışarıda kullanmak.",
+                [
+                    ("A, ¬A ⊢ C", "Önce ⊥ ¬E, ardından C X kurulabilir."),
+                    ("⊥ erişilebilir; hedef (A → B) ∧ C", "X'in sonucu atomik olmak zorunda değildir."),
+                    ("A, ¬B ⊢ C · X", "Erişilebilir ⊥ bulunmadığı için patlama lisanssızdır."),
+                ],
+                (
+                    "X atfını tek ve erişilebilir ⊥ satırına bağla.",
+                    "Çelişki ihtimali gördüğün anda X yaz.",
+                    "Patlama, çelişkinin kendisinden değil biçimsel olarak kurulmuş ⊥ satırından çalışır.",
+                ),
+            ),
+            _section(
+                "Klasik IP ile ¬I'yi ayırmak",
+                "IP olumlu 𝒜 hedefi için ¬𝒜 varsayımını açar; alt kanıt ⊥ ile bittiğinde ¬𝒜 boşaltılır ve 𝒜 çıkar. ¬I ise 𝒜 varsayımını boşaltıp ¬𝒜 üretir.",
+                "Doğrudan giriş/eleme planı sonuç vermediğinde ve hedefin olumsuzunun çelişkiye götürülebileceği klasik TFL kanıtlarında.",
+                "[¬𝒜 AS ... ⊥] ⟹ 𝒜 · IP",
+                "IP klasik bir ilkedir. Bu derste kullanılan sistemde lisanslıdır; fakat sezgici veya ilgili mantıklara otomatik olarak genellenmez. Doğrudan kısa yol varken gereksiz IP kanıtı okunurluğu azaltır.",
+                "𝒜 varsayımından ⊥ elde edip IP ile 𝒜 yazmak ya da ¬𝒜 varsayımından ⊥ elde edip ¬¬𝒜 yazmak.",
+                [
+                    ("¬¬A ⊢ A", "¬A varsayılır; ¬¬A ile ¬E sonucu ⊥; IP ile A."),
+                    ("A ⊢ ¬¬A", "¬A varsayımı altında ⊥ kurulur; sonuç ¬¬A için kullanılan kural ¬I'dir."),
+                    ("Hedef B, varsayım ¬A", "Varsayım hedefin tam olumsuzu olmadığı için IP B'yi lisanslamaz."),
+                ],
+                (
+                    "Önce hedef 𝒜'yı belirle, tam ¬𝒜 varsayımını aç ve son satırı ⊥ yap.",
+                    "Her olumlu hedefte otomatik olarak herhangi bir olumsuz varsayım aç.",
+                    "IP'nin lisansı hedef ile varsayım arasındaki tam olumsuzluk ve alt kanıtın ⊥ ile bitmesidir.",
+                ),
+            ),
+            _section(
+                "Dört kuralı kanıt planında ayırmak",
+                "¬E çelişkiyi görünür yapar; ¬I ve IP farklı başlangıç varsayımlarını boşaltır; X ise mevcut ⊥ı hedef cümleye taşır. Aynı ⊥ satırı çevresinde görünseler de kanıt yükleri farklıdır.",
+                "Hedef ve erişilebilir kaynaklara bakarak doğru kural ailesini seçmek, ilk hatalı satırı teşhis etmek için.",
+                "¬E: iki satır→⊥; ¬I: alt kanıt→¬𝒜; IP: alt kanıt→𝒜; X: ⊥→herhangi 𝒜",
+                "Hedef ¬ ile başlıyorsa ¬I güçlü bir geri plan ipucudur. Hedef olumluysa önce doğrudan kurallar aranır; IP ancak hedefin olumsuzundan çelişki planı varsa seçilir.",
+                "Bütün çelişki temelli adımları 'çelişkiye indirgeme' adı altında aynı atıf ve kapsam biçimine sokmak.",
+                [
+                    ("Hedef ¬A; A varsayımı", "Plan ¬I yönündedir."),
+                    ("Hedef A; ¬A varsayımı", "Plan klasik IP yönündedir."),
+                    ("Erişilebilir ⊥; hedef C", "Tek satırlı X yeterlidir; yeni AS açılmaz."),
+                ],
+                (
+                    "Kuralı hedef biçimi, kaynak türü ve boşaltılan varsayıma göre adlandır.",
+                    "⊥ geçen her adımı aynı kural san.",
+                    "Kural şemalarını ayırmak kapsam hatalarını ve yanlış hedef eşleşmelerini görünür kılar.",
+                ),
+            ),
+        ],
+        [
+            _worked(
+                "A, ¬A ⊢ ⊥",
+                "Tam çelişki çifti iki erişilebilir satırdan ¬E ile açıklaştırılır.",
+                "¬E",
+            ),
+            _worked(
+                "A, ¬B ⊢ ⊥",
+                "A ile ¬B aynı formülün olumlu/olumsuz biçimleri değildir.",
+                "Sahte çelişki",
+                "bad",
+            ),
+            _worked(
+                "A → B, A → ¬B ⊢ ¬A",
+                "A varsayımı B ve ¬B üretir; ⊥ ile biten alt kanıt ¬I tarafından boşaltılır.",
+                "¬I",
+            ),
+            _worked(
+                "A, ¬A ⊢ C",
+                "¬E ile ⊥ kurulmadan X uygulanamaz; iki ayrı satır gerekir.",
+                "¬E + X",
+            ),
+            _worked(
+                "¬¬A ⊢ A",
+                "¬A varsayımı ¬¬A ile çelişir; IP bu varsayımı boşaltıp A üretir.",
+                "IP",
+            ),
+            _worked(
+                "A ⊢ ¬¬A",
+                "¬A varsayımı altında ⊥ elde edilir; sonuç varsayımın olumsuzu olduğu için ¬I kullanılır.",
+                "¬I, IP değil",
+            ),
+            _worked(
+                "[A AS ... ⊥ ... B] ⟹ ¬A · ¬I",
+                "Alt kanıtın son doğrudan satırı B ise A'dan ⊥a biten eski aralık kapatılamaz.",
+                "Aralık hatası",
+                "bad",
+            ),
+            _worked(
+                "Kapalı alt kanıttaki ⊥; dışarıda C X",
+                "Kapanmış kapsamın iç satırı dışarıdan erişilemez; X kapsam duvarını aşmaz.",
+                "Kapsam hatası",
+                "bad",
+            ),
+        ],
+        [
+            "Aynı cümlenin tam olumsuzu yerine yalnız farklı görünen iki formülü çelişki saymak.",
+            "¬E sonucuna ⊥ yerine hedef cümleyi yazmak.",
+            "¬I için hedefin olumlusunu değil olumsuzunu varsaymak.",
+            "IP için hedefin tam olumsuzu yerine ilgisiz bir olumsuz cümle varsaymak.",
+            "X'i erişilebilir ⊥ olmadan veya kapalı alt kanıttaki ⊥a doğrudan atıfla kullanmak.",
+            "Alt kanıt içindeki ⊥tan sonra başka satırlar ekleyip eski ⊥ satırını aralığın sonuymuş gibi göstermek.",
+            "Doğrudan kısa bir kanıt varken her olumlu hedef için gereksiz IP açmak.",
+        ],
+        _practice(
+            [
+                (
+                    "Hangi çift ¬E ile ⊥ üretir?",
+                    ["A ve ¬A", "A ve ¬B", "A → B ve ¬B", "A ∧ B ve ¬A"],
+                    "A ve ¬A",
+                    "İkinci satır birincinin tam olumsuzudur.",
+                    "Temel",
+                ),
+                (
+                    "¬E satırının sonucu hangisidir?",
+                    ["𝒜", "¬𝒜", "⊥", "Herhangi bir hedef"],
+                    "⊥",
+                    "Herhangi hedef için sonraki ayrı adım X'tir.",
+                    "Temel",
+                ),
+                (
+                    "Hedef ¬A ise ¬I alt kanıtı hangi varsayımla açılır?",
+                    ["¬A", "A", "⊥", "B"],
+                    "A",
+                    "¬I hedefin içindeki olumlu cümleyi varsayar.",
+                    "Temel",
+                ),
+                (
+                    "Hedef A ise IP alt kanıtı hangi varsayımla açılır?",
+                    ["A", "¬A", "¬¬A", "⊥"],
+                    "¬A",
+                    "IP hedefin tam olumsuzunu varsayar.",
+                    "Temel",
+                ),
+                (
+                    "X hangi tür atıf ister?",
+                    ["Bir AS aralığı", "İki çelişen satır", "Tek erişilebilir ⊥ satırı", "Bir koşul"],
+                    "Tek erişilebilir ⊥ satırı",
+                    "X alt kanıt boşaltmaz; hazır ⊥ satırını kullanır.",
+                    "Orta",
+                ),
+                (
+                    "A ∧ B ile ¬(A ∧ B) neden çelişir?",
+                    [
+                        "İkisi de birleşim içerdiği için",
+                        "İkincisi birincinin tam olumsuzu olduğu için",
+                        "B olumsuz olduğu için",
+                        "Her bileşik cümle çeliştiği için",
+                    ],
+                    "İkincisi birincinin tam olumsuzu olduğu için",
+                    "Eşleşme bileşik formülün bütünü üzerinde yapılır.",
+                    "Orta",
+                ),
+                (
+                    "¬A AS ... ⊥ alt kanıtı hangi sonucu IP ile lisanslar?",
+                    ["¬A", "¬¬A", "A", "⊥"],
+                    "A",
+                    "IP hedefin olumsuzunu boşaltarak hedefi üretir.",
+                    "Orta",
+                ),
+                (
+                    "¬A AS ... ⊥ alt kanıtı ¬I ile hangi sonucu lisanslar?",
+                    ["A", "¬A", "¬¬A", "Herhangi B"],
+                    "¬¬A",
+                    "¬I varsayımın olumsuzunu üretir; burada varsayım ¬A'dır.",
+                    "Orta",
+                ),
+                (
+                    "Alt kanıtta l5 ⊥tan sonra l6 B yazıldı. ¬I aralığı l2-l5 olabilir mi?",
+                    ["Evet", "Hayır, son doğrudan satır l6'dır", "Yalnız B atomikse", "Yalnız l5 erişilebilirse"],
+                    "Hayır, son doğrudan satır l6'dır",
+                    "Boşaltılan aralık alt kanıtın gerçek son satırında bitmelidir.",
+                    "İleri",
+                ),
+                (
+                    "Kapanmış s1 içindeki ⊥ dış kökte X kaynağı olabilir mi?",
+                    ["Evet", "Hayır", "Yalnız hedef atomikse", "Yalnız IP sonrası"],
+                    "Hayır",
+                    "Kapanmış alt kanıtın tekil satırları dışarıdan erişilemez.",
+                    "İleri",
+                ),
+                (
+                    "A → B ve A → ¬B öncüllerinden ¬A için ilk geri plan nedir?",
+                    [
+                        "¬A'yı AS yapmak",
+                        "A'yı AS yapıp B ve ¬B üretmek",
+                        "Doğrudan X kullanmak",
+                        "B'yi PR yazmak",
+                    ],
+                    "A'yı AS yapıp B ve ¬B üretmek",
+                    "Hedef ¬A olduğundan ¬I, A varsayımı altında ⊥ alt hedefini verir.",
+                    "İleri",
+                ),
+                (
+                    "¬¬A ⊢ A kanıtında ¬A varsayımı ile ¬¬A hangi kuralı besler?",
+                    ["→E", "¬E", "X", "∧I"],
+                    "¬E",
+                    "¬¬A, ¬A cümlesinin tam olumsuzudur; çift ⊥ üretir.",
+                    "Zor",
+                ),
+            ]
+        ),
+        {
+            "prompt": "A → B, A → ¬B ⊢ ¬A iskeletindeki AS, koşul eleme, çelişki ve kapanış satırlarını tamamla.",
+            "starter": "Hedefin ana bağlacı ¬ olduğundan A'yı varsay; iki koşulun aynı A girdisiyle hangi çifti ürettiğini izle.",
+            "checks": [
+                "A, AS ile yeni kapsam açtı",
+                "B ve ¬B, iki ayrı →E satırıyla üretildi",
+                "⊥, tam çelişki çiftine atıflı ¬E ile kuruldu",
+                "¬I, A varsayımından son ⊥ satırına kadar doğru aralığı kapattı",
+            ],
+            "solution": "l1 A → B PR; l2 A → ¬B PR; l3 A AS; l4 B →E l1,l3; l5 ¬B →E l2,l3; l6 ⊥ ¬E l4,l5; l7 ¬A ¬I l3-l6.",
+        },
+        [
+            _production_task(
+                "Üç çelişki temelli türetimi kur ve her birinde kullanılan kuralın farklı kanıt yükünü açıkla.",
+                [
+                    "A → B, A → ¬B ⊢ ¬A türetiminde ¬I alt kanıtını doğru kapat.",
+                    "¬¬A ⊢ A türetiminde klasik IP'nin hedefe tam eşleşen olumsuz varsayımını göster.",
+                    "A, ¬A ⊢ C türetiminde ¬E ile X'i iki ayrı satırda kullan.",
+                    "Her ⊥ satırında tam çelişki çiftini ve erişilebilirlik durumunu belirt.",
+                ],
+                "Önce hedef biçiminden ¬I/IP/X adayını seç; ardından gerekli ⊥ satırını hangi erişilebilir çiftin üreteceğini planla.",
+                "Türetim problemleri",
+                [
+                    "A → B, A → ¬B ⊢ ¬A",
+                    "¬¬A ⊢ A",
+                    "A, ¬A ⊢ C",
+                ],
+                "IP'nin klasik sisteme özgü olduğunu, X'in ise bu derste kullanılan klasik TFL sistemi içinde lisanslandığını not et.",
+            )
+        ],
+        [
+            "¬E ile yalnız tam 𝒜/¬𝒜 çiftinden ve iki erişilebilir satırdan ⊥ üretir.",
+            "¬I uygulamasında varsayım formülünü hedef olumsuzun içiyle, alt kanıt sonunu ⊥ ile eşler.",
+            "IP uygulamasında başlangıç varsayımını hedefin tam olumsuzuyla, alt kanıt sonunu ⊥ ile eşler.",
+            "X'i yalnız tek erişilebilir ⊥ satırına atıfla uygular ve kapalı kapsam içindeki ⊥ı reddeder.",
+            "¬I, IP, ¬E ve X için atıf türü ile varsayım boşaltma farklarını bağımsız örneklerde açıklar.",
+            "Doğrudan kanıt ile klasik IP arasında gerekçeli strateji seçimi yapar.",
+        ],
+        [
+            "¬I ile IP hangi farklı varsayımları boşaltır?",
+            "¬E neden herhangi iki tutarsız görünen cümleden uygulanamaz?",
+            "⊥ hangi durumda dış kapsamda X kaynağı olarak kullanılabilir?",
+            "Patlama neden çelişki çiftinden doğrudan değil, ayrı ⊥ satırından çalışır?",
+        ],
+        "Sonraki derste ayrık bağlaç için iki kardeş alt kanıtı aynı hedefte birleştirecek, çift yönlülüğün iki yönünü ayrı kanıt yükleri olarak kuracağız.",
+        [
+            "forallx-basic-rules",
+            "forallx-proof-strategies",
+            "carnap-derivations",
+            "carnap-feedback",
+        ],
+        "D22, ⊥ işaretini yalnız yapılandırılmış kanıt satırlarında özel bir çelişki göstergesi olarak işler. ¬I ile IP aynı kural değildir; IP klasik TFL sistemi içinde açıkça etiketlenir. D23'te açılacak ∨ ve ↔ kuralları ile D25'teki türetilmiş kurallar bu derste kapalıdır.",
+        [
+            "ders-18-degil-ve-ve-baglaclari",
+            "ders-25-dogal-turetim-ii",
+        ],
+    )
+
+    lesson["reading_note"] = (
+        "Çelişki gördüğünde önce tam 𝒜/¬𝒜 çiftini ve erişilebilirliği doğrula. Hedef ¬𝒜 ise 𝒜 ile ¬I, hedef 𝒜 ise gerekirse ¬𝒜 ile IP planla; hazır ⊥ varsa X'i ayrı satırda uygula."
+    )
+    lesson["symbol_set"] = [
+        "𝒜",
+        "ℬ",
+        "¬",
+        "⊥",
+        "¬I",
+        "¬E",
+        "X",
+        "IP",
+        "AS",
+        "⊢",
+    ]
+    lesson["proof_tools"] = [
+        "Tam çelişki çifti denetimi",
+        "⊥ bağımlılık izi",
+        "¬I/IP varsayım eşleştirme",
+        "Alt kanıt son satır denetimi",
+        "Patlama kaynak denetimi",
+        "Doğrudan/dolaylı strateji karşılaştırması",
+    ]
+    lesson["rule_scope"] = {
+        "introduced": ["¬I", "¬E", "X", "IP"],
+        "review_only": ["PR", "AS", "R", "∧I", "∧E", "→I", "→E"],
+        "locked_until_later": [
+            "∨I",
+            "∨E",
+            "↔I",
+            "↔E",
+            "DS",
+            "MT",
+            "DNE",
+            "LEM",
+            "DeM",
+        ],
+    }
+    lesson["proof_fixtures"] = [
+        {
+            "id": "d22-complete-negation-introduction",
+            "kind": "complete",
+            "title": "Koşul çiftinden ¬I ile olumsuz hedef kurma",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d22-complete-negation-introduction",
+                "premises": ["A → B", "A → ¬B"],
+                "target": "¬A",
+                "lines": [
+                    _line("l1", "A → B", "PR"),
+                    _line("l2", "A → ¬B", "PR"),
+                    _line("l3", "A", "AS", depth=1, opens="s1"),
+                    _line(
+                        "l4",
+                        "B",
+                        "→E",
+                        citations=[_line_ref("l1"), _line_ref("l3")],
+                        depth=1,
+                    ),
+                    _line(
+                        "l5",
+                        "¬B",
+                        "→E",
+                        citations=[_line_ref("l2"), _line_ref("l3")],
+                        depth=1,
+                    ),
+                    _line(
+                        "l6",
+                        "⊥",
+                        "¬E",
+                        citations=[_line_ref("l5"), _line_ref("l4")],
+                        depth=1,
+                    ),
+                    _line(
+                        "l7",
+                        "¬A",
+                        "¬I",
+                        citations=[_subproof_ref("l3", "l6")],
+                        closes=["s1"],
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d22-complete-indirect-proof",
+            "kind": "complete",
+            "title": "Çifte olumsuzdan klasik IP ile olumlu hedef",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d22-complete-indirect-proof",
+                "premises": ["¬¬A"],
+                "target": "A",
+                "lines": [
+                    _line("l1", "¬¬A", "PR"),
+                    _line("l2", "¬A", "AS", depth=1, opens="s1"),
+                    _line(
+                        "l3",
+                        "⊥",
+                        "¬E",
+                        citations=[_line_ref("l1"), _line_ref("l2")],
+                        depth=1,
+                    ),
+                    _line(
+                        "l4",
+                        "A",
+                        "IP",
+                        citations=[_subproof_ref("l2", "l3")],
+                        closes=["s1"],
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d22-complete-explosion",
+            "kind": "complete",
+            "title": "Açık çelişkiden ayrı X adımıyla hedef üretme",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d22-complete-explosion",
+                "premises": ["A", "¬A"],
+                "target": "C",
+                "lines": [
+                    _line("l1", "A", "PR"),
+                    _line("l2", "¬A", "PR"),
+                    _line(
+                        "l3",
+                        "⊥",
+                        "¬E",
+                        citations=[_line_ref("l1"), _line_ref("l2")],
+                    ),
+                    _line(
+                        "l4",
+                        "C",
+                        "X",
+                        citations=[_line_ref("l3")],
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d22-incomplete-negation-introduction",
+            "kind": "incomplete",
+            "title": "¬I kapanışı henüz eklenmemiş doğru çelişki alt kanıtı",
+            "expected_issue_codes": [],
+            "next_rule": "¬I l3-l6",
+            "proof": {
+                "id": "d22-incomplete-negation-introduction",
+                "premises": ["A → B", "A → ¬B"],
+                "target": "¬A",
+                "lines": [
+                    _line("l1", "A → B", "PR"),
+                    _line("l2", "A → ¬B", "PR"),
+                    _line("l3", "A", "AS", depth=1, opens="s1"),
+                    _line(
+                        "l4",
+                        "B",
+                        "→E",
+                        citations=[_line_ref("l1"), _line_ref("l3")],
+                        depth=1,
+                    ),
+                    _line(
+                        "l5",
+                        "¬B",
+                        "→E",
+                        citations=[_line_ref("l2"), _line_ref("l3")],
+                        depth=1,
+                    ),
+                    _line(
+                        "l6",
+                        "⊥",
+                        "¬E",
+                        citations=[_line_ref("l4"), _line_ref("l5")],
+                        depth=1,
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d22-false-contradiction",
+            "kind": "error",
+            "title": "Farklı atomları çelişki çifti sanma",
+            "expected_issue_codes": ["rule.negation_elimination_mismatch"],
+            "proof": {
+                "id": "d22-false-contradiction",
+                "premises": ["A", "¬B"],
+                "target": "⊥",
+                "lines": [
+                    _line("l1", "A", "PR"),
+                    _line("l2", "¬B", "PR"),
+                    _line(
+                        "l3",
+                        "⊥",
+                        "¬E",
+                        citations=[_line_ref("l1"), _line_ref("l2")],
+                    ),
+                ],
+            },
+        },
+    ]
+    return lesson
+
+
+STAGE_D_CANDIDATE_LESSONS = [
+    _candidate_d20(),
+    _candidate_d21(),
+    _candidate_d22(),
+]
 
 STAGE_D_CANDIDATE_MAP = {
     lesson["slug"]: lesson

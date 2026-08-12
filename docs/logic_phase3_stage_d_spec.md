@@ -279,7 +279,7 @@ Verilen kısa Fitch türetimini bağımlılık kenarlarıyla yeniden çiz; iki l
 
 ### Bağımsız üretim
 
-`A → B, A → ¬B ⊢ ¬A` ve `¬(A ∨ B) ⊢ ¬A ∧ ¬B` türetimlerini temel kurallarla kur; her `⊥` için çelişen iki satırı açıkça belirt.
+`A → B, A → ¬B ⊢ ¬A`, `¬¬A ⊢ A` ve `A, ¬A ⊢ C` türetimlerini o ana kadar açılmış kurallarla kur; her `⊥` için çelişen iki satırı açıkça belirt.
 
 ### Ustalık kanıtı
 
@@ -554,7 +554,7 @@ Bu tablo Faz D'nin **aday geliştirme** durumunu gösterir; canlıya hazır oldu
 | --- | --- | --- | --- | --- |
 | D20 Kanıt Fikri, Satır Bağımlılığı ve Hedef Okuma | Hazır | Hazır | Hazır | Bekliyor |
 | D21 Birleşim ve Koşul Kuralları | Hazır | Hazır | Hazır | Bekliyor |
-| D22 Olumsuzlama, Alt Kanıt ve Çelişkiye İndirgeme | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| D22 Olumsuzlama, Alt Kanıt ve Çelişkiye İndirgeme | Hazır | Hazır | Hazır | Bekliyor |
 | D23 Ayrık Bağlaç ve Çift Yönlülük Kuralları | Hazır | Bekliyor | Bekliyor | Bekliyor |
 | D24 Geriye Doğru Planlama ve Kanıt Stratejisi | Hazır | Bekliyor | Bekliyor | Bekliyor |
 | D25 Türetilmiş Kurallar ve Eşdeğerliklerin Lisansı | Hazır | Bekliyor | Bekliyor | Bekliyor |
