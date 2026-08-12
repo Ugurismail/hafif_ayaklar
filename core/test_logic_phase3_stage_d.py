@@ -8,6 +8,7 @@ from .logic_fitch import (
     D21_RULES,
     D22_RULES,
     D23_RULES,
+    D24_RULES,
     audit_fitch_proof,
 )
 from .logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
@@ -78,13 +79,13 @@ class LogicPhase3StageDIntegrityTests(SimpleTestCase):
     def test_stage_d_contains_only_the_reviewed_candidates_in_order(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_D_CANDIDATE_LESSONS],
-            ["D20", "D21", "D22", "D23"],
+            ["D20", "D21", "D22", "D23", "D24"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_D_CANDIDATE_LESSONS],
-            [20, 21, 22, 23],
+            [20, 21, 22, 23, 24],
         )
-        self.assertEqual(len(STAGE_D_CANDIDATE_MAP), 4)
+        self.assertEqual(len(STAGE_D_CANDIDATE_MAP), 5)
 
     def test_stage_d_candidates_have_complete_fields_and_known_sources(self):
         for lesson in STAGE_D_CANDIDATE_LESSONS:
@@ -216,6 +217,52 @@ class LogicPhase3StageDIntegrityTests(SimpleTestCase):
             {fixture["kind"] for fixture in lesson["proof_fixtures"]},
             {"complete", "incomplete", "error"},
         )
+
+    def test_d24_adds_strategy_depth_without_unlocking_a_new_rule(self):
+        lesson = STAGE_D_CANDIDATE_LESSONS[4]
+
+        self.assertGreaterEqual(len(lesson["sections"]), 6)
+        self.assertGreaterEqual(len(lesson["worked_examples"]), 8)
+        self.assertGreaterEqual(len(lesson["practice"]), 12)
+        self.assertEqual(lesson["rule_scope"]["introduced"], [])
+        self.assertEqual(
+            set(lesson["rule_scope"]["review_only"]),
+            D24_RULES,
+        )
+        self.assertEqual(D24_RULES, D23_RULES)
+        self.assertEqual(
+            {fixture["kind"] for fixture in lesson["proof_fixtures"]},
+            {"complete", "incomplete", "error"},
+        )
+
+    def test_d24_strategy_cases_are_structured_and_linked_to_fixtures(self):
+        lesson = STAGE_D_CANDIDATE_LESSONS[4]
+        required_fields = {
+            "id",
+            "problem",
+            "backward_goal",
+            "candidate_last_rules",
+            "forward_resources",
+            "bridge",
+            "scope_plan",
+            "first_action",
+            "rationale",
+        }
+        strategy_ids = {case["id"] for case in lesson["strategy_cases"]}
+
+        self.assertGreaterEqual(len(strategy_ids), 5)
+        self.assertEqual(len(strategy_ids), len(lesson["strategy_cases"]))
+        for case in lesson["strategy_cases"]:
+            with self.subTest(case=case["id"]):
+                self.assertTrue(required_fields.issubset(case))
+                self.assertTrue(case["candidate_last_rules"])
+                self.assertTrue(case["forward_resources"])
+                self.assertTrue(case["bridge"])
+                self.assertTrue(case["rationale"])
+
+        for fixture in lesson["proof_fixtures"]:
+            with self.subTest(fixture=fixture["id"]):
+                self.assertIn(fixture["strategy_case_id"], strategy_ids)
 
 
 class FitchProofAuditTests(SimpleTestCase):
@@ -1392,4 +1439,127 @@ class D23RuleAuditTests(SimpleTestCase):
                 )
             ],
             ["rule.biconditional_introduction_directions"],
+        )
+
+
+class D24StrategyAuditTests(SimpleTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.lesson = STAGE_D_CANDIDATE_LESSONS[4]
+        cls.fixtures = {
+            fixture["id"]: fixture
+            for fixture in cls.lesson["proof_fixtures"]
+        }
+
+    def test_complete_d24_fixtures_use_only_the_existing_rule_set(self):
+        for fixture in self.lesson["proof_fixtures"]:
+            if fixture["kind"] != "complete":
+                continue
+            with self.subTest(fixture=fixture["id"]):
+                self.assertEqual(
+                    audit_fitch_proof(
+                        fixture["proof"],
+                        allowed_rules=D24_RULES,
+                    ),
+                    [],
+                )
+
+    def test_d24_incomplete_plan_is_valid_before_scope_discharge(self):
+        fixture = self.fixtures["d24-incomplete-conditional-chain"]
+
+        self.assertEqual(
+            audit_fitch_proof(
+                fixture["proof"],
+                allowed_rules=D24_RULES,
+                require_complete=False,
+            ),
+            [],
+        )
+        self.assertEqual(
+            {
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    fixture["proof"],
+                    allowed_rules=D24_RULES,
+                )
+            },
+            {
+                "proof.scope_unclosed",
+                "proof.target_in_subproof",
+                "proof.target_not_reached",
+            },
+        )
+
+    def test_d24_error_fixture_finds_the_premature_closure(self):
+        fixture = self.fixtures["d24-premature-conditional-closure"]
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    fixture["proof"],
+                    allowed_rules=D24_RULES,
+                )
+            ],
+            fixture["expected_issue_codes"],
+        )
+        self.assertIn("B satırını koru", fixture["repair"])
+
+    def test_d24_local_repair_preserves_the_bridge_and_completes_target(self):
+        proof = deepcopy(
+            self.fixtures["d24-premature-conditional-closure"]["proof"]
+        )
+        proof["lines"].insert(
+            -1,
+            _proof_line(
+                "l4a",
+                "C",
+                "→E",
+                citations=[
+                    {"kind": "line", "id": "l2"},
+                    {"kind": "line", "id": "l4"},
+                ],
+                depth=1,
+            ),
+        )
+        proof["lines"][-1]["citations"] = [
+            {"kind": "subproof", "start": "l3", "end": "l4a"}
+        ]
+
+        self.assertEqual(
+            audit_fitch_proof(proof, allowed_rules=D24_RULES),
+            [],
+        )
+        self.assertEqual(proof["lines"][3]["formula"], "B")
+
+    def test_d24_keeps_derived_rules_locked(self):
+        proof = {
+            "id": "early-disjunctive-syllogism",
+            "premises": ["A ∨ B", "¬A"],
+            "target": "B",
+            "lines": [
+                _proof_line("l1", "A ∨ B", "PR"),
+                _proof_line("l2", "¬A", "PR"),
+                _proof_line(
+                    "l3",
+                    "B",
+                    "DS",
+                    citations=[
+                        {"kind": "line", "id": "l1"},
+                        {"kind": "line", "id": "l2"},
+                    ],
+                ),
+            ],
+        }
+
+        self.assertIn(
+            "rule.not_available",
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D24_RULES,
+                )
+            ],
         )

@@ -73,6 +73,33 @@ def _subproof_ref(start_id, end_id):
     return {"kind": "subproof", "start": start_id, "end": end_id}
 
 
+def _strategy_case(
+    case_id,
+    problem,
+    *,
+    backward_goal,
+    candidate_last_rules,
+    forward_resources,
+    bridge,
+    scope_plan,
+    first_action,
+    rationale,
+):
+    """Build one inspectable proof-search plan without claiming an algorithm."""
+
+    return {
+        "id": case_id,
+        "problem": problem,
+        "backward_goal": backward_goal,
+        "candidate_last_rules": candidate_last_rules,
+        "forward_resources": forward_resources,
+        "bridge": bridge,
+        "scope_plan": scope_plan,
+        "first_action": first_action,
+        "rationale": rationale,
+    }
+
+
 def _candidate_d20():
     lesson = _lesson(
         "D20",
@@ -2283,11 +2310,490 @@ def _candidate_d23():
     return lesson
 
 
+def _candidate_d24():
+    lesson = _lesson(
+        "D24",
+        "ders-geriye-dogru-planlama-ve-kanit-stratejisi",
+        "Geriye Doğru Planlama ve Kanıt Stratejisi",
+        "Hedefin yapısından geriye, erişilebilir satırların yapısından ileri çalışır; iki aramayı işe yaradığı açık bir ara hedefte buluşturur ve başarısız taslağı ilk stratejik çıkmazdan onarır.",
+        "Hedef güdümlü arama, kaynak güdümlü açılım ve kanıt onarımı",
+        55,
+        ["ders-ayrik-baglac-ve-cift-yonluluk-kurallari"],
+        [
+            "nd.backward_plan",
+            "nd.forward_expand",
+            "nd.subgoal_choose",
+            "nd.proof_repair",
+        ],
+        [
+            "Hedefin ana bağlacından olası son kuralı ve bu kuralın açtığı alt hedefleri çıkarmak.",
+            "Erişilebilir satırların ana bağlaçlarından hedefe yararlı eleme olanaklarını belirlemek.",
+            "Geri ve ileri aramayı, hangi sonraki adımı mümkün kıldığı açıklanabilen bir köprü ara hedefte buluşturmak.",
+            "Alt kanıtları satır yazmadan önce kapsam ve boşaltılacak varsayım bakımından planlamak.",
+            "Kör IP, gereksiz patlama ve hedefsiz satır üretimini teşhis edip ilk stratejik çıkmazdan onarmak.",
+        ],
+        [
+            (
+                "Geriye doğru planlama",
+                "Hedefin ana bağlacına bakıp olası son kuralı ve bu kural için daha önce kurulması gereken alt hedefleri yazma yöntemi.",
+            ),
+            (
+                "İleri doğru açılım",
+                "Erişilebilir öncül ve varsayımların ana bağlaçlarına uygun eleme kurallarıyla gerçekten yararlı sonuç adayları üretme yöntemi.",
+            ),
+            (
+                "Köprü ara hedef",
+                "İleri kaynaklardan elde edilebilen ve geriye doğru plandaki bir eksik yükü doğrudan kapatan cümle.",
+            ),
+            (
+                "Son kural adayı",
+                "Hedef biçiminin düşündürdüğü, fakat kaynaklar denetlenmeden zorunlu sayılmayan olası son adım.",
+            ),
+            (
+                "Kapsam planı",
+                "Hangi varsayımın nerede açılacağını, hangi hedefle kapanacağını ve dışarı hangi kural aracılığıyla taşınacağını gösteren alt kanıt taslağı.",
+            ),
+            (
+                "Stratejik çıkmaz",
+                "Satırlar tek tek lisanslı görünse bile hiçbirinin hedefe veya gerekli ara hedefe yaklaşmadığı kanıt durumu.",
+            ),
+            (
+                "İlk onarılacak karar",
+                "Başarısız taslakta sonraki hataları doğuran en erken yanlış hedef, kural, kaynak veya kapsam seçimi.",
+            ),
+            (
+                "Satır ekonomisi",
+                "Kanıtı sırf kısaltmak değil, her satırın sonraki açık bir yükü yerine getirmesini sağlamak.",
+            ),
+        ],
+        [
+            _section(
+                "Hedeften geriye çalışmak",
+                "Hedefin ana bağlacı olası son giriş kuralını düşündürür. Plan önce son adımı varsayımsal olarak yazar, sonra bu adımın gerektirdiği alt hedefleri açar.",
+                "Kanıta hangi satırla başlanacağı belirsizken veya hedef bileşik bir TFL cümlesiyken.",
+                "𝒜 ∧ ℬ ⇒ alt hedefler 𝒜, ℬ; 𝒜 → ℬ ⇒ [𝒜 AS ... ℬ]; ¬𝒜 ⇒ [𝒜 AS ... ⊥]",
+                "Ana bağlaç aramayı daraltır, fakat son kuralı tek başına zorunlu kılmaz. Hedef daha önce elde edilebilir, R ile taşınabilir veya dolaylı bir yol gerektirebilir.",
+                "Hedef koşul diye kaynaklara bakmadan AS açmak ya da hedef atomik diye geriye planlamanın bittiğini sanmak.",
+                [
+                    ("Hedef A → C", "Olası →I planı A varsayımı altında C alt hedefini açar."),
+                    ("Hedef A ∧ C", "Olası ∧I planı A ve C için iki ayrı kanıt yükü çıkarır."),
+                    ("Hedef C", "Atomik hedef son giriş kuralı söylemez; kaynaklardan ileri çalışma öne çıkar."),
+                ],
+                (
+                    "Son kural adayını ve onun alt hedeflerini kurşun kalemle yazmak.",
+                    "Ana bağlacı görünce kuralı uygulanmış saymak.",
+                    "Plan bir yük listesi üretir; her yük yine lisanslı satırlarla gerçekten karşılanmalıdır.",
+                ),
+            ),
+            _section(
+                "Kaynaklardan ileri çalışmak",
+                "Öncül ve açık varsayımların ana bağlaçları hangi eleme sonuçlarının elde edilebileceğini gösterir. Yalnız hedef veya planlanan ara hedefle ilişkili açılımlar seçilir.",
+                "Hedef atomik olduğunda, geriye plan bir ara cümle istediğinde veya erişilebilir koşul/çift yönlülük/ayrık yapı bulunduğunda.",
+                "𝒜 ∧ ℬ ⇒ 𝒜 veya ℬ; 𝒜 → ℬ + 𝒜 ⇒ ℬ; 𝒜 ↔ ℬ + bir taraf ⇒ öteki taraf",
+                "İleri çalışma, uygulanabilen bütün kuralları tüketmek değildir. Her yeni satır için 'bu satır hangi açık yükü kapatacak?' sorusu cevaplanır.",
+                "Her birleşimi parçalamak, her hazır cümleye ∨I uygulamak veya hedefle ilgisiz uzun zincirler üretmek.",
+                [
+                    ("A ∧ B, B → C; hedef C", "∧E ile B, ardından →E ile C hedefe doğrudan ilerler."),
+                    ("A ↔ B, A; hedef B", "↔E hedefi tek adımda üretir."),
+                    ("A; hedef C", "A'dan A ∨ D üretmek lisanslıdır, fakat C için köprü sağlamıyorsa stratejik olarak yararsızdır."),
+                ],
+                (
+                    "Yalnız açık yükle bağlantısı gösterilebilen eleme adımını üretmek.",
+                    "Lisanslı olan her satırı yararlı saymak.",
+                    "Kural doğruluğu zorunludur; stratejik yararlılık ise doğru kanıtı makul bir aramayla bulmayı sağlar.",
+                ),
+            ),
+            _section(
+                "İleri ve geri izi köprüde buluşturmak",
+                "Geri planın istediği cümle ile ileri kaynakların üretebildiği cümle aynı olduğunda bir köprü oluşur. İyi ara hedef, elde edilme yolu ve sonraki kullanım yeri birlikte açıklanabilen cümledir.",
+                "Ne yalnız hedef analizi ne de yalnız kaynak açılımı kanıtı hemen tamamladığında.",
+                "kaynaklar ⟹ köprü 𝒦 ⟹ açık alt hedef ⟹ hedef",
+                "Ara hedefin değeri bağımsız olarak ilginç olmasından değil, belirli bir kuralın eksik girdisini sağlamasından gelir.",
+                "Hedefte geçen her atomu ara hedef saymak veya üretilebilse bile hiçbir sonraki kuralı açmayan cümleyi seçmek.",
+                [
+                    ("A → B, B → C ⊢ A → C", "A varsayımından çıkan B, ikinci koşul ile iç hedef C arasında köprüdür."),
+                    ("A ∧ B, B → C ⊢ A ∧ C", "İleri elde edilen A ve C, geriye plandaki iki ∧I yükünü kapatır."),
+                    ("A ∨ B, A → C, B → C ⊢ C", "Burada köprü tek satır değil, iki kardeş dalda kurulan ortak C'dir."),
+                ],
+                (
+                    "Ara hedef için hem üretim yolunu hem sonraki kullanımını yazmak.",
+                    "Sadece hedefte geçen bir sembolü seçmek.",
+                    "Köprü iki yönlü bir bağlantıdır: soldan erişilebilir, sağda belirli bir yükü kapatır.",
+                ),
+            ),
+            _section(
+                "Satırdan önce kapsam planı kurmak",
+                "→I, ¬I, IP, ∨E ve ↔I kullanılacaksa alt kanıtların başlangıçları, beklenen sonları, kardeşlik ilişkileri ve kapanış noktaları önce tasarlanır.",
+                "Birden çok alt kanıt açılacaksa veya geçici varsayıma bağımlı sonuçların yanlışlıkla dışarı taşınma riski varsa.",
+                "aç: varsayım + kapsam kimliği; içeride: alt hedef; kapat: yalnız uygun giriş/eleme kuralıyla",
+                "Kapsam planı, varsayımın doğru olduğunu ileri sürmez; hangi koşullu kanıt yükü için geçici olarak kullanılacağını kaydeder.",
+                "İlk dalı kapatmadan kardeş dal açmak, dış sonuç yazılmadan kapsamı terk etmek veya iç satırı doğrudan dışarı yinelemek.",
+                [
+                    ("A → C hedefi", "A AS ile bir kapsam; son doğrudan satır C; dışarıda →I."),
+                    ("A ∨ B kaynağıyla C", "A...C ve B...C aynı parent altında iki kardeş kapsam; dışarıda ∨E."),
+                    ("A ↔ B hedefi", "A...B ve B...A iki ayrı kardeş kapsam; dışarıda ↔I."),
+                ],
+                (
+                    "Alt kanıtın başlangıç, son, parent ve boşaltma kuralını önceden yazmak.",
+                    "Önce AS satırları açıp ne zaman kapanacağını sonra düşünmek.",
+                    "Geçici varsayım bağımlılığı kanıtın mantıksal yapısıdır; sonradan yapılan görsel düzenleme değildir.",
+                ),
+            ),
+            _section(
+                "Doğrudan yol ile dolaylı yolu seçmek",
+                "Önce hedefin giriş kuralı ve kaynakların eleme olanakları denenir. IP ancak hedefin olumsuzunu varsaymaktan erişilebilir bir 𝒜/¬𝒜 çiftine giden somut bir plan bulunduğunda seçilir.",
+                "Doğrudan ileri/geri izler birleşmediğinde ve hedefin tersinin çelişki üreteceği açıkça gösterilebildiğinde.",
+                "doğrudan plan yok + ¬hedef ⟹ ... ⊥ planı var ⇒ IP adayı",
+                "Dolaylı kanıt başarısızlığın otomatik kaçış kapısı değildir. Patlama da yalnız erişilebilir ⊥ zaten kurulduktan sonra istenen cümleyi verir.",
+                "Her atomik hedefte IP açmak, çelişkiyi hangi tam karşıt çiftten üreteceğini bilmeden ¬hedef varsaymak veya X'i ⊥ olmadan kullanmak.",
+                [
+                    ("A → B, A → ¬B ⊢ ¬A", "Hedef ¬A olduğu için A varsayımı altında B ve ¬B üretmek doğrudan ¬I planıdır."),
+                    ("¬¬A ⊢ A", "Doğrudan giriş/eleme yolu yoksa ¬A varsayımı hazır ¬¬A ile ⊥ verir; IP planı somuttur."),
+                    ("A → B ⊢ B", "¬B varsayımından çelişkiye götüren yol yoktur; kör IP eksik öncülü yaratmaz."),
+                ],
+                (
+                    "IP seçmeden önce çelişki çiftini ve ona giden satır zincirini yazmak.",
+                    "Doğrudan yol hemen görünmüyorsa IP açmak.",
+                    "Dolaylı strateji de bütün diğer stratejiler gibi önceden tanımlanmış bir kanıt yükü ister.",
+                ),
+            ),
+            _section(
+                "İlk stratejik çıkmazdan onarmak",
+                "Başarısız taslak son satırdan geriye rastgele silinmez. Önce hedefe hizmet etmeyen ilk kural, ara hedef, kaynak veya kapsam kararı bulunur; yalnız o karar ve ona bağımlı bölüm yeniden kurulur.",
+                "Kanıt uzadığı hâlde açık yük kapanmıyorsa, kapsamlar karıştıysa veya doğru formüller yanlış yönde birikiyorsa.",
+                "hedef yükleri → ilk karşılanmayan yük → onu doğuran karar → yerel onarım",
+                "İlk lisanssız satır ile ilk stratejik hata aynı olmak zorunda değildir. Bütün satırlar lisanslı olduğu hâlde plan hedefe bağlanmıyorsa stratejik hata daha erkendedir.",
+                "Bütün taslağı silmek, yalnız son hata mesajını düzeltmek veya en kısa görünen kanıtı açıklamasız seçmek.",
+                [
+                    ("A → B, B → C ⊢ A → C; A AS altında yalnız B'ye ulaşıp →I", "Kural hatası son satırdadır; stratejik eksik köprü B'yi ikinci koşulla C'ye bağlamamaktır."),
+                    ("Hedef C iken A'dan A ∨ D, sonra (A ∨ D) ∨ E", "Satırlar lisanslı olabilir; ilk stratejik hata hedefle ilgisiz ilk ∨I'dır."),
+                    ("∨E'nin ikinci dalı birincinin içinde", "İlk kapsam kararı düzeltilir; ikinci dal kardeş olarak yeniden açılır."),
+                ],
+                (
+                    "İlk çıkmazı türüyle adlandırıp yalnız bağımlı bölümü yeniden kurmak.",
+                    "Son satırı değiştirerek bütün planı düzelmiş saymak.",
+                    "Yerel onarım, hem hata nedenini görünür tutar hem doğru kalan kanıt emeğini korur.",
+                ),
+            ),
+        ],
+        [
+            _worked("A → B, B → C ⊢ A → C", "→I geri planı A altında C ister; B iki →E adımı arasında köprüdür.", "İki yönlü arama"),
+            _worked("A ∧ B, B → C ⊢ A ∧ C", "∧I iki alt hedef açar; ∧E ile A ve B, ardından →E ile C ileri üretilir.", "Köprü"),
+            _worked("A ∨ B, A → C, B → C ⊢ C", "Atomik hedef kaynak ayrıklığına göre iki kardeş C dalıyla kurulur.", "Durum planı"),
+            _worked("A → B, A → ¬B ⊢ ¬A", "¬I geri planı A varsayımı altında tam B/¬B çiftini hedefler.", "Çelişki planı"),
+            _worked("¬¬A ⊢ A", "Doğrudan kural yoksa ¬A varsayımı hazır ¬¬A ile somut bir IP yolu açar.", "Gerekçeli IP"),
+            _worked("A → B ⊢ B için ¬B AS", "¬B'den çelişkiye giden bir yol yoktur; IP yalnız görünmeyen öncülü icat eder.", "Kör IP", "bad"),
+            _worked("Hedef C; A'dan A ∨ D, sonra (A ∨ D) ∨ E", "Her satır lisanslı olsa da hiçbir açık yük kapanmadığı için ilk ∨I stratejik çıkmazdır.", "Hedefsiz üretim", "bad"),
+            _worked("A → B, B → C ⊢ A → C; alt kanıt A...B", "→I için son cümle C olmalıdır; B köprüde bırakılmıştır.", "Eksik köprü", "bad"),
+        ],
+        [
+            "Ana bağlaçtan çıkan son kural adayını zorunlu son kural sanmak.",
+            "Uygulanabilen her eleme veya ∨I adımını hedefle ilişkisine bakmadan üretmek.",
+            "Ara hedefin hangi sonraki yükü kapattığını açıklayamamak.",
+            "Alt kanıtları başlangıç, son ve parent kapsamı planlamadan açmak.",
+            "Atomik hedef veya ilk güçlük karşısında otomatik IP seçmek.",
+            "İlk stratejik karar hatalıyken yalnız son hata mesajını yamamak.",
+            "Daha kısa kanıtı kapsamı ve gerekçeleri denetlemeden daha doğru saymak.",
+        ],
+        _practice(
+            [
+                ("Hedef A ∧ B için ilk geri plan hangisidir?", ["A ve B alt hedeflerini ayırmak", "¬(A ∧ B) varsaymak", "A ∨ B üretmek", "Her öncülü yinelemek"], "A ve B alt hedeflerini ayırmak", "∧I olası son adım olarak iki doğrudan bileşeni ister.", "Temel"),
+                ("Hedef A → B hangi kapsam planını düşündürür?", ["A AS altında B", "B AS altında A", "A ve B kardeş dalları", "Hiç alt kanıt yok"], "A AS altında B", "→I önbileşeni varsayıp artbileşeni alt hedef yapar.", "Temel"),
+                ("A ∧ B ve B → C kaynaklarıyla C için yararlı ilk ileri adım nedir?", ["∧E ile B", "∨I ile A ∨ D", "IP ile ¬C", "↔I"], "∧E ile B", "B ikinci koşulun önbileşenidir ve →E ile C'yi açar.", "Temel"),
+                ("İyi bir köprü ara hedef için hangi iki bilgi gerekir?", ["Nasıl üretileceği ve sonra nerede kullanılacağı", "Yalnız kısa olması", "Hedefteki bütün atomları içermesi", "Bir varsayım olması"], "Nasıl üretileceği ve sonra nerede kullanılacağı", "Köprü ileri ve geri izleri gerçekten bağlamalıdır.", "Temel"),
+                ("Atomik hedef C ise ne sonuç çıkar?", ["Kanıt olanaksızdır", "Tek bir giriş kuralı belirlenmez; kaynak analizi gerekir", "Daima IP gerekir", "Daima X gerekir"], "Tek bir giriş kuralı belirlenmez; kaynak analizi gerekir", "Atomik biçim son giriş kuralı sağlamaz.", "Orta"),
+                ("∨E planında satır yazmadan önce ne belirlenmelidir?", ["İki ayrılan varsayımı, ortak dal sonucu ve kardeş parent", "Yalnız ilk dal", "Yalnız ayrık satırın numarası", "Bir IP varsayımı"], "İki ayrılan varsayımı, ortak dal sonucu ve kardeş parent", "Durum analizi iki ayrı durumda aynı sonucu güvenceye alır.", "Orta"),
+                ("IP ne zaman gerekçeli bir adaydır?", ["Doğrudan plan hemen görünmediğinde otomatik", "Hedefin olumsuzundan somut bir çelişki yolu planlandığında", "Hedef atomik olduğunda", "Her uzun kanıtta"], "Hedefin olumsuzundan somut bir çelişki yolu planlandığında", "Dolaylı kanıt da belirli bir ⊥ üretim yükü gerektirir.", "Orta"),
+                ("A → B, B → C ⊢ A → C planında B'nin rolü nedir?", ["Köprü ara hedef", "Son hedef", "Açılacak varsayım", "Çelişki"], "Köprü ara hedef", "A'dan elde edilir ve ikinci koşulla C'ye geçişi açar.", "Orta"),
+                ("Lisanslı ama hedefle ilgisiz ilk satır hangi tür sorundur?", ["Yalnız sözdizimi hatası", "Stratejik çıkmazın başlangıcı", "Geçerli son kural", "Semantik karşı örnek"], "Stratejik çıkmazın başlangıcı", "Kural doğru olabilir; yine de hiçbir açık yükü kapatmayabilir.", "İleri"),
+                ("Başarısız taslak nasıl onarılmalıdır?", ["Her şeyi silerek", "İlk yanlış stratejik kararı ve bağımlı bölümünü değiştirerek", "Yalnız son satırı gizleyerek", "Yeni bir öncül ekleyerek"], "İlk yanlış stratejik kararı ve bağımlı bölümünü değiştirerek", "Yerel onarım doğru kalan bölümü korur ve nedeni görünür tutar.", "İleri"),
+                ("A → B ⊢ B için ¬B varsaymak neden yetmez?", ["¬B atomik olduğu için", "A'yı sağlayan veya çelişki üreten bir yol olmadığı için", "IP hiçbir zaman kullanılamadığı için", "B hedef olamadığı için"], "A'yı sağlayan veya çelişki üreten bir yol olmadığı için", "Varsayım eksik öncülü yaratmaz; somut çelişki zinciri yoktur.", "İleri"),
+                ("İki geçerli kanıttan hangisi stratejik olarak daha açıklayıcıdır?", ["Her zaman daha kısa olan", "Her satırın hangi açık yükü kapattığını ve kapsam bağımlılığını görünür kılan", "Daha çok IP kullanan", "Daha çok satır üreten"], "Her satırın hangi açık yükü kapattığını ve kapsam bağımlılığını görünür kılan", "Satır sayısı tek başına doğruluk veya pedagojik açıklık ölçütü değildir.", "Zor"),
+            ]
+        ),
+        {
+            "prompt": "A → B, B → C ⊢ A → C problemi için önce yalnız geri hedef, ileri kaynak, köprü ve kapsam planını yaz; sonra kanıtı tamamla.",
+            "starter": "Ana hedefin olası son kuralını seç; o kuralın iç hedefini ve A varsayımından üretilebilecek ilk cümleyi ayrı sütunlara yaz.",
+            "checks": [
+                "Olası son kural →I olarak gerekçelendirildi",
+                "A varsayımı altında iç hedef C yazıldı",
+                "B'nin A → B ile üretileceği ve B → C'yi açacağı belirtildi",
+                "Alt kanıt A ile açılıp C ile kapandı",
+                "Son →I tam alt kanıt aralığına atıf yaptı",
+            ],
+            "solution": "Geri: A → C için →I, dolayısıyla A AS altında C. İleri: A ve A → B ile B; B ve B → C ile C. Köprü B. Fitch: l1 A → B PR; l2 B → C PR; l3 A AS; l4 B →E l1,l3; l5 C →E l2,l4; l6 A → C →I l3-l5.",
+        },
+        [
+            _production_task(
+                "Üç problem için kanıt satırı yazmadan strateji kartı hazırla; birini tamamla, birindeki kötü başlangıcı yerel olarak onar.",
+                [
+                    "Her problem için olası son kuralı veya atomik hedefte kaynak yönünü yaz.",
+                    "En az bir ileri kaynak ve varsa köprü ara hedef belirle.",
+                    "Alt kanıt gerekiyorsa başlangıç, beklenen son, parent ve kapatma kuralını göster.",
+                    "Tamamlanan kanıtta her türetilmiş satırın hangi açık yükü kapattığını not et.",
+                    "Hatalı taslakta ilk stratejik çıkmazı ve yalnız değiştirilecek bağımlı bölümü belirt.",
+                ],
+                "Yanıt, yalnız doğru son kanıtı değil arama kararlarını görünür kılmalı; IP seçildiyse hedefin olumsuzundan tam hangi karşıt çifte ulaşılacağı önceden yazılmalıdır.",
+                "Planlanacak problemler",
+                [
+                    "A → B, B → C ⊢ A → C",
+                    "A ∨ B, A → C, B → C ⊢ C",
+                    "A → B, A → ¬B ⊢ ¬A",
+                    "Onarılacak taslak: A → B, B → C ⊢ A → C; A AS altında B'ye ulaşıp doğrudan →I ile A → C yazıyor.",
+                ],
+                "İlk problemi tamamla; dördüncü taslakta B'yi silmek yerine köprü olarak kullanıp eksik C satırını ekle.",
+            )
+        ],
+        [
+            "Yeni bir bileşik hedef için olası son kuralı ve onun alt hedeflerini gerekçeli biçimde yazar.",
+            "Erişilebilir kaynaklardan en az iki hedefle ilişkili eleme adımı seçer ve ilgisiz lisanslı adımı reddeder.",
+            "Bir ara hedefin hem üretim yolunu hem hangi sonraki kuralı açtığını gösterir.",
+            "Çoklu alt kanıt probleminde kapsam başlangıçlarını, sonlarını ve sibling/parent ilişkisini satırlardan önce planlar.",
+            "IP kullanacaksa hedefin olumsuzundan erişilebilir tam karşıt çifte giden somut zinciri açıklar.",
+            "Başarısız kanıtta ilk lisanssız satır ile ilk stratejik çıkmazı ayırıp yerel onarım yapar.",
+        ],
+        [
+            "Koşul hedefi hangi son kuralı ve hangi iç hedefi düşündürür?",
+            "Ayrık bir erişilebilir satır hangi tür ileri çalışma olanağı verir?",
+            "Bir ara hedefin gerçekten köprü olduğunu nasıl anlarsın?",
+            "IP açmadan önce hangi çelişki planı yazılmalıdır?",
+            "İlk lisanssız satır ile ilk stratejik hata neden farklı olabilir?",
+        ],
+        "Sonraki derste DS, MT, DNE, LEM ve De Morgan gibi kısaltmaların temel kurallarla açılabilir lisanslı şemalar olduğunu inceleyeceğiz.",
+        [
+            "forallx-proof-strategies",
+            "forallx-basic-rules",
+            "carnap-derivations",
+            "carnap-feedback",
+            "mit-logic-sequence",
+        ],
+        "Kanıt bulmak için her problemi çözen mekanik bir algoritma vaat edilmez. Hedef yapısı ve erişilebilir kaynaklar aramayı disipline eder; stratejik açıklık kural doğruluğuna eklenir, onun yerine geçmez. D25'e kadar türetilmiş kural ve sessiz eşdeğerlik dönüşümü kullanılmaz.",
+        [
+            "ders-18-cikarim-kurallari-ii-ve-kisa-ispatlar",
+            "ders-25-dogal-turetim-ii",
+            "ders-26-reductio-ad-absurdum",
+        ],
+    )
+
+    lesson["reading_note"] = (
+        "Önce hedef sütununu, sonra kaynak sütununu doldur. Bir satırı ancak hangi açık yükü kapattığını söyleyebiliyorsan kanıta ekle; alt kanıt açmadan önce kapanış biçimini yaz."
+    )
+    lesson["symbol_set"] = [
+        "𝒜",
+        "ℬ",
+        "𝒞",
+        "𝒦",
+        "⊢",
+        "PR",
+        "AS",
+        "R",
+        "∧I/E",
+        "→I/E",
+        "¬I/E",
+        "∨I/E",
+        "↔I/E",
+        "IP",
+        "X",
+    ]
+    lesson["proof_tools"] = [
+        "Geri hedef ağacı",
+        "İleri kaynak tablosu",
+        "Köprü ara hedef kartı",
+        "Kapsam planı",
+        "Doğrudan/dolaylı yol kararı",
+        "İlk stratejik çıkmaz raporu",
+        "Yerel onarım günlüğü",
+    ]
+    lesson["rule_scope"] = {
+        "introduced": [],
+        "review_only": [
+            "PR",
+            "AS",
+            "R",
+            "∧I",
+            "∧E",
+            "→I",
+            "→E",
+            "¬I",
+            "¬E",
+            "X",
+            "IP",
+            "∨I",
+            "∨E",
+            "↔I",
+            "↔E",
+        ],
+        "locked_until_later": ["DS", "MT", "DNE", "LEM", "DeM"],
+    }
+    lesson["strategy_cases"] = [
+        _strategy_case(
+            "d24-conditional-chain-plan",
+            "A → B, B → C ⊢ A → C",
+            backward_goal="→I adayı: A varsayımı altında C",
+            candidate_last_rules=["→I"],
+            forward_resources=["A + A → B ile B", "B + B → C ile C"],
+            bridge="B",
+            scope_plan="s1: A AS ile aç, C ile bitir, →I ile kapat",
+            first_action="A → B ve B → C öncüllerini yaz; sonra A için s1 aç",
+            rationale="B hem ilk koşulun çıktısı hem ikinci koşulun girdisidir.",
+        ),
+        _strategy_case(
+            "d24-conjunction-plan",
+            "A ∧ B, B → C ⊢ A ∧ C",
+            backward_goal="∧I adayı: A ve C alt hedefleri",
+            candidate_last_rules=["∧I"],
+            forward_resources=["A ∧ B ile A", "A ∧ B ile B", "B + B → C ile C"],
+            bridge="B",
+            scope_plan="Alt kanıt gerekmez",
+            first_action="A ∧ B'yi ∧E ile hedef yüklerine yarayan bileşenlerine ayır",
+            rationale="A doğrudan bir yükü kapatır; B ise C yüküne giden koşulu açar.",
+        ),
+        _strategy_case(
+            "d24-case-analysis-plan",
+            "A ∨ B, A → C, B → C ⊢ C",
+            backward_goal="Atomik C için tek giriş kuralı yok; ayrık kaynağı tüket",
+            candidate_last_rules=["∨E"],
+            forward_resources=["A dalında A → C", "B dalında B → C"],
+            bridge="İki kardeş dalın ortak C sonucu",
+            scope_plan="s1: A...C; s2: B...C; aynı parent; dışarıda ∨E",
+            first_action="Ortak C dal sonunu sabitle, sonra A için ilk kardeş kapsamı aç",
+            rationale="Ayrıklığın hangi tarafı doğru olursa olsun C aynı biçimde güvence altındadır.",
+        ),
+        _strategy_case(
+            "d24-negation-plan",
+            "A → B, A → ¬B ⊢ ¬A",
+            backward_goal="¬I adayı: A varsayımı altında ⊥",
+            candidate_last_rules=["¬I"],
+            forward_resources=["A + A → B ile B", "A + A → ¬B ile ¬B", "B + ¬B ile ⊥"],
+            bridge="Tam B/¬B çifti",
+            scope_plan="s1: A AS ile aç, ⊥ ile bitir, ¬I ile kapat",
+            first_action="A varsayımını açmadan önce çelişki çiftinin B ve ¬B olacağını yaz",
+            rationale="Hedefin olumsuzlama yapısı ve iki koşul aynı varsayım altında somut çelişki yolu verir.",
+        ),
+        _strategy_case(
+            "d24-repair-plan",
+            "A → B, B → C ⊢ A → C; taslak A AS altında B'de duruyor",
+            backward_goal="→I için alt kanıtın son doğrudan satırı C olmalı",
+            candidate_last_rules=["→I"],
+            forward_resources=["Mevcut B + B → C ile C"],
+            bridge="B zaten doğru kurulmuş köprüdür",
+            scope_plan="Mevcut s1'i açık tut, C satırını ekle, sonra kapat",
+            first_action="B'yi silme; onu B → C ile kullanan eksik →E satırını ekle",
+            rationale="İlk sorun B satırı değil, köprünün hedeflenen C'ye kadar tamamlanmamasıdır.",
+        ),
+    ]
+    lesson["proof_fixtures"] = [
+        {
+            "id": "d24-complete-conditional-chain",
+            "kind": "complete",
+            "title": "Geri hedef ile ileri koşul zincirini B köprüsünde buluşturma",
+            "strategy_case_id": "d24-conditional-chain-plan",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d24-complete-conditional-chain",
+                "premises": ["A → B", "B → C"],
+                "target": "A → C",
+                "lines": [
+                    _line("l1", "A → B", "PR"),
+                    _line("l2", "B → C", "PR"),
+                    _line("l3", "A", "AS", depth=1, opens="s1"),
+                    _line("l4", "B", "→E", citations=[_line_ref("l1"), _line_ref("l3")], depth=1),
+                    _line("l5", "C", "→E", citations=[_line_ref("l2"), _line_ref("l4")], depth=1),
+                    _line("l6", "A → C", "→I", citations=[_subproof_ref("l3", "l5")], closes=["s1"]),
+                ],
+            },
+        },
+        {
+            "id": "d24-complete-conjunction-bridge",
+            "kind": "complete",
+            "title": "İki birleşim yükünü ileri kaynaklarla kapatma",
+            "strategy_case_id": "d24-conjunction-plan",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d24-complete-conjunction-bridge",
+                "premises": ["A ∧ B", "B → C"],
+                "target": "A ∧ C",
+                "lines": [
+                    _line("l1", "A ∧ B", "PR"),
+                    _line("l2", "B → C", "PR"),
+                    _line("l3", "A", "∧E", citations=[_line_ref("l1")]),
+                    _line("l4", "B", "∧E", citations=[_line_ref("l1")]),
+                    _line("l5", "C", "→E", citations=[_line_ref("l2"), _line_ref("l4")]),
+                    _line("l6", "A ∧ C", "∧I", citations=[_line_ref("l3"), _line_ref("l5")]),
+                ],
+            },
+        },
+        {
+            "id": "d24-complete-negation-plan",
+            "kind": "complete",
+            "title": "Olumsuz hedefi önceden seçilmiş çelişki çiftine bağlama",
+            "strategy_case_id": "d24-negation-plan",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d24-complete-negation-plan",
+                "premises": ["A → B", "A → ¬B"],
+                "target": "¬A",
+                "lines": [
+                    _line("l1", "A → B", "PR"),
+                    _line("l2", "A → ¬B", "PR"),
+                    _line("l3", "A", "AS", depth=1, opens="s1"),
+                    _line("l4", "B", "→E", citations=[_line_ref("l1"), _line_ref("l3")], depth=1),
+                    _line("l5", "¬B", "→E", citations=[_line_ref("l2"), _line_ref("l3")], depth=1),
+                    _line("l6", "⊥", "¬E", citations=[_line_ref("l4"), _line_ref("l5")], depth=1),
+                    _line("l7", "¬A", "¬I", citations=[_subproof_ref("l3", "l6")], closes=["s1"]),
+                ],
+            },
+        },
+        {
+            "id": "d24-incomplete-conditional-chain",
+            "kind": "incomplete",
+            "title": "Doğru köprü kurulmuş ve kapanış bekleyen planlı taslak",
+            "strategy_case_id": "d24-conditional-chain-plan",
+            "expected_issue_codes": [],
+            "next_rule": "s1'i kapatıp l3-l5 aralığıyla →I uygula",
+            "proof": {
+                "id": "d24-incomplete-conditional-chain",
+                "premises": ["A → B", "B → C"],
+                "target": "A → C",
+                "lines": [
+                    _line("l1", "A → B", "PR"),
+                    _line("l2", "B → C", "PR"),
+                    _line("l3", "A", "AS", depth=1, opens="s1"),
+                    _line("l4", "B", "→E", citations=[_line_ref("l1"), _line_ref("l3")], depth=1),
+                    _line("l5", "C", "→E", citations=[_line_ref("l2"), _line_ref("l4")], depth=1),
+                ],
+            },
+        },
+        {
+            "id": "d24-premature-conditional-closure",
+            "kind": "error",
+            "title": "Köprü B'de durup C'ye ulaşmadan →I uygulama",
+            "strategy_case_id": "d24-repair-plan",
+            "expected_issue_codes": ["rule.conditional_introduction_mismatch"],
+            "repair": "B satırını koru; B → C ve B ile C üret, alt kanıtı C'de bitir.",
+            "proof": {
+                "id": "d24-premature-conditional-closure",
+                "premises": ["A → B", "B → C"],
+                "target": "A → C",
+                "lines": [
+                    _line("l1", "A → B", "PR"),
+                    _line("l2", "B → C", "PR"),
+                    _line("l3", "A", "AS", depth=1, opens="s1"),
+                    _line("l4", "B", "→E", citations=[_line_ref("l1"), _line_ref("l3")], depth=1),
+                    _line("l5", "A → C", "→I", citations=[_subproof_ref("l3", "l4")], closes=["s1"]),
+                ],
+            },
+        },
+    ]
+    return lesson
+
+
 STAGE_D_CANDIDATE_LESSONS = [
     _candidate_d20(),
     _candidate_d21(),
     _candidate_d22(),
     _candidate_d23(),
+    _candidate_d24(),
 ]
 
 STAGE_D_CANDIDATE_MAP = {

@@ -15,6 +15,7 @@ D20_RULES = frozenset({"PR", "AS", "R"})
 D21_RULES = D20_RULES | frozenset({"∧I", "∧E", "→I", "→E"})
 D22_RULES = D21_RULES | frozenset({"¬I", "¬E", "X", "IP"})
 D23_RULES = D22_RULES | frozenset({"∨I", "∨E", "↔I", "↔E"})
+D24_RULES = D23_RULES
 REQUIRED_LINE_FIELDS = frozenset(
     {"id", "formula", "rule", "citations", "depth", "opens", "closes"}
 )
