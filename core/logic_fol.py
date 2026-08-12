@@ -527,6 +527,332 @@ def parse_fol(source: str, signature: FOLSignature) -> FOLFormula:
     return _Parser(_tokenize(source), signature).parse()
 
 
+def fol_structure_key(formula: FOLFormula) -> tuple:
+    """Return an alpha-stable structural key for a parsed formula.
+
+    Bound variables are represented by the binder that introduced them, not
+    by their printed letter. Free variables and names retain their symbols.
+    This makes ``∀xF(x)`` and ``∀yF(y)`` structurally identical without
+    treating formulas with different free variables as interchangeable.
+    """
+
+    binder_counter = 0
+    binders: dict[str, list[int]] = {}
+
+    def term_key(term: FOLTerm) -> tuple:
+        if term.kind == "name":
+            return ("name", term.symbol)
+        stack = binders.get(term.symbol, [])
+        if stack:
+            return ("bound", stack[-1])
+        return ("free", term.symbol)
+
+    def visit(node: FOLFormula) -> tuple:
+        nonlocal binder_counter
+
+        if node.kind == "predicate":
+            return (
+                "predicate",
+                node.predicate,
+                tuple(term_key(term) for term in node.terms),
+            )
+        if node.kind == "identity":
+            return (
+                "identity",
+                term_key(node.terms[0]),
+                term_key(node.terms[1]),
+            )
+        if node.kind == "negation":
+            return ("negation", visit(node.body))
+        if node.kind == "binary":
+            return (
+                "binary",
+                node.operator,
+                visit(node.left),
+                visit(node.right),
+            )
+        if node.kind == "quantifier":
+            binder_id = binder_counter
+            binder_counter += 1
+            stack = binders.setdefault(node.variable, [])
+            stack.append(binder_id)
+            body_key = visit(node.body)
+            stack.pop()
+            if not stack:
+                binders.pop(node.variable, None)
+            return ("quantifier", node.operator, body_key)
+        raise ValueError(f"Bilinmeyen FOL düğüm türü: {node.kind!r}.")
+
+    return visit(formula)
+
+
+def formulas_alpha_equivalent(left: FOLFormula, right: FOLFormula) -> bool:
+    """Return whether two formulas differ only in bound-variable names."""
+
+    return fol_structure_key(left) == fol_structure_key(right)
+
+
+def _nodes_match_with_binders(
+    candidate: FOLFormula,
+    expected: FOLFormula,
+    candidate_binders: dict[str, list[object]],
+    expected_binders: dict[str, list[object]],
+) -> bool:
+    """Compare two nodes while preserving binders introduced above them."""
+
+    def term_key(term: FOLTerm, binders: dict[str, list[object]]) -> tuple:
+        if term.kind == "name":
+            return ("name", term.symbol)
+        stack = binders.get(term.symbol, [])
+        return ("bound", stack[-1]) if stack else ("free", term.symbol)
+
+    if candidate.kind != expected.kind:
+        return False
+    if candidate.kind == "predicate":
+        return (
+            candidate.predicate == expected.predicate
+            and len(candidate.terms) == len(expected.terms)
+            and all(
+                term_key(left, candidate_binders)
+                == term_key(right, expected_binders)
+                for left, right in zip(candidate.terms, expected.terms)
+            )
+        )
+    if candidate.kind == "identity":
+        return all(
+            term_key(left, candidate_binders)
+            == term_key(right, expected_binders)
+            for left, right in zip(candidate.terms, expected.terms)
+        )
+    if candidate.kind == "negation":
+        return _nodes_match_with_binders(
+            candidate.body,
+            expected.body,
+            candidate_binders,
+            expected_binders,
+        )
+    if candidate.kind == "binary":
+        return (
+            candidate.operator == expected.operator
+            and _nodes_match_with_binders(
+                candidate.left,
+                expected.left,
+                candidate_binders,
+                expected_binders,
+            )
+            and _nodes_match_with_binders(
+                candidate.right,
+                expected.right,
+                candidate_binders,
+                expected_binders,
+            )
+        )
+    if candidate.kind == "quantifier":
+        if candidate.operator != expected.operator:
+            return False
+        marker = object()
+        candidate_stack = candidate_binders.setdefault(candidate.variable, [])
+        expected_stack = expected_binders.setdefault(expected.variable, [])
+        candidate_stack.append(marker)
+        expected_stack.append(marker)
+        matches = _nodes_match_with_binders(
+            candidate.body,
+            expected.body,
+            candidate_binders,
+            expected_binders,
+        )
+        candidate_stack.pop()
+        expected_stack.pop()
+        if not candidate_stack:
+            candidate_binders.pop(candidate.variable, None)
+        if not expected_stack:
+            expected_binders.pop(expected.variable, None)
+        return matches
+    raise ValueError(f"Bilinmeyen FOL düğüm türü: {candidate.kind!r}.")
+
+
+def _translation_mismatch_code(
+    candidate: FOLFormula,
+    expected: FOLFormula,
+    candidate_binders: dict[str, list[object]] | None = None,
+    expected_binders: dict[str, list[object]] | None = None,
+) -> str:
+    """Locate the first pedagogically useful structural mismatch."""
+
+    candidate_binders = candidate_binders if candidate_binders is not None else {}
+    expected_binders = expected_binders if expected_binders is not None else {}
+    if candidate.kind != expected.kind:
+        if "negation" in {candidate.kind, expected.kind}:
+            return "translation.negation_scope"
+        if "quantifier" in {candidate.kind, expected.kind}:
+            return "translation.quantifier_scope"
+        return "translation.structure_mismatch"
+
+    if candidate.kind == "quantifier":
+        if candidate.operator != expected.operator:
+            return "translation.quantifier_kind"
+        marker = object()
+        candidate_stack = candidate_binders.setdefault(candidate.variable, [])
+        expected_stack = expected_binders.setdefault(expected.variable, [])
+        candidate_stack.append(marker)
+        expected_stack.append(marker)
+        code = _translation_mismatch_code(
+            candidate.body,
+            expected.body,
+            candidate_binders,
+            expected_binders,
+        )
+        candidate_stack.pop()
+        expected_stack.pop()
+        if not candidate_stack:
+            candidate_binders.pop(candidate.variable, None)
+        if not expected_stack:
+            expected_binders.pop(expected.variable, None)
+        return code
+
+    if candidate.kind == "binary":
+        if candidate.operator != expected.operator:
+            return "translation.connective"
+        if (
+            candidate.operator == "→"
+            and _nodes_match_with_binders(
+                candidate.left,
+                expected.right,
+                candidate_binders,
+                expected_binders,
+            )
+            and _nodes_match_with_binders(
+                candidate.right,
+                expected.left,
+                candidate_binders,
+                expected_binders,
+            )
+        ):
+            return "translation.condition_direction"
+        if not _nodes_match_with_binders(
+            candidate.left,
+            expected.left,
+            candidate_binders,
+            expected_binders,
+        ):
+            return _translation_mismatch_code(
+                candidate.left,
+                expected.left,
+                candidate_binders,
+                expected_binders,
+            )
+        return _translation_mismatch_code(
+            candidate.right,
+            expected.right,
+            candidate_binders,
+            expected_binders,
+        )
+
+    if candidate.kind == "negation":
+        return _translation_mismatch_code(
+            candidate.body,
+            expected.body,
+            candidate_binders,
+            expected_binders,
+        )
+
+    if candidate.kind == "predicate":
+        if candidate.predicate != expected.predicate:
+            return "translation.predicate"
+        if len(candidate.terms) != len(expected.terms):
+            return "translation.arity"
+        return "translation.structure_mismatch"
+
+    return "translation.structure_mismatch"
+
+
+def assess_fol_symbolization(
+    source: str,
+    accepted_sources,
+    signature: FOLSignature,
+) -> dict:
+    """Check a candidate against explicitly approved translation structures.
+
+    This checker is intentionally narrower than semantic equivalence. Stage E
+    assesses whether the learner captured the requested linguistic structure;
+    model-theoretic equivalence remains a Stage F responsibility.
+    """
+
+    accepted_formulas = []
+    for accepted_source in accepted_sources:
+        formula = parse_fol(accepted_source, signature)
+        if not formula.is_sentence:
+            raise ValueError(
+                "Kabul edilen sembolleştirme serbest değişken içeremez: "
+                f"{accepted_source!r}."
+            )
+        accepted_formulas.append(formula)
+    if not accepted_formulas:
+        raise ValueError("En az bir kabul edilen sembolleştirme verilmelidir.")
+
+    try:
+        candidate = parse_fol(source, signature)
+    except FOLParseError as exc:
+        return {
+            "accepted": False,
+            "rendered": None,
+            "matched_index": None,
+            "issue_code": exc.code,
+            "message": exc.message,
+            "position": exc.position,
+        }
+
+    if not candidate.is_sentence:
+        free = ", ".join(sorted(candidate.free_variables))
+        return {
+            "accepted": False,
+            "rendered": candidate.render(),
+            "matched_index": None,
+            "issue_code": "translation.free_variable",
+            "message": f"Cümlede serbest değişken kaldı: {free}.",
+            "position": None,
+        }
+
+    for index, expected in enumerate(accepted_formulas):
+        if formulas_alpha_equivalent(candidate, expected):
+            return {
+                "accepted": True,
+                "rendered": candidate.render(),
+                "matched_index": index,
+                "issue_code": None,
+                "message": "",
+                "position": None,
+            }
+
+    issue_codes = [
+        _translation_mismatch_code(candidate, expected)
+        for expected in accepted_formulas
+    ]
+    priority = (
+        "translation.condition_direction",
+        "translation.quantifier_kind",
+        "translation.quantifier_scope",
+        "translation.connective",
+        "translation.negation_scope",
+        "translation.free_variable",
+        "translation.predicate",
+        "translation.arity",
+        "translation.structure_mismatch",
+    )
+    issue_code = next(
+        (code for code in priority if code in issue_codes),
+        "translation.structure_mismatch",
+    )
+    return {
+        "accepted": False,
+        "rendered": candidate.render(),
+        "matched_index": None,
+        "issue_code": issue_code,
+        "message": "Formül hedeflenen doğal dil yapısını korumuyor.",
+        "position": None,
+    }
+
+
 def _analyse_variables(formula: FOLFormula) -> tuple[list[dict], list[dict]]:
     occurrences = []
     warnings = []

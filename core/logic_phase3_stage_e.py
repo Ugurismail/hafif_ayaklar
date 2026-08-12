@@ -66,6 +66,30 @@ E27_SIGNATURE = {
 }
 
 
+E28_SIGNATURE = {
+    "domain": "seminere katılan insanlar",
+    "names": {
+        "a": "Ada",
+        "b": "Bora",
+    },
+    "variables": ["x", "y", "z"],
+    "predicates": {
+        "F": {
+            "arity": 1,
+            "reading": "x araştırmacı",
+        },
+        "G": {
+            "arity": 1,
+            "reading": "x meraklı",
+        },
+        "H": {
+            "arity": 1,
+            "reading": "x geç kaldı",
+        },
+    },
+}
+
+
 def _syntax_fixture(
     fixture_id,
     source,
@@ -82,6 +106,40 @@ def _syntax_fixture(
         "expected_category": category,
         "expected_issue_code": issue_code,
         "explanation": explanation,
+    }
+
+
+def _symbolization_fixture(
+    fixture_id,
+    prompt,
+    accepted_readings,
+    checks,
+    *,
+    teaching_point,
+):
+    """Build one auditable natural-language symbolization fixture."""
+
+    return {
+        "id": fixture_id,
+        "prompt": prompt,
+        "accepted_readings": [
+            {
+                "source": source,
+                "context_condition": context_condition,
+                "back_translation": back_translation,
+            }
+            for source, context_condition, back_translation in accepted_readings
+        ],
+        "checks": [
+            {
+                "source": source,
+                "accepted": accepted,
+                "expected_issue_code": issue_code,
+                "explanation": explanation,
+            }
+            for source, accepted, issue_code, explanation in checks
+        ],
+        "teaching_point": teaching_point,
     }
 
 
@@ -592,11 +650,672 @@ def _candidate_e27():
             explanation="a terimi tek başına ikili bağlacın cümle bileşeni olamaz.",
         ),
     ]
+    lesson["symbolization_fixtures"] = []
+    return lesson
+
+
+def _candidate_e28():
+    lesson = _lesson(
+        "E28",
+        "ders-fol-tek-niceleyicili-cumleler",
+        "Tek Niceleyicili Cümleler",
+        "Açık formülleri ∀ ve ∃ ile cümleye dönüştürür; tümel kısıtlamada koşulu, varoluşsal ortak özellikte birleşimi ve 'yalnız' ifadesinde doğru koşul yönünü korur.",
+        "Tek niceleyici, kısıtlama ve geri okuma",
+        40,
+        [
+            "ders-fol-alan-ad-yuklem-acik-formul",
+            "ders-kosul-yalnizca-cift-yonluluk",
+        ],
+        [
+            "fol.universal_restrict",
+            "fol.existential_restrict",
+            "fol.only_direction",
+            "fol.empty_predicate_read",
+            "fol.paraphrase_step",
+        ],
+        [
+            "Her F, G'dir cümlesini ∀x(F(x)→G(x)) biçiminde kurup geri okumak.",
+            "Bazı F'ler G'dir cümlesini ∃x(F(x)∧G(x)) biçiminde kurup bir tanık iddiası olarak açıklamak.",
+            "Hiçbir F, G değildir; bazı F, G değildir ve bütün F'lerin G olduğu doğru değildir kalıplarını kapsamı koruyarak ayırmak.",
+            "Yalnız F'ler G'dir cümlesini, her G'nin F olduğunu söyleyen ters yönlü koşul olarak yeniden yazmak.",
+            "Tümel kısıtlamanın tek başına F olan bir nesnenin varlığını ileri sürmediğini belirtmek.",
+            "Doğal dil cümlesini alan, kısıtlayıcı yüklem, ana yüklem ve niceleyici olarak kademeli çözümlemek.",
+        ],
+        [
+            (
+                "Tümel niceleyici (∀)",
+                "Seçilen alandaki her nesne için kapsamındaki formülü ileri süren niceleyici.",
+            ),
+            (
+                "Varoluşsal niceleyici (∃)",
+                "Seçilen alanda kapsamındaki formülü sağlayan en az bir nesne bulunduğunu ileri süren niceleyici.",
+            ),
+            (
+                "Kısıtlayıcı yüklem",
+                "Nicelemenin doğal dilde hangi alt gruba yöneldiğini gösteren F gibi yüklem; söylem alanının kendisi değildir.",
+            ),
+            (
+                "Tümel kısıtlama",
+                "Her F için, o nesne F ise G olmasını isteyen ∀x(F(x)→G(x)) yapısı.",
+            ),
+            (
+                "Varoluşsal ortak özellik",
+                "Aynı tanığın hem F hem G olmasını isteyen ∃x(F(x)∧G(x)) yapısı.",
+            ),
+            (
+                "Varoluşsal yük",
+                "Bir cümlenin belirli türden en az bir nesnenin bulunduğunu da ileri sürmesi.",
+            ),
+            (
+                "Geri çeviri",
+                "Formülü sembol anahtarı ve alanla yeniden doğal dile okuyarak kapsam ile yönü denetleme adımı.",
+            ),
+        ],
+        [
+            _section(
+                "Açık formülden cümleye",
+                "F(x) açık formülü x'in hangi nesneler için ele alınacağını söylemez. ∀x ve ∃x, kapsamlarındaki x oluşumlarını bağlayarak serbest değişken bırakmayan FOL cümleleri kurar.",
+                "Doğal dilde 'her', 'bütün', 'bazı', 'bir', 'en az bir' veya 'hiçbir' gibi nicelik ifadeleriyle karşılaştığında.",
+                "F(x) · ∀xF(x) · ∃xF(x)",
+                "Niceleyicinin hemen ardındaki değişken, kapsam içindeki aynı harfli uygun oluşumları bağlar. ∀xF(x) ve ∃xF(x) serbest değişken bırakmaz; ne var ki aynı iddiayı kurmazlar.",
+                "∀ ve ∃'ü yalnızca 'güçlü' ve 'zayıf' sözcükler gibi değiştirme; niceleyicinin kapsamı dışında kalan x oluşumlarını bağlı sanma.",
+                [
+                    (
+                        "F(x)",
+                        "x serbesttir; sözdizimce formül olsa da henüz FOL cümlesi değildir.",
+                    ),
+                    (
+                        "∀xF(x)",
+                        "Alanın her üyesinin F olduğunu söyler ve x'i bağlar.",
+                    ),
+                    (
+                        "∃xF(x)",
+                        "Alanda F olan en az bir nesne bulunduğunu söyler ve x'i bağlar.",
+                    ),
+                ],
+                (
+                    "Niceleyicinin değişkenini ve kapsamını işaretleyip serbest oluşum kalmadığını denetlemek.",
+                    "Formülün başında herhangi bir niceleyici varsa içindeki bütün değişkenleri bağlı saymak.",
+                    "Bağlanma harf ve kapsam eşleşmesine bağlıdır; yalnızca niceleyicinin varlığına değil.",
+                ),
+            ),
+            _section(
+                "Her F, G'dir: koşul ile kısıtla",
+                "Alan seminere katılan bütün insanlarsa 'Her araştırmacı meraklıdır' cümlesi herkesin araştırmacı olduğunu söylemez. Her alan üyesi için, araştırmacı olması durumunda meraklı olmasını ister.",
+                "Tümel niceleme alanın yalnız bir alt grubuna yöneliyorsa.",
+                "∀x(F(x)→G(x))",
+                "Koşulun önbileşeni F, hangi nesnelerin iddiaya tabi olduğunu; artbileşeni G, bu nesneler hakkında ne ileri sürüldüğünü gösterir. F olmayan alan üyelerine G zorunluluğu yüklenmez.",
+                "∀x(F(x)∧G(x)) yazma: bu formül alanın her üyesinin hem araştırmacı hem meraklı olduğunu söyleyerek kısıtlamayı kaybeder.",
+                [
+                    (
+                        "Her araştırmacı meraklıdır.",
+                        "∀x(F(x)→G(x)): araştırmacılık koşul, meraklılık sonuç yerindedir.",
+                    ),
+                    (
+                        "Bütün geç kalanlar araştırmacıdır.",
+                        "∀x(H(x)→F(x)): doğal dilde ilk grup önbileşen olur.",
+                    ),
+                    (
+                        "∀xG(x)",
+                        "Alan zaten araştırmacılar olarak seçilmişse 'Her araştırmacı meraklıdır' diye okunabilir; mevcut geniş alanda ise herkesin meraklı olduğunu söyler.",
+                    ),
+                ],
+                (
+                    "Önce alanı yazıp 'hangi nesneler için?' sorusunu F ile koşulun soluna yerleştirmek.",
+                    "Doğal dilde iki yüklem yan yana geldiği için otomatik olarak birleşim kullanmak.",
+                    "Tümel alt grup cümlesinde amaç aynı nesnede iki özellik saymak değil, F olanlara G koşulu getirmektir.",
+                ),
+            ),
+            _section(
+                "Bazı F'ler G'dir: aynı tanıkta birleştir",
+                "'Bazı araştırmacılar meraklıdır' cümlesi, aynı nesnenin hem F hem G olmasını ister. ∃x(F(x)∧G(x)) bu ortak tanığı açıkça kurar.",
+                "En az bir nesnenin iki veya daha fazla özelliği birlikte taşıdığı ileri sürülüyorsa.",
+                "∃x(F(x)∧G(x))",
+                "∃x bir tanık seçer; birleşim, seçilen aynı tanığın hem araştırmacı hem meraklı olmasını ister. 'Bazı' burada en az bir demektir; tam olarak bir veya çoğu demek değildir.",
+                "∃x(F(x)→G(x)) kullanma: koşul yapısı, seçilen nesnenin F olmasını birlikte ileri sürmez ve hedeflenen tanık yapısını kaybeder.",
+                [
+                    (
+                        "Bazı araştırmacılar meraklıdır.",
+                        "∃x(F(x)∧G(x)): aynı x iki yüklemi birlikte taşır.",
+                    ),
+                    (
+                        "En az bir meraklı insan geç kaldı.",
+                        "∃x(G(x)∧H(x)): alan insanlardan oluştuğu için ayrı bir insan yüklemi gerekmez.",
+                    ),
+                    (
+                        "Bazı araştırmacılar meraklı değildir.",
+                        "∃x(F(x)∧¬G(x)): olumsuzluk yalnız G yüklemine uygulanır.",
+                    ),
+                ],
+                (
+                    "∃'ten sonra aynı tanığın taşıması gereken özellikleri birleşimle yazmak.",
+                    "∃'ten sonra koşul kullanıp F tanığı bulunduğunu ileri sürdüğünü sanmak.",
+                    "Varoluşsal örnekte iki yüklemin aynı nesne için birlikte ileri sürülmesi gerekir.",
+                ),
+            ),
+            _section(
+                "'Yalnız' koşul yönünü değiştirir",
+                "'Yalnız araştırmacılar meraklıdır' cümlesi her araştırmacının meraklı olduğunu değil, meraklı olan herkesin araştırmacı olduğunu söyler.",
+                "'Yalnız', 'ancak', 'sadece' veya '-den başkası ... değil' yapıları gruplar arasında gerekli koşul kuruyorsa.",
+                "Yalnız F'ler G'dir ⇒ ∀x(G(x)→F(x))",
+                "G olmak F olmayı gerektirir; bu nedenle G yeterli taraf olarak önbileşene, F gerekli taraf olarak artbileşene gelir. Cümle tek başına her F'nin G olduğunu ileri sürmez.",
+                "Sözcük sırasını kopyalayıp ∀x(F(x)→G(x)) yazma; bu ters formül araştırmacı olmayan meraklıları dışlamaz.",
+                [
+                    (
+                        "Yalnız araştırmacılar meraklıdır.",
+                        "Açık yeniden yazım: Birisi meraklıysa araştırmacıdır; ∀x(G(x)→F(x)).",
+                    ),
+                    (
+                        "Araştırmacılardan başkası meraklı değildir.",
+                        "Meraklı olmak araştırmacı olmayı gerektirir; yine ∀x(G(x)→F(x)).",
+                    ),
+                    (
+                        "Her araştırmacı meraklıdır ve yalnız araştırmacılar meraklıdır.",
+                        "Bu iki ayrı yön birlikte gerekir; çift yönlülük tek 'yalnız' cümlesinden çıkmaz.",
+                    ),
+                ],
+                (
+                    "Cümleyi önce 'G olan herkes F'dir' diye açıp sonra koşul yönünü kurmak.",
+                    "'Yalnız' sözcüğünün hemen ardındaki grubu otomatik önbileşen yapmak.",
+                    "'Yalnız F' ifadesi F'yi gerekli koşul yapar; gerekli koşul artbileşene yerleşir.",
+                ),
+            ),
+            _section(
+                "Hiçbiri, bazısı değil ve hepsi değil",
+                "Olumsuzluğun yeri nicelik iddiasını değiştirir. 'Hiçbir F, G değildir' her F'yi G dışında tutar; 'Bazı F, G değildir' bir karşı örnek tanığı ister; 'Bütün F'lerin G olduğu doğru değildir' bütün tümel iddiayı yadsır.",
+                "Doğal dilde olumsuzluk niceleyiciye mi, ana yükleme mi uygulanıyor diye karar verirken.",
+                "∀x(F(x)→¬G(x)) · ∃x(F(x)∧¬G(x)) · ¬∀x(F(x)→G(x))",
+                "Bu üç formülün yüzeyinde aynı F ve G bulunsa da iddia güçleri farklıdır. E31'de niceleyici olumsuzlamalarının eşdeğer biçimleri gerekçelendirilecektir; burada yalnız doğru kapsam korunur.",
+                "'Hepsi G değil' ile 'hepsi G olmayan' ifadelerini aynı sanma. Belirsiz bir doğal dil cümlesini doğrudan sembolleştirmek yerine açık yeniden yazım iste.",
+                [
+                    (
+                        "Hiçbir araştırmacı meraklı değildir.",
+                        "∀x(F(x)→¬G(x)): her araştırmacı için meraklılık reddedilir.",
+                    ),
+                    (
+                        "Bazı araştırmacılar meraklı değildir.",
+                        "∃x(F(x)∧¬G(x)): F olup G olmayan en az bir tanık vardır.",
+                    ),
+                    (
+                        "Bütün araştırmacıların meraklı olduğu doğru değildir.",
+                        "¬∀x(F(x)→G(x)): olumsuzluk tüm tümel cümleyi kapsar.",
+                    ),
+                ],
+                (
+                    "Olumsuz doğal dil cümlesini önce açık bir 'hiçbiri', 'bazısı ... değil' veya 'hepsi olduğu doğru değil' biçimine dönüştürmek.",
+                    "Olumsuzluk işaretini formülün herhangi bir yerine koyup cümlenin aynı kaldığını varsaymak.",
+                    "Olumsuzluğun kapsamı hangi nicelik iddiasının reddedildiğini belirler.",
+                ),
+            ),
+            _section(
+                "Tümel cümle varoluş eklemez",
+                "∀x(F(x)→G(x)) her F için bir koşul koyar; F olan en az bir nesne bulunduğunu ayrıca ileri sürmez. Buna karşılık ∃x(F(x)∧G(x)) açık bir F tanığı ister.",
+                "Tümel bir ifadeden belirli türden nesnelerin bulunduğu sonucunu çıkarıp çıkaramayacağını denetlerken.",
+                "∀x(F(x)→G(x)) ⊬ ∃xF(x)",
+                "Klasik FOL'nin standart kullanımında tümel kısıtlama varoluşsal yük taşımaz. Bu ders model hesabı yapmaz; yalnız formülün hangi iddiayı açıkça kurmadığını ayırır.",
+                "Gündelik dilde konu edilen grubun var olduğu sezgisini formülün mantıksal içeriğine sessizce ekleme.",
+                [
+                    (
+                        "Bütün tek boynuzlu atlar meraklıdır.",
+                        "Tümel biçim tek başına tek boynuzlu at bulunduğunu ileri sürmez.",
+                    ),
+                    (
+                        "Bazı tek boynuzlu atlar meraklıdır.",
+                        "Varoluşsal biçim en az bir tek boynuzlu at tanığı ileri sürer.",
+                    ),
+                    (
+                        "Her araştırmacı meraklıdır; demek ki bir araştırmacı vardır.",
+                        "Sonuç için ayrı bir varoluş öncülü gerekir; tümel cümle tek başına yetmez.",
+                    ),
+                ],
+                (
+                    "Formülde bir tanık ileri süren ∃ bulunup bulunmadığını ayrıca denetlemek.",
+                    "Doğal dilde grubun adı geçtiği için o gruptan en az bir nesnenin varlığını mantıksal olarak varsaymak.",
+                    "Söz konusu olma ile varoluşsal tanık ileri sürme aynı işlem değildir.",
+                ),
+            ),
+        ],
+        [
+            _worked(
+                "Her araştırmacı meraklıdır.",
+                "Alan seminere katılan bütün insanlardır; F alt grubunu koşulla kısıtlarız.",
+                "∀x(F(x)→G(x))",
+            ),
+            _worked(
+                "Bazı araştırmacılar meraklıdır.",
+                "Aynı tanığın hem F hem G olması gerekir.",
+                "∃x(F(x)∧G(x))",
+            ),
+            _worked(
+                "Hiçbir araştırmacı meraklı değildir.",
+                "Her F için G reddedilir; olumsuzluk ana yüklemdedir.",
+                "∀x(F(x)→¬G(x))",
+            ),
+            _worked(
+                "Bazı araştırmacılar meraklı değildir.",
+                "F olan ve G olmayan en az bir ortak tanık istenir.",
+                "∃x(F(x)∧¬G(x))",
+            ),
+            _worked(
+                "Yalnız araştırmacılar meraklıdır.",
+                "Meraklı olmak araştırmacı olmayı gerektirir; G'den F'ye gideriz.",
+                "∀x(G(x)→F(x))",
+            ),
+            _worked(
+                "Bütün araştırmacıların meraklı olduğu doğru değildir.",
+                "Olumsuzluk yalnız G'ye değil, bütün tümel iddiaya uygulanır.",
+                "¬∀x(F(x)→G(x))",
+            ),
+            _worked(
+                "∀x(F(x)∧G(x))",
+                "Bu, yalnız araştırmacıları değil alandaki herkesi hem F hem G yapar; tümel alt grup çevirisi değildir.",
+                "Kısıtlama kaybı",
+                "bad",
+            ),
+            _worked(
+                "∃x(F(x)→G(x))",
+                "Koşul, seçilen tanığın F olduğunu ortak özellik olarak ileri sürmez; 'bazı F, G'dir' yapısı kaybolur.",
+                "Yanlış bağlaç",
+                "bad",
+            ),
+            _worked(
+                "∀x(F(x)→G(x))",
+                "'Yalnız araştırmacılar meraklıdır' için bu yön tersidir; G olanların F olması gerekir.",
+                "Yön hatası",
+                "bad",
+            ),
+            _worked(
+                "F(x)",
+                "x serbest bırakıldığı için doğal dildeki kapalı cümleyi henüz sembolleştirmez.",
+                "Serbest değişken",
+                "bad",
+            ),
+        ],
+        [
+            "Tümel kısıtlamada koşul yerine birleşim kullanmak.",
+            "Varoluşsal ortak tanıkta birleşim yerine koşul kullanmak.",
+            "'Yalnız F'ler G'dir' cümlesini F'den G'ye koşul diye ters çevirmek.",
+            "∃ niceleyicisini 'tam olarak bir' veya 'çoğu' diye okumak.",
+            "Tümel cümleden sessizce F nesnelerinin varlığını çıkarmak.",
+            "Söylem alanı ile doğal dildeki F kısıtlayıcısını aynı şey sanmak.",
+            "'Hiçbiri G değil' ile 'hepsinin G olduğu doğru değil' kapsamlarını birleştirmek.",
+            "Formülü geri okumadan yalnız sembol kalıbına bakarak onaylamak.",
+        ],
+        _practice(
+            [
+                (
+                    "Alan seminere katılan insanlarsa 'Her araştırmacı meraklıdır' hangisidir?",
+                    ["∀x(F(x)→G(x))", "∀x(F(x)∧G(x))", "∃x(F(x)∧G(x))", "∃x(F(x)→G(x))"],
+                    "∀x(F(x)→G(x))",
+                    "F olan alan üyeleri koşulla G'ye kısıtlanır.",
+                    "Temel",
+                ),
+                (
+                    "'Bazı araştırmacılar meraklıdır' için neden ∧ kullanılır?",
+                    ["Aynı tanık hem F hem G olmalıdır", "Bütün nesneler F olmalıdır", "G, F için gerekli koşuldur", "∃ her zaman ∧ ile yazılır"],
+                    "Aynı tanık hem F hem G olmalıdır",
+                    "Birleşim niceleyiciden dolayı ezbere değil, ortak tanık yapısından dolayı seçilir.",
+                    "Temel",
+                ),
+                (
+                    "∀xF(x) formülünde x'in durumu nedir?",
+                    ["Serbesttir", "∀x tarafından bağlıdır", "Bir addır", "Yüklemdir"],
+                    "∀x tarafından bağlıdır",
+                    "Niceleyici kapsamındaki aynı değişken oluşumunu bağlar.",
+                    "Temel",
+                ),
+                (
+                    "∃x(F(x)∧G(x)) için en dikkatli geri okuma hangisidir?",
+                    ["Tam olarak bir araştırmacı meraklıdır", "En az bir araştırmacı meraklıdır", "Araştırmacıların çoğu meraklıdır", "Her araştırmacı meraklıdır"],
+                    "En az bir araştırmacı meraklıdır",
+                    "∃ en az bir tanık ileri sürer; sayıyı bire veya çoğunluğa sabitlemez.",
+                    "Temel",
+                ),
+                (
+                    "'Yalnız araştırmacılar meraklıdır' cümlesinin açık yeniden yazımı hangisidir?",
+                    ["Birisi araştırmacıysa meraklıdır", "Birisi meraklıysa araştırmacıdır", "Birisi araştırmacıysa ve ancak o zaman meraklıdır", "Bazı meraklılar araştırmacıdır"],
+                    "Birisi meraklıysa araştırmacıdır",
+                    "Yalnız F ifadesi F'yi G olmanın gerekli koşulu yapar.",
+                    "Orta",
+                ),
+                (
+                    "Hiçbir araştırmacı meraklı değildir hangisidir?",
+                    ["∀x(F(x)→¬G(x))", "¬∀x(F(x)→G(x))", "∃x(F(x)∧¬G(x))", "∀x(¬F(x)→G(x))"],
+                    "∀x(F(x)→¬G(x))",
+                    "Her F için G reddedilir; bu yalnızca tümel iddianın reddi değildir.",
+                    "Orta",
+                ),
+                (
+                    "'Bazı araştırmacılar meraklı değildir' hangisidir?",
+                    ["∃x(F(x)∧¬G(x))", "∃x(F(x)→¬G(x))", "∀x(F(x)→¬G(x))", "¬∃x(F(x)∧G(x))"],
+                    "∃x(F(x)∧¬G(x))",
+                    "Aynı tanık F olmalı ve G olmamalıdır.",
+                    "Orta",
+                ),
+                (
+                    "∀x(F(x)∧G(x)) neden 'Her araştırmacı meraklıdır' değildir?",
+                    ["x serbest kaldığı için", "Alandaki herkesi hem F hem G yaptığı için", "∧ yalnızca TFL'de kullanıldığı için", "∀ varoluş bildirdiği için"],
+                    "Alandaki herkesi hem F hem G yaptığı için",
+                    "Birleşim F olmayan alan üyelerini kısıtlama dışında bırakmaz.",
+                    "Orta",
+                ),
+                (
+                    "∀x(F(x)→G(x)) cümlesi tek başına hangisini ileri sürmez?",
+                    ["F olanların G olması gerektiğini", "F olan en az bir nesne bulunduğunu", "x'in niceleyiciye bağlı olduğunu", "G'nin F için artbileşen olduğunu"],
+                    "F olan en az bir nesne bulunduğunu",
+                    "Tümel kısıtlama ayrı bir varoluş tanığı ileri sürmez.",
+                    "Orta",
+                ),
+                (
+                    "Alan yalnızca araştırmacılar olarak değiştirilirse ∀xG(x) nasıl okunabilir?",
+                    ["Her araştırmacı meraklıdır", "Bazı araştırmacılar meraklıdır", "Yalnız araştırmacılar meraklıdır", "Hiçbir araştırmacı meraklı değildir"],
+                    "Her araştırmacı meraklıdır",
+                    "Alan daraltıldığında F kısıtı anahtara gömülür; aynı formül farklı alanla farklı geri okunur.",
+                    "İleri",
+                ),
+                (
+                    "'Bütün araştırmacıların meraklı olduğu doğru değildir' ile 'Hiçbir araştırmacı meraklı değildir' neden ayrıdır?",
+                    ["Birincisi yalnızca tümel iddiayı reddeder, ikincisi her F için G'yi reddeder", "Birincisi ∃ kullanır, ikincisi hiç niceleyici kullanmaz", "Birincisi yalnızca adlara uygulanır", "Aralarında fark yoktur"],
+                    "Birincisi yalnızca tümel iddiayı reddeder, ikincisi her F için G'yi reddeder",
+                    "Olumsuzluğun tüm niceleyicili cümleyi mi, ana yüklemi mi kapsadığı iddia gücünü değiştirir.",
+                    "İleri",
+                ),
+                (
+                    "Bir sembolleştirmeyi son kez denetlemenin en güvenli yolu hangisidir?",
+                    ["Sembol sayısını doğal dildeki sözcük sayısıyla eşleştirmek", "Formülü alan ve anahtarla geri okuyup aynı iddiayı verip vermediğine bakmak", "Her zaman ∀ ile başlamak", "Yüklemleri alfabetik sıralamak"],
+                    "Formülü alan ve anahtarla geri okuyup aynı iddiayı verip vermediğine bakmak",
+                    "Geri çeviri niceleyici, bağlaç, koşul yönü ve kapsam hatalarını görünür kılar.",
+                    "İleri",
+                ),
+            ]
+        ),
+        {
+            "prompt": "Sekiz doğal dil cümlesini önce açık yeniden yazıma, sonra FOL formülüne çevir; her biri için niceleyici, bağlaç, koşul yönü ve olumsuzluk kapsamını ayrı satırda gerekçelendir.",
+            "starter": "Alanı sabitle; 'hangi nesneler?', 'ne ileri sürülüyor?', 'bir tanık mı herkes mi?' ve 'olumsuzluk tam olarak nereyi kapsıyor?' sorularını bu sırayla yanıtla.",
+            "checks": [
+                "Her F, G'dir için ∀ ve koşul kullanıldı",
+                "Bazı F, G'dir için ∃ ve birleşim kullanıldı",
+                "Yalnız F'ler G'dir, G'den F'ye açıkça yeniden yazıldı",
+                "Hiçbiri, bazısı değil ve hepsi değil kapsamları ayrı tutuldu",
+                "Her formülde serbest değişken kalmadı",
+                "Her formül alan ve sembol anahtarıyla geri okundu",
+                "Tümel cümleye varoluş iddiası eklenmedi",
+            ],
+            "solution": "Örnek anahtar: Her F G: ∀x(F(x)→G(x)); bazı F G: ∃x(F(x)∧G(x)); hiçbir F G değil: ∀x(F(x)→¬G(x)); bazı F G değil: ∃x(F(x)∧¬G(x)); yalnız F'ler G: ∀x(G(x)→F(x)); bütün F'lerin G olduğu doğru değil: ¬∀x(F(x)→G(x)).",
+        },
+        [
+            _production_task(
+                "Yeni bir alan ve üç bir yerli yüklem seçerek tek niceleyicili mini çeviri dosyası hazırla: her, bazı, hiçbiri, bazısı değil, hepsi olduğu doğru değil ve yalnız kalıplarını kullan; her formülü geri oku ve iki kasıtlı yanlışı onar.",
+                [
+                    "Söylem alanı ve üç yüklemin aritesi açıkça yazıldı.",
+                    "Tümel alt grup cümlesi koşulla, varoluşsal ortak tanık birleşimle kuruldu.",
+                    "Yalnız cümlesi açık yeniden yazımla doğru yöne çevrildi.",
+                    "Üç farklı olumsuzluk kapsamı birbirine karıştırılmadı.",
+                    "Her formül serbest değişken ve anahtar uyumu bakımından denetlendi.",
+                    "Her formül doğal dile geri okunarak ilk cümleyle karşılaştırıldı.",
+                    "Bir koşul/birleşim ve bir koşul yönü hatası ilk bozuk adımıyla açıklandı.",
+                    "Tümel cümlelerin hangi varoluş iddiasını yapmadığı belirtildi.",
+                ],
+                "Değerlendirme yalnız son formüllere değil, yeniden yazımın koşul yönünü ve kapsamı nasıl koruduğuna bakar.",
+                "Alan seçenekleri",
+                [
+                    "Bir kütüphanedeki kitaplar",
+                    "Bir bahçedeki bitkiler",
+                    "Bir konferanstaki katılımcılar",
+                    "Bir koleksiyondaki filmler",
+                    "Sınırlarını açık yazdığın başka bir alan",
+                ],
+                "Bu görevde iki yerli yüklem, kimlik, birden fazla niceleyici veya model/doğruluk hesabı kullanma.",
+            ),
+        ],
+        [
+            "Altı yaygın tek niceleyicili kalıbı yeni sembol anahtarıyla doğru kurma.",
+            "Tümel kısıtlamada koşul ve varoluşsal ortak tanıkta birleşim seçimini gerekçelendirme.",
+            "'Yalnız' cümlesini gerekli koşul diliyle açıp doğru yöne çevirme.",
+            "Hiçbiri, bazısı değil ve hepsi olduğu doğru değil kapsamlarını ayrı formüllerle gösterme.",
+            "Bir formülü alan ve anahtarla geri okuyup ilk yapı hatasını onarma.",
+            "Tümel kısıtlamanın neden tek başına varoluşsal tanık ileri sürmediğini ifade etme.",
+        ],
+        [
+            "Her F, G'dir cümlesinde neden ∧ değil → kullanılır?",
+            "Bazı F, G'dir cümlesinde aynı tanık gereksinimi formülde nerede görünür?",
+            "Yalnız F'ler G'dir cümlesinde hangi grup gerekli koşuldur?",
+            "Hiçbir F, G değildir ile bütün F'lerin G olduğu doğru değildir arasındaki kapsam farkı nedir?",
+            "∀x(F(x)→G(x)) neden tek başına ∃xF(x) iddiasını kurmaz?",
+        ],
+        "E29'da bir yerli yüklemlerden iki ve üç yerli bağıntılara geçecek; her argüman yerinin rolünü sabitleyip R(a,b) ile R(b,a) yönlerini ayıracağız.",
+        [
+            "forallx-one-quantifier",
+            "forallx-fol-sentences",
+            "mit-logic-sequence",
+        ],
+        "Ders standart klasik FOL gösterimini ve varoluşsal yük ayrımını kullanır; boş yüklem sınıfları için model doğruluğu hesabı yapmaz. Niceleyici olumsuzlamalarının eşdeğer dönüşümleri E31'e, resmi semantik gerekçeleri Faz F'ye ertelenir.",
+        [
+            "ders-26-niceleyicilere-giris",
+            "ders-27-niceleyici-olumsuzlamalari",
+            "ders-30-dogal-dilden-yuklem-mantigina-i",
+        ],
+    )
+    lesson["fol_signature"] = E28_SIGNATURE
+    lesson["syntax_scope"] = {
+        "introduced": [
+            "∀",
+            "∃",
+            "quantifier_scope",
+            "universal_restriction",
+            "existential_witness",
+            "quantified_sentence",
+        ],
+        "review_only": ["unary_predicate", "open_formula", "¬", "∧", "→"],
+        "locked_until_later": [
+            "multi_place_predicate",
+            "multiple_quantifier",
+            "quantifier_negation_equivalence",
+            "=",
+            "substitution",
+            "model_truth",
+        ],
+    }
+    lesson["syntax_fixtures"] = [
+        _syntax_fixture(
+            "e28-universal-simple",
+            "∀xF(x)",
+            accepted=True,
+            category="sentence",
+            explanation="∀x, kapsamındaki F(x) oluşumunda x'i bağlar.",
+        ),
+        _syntax_fixture(
+            "e28-existential-simple",
+            "∃xG(x)",
+            accepted=True,
+            category="sentence",
+            explanation="∃x en az bir G tanığı ileri süren kapalı cümledir.",
+        ),
+        _syntax_fixture(
+            "e28-universal-restriction",
+            "∀x(F(x) → G(x))",
+            accepted=True,
+            category="sentence",
+            explanation="Tüm F nesnelerini G olmaya koşulla kısıtlar.",
+        ),
+        _syntax_fixture(
+            "e28-existential-conjunction",
+            "∃x(F(x) ∧ G(x))",
+            accepted=True,
+            category="sentence",
+            explanation="Aynı x tanığı hem F hem G olarak bağlıdır.",
+        ),
+        _syntax_fixture(
+            "e28-no-f-is-g",
+            "∀x(F(x) → ¬G(x))",
+            accepted=True,
+            category="sentence",
+            explanation="Her F için G kapsam içinde reddedilir.",
+        ),
+        _syntax_fixture(
+            "e28-not-all",
+            "¬∀x(F(x) → G(x))",
+            accepted=True,
+            category="sentence",
+            explanation="Olumsuzluk bütün tümel cümleyi kapsar.",
+        ),
+        _syntax_fixture(
+            "e28-free-variable",
+            "(F(x) ∧ ∃yG(y))",
+            accepted=True,
+            category="open_formula",
+            explanation="y bağlansa da soldaki x serbest kaldığı için formül açıktır.",
+        ),
+        _syntax_fixture(
+            "e28-alpha-renamed",
+            "∀y(F(y) → G(y))",
+            accepted=True,
+            category="sentence",
+            explanation="Bağlı değişken y olarak tutarlı biçimde yeniden adlandırılmıştır.",
+        ),
+        _syntax_fixture(
+            "e28-missing-variable",
+            "∀(F(x) → G(x))",
+            accepted=False,
+            issue_code="quantifier.variable_expected",
+            explanation="∀ işaretinden sonra tanımlı bir değişken bulunmalıdır.",
+        ),
+        _syntax_fixture(
+            "e28-name-after-quantifier",
+            "∀aF(a)",
+            accepted=False,
+            issue_code="quantifier.variable_expected",
+            explanation="Niceleyici addan değil değişkenden sonra kullanılır.",
+        ),
+        _syntax_fixture(
+            "e28-missing-body",
+            "∃x",
+            accepted=False,
+            issue_code="formula.incomplete",
+            explanation="Niceleyicinin kapsamında bir FOL formülü bulunmalıdır.",
+        ),
+        _syntax_fixture(
+            "e28-unclosed-scope",
+            "∀x(F(x) → G(x)",
+            accepted=False,
+            issue_code="parenthesis.unclosed",
+            explanation="Niceleyicinin bileşik kapsamını açan parantez kapanmamıştır.",
+        ),
+    ]
+    lesson["symbolization_fixtures"] = [
+        _symbolization_fixture(
+            "e28-every-f-g",
+            "Her araştırmacı meraklıdır.",
+            [
+                (
+                    "∀x(F(x) → G(x))",
+                    "Alan seminere katılan bütün insanlardır.",
+                    "Her alan üyesi için, araştırmacıysa meraklıdır.",
+                ),
+            ],
+            [
+                ("∀x(F(x) → G(x))", True, None, "Hedeflenen tümel kısıtlamadır."),
+                ("∀y(F(y) → G(y))", True, None, "Bağlı değişkenin tutarlı yeniden adlandırılması aynı yapıdır."),
+                ("∀x(F(x) ∧ G(x))", False, "translation.connective", "Birleşim alanın herkesi F yaparak kısıtlamayı bozar."),
+                ("∀x(G(x) → F(x))", False, "translation.condition_direction", "Koşul yönü tersine dönmüştür."),
+                ("∃x(F(x) ∧ G(x))", False, "translation.quantifier_kind", "Tümel iddia varoluşsal örneğe dönmüştürülmüştür."),
+                ("(F(x) → G(x))", False, "translation.free_variable", "x'i bağlayan niceleyici eksiktir."),
+            ],
+            teaching_point="Tümel alt grup, koşulun önbileşeninde kısıtlanır.",
+        ),
+        _symbolization_fixture(
+            "e28-some-f-g",
+            "Bazı araştırmacılar meraklıdır.",
+            [
+                (
+                    "∃x(F(x) ∧ G(x))",
+                    "'Bazı' en az bir anlamında kullanılmıştır.",
+                    "En az bir alan üyesi hem araştırmacı hem meraklıdır.",
+                ),
+            ],
+            [
+                ("∃x(F(x) ∧ G(x))", True, None, "Aynı tanıkta iki yüklem birleştirilir."),
+                ("∃z(F(z) ∧ G(z))", True, None, "Bağlı z aynı yapıyı korur."),
+                ("∃x(F(x) → G(x))", False, "translation.connective", "Koşul ortak F ve G tanığını kurmaz."),
+                ("∀x(F(x) → G(x))", False, "translation.quantifier_kind", "En az bir iddiası her F iddiasına dönüştürülmüştür."),
+            ],
+            teaching_point="Varoluşsal örnekte aynı tanık F ve G'yi birlikte taşır.",
+        ),
+        _symbolization_fixture(
+            "e28-only-f-g",
+            "Yalnız araştırmacılar meraklıdır.",
+            [
+                (
+                    "∀x(G(x) → F(x))",
+                    "'Yalnız' araştırmacı olmayı meraklılığın gerekli koşulu yapar.",
+                    "Meraklı olan herkes araştırmacıdır.",
+                ),
+            ],
+            [
+                ("∀x(G(x) → F(x))", True, None, "G olmak F olmayı gerektirir."),
+                ("∀x(F(x) → G(x))", False, "translation.condition_direction", "Her F'nin G olduğunu söyleyen ters yöndür."),
+                ("∀x(F(x) ↔ G(x))", False, "translation.connective", "Tek 'yalnız' ifadesi iki yönü birden vermez."),
+            ],
+            teaching_point="Yalnız F ifadesi F'yi gerekli koşul yapar; koşul G'den F'ye gider.",
+        ),
+        _symbolization_fixture(
+            "e28-no-f-g",
+            "Hiçbir araştırmacı meraklı değildir.",
+            [
+                (
+                    "∀x(F(x) → ¬G(x))",
+                    "'Hiçbir' her araştırmacı için meraklılığı reddeder.",
+                    "Her araştırmacı meraklı olmayan biridir.",
+                ),
+            ],
+            [
+                ("∀x(F(x) → ¬G(x))", True, None, "Olumsuzluk ana yüklemdedir."),
+                ("¬∀x(F(x) → G(x))", False, "translation.negation_scope", "Bu yalnızca bütün F'lerin G olduğunu reddeder."),
+                ("∃x(F(x) ∧ ¬G(x))", False, "translation.quantifier_kind", "Bu yalnızca bazı F'lerin G olmadığını söyler."),
+            ],
+            teaching_point="Hiçbiri yapısında olumsuzluk her kısıtlanmış nesnenin ana yüklemine uygulanır.",
+        ),
+        _symbolization_fixture(
+            "e28-some-f-not-g",
+            "Bazı araştırmacılar meraklı değildir.",
+            [
+                (
+                    "∃x(F(x) ∧ ¬G(x))",
+                    "'Bazı' en az bir, olumsuzluk yalnız meraklılık yüklemindedir.",
+                    "En az bir nesne araştırmacıdır ve meraklı değildir.",
+                ),
+            ],
+            [
+                ("∃x(F(x) ∧ ¬G(x))", True, None, "F ve G olmayan ortak tanık kurulur."),
+                ("∃x(F(x) → ¬G(x))", False, "translation.connective", "Koşul ortak F tanığını garanti etmez."),
+                ("∀x(F(x) → ¬G(x))", False, "translation.quantifier_kind", "Bazı yerine hiçbiri iddiası kurulmuştur."),
+            ],
+            teaching_point="Olumsuz varoluşsal örnekte tanık F ve ¬G'yi birlikte taşır.",
+        ),
+        _symbolization_fixture(
+            "e28-not-every-f-g",
+            "Bütün araştırmacıların meraklı olduğu doğru değildir.",
+            [
+                (
+                    "¬∀x(F(x) → G(x))",
+                    "Olumsuzluk açıkça bütün tümel iddiayı kapsar.",
+                    "Her araştırmacının meraklı olduğu iddiası doğru değildir.",
+                ),
+            ],
+            [
+                ("¬∀x(F(x) → G(x))", True, None, "Tüm tümel cümle yadsınır."),
+                ("∀x(F(x) → ¬G(x))", False, "translation.negation_scope", "Bu daha güçlü hiçbiri okumasıdır."),
+                ("∃x(F(x) ∧ ¬G(x))", False, "translation.negation_scope", "Bu derste semantik eşdeğerlik henüz kabul anahtarı değildir; hedeflenen geniş kapsam korunmalıdır."),
+            ],
+            teaching_point="Sembolleştirme denetimi, E31'e kadar olumsuzluğun doğal dildeki geniş kapsamını aynen korur.",
+        ),
+    ]
     return lesson
 
 
 STAGE_E_CANDIDATE_LESSONS = [
     _candidate_e27(),
+    _candidate_e28(),
 ]
 
 STAGE_E_CANDIDATE_MAP = {

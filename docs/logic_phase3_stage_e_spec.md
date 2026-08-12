@@ -557,7 +557,7 @@ anlamına gelmez.
 | Ders | Sözleşme | Aday veri | Otomatik sözdizim/sınır testi | Yetkili aşama önizlemesi |
 | --- | --- | --- | --- | --- |
 | E27 Alan, Adlar, Yüklemler ve Açık Cümleler | Hazır | Hazır | Hazır | Bekliyor |
-| E28 Tek Niceleyicili Cümleler | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| E28 Tek Niceleyicili Cümleler | Hazır | Hazır | Hazır | Bekliyor |
 | E29 Çok Yerli Yüklemler ve Bağıntı Yönü | Hazır | Bekliyor | Bekliyor | Bekliyor |
 | E30 Çoklu Genellik, Niceleyici Sırası ve Bağımlılık | Hazır | Bekliyor | Bekliyor | Bekliyor |
 | E31 Kapsam ve Niceleyici Olumsuzlaması | Hazır | Bekliyor | Bekliyor | Bekliyor |
