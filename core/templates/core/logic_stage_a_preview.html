@@ -6,7 +6,7 @@
 {% block robots %}noindex, nofollow{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/logic_curriculum_review.css' %}?v={{ STATIC_ASSET_VERSION }}-stagea1">
+<link rel="stylesheet" href="{% static 'css/logic_curriculum_review.css' %}?v={{ STATIC_ASSET_VERSION }}-staged1">
 {% endblock %}
 
 {% block content %}
@@ -209,6 +209,82 @@
                 {% endfor %}
               </div>
             </details>
+
+            {% if lesson.proof_fixtures %}
+              <details class="logic-review-disclosure logic-review-proof-disclosure">
+                <summary><span>Yapılandırılmış kanıt denetimi</span><small>{{ lesson.proof_fixtures|length }} kanıt örneği</small><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+                <div class="logic-review-disclosure-body logic-review-proof-list">
+                  {% for fixture in lesson.proof_fixtures %}
+                    <article class="logic-review-proof" data-proof-fixture="{{ fixture.id }}">
+                      <header>
+                        <div>
+                          <code>{{ fixture.id }}</code>
+                          <h3>{{ fixture.title }}</h3>
+                        </div>
+                        <span class="logic-review-proof-kind is-{{ fixture.kind }}">{{ fixture.kind }}</span>
+                      </header>
+                      <div class="logic-review-proof-sequent">
+                        <span><strong>Öncüller</strong>{% if fixture.proof.premises %}{{ fixture.proof.premises|join:', ' }}{% else %}∅{% endif %}</span>
+                        <span aria-hidden="true">⊢</span>
+                        <span><strong>Hedef</strong>{{ fixture.proof.target }}</span>
+                      </div>
+                      <ol class="logic-review-proof-lines">
+                        {% for line in fixture.proof.lines %}
+                          <li>
+                            <code>{{ line.id }}</code>
+                            <span class="logic-review-proof-depth">d{{ line.depth }}</span>
+                            <strong>{{ line.formula }}</strong>
+                            <span class="logic-review-proof-rule">{{ line.rule }}</span>
+                            <span class="logic-review-proof-citations">
+                              {% for citation in line.citations %}
+                                {% if citation.kind == 'line' %}{{ citation.id }}{% else %}{{ citation.start }}–{{ citation.end }}{% endif %}{% if not forloop.last %}, {% endif %}
+                              {% empty %}—{% endfor %}
+                            </span>
+                            <span class="logic-review-proof-scope">
+                              {% if line.opens %}aç: {{ line.opens }}{% endif %}
+                              {% if line.closes %}kapat: {{ line.closes|join:', ' }}{% endif %}
+                              {% if not line.opens and not line.closes %}—{% endif %}
+                            </span>
+                          </li>
+                        {% endfor %}
+                      </ol>
+                      {% if fixture.expected_issue_codes %}
+                        <p class="logic-review-proof-issues"><strong>Beklenen denetim:</strong> {{ fixture.expected_issue_codes|join:', ' }}</p>
+                      {% else %}
+                        <p class="logic-review-proof-issues is-clear"><strong>Beklenen denetim:</strong> hata yok</p>
+                      {% endif %}
+                      {% if fixture.next_rule %}<p><strong>Sonraki adım:</strong> {{ fixture.next_rule }}</p>{% endif %}
+                      {% if fixture.repair %}<p><strong>Onarım/sınır:</strong> {{ fixture.repair }}</p>{% endif %}
+                    </article>
+                  {% endfor %}
+
+                  {% if lesson.semantic_cross_checks %}
+                    <section class="logic-review-semantic-checks" aria-label="Semantik çapraz kontroller">
+                      <header>
+                        <span class="logic-review-section-label">Bağımsız motor karşılaştırması</span>
+                        <h3>Kanıt ve semantik sonuç matrisi</h3>
+                      </header>
+                      <div class="logic-review-semantic-table" role="table" aria-label="Kanıt ve semantik sonuçları">
+                        <div class="is-heading" role="row">
+                          <span role="columnheader">Kanıt</span>
+                          <span role="columnheader">Fitch</span>
+                          <span role="columnheader">Semantik</span>
+                          <span role="columnheader">Köprü durumu</span>
+                        </div>
+                        {% for check in lesson.semantic_cross_checks %}
+                          <div role="row">
+                            <code role="cell">{{ check.fixture_id }}</code>
+                            <span role="cell">{% if check.expected_proof_verified %}doğrulandı{% else %}doğrulanmadı{% endif %}</span>
+                            <span role="cell">{% if check.expected_semantic_entails %}sonuç var{% else %}karşı değerleme var{% endif %}</span>
+                            <code role="cell">{{ check.expected_bridge_status }}</code>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </section>
+                  {% endif %}
+                </div>
+              </details>
+            {% endif %}
 
             <details class="logic-review-disclosure">
               <summary><span>Bağımsız üretim ve geri çağırma</span><small>{{ lesson.production_tasks|length }} görev</small><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>

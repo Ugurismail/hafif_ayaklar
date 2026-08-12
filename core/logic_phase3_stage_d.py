@@ -35,6 +35,14 @@ STAGE_D_SOURCE_REFERENCES = {
         "title": "forall x: Calgary - Derived rules",
         "url": "https://forallx.openlogicproject.org/html/Ch21.html",
     },
+    "forallx-proof-theoretic-concepts": {
+        "title": "forall x: Calgary - Proof-theoretic concepts",
+        "url": "https://forallx.openlogicproject.org/html/Ch20.html",
+    },
+    "forallx-soundness-completeness": {
+        "title": "forall x: Calgary - Soundness and completeness",
+        "url": "https://forallx.openlogicproject.org/html/Ch22.html",
+    },
     "carnap-derivations": {
         "title": "Carnap - Derivations and proof checking",
         "url": "https://carnap.io/srv/doc/derivations.md",
@@ -3356,6 +3364,475 @@ def _candidate_d25():
     return lesson
 
 
+def _candidate_d26():
+    lesson = _lesson(
+        "D26",
+        "ders-kanit-ve-semantik-gecerlilik-koprusu",
+        "Kanıt ile Semantik Geçerlilik Arasındaki İlişki",
+        "Türetilebilirlik ile semantik sonucu ayrı yöntemler olarak okur; klasik TFL için güvenirlik ve tamlığın doğru yönlerini kullanır ve aynı argümanı kanıt ile değerleme yöntemleri üzerinden bağımsız olarak sınar.",
+        "Tek ve çift turnike, güvenirlik, tamlık ve yöntem seçimi",
+        45,
+        [
+            "ders-turetilmis-kurallar-ve-esdegerliklerin-lisansi",
+            "ders-gecerlilik-ve-karsi-degerleme",
+            "ders-kismi-tablolar-ve-tfl-sinirlari",
+        ],
+        [
+            "nd.turnstile_distinguish",
+            "nd.soundness_read",
+            "nd.completeness_read",
+            "nd.method_compare",
+        ],
+        [
+            "Türetilebilirlik, teorem, karşılıklı türetilebilirlik ve sentaktik tutarsızlığı kanıt sistemi üzerinden tanımlamak.",
+            "Γ ⊢ 𝒞 ile Γ ⊨ 𝒞 ifadelerini yöntem, kanıt yükü ve üst dil işlevi bakımından ayırmak.",
+            "Güvenirliği Γ ⊢ 𝒞 ise Γ ⊨ 𝒞 yönünde doğru okumak.",
+            "Tamlığı Γ ⊨ 𝒞 ise Γ ⊢ 𝒞 yönünde doğru okumak.",
+            "Başarısız bir kanıt aramasını semantik karşı değerlemeden ayırmak.",
+            "Amaç ve kanıt yüküne göre doğal türetim, tam tablo veya karşı değerleme yöntemini seçmek.",
+        ],
+        [
+            (
+                "Türetilebilirlik",
+                "Γ öncüllerinden başlayıp açık varsayım bırakmadan 𝒞 ile biten en az bir lisanslı türetim bulunması; Γ ⊢ 𝒞 ile gösterilir.",
+            ),
+            (
+                "Semantik sonuç",
+                "Γ'daki bütün cümleleri doğru yapan her değerlemenin 𝒞'yi de doğru yapması; Γ ⊨ 𝒞 ile gösterilir.",
+            ),
+            (
+                "Teorem",
+                "Hiçbir öncül kullanılmadan türetilebilen cümle; ⊢ 𝒜 biçiminde gösterilir.",
+            ),
+            (
+                "Karşılıklı türetilebilirlik",
+                "𝒜 ⊢ ℬ ve ℬ ⊢ 𝒜 yönlerinin ikisinin de kurulabilmesi.",
+            ),
+            (
+                "Sentaktik tutarsızlık",
+                "Bir cümle kümesinden ⊥ türetilebilmesi; Γ ⊢ ⊥ biçiminde gösterilir.",
+            ),
+            (
+                "Güvenirlik",
+                "Kanıt sisteminde türetilebilen her argümanın semantik olarak geçerli olması: Γ ⊢ 𝒞 ise Γ ⊨ 𝒞.",
+            ),
+            (
+                "Tamlık",
+                "Semantik olarak geçerli her argümanın kanıt sisteminde bir türetiminin bulunması: Γ ⊨ 𝒞 ise Γ ⊢ 𝒞.",
+            ),
+            (
+                "Karşı değerleme",
+                "Bütün öncülleri doğru, sonucu yanlış yapan ve bu nedenle semantik geçerliliği tek başına çürüten değerleme.",
+            ),
+            (
+                "Sağlam argüman",
+                "Semantik olarak geçerli olan ve öncülleri ayrıca fiilen doğru olan argüman; yalnız biçimsel kanıt öncüllerin fiili doğruluğunu göstermez.",
+            ),
+        ],
+        [
+            _section(
+                "İki turnikeyi aynı işaret sanmamak",
+                "Tek turnike bir kanıt sisteminde türetim bulunduğunu, çift turnike ise bütün değerlemeler üzerindeki semantik sonucu bildirir. İkisi de TFL cümlesinin içindeki bağlaç değil, TFL hakkında konuşan üst dil işaretidir.",
+                "Bir argüman sonucunu kanıtla mı yoksa değerlemelerle mi gerekçelendirdiğini yazarken.",
+                "Γ ⊢ 𝒞: türetim vardır; Γ ⊨ 𝒞: karşı değerleme yoktur",
+                "Sol ve sağ taraflarda aynı öncül/sonuç cümleleri bulunabilir; fakat iddiaların doğrulanma yöntemleri farklıdır. Birinde sonlu ve lisanslı satır yapısı, diğerinde ilgili bütün değerlemeler belirleyicidir.",
+                "⊢ ile ⊨ işaretlerini yazı tipi farkı sayma veya ikisini TFL formülünün içine bağlaç gibi yerleştirme.",
+                [
+                    ("A → B, A ⊢ B", "→E ile biten doğru bir türetimin varlığını söyler."),
+                    ("A → B, A ⊨ B", "A → B ile A doğruyken B'nin yanlış olduğu hiçbir değerleme bulunmadığını söyler."),
+                    ("⊢ A → A", "A → A'nın öncülsüz bir türetimi, yani teorem olduğunu söyler."),
+                ],
+                (
+                    "Kullanılan yönteme göre tek veya çift turnikeyi açıkça yazmak.",
+                    "Kanıt satırlarının yanına ⊨, doğruluk tablosunun sonucuna ⊢ yazmak.",
+                    "İşaret seçimi ulaşılan sonucun değil, o sonucun hangi ilişki ve yöntemle gerekçelendirildiğinin parçasıdır.",
+                ),
+            ),
+            _section(
+                "Kanıt kuramsal kavramları doğru kurmak",
+                "Teorem, karşılıklı türetilebilirlik ve sentaktik tutarsızlık türetimlerin varlığıyla tanımlanır. Bu tanımlar, benzer semantik kavramlarla aynı yöntem değildir.",
+                "Bir cümlenin veya cümle kümesinin kanıt sistemi içindeki statüsünü bildirirken.",
+                "⊢ 𝒜; 𝒜 ⊣⊢ ℬ; Γ ⊢ ⊥",
+                "Teorem için öncül yoktur. Karşılıklı türetilebilirlik iki ayrı yön ister. Sentaktik tutarsızlıkta hedef ⊥'dir. Bu varlık iddiaları doğru türetimlerle tanıklanabilir.",
+                "Bir yöndeki türetimi karşılıklı türetilebilirlik sayma veya kanıt bulamadığın cümleyi otomatik olarak teorem değil diye ilan etme.",
+                [
+                    ("⊢ A → A", "A varsayımı altında A'yı yineleyip →I ile kapatmak bir teorem tanığıdır."),
+                    ("A ∧ B ⊢ B ∧ A ve B ∧ A ⊢ A ∧ B", "İki ayrı kanıt birlikte karşılıklı türetilebilirliği gösterir."),
+                    ("A, ¬A ⊢ ⊥", "¬E ile kurulan türetim sentaktik tutarsızlığa tanıktır."),
+                ],
+                (
+                    "Pozitif kanıt kuramsal iddiayı tamamlanmış türetimle tanıklamak.",
+                    "Kısa sürede kanıt bulamadığı için türetim bulunmadığı sonucuna varmak.",
+                    "Bir türetimin varlığını göstermek sonlu bir tanıkla mümkündür; hiçbir türetim olmadığını yalnız arama başarısızlığıyla göstermek mümkün değildir.",
+                ),
+            ),
+            _section(
+                "Güvenirlik yönünü okumak",
+                "Güvenirlik, kanıt sisteminin semantik olarak geçersiz bir argümanı doğru türetimle lisanslamadığını söyler. Yön kanıttan semantiğedir.",
+                "Doğrulanmış bir türetimin semantik sonucu hakkında çıkarım yaparken veya denetleyiciler arasında çelişki ararken.",
+                "Γ ⊢ 𝒞 ⇒ Γ ⊨ 𝒞",
+                "TFL doğal türetim sisteminin her temel ve kabul edilmiş türetilmiş kuralı semantik sonucu korur. Bu genel sonuç tek tek örnekleri denemekle kurulmaz; burada teoremin anlamı kullanılır, metateorik ispatı yapılmaz.",
+                "Bir başarılı kanıtı bütün sistemin güvenirlik ispatı sayma veya geçerlilikten öncüllerin gerçek dünyadaki doğruluğunu çıkarma.",
+                [
+                    ("A → B, A ⊢ B bulundu", "Güvenirlik sayesinde aynı öncül/sonuç için A → B, A ⊨ B sonucu beklenir."),
+                    ("Denetleyici kanıtı kabul etti ama semantik motor karşı değerleme verdi", "Bu, ders başarısı değil iki motor veya veri arasında yayını durduracak güvenirlik çatışmasıdır."),
+                    ("Kanıt geçerli, öncül A gerçekte yanlış", "Argüman yine biçimsel olarak geçerli olabilir; sağlamlık ayrıca fiili doğru öncüller ister."),
+                ],
+                (
+                    "Doğru türetimden aynı argümanın semantik geçerliliğine gitmek.",
+                    "Semantik geçerlilikten güvenirlik adıyla türetim varlığına gitmek.",
+                    "İkinci yön tamlıktır; güvenirliğin yönü kanıt sisteminin yanlış pozitif üretmemesini ifade eder.",
+                ),
+            ),
+            _section(
+                "Tamlık yönünü okumak",
+                "Tamlık, semantik olarak geçerli hiçbir TFL argümanının kanıt sisteminin erişimi dışında kalmadığını söyler. Yön semantikten kanıtadır.",
+                "Eksiksiz semantik çözüm geçerlilik gösterdiğinde bir doğal türetim bulunabileceğini değerlendirirken.",
+                "Γ ⊨ 𝒞 ⇒ Γ ⊢ 𝒞",
+                "Bütün değerlemeler üzerinde karşı değerleme bulunmaması semantik geçerliliği kurar. TFL sisteminin tamlığı, bu durumda bir türetim bulunduğunu garanti eder; ancak türetimin nasıl veya ne kadar kısa bulunacağını söylemez.",
+                "Tablo sonucu geçerli diye ilk yazılan kanıt taslağını doğru kabul etme veya tamlığı otomatik kanıt üretme algoritması sanma.",
+                [
+                    ("A → B, A ⊨ B", "Tamlık aynı problem için en az bir doğru türetim bulunduğunu söyler."),
+                    ("Kanıt taslağı hedefe ulaşmadı ama tablo karşı değerleme vermedi", "Taslak başarısızdır; argüman değil. Yeni kanıt stratejisi gerekir."),
+                    ("Birçok geçerli örneğe kanıt bulundu", "Bu örnekler öğretici doğrulamadır, bütün sistem için tamlık ispatı değildir."),
+                ],
+                (
+                    "Semantik geçerlilikten bir türetimin varlığına gitmek.",
+                    "Bir türetim bulamadığında sistemi eksik veya argümanı geçersiz ilan etmek.",
+                    "Tamlık varlık garantisidir; belirli arama denemesinin başarı garantisi veya türetim uzunluğu sınırı değildir.",
+                ),
+            ),
+            _section(
+                "Karşı değerleme ile başarısız kanıt aramasını ayırmak",
+                "Karşı değerleme, bütün öncülleri doğru ve sonucu yanlış yaparak semantik geçerliliği doğrudan çürütür. Eksik veya hatalı kanıt ise yalnız sunulan türetimin hedefi lisanslamadığını gösterir.",
+                "Bir çözümün neden başarısız olduğunu raporlarken ve yeniden deneme gerekip gerekmediğini belirlerken.",
+                "karşı değerleme ⇒ Γ ⊭ 𝒞; bozuk taslak ⇏ Γ ⊭ 𝒞",
+                "Karşı değerleme argümanın kendisine yöneliktir. Kanıt hatası ise yalnız belirli satır dizisine yöneliktir. Semantik olarak geçerli bir argüman için birçok bozuk taslak yazılabilir.",
+                "Kanıt denetleyicisinin hata mesajını semantik karşı örnek gibi sunma veya bir değerlemenin yalnız sonucu yanlış yaptığına bakıp öncülleri denetlemeyi unutma.",
+                [
+                    ("A → B, B ∴ A; A=F, B=T", "Öncüller doğru, sonuç yanlış olduğu için gerçek karşı değerlemedir."),
+                    ("A → B, A ∴ B; son B satırı yazılmadı", "Argüman semantik olarak geçerli, sunulan kanıt yalnız eksiktir."),
+                    ("A → B, B ∴ A için →E ile A yazıldı", "Satır lisanssızdır ve ayrıca karşı değerleme argümanı geçersiz kılar; iki bulgu birbirinden bağımsızdır."),
+                ],
+                (
+                    "Karşı değerlemede her öncülün T ve sonucun F olduğunu tek tek doğrulamak.",
+                    "Her kanıt hatasını argüman geçersizliği diye raporlamak.",
+                    "Kanıt denetimi sunulan türetimi, semantik denetim ise öncül-sonuç ilişkisini sınar.",
+                ),
+            ),
+            _section(
+                "Amaç ve kanıt yüküne göre yöntem seçmek",
+                "Doğal türetim geçerliliğe yapısal bir tanık verir; doğruluk tablosu sonlu TFL probleminde bütün değerlemeleri tarar ve karşı değerlemeyi görünür kılar. Seçim yalnız alışkanlık veya satır sayısına göre yapılmaz.",
+                "Geçerlilik, geçersizlik, eşdeğerlik, eşdeğer olmama, tutarlılık veya tutarsızlık gibi farklı kanıt yükleri arasında seçim yaparken.",
+                "geçerlilik: türetim; geçersizlik: karşı değerleme; yöntemler gerekirse çapraz doğrulanır",
+                "Geçerlilik için tek doğru türetim yeterlidir; geçersizlik için tek karşı değerleme yeterlidir. Az atomlu bir problemde tablo mekanik ve denetlenebilir olabilir; çok atomda 2 üzeri n satır büyümesi türetimi daha elverişli kılabilir.",
+                "Türetimi her negatif iddia için veya tam tabloyu atom sayısını düşünmeden her problem için varsayılan yöntem yapmak.",
+                [
+                    ("A → (B ∨ C), A, ¬B ∴ C", "Kısa →E ve DS türetimi açıklayıcıdır; sekiz satırlı tablo bağımsız kontrol sağlar."),
+                    ("A → B, B ∴ A geçersiz mi?", "A=F, B=T karşı değerlemesi en kısa kesin tanıktır."),
+                    ("İki cümle eşdeğer değil mi?", "Birinde farklı doğruluk değeri veren tek değerleme negatif iddiayı tamamlar."),
+                ],
+                (
+                    "İddiayı, gereken tanık türünü ve atom sayısını birlikte değerlendirerek yöntem seçmek.",
+                    "Her zaman en kısa görünen yöntemi seçip kanıt yükünü belirtmemek.",
+                    "Doğru yöntem seçimi, istenen sonucun pozitif mi negatif mi olduğuna ve hangi tanığın belirleyici olduğuna bağlıdır.",
+                ),
+            ),
+        ],
+        [
+            _worked("A → B, A ⊢ B", "→E ile tamamlanan türetim sentaktik tanıktır; güvenirlik aynı argümanın semantik olarak geçerli olmasını gerektirir.", "Güvenirlik"),
+            _worked("A → B, A ⊨ B", "Öncüllerin doğru, B'nin yanlış olduğu bir değerleme yoktur; tamlık bir türetimin varlığını garanti eder.", "Tamlık"),
+            _worked("⊢ A → A ve ⊨ A → A", "İlk ifade öncülsüz türetimi, ikincisi her değerlemede doğruluğu bildirir; yöntemler ayrıdır.", "Teorem ve totoloji"),
+            _worked("A ∧ B ile B ∧ A", "İki türetim karşılıklı türetilebilirliği, aynı doğruluk sütunları semantik eşdeğerliği gösterir.", "İki yöntem"),
+            _worked("A, ¬A ⊢ ⊥", "Tam türetim sentaktik tutarsızlığa tanıktır; ortak doğru değerleme bulunmaması semantik karşılığıdır.", "Tutarsızlık"),
+            _worked("A → B, B ∴ A; A=F, B=T", "Bu değerleme iki öncülü doğru ve sonucu yanlış yaptığı için argümanı semantik olarak çürütür.", "Karşı değerleme", "bad"),
+            _worked("A → B, A ∴ B için son satır unutuldu", "Sunulan kanıt eksiktir; aynı argümanın karşı değerlemesiz olması değişmez.", "Eksik kanıt", "bad"),
+            _worked("Bir doğru türetim buldum, sistem güvenilirdir", "Tek örnek yalnız o türetimi doğrular; bütün mümkün türetimler hakkındaki güvenirliği ispatlamaz.", "Metateorik aşırı sonuç", "bad"),
+            _worked("Kanıt bulamadım, argüman geçersizdir", "Başarısız arama karşı değerleme değildir; geçersizlik için öncülleri doğru ve sonucu yanlış yapan değerleme gerekir.", "Yanlış negatif", "bad"),
+            _worked("A → (B ∨ C), A, ¬B ∴ C", "→E ve DS kısa yapısal kanıt verir; sekiz değerlemeli tablo aynı sonucu bağımsız olarak denetler.", "Çapraz doğrulama"),
+        ],
+        [
+            "⊢ ile ⊨ işaretlerini aynı yöntem veya aynı yazımın varyantı saymak.",
+            "Güvenirlik ve tamlık oklarının yönlerini ters çevirmek.",
+            "Bir başarılı türetimi bütün kanıt sisteminin güvenirlik ispatı sanmak.",
+            "Kanıt araması başarısız olunca semantik geçersizlik sonucu çıkarmak.",
+            "Karşı değerlemede yalnız sonucu yanlış yapıp bütün öncüllerin doğru olduğunu denetlememek.",
+            "Geçerliliği sağlamlıkla karıştırıp öncüllerin fiili doğruluğunu kanıttan çıkarmak.",
+            "Tamlığı belirli bir kanıt arama algoritmasının hızlı başarı garantisi saymak.",
+            "Semantik ve sentaktik çözümü aynı motorun çıktısı gibi sunup bağımsız kontrolü kaybetmek.",
+        ],
+        _practice(
+            [
+                ("Γ ⊢ C ne bildirir?", ["Her değerlemede C doğrudur", "Γ'dan C'ye doğru bir türetim vardır", "Γ'nın cümleleri fiilen doğrudur", "C atomiktir"], "Γ'dan C'ye doğru bir türetim vardır", "Tek turnike kanıt sistemi içindeki türetilebilirlik iddiasıdır.", "Temel"),
+                ("Γ ⊨ C ne bildirir?", ["Γ'dan C'ye yalnız bir kısa kanıt vardır", "Γ doğruysa C'nin yanlış olduğu hiçbir değerleme yoktur", "C bir teoremdir", "Γ tutarsız değildir"], "Γ doğruysa C'nin yanlış olduğu hiçbir değerleme yoktur", "Çift turnike semantik sonuç ilişkisidir.", "Temel"),
+                ("Güvenirliğin doğru yönü hangisidir?", ["Γ ⊢ C ise Γ ⊨ C", "Γ ⊨ C ise Γ ⊢ C", "Γ ⊭ C ise Γ ⊢ C", "Γ ⊢ C ise Γ doğrudur"], "Γ ⊢ C ise Γ ⊨ C", "Güvenirlik doğru türetimlerin semantik olarak geçersiz sonuç lisanslamamasıdır.", "Temel"),
+                ("Tamlığın doğru yönü hangisidir?", ["Γ ⊢ C ise Γ ⊨ C", "Γ ⊨ C ise Γ ⊢ C", "Γ ⊬ C ise Γ ⊭ C", "Γ doğruysa C doğrudur"], "Γ ⊨ C ise Γ ⊢ C", "Tamlık her semantik geçerlilik için sistemde bir türetim bulunmasını söyler.", "Temel"),
+                ("⊢ A ne anlama gelir?", ["A atomiktir", "A öncülsüz türetilebilen bir teoremdir", "A fiilen doğrudur", "A çelişkidir"], "A öncülsüz türetilebilen bir teoremdir", "Turnikenin solunun boş olması türetimde öncül bulunmadığını gösterir.", "Temel"),
+                ("A ve B ne zaman karşılıklı türetilebilirdir?", ["Yalnız A ⊢ B ise", "A ⊢ B ve B ⊢ A ise", "A ile B aynı uzunluktaysa", "A ∧ B teoremse"], "A ⊢ B ve B ⊢ A ise", "Karşılıklılık iki ayrı türetim yönünü gerektirir.", "Orta"),
+                ("Bir kanıt taslağında hedefe ulaşılamadı. Hangisi doğrudur?", ["Argüman kesin geçersizdir", "Kanıt sistemi kesin eksiktir", "Yalnız bu taslak hedefi henüz lisanslamamıştır", "Mutlaka karşı değerleme vardır"], "Yalnız bu taslak hedefi henüz lisanslamamıştır", "Başarısız arama argümanın semantik statüsünü tek başına belirlemez.", "Orta"),
+                ("A → B, B ∴ A için hangi değerleme karşı değerlemedir?", ["A=T, B=T", "A=T, B=F", "A=F, B=T", "A=F, B=F"], "A=F, B=T", "Koşul ve B doğru, sonuç A yanlış olur.", "Orta"),
+                ("Doğru bir türetim neyi tek başına göstermez?", ["Sonucun öncüllerden türetilebilirliğini", "Argümanın semantik geçerliliğini, güvenirlik kabulüyle", "Öncüllerin fiilen doğru olduğunu", "Kanıt satırlarının lisanslı olduğunu"], "Öncüllerin fiilen doğru olduğunu", "Sağlamlık için geçerliliğe ek olarak fiilen doğru öncüller gerekir.", "Orta"),
+                ("Semantik olarak geçerli bir argümanın bozuk kanıt taslağı için ne söylenir?", ["Tamlığa karşı örnektir", "Argüman geçersizdir", "Sunulan kanıt doğrulanmamıştır; başka doğru türetim bulunabilir", "Güvenirlik yanlıştır"], "Sunulan kanıt doğrulanmamıştır; başka doğru türetim bulunabilir", "Tamlık varlık garantisidir, her taslağın doğruluğu değildir.", "İleri"),
+                ("Geçersizliği göstermek için hangi tanık belirleyicidir?", ["Bir uzun kanıt denemesi", "Tek karşı değerleme", "Bir doğru öncül", "Bir semantik eşdeğerlik"], "Tek karşı değerleme", "Bütün öncülleri doğru ve sonucu yanlış yapan tek değerleme evrensel geçerlilik iddiasını çürütür.", "İleri"),
+                ("Kanıt motoru doğru bir türetimi kabul edip semantik motor karşı değerleme verirse nasıl davranılmalı?", ["Öğrenciyi başarılı say", "Karşı değerlemeyi yok say", "Güvenirlik çatışması olarak yayını durdurup iki motoru denetle", "Tamlık kanıtlandı de"], "Güvenirlik çatışması olarak yayını durdurup iki motoru denetle", "Güvenilir bir sistemde bu iki sonuç birlikte doğru olamaz; teknik hata veya veri uyuşmazlığı aranmalıdır.", "İleri"),
+                ("Bir cümlenin teorem olmadığını göstermek için en uygun TFL yöntemi hangisidir?", ["Sonsuza kadar kanıt aramak", "Cümleyi yanlış yapan bir değerleme bulmak", "Bir öncül eklemek", "Her zaman IP açmak"], "Cümleyi yanlış yapan bir değerleme bulmak", "Tek yanlış değerleme semantik totoloji iddiasını çürütür; tamlık bağlantısıyla teorem olmama sonucunu destekler.", "Zor"),
+                ("Tamlık neyi garanti etmez?", ["Semantik geçerli argüman için bir türetim bulunduğunu", "İlk kanıt stratejisinin başarılı olacağını", "TFL'de semantik geçerlilik ile türetilebilirlik arasında yön bulunduğunu", "Karşı değerlemesiz argümanın kanıtlanabilir olduğunu"], "İlk kanıt stratejisinin başarılı olacağını", "Tamlık belirli aramanın süresi veya başarısı hakkında algoritmik garanti vermez.", "Zor"),
+            ]
+        ),
+        {
+            "prompt": "A → (B ∨ C), A, ¬B ∴ C argümanını önce doğal türetimle, sonra sekiz satırlık tam tabloyla bağımsız olarak denetle.",
+            "starter": "Kanıtta önce koşulun artbileşenini üret. Tabloda yalnız bütün öncüllerin T olduğu satırlarda C'nin değerini denetle.",
+            "checks": [
+                "Tek turnikeli iddia ve çift turnikeli iddia ayrı yazıldı",
+                "→E kaynakları tam koşul ve önbileşenle eşleşti",
+                "DS kaynağı B ∨ C ve tam ¬B satırıdır",
+                "Tablonun sekiz değerlemesi bağımsız olarak üretildi",
+                "Bütün öncülleri T yapan satırlarda C'nin F olmadığı doğrulandı",
+                "İki yöntem aynı sonucu verse de farklı kanıt yükleri açıklandı",
+            ],
+            "solution": "Türetim: l1 A → (B ∨ C) PR; l2 A PR; l3 ¬B PR; l4 B ∨ C →E l1,l2; l5 C DS l4,l3. Semantik denetimde A=T ve ¬B=T olduğundan B=F; koşulun doğru kalması için B ∨ C=T, dolayısıyla C=T olmalıdır. Karşı değerleme yoktur.",
+        },
+        [
+            _production_task(
+                "Yeni bir argümanı hem doğal türetim hem semantik yöntemle çöz; iki sonucu doğru turnikelerle yaz ve yöntemlerin kanıt yükünü karşılaştır.",
+                [
+                    "Öncülleri, sonucu ve atomları ayrı listele.",
+                    "Doğal türetimde her satırın kural, atıf ve kapsamını göster.",
+                    "Semantik yöntemde geçerlilik için kötü satır ara; geçersizlik bulursan tam karşı değerlemeyi yaz.",
+                    "Sonuçları Γ ⊢ 𝒞 ve Γ ⊨ 𝒞 biçimlerinde ayrı raporla.",
+                    "Güvenirlik ve tamlığın hangi yönde kullanıldığını açıkla.",
+                    "Yöntemlerden biri başarısız bir taslak üretirse bunun argümanın statüsüne ne ölçüde kanıt olduğunu sınırla.",
+                ],
+                "Başarılı çözüm yalnız iki aynı karar üretmez; kanıt tanığı ile değerleme taramasının farklı gerekçelerini ve maliyetlerini açıkça karşılaştırır.",
+                "Çapraz doğrulama problemi",
+                [
+                    "A → (B ∨ C)",
+                    "A",
+                    "¬B",
+                    "Sonuç: C",
+                ],
+                "Üç atom için sekiz değerleme vardır. Önce kısa türetimi kur, sonra semantik sonucu türetim satırlarını kopyalamadan denetle.",
+            )
+        ],
+        [
+            "⊢ ve ⊨ işaretlerini yöntem, ilişki ve üst dil işlevi bakımından eksiksiz ayırır.",
+            "Güvenirlik ile tamlığın iki yönünü ters çevirmeden açıklar ve örneğe uygular.",
+            "Aynı argüman için doğru bir Fitch türetimi ve bağımsız semantik denetim üretir.",
+            "Karşı değerleme ile eksik veya hatalı kanıt taslağının kanıt gücünü doğru ayırır.",
+            "Geçerlilik ile sağlamlığı birbirine karıştırmadan öncüllerin fiili doğruluğunun ek yükünü belirtir.",
+            "Yöntem seçimini amaç, tanık türü ve değerleme sayısıyla gerekçelendirir.",
+        ],
+        [
+            "Güvenirlik hangi yöndeki koşuldur, tamlık hangi yöndeki koşuldur?",
+            "Bir türetim neden öncüllerin fiili doğruluğunu göstermez?",
+            "Karşı değerleme ile başarısız kanıt araması arasındaki fark nedir?",
+            "Semantik olarak geçerli bir argümanın ilk kanıt taslağı neden bozuk olabilir?",
+            "Geçersizlik ve geçerlilik için hangi tanık türleri en doğrudandır?",
+        ],
+        "Sonraki fazda TFL'nin ötesine geçerek birinci dereceden mantığın niceleyici dili, yorumları ve niceleyici kapsamı kurulacak; Faz D'nin alt kanıt disiplini FOL türetimlerine temel olacaktır.",
+        [
+            "forallx-proof-theoretic-concepts",
+            "forallx-soundness-completeness",
+            "forallx-derived-rules",
+            "carnap-derivations",
+            "mit-logic-sequence",
+        ],
+        "Bu ders güvenirlik ve tamlık metateoremlerini ispatlamaz; klasik TFL için sonuçların anlamını ve uygulama sınırını öğretir. Bir doğru türetim bütün sistemin güvenirlik ispatı, çok sayıda başarısız kanıt araması da eksiklik veya geçersizlik ispatı değildir. Çapraz doğrulama örnek denetimidir, metateorem ispatı değildir.",
+        [
+            "ders-3-gecerlilik-ve-dogruluk",
+            "ders-9-karsi-ornek-sema-ve-curutme-teknikleri",
+            "ders-28-dogruluk-agaclari-ve-meta-teori",
+        ],
+    )
+
+    lesson["reading_note"] = (
+        "Her iddiada önce kullanılan turnikeyi adlandır. Bir kanıt hatası gördüğünde yalnız o taslağı reddet; argümanı reddetmek için bütün öncülleri doğru ve sonucu yanlış yapan gerçek bir karşı değerleme iste."
+    )
+    lesson["symbol_set"] = [
+        "Γ",
+        "𝒜",
+        "ℬ",
+        "𝒞",
+        "⊢",
+        "⊨",
+        "⊬",
+        "⊭",
+        "⊥",
+        "⇒",
+    ]
+    lesson["proof_tools"] = [
+        "Tek/çift turnike sınıflandırıcısı",
+        "Fitch kanıt denetleyicisi",
+        "Semantik sonuç çözümleyicisi",
+        "Karşı değerleme tanığı",
+        "Güvenirlik çatışması engeli",
+        "Kanıt bulunamadı durum etiketi",
+        "Yöntem ve kanıt yükü karşılaştırma tablosu",
+    ]
+    lesson["rule_scope"] = {
+        "introduced": [],
+        "review_only": [
+            "PR",
+            "AS",
+            "R",
+            "∧I",
+            "∧E",
+            "→I",
+            "→E",
+            "¬I",
+            "¬E",
+            "X",
+            "IP",
+            "∨I",
+            "∨E",
+            "↔I",
+            "↔E",
+            "DS",
+            "MT",
+            "DNE",
+            "LEM",
+            "DeM",
+        ],
+        "locked_until_later": [],
+    }
+    lesson["metatheory_bridges"] = [
+        {
+            "name": "Güvenirlik",
+            "antecedent": "Γ ⊢ 𝒞",
+            "consequent": "Γ ⊨ 𝒞",
+            "direction": "proof_to_semantics",
+            "does_not_establish": "Öncüllerin fiili doğruluğu veya bütün sistem için tek örnekten metateorem ispatı",
+        },
+        {
+            "name": "Tamlık",
+            "antecedent": "Γ ⊨ 𝒞",
+            "consequent": "Γ ⊢ 𝒞",
+            "direction": "semantics_to_proof",
+            "does_not_establish": "İlk kanıt aramasının başarısı, kısa kanıt veya otomatik üretim garantisi",
+        },
+    ]
+    lesson["method_comparisons"] = [
+        {
+            "claim": "Geçerlilik",
+            "proof_witness": "Sonucu öncüllerden türeten doğru kanıt",
+            "semantic_witness": "Bütün değerlemelerde karşı değerleme bulunmaması",
+            "preferred_negative_witness": "Bütün öncülleri doğru ve sonucu yanlış yapan tek karşı değerleme",
+        },
+        {
+            "claim": "Teorem/totoloji",
+            "proof_witness": "Öncülsüz doğru türetim",
+            "semantic_witness": "Her değerlemede doğruluk",
+            "preferred_negative_witness": "Cümleyi yanlış yapan tek değerleme",
+        },
+        {
+            "claim": "Tutarsızlık/tatmin edilemezlik",
+            "proof_witness": "Cümle kümesinden ⊥ türetimi",
+            "semantic_witness": "Cümlelerin hepsini doğru yapan değerleme bulunmaması",
+            "preferred_negative_witness": "Bütün cümleleri doğru yapan tek değerleme",
+        },
+    ]
+    lesson["proof_fixtures"] = [
+        {
+            "id": "d26-complete-proof-semantics",
+            "kind": "complete",
+            "title": "Kanıt ve semantik sonucu birlikte doğrulanan argüman",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d26-complete-proof-semantics",
+                "premises": ["A → (B ∨ C)", "A", "¬B"],
+                "target": "C",
+                "lines": [
+                    _line("l1", "A → (B ∨ C)", "PR"),
+                    _line("l2", "A", "PR"),
+                    _line("l3", "¬B", "PR"),
+                    _line("l4", "B ∨ C", "→E", citations=[_line_ref("l1"), _line_ref("l2")]),
+                    _line("l5", "C", "DS", citations=[_line_ref("l4"), _line_ref("l3")]),
+                ],
+            },
+        },
+        {
+            "id": "d26-complete-theorem",
+            "kind": "complete",
+            "title": "Öncülsüz A → A teoremi ve totoloji karşılığı",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d26-complete-theorem",
+                "premises": [],
+                "target": "A → A",
+                "lines": [
+                    _line("l1", "A", "AS", depth=1, opens="s1"),
+                    _line("l2", "A", "R", citations=[_line_ref("l1")], depth=1),
+                    _line("l3", "A → A", "→I", citations=[_subproof_ref("l1", "l2")], closes=["s1"]),
+                ],
+            },
+        },
+        {
+            "id": "d26-incomplete-valid-argument",
+            "kind": "incomplete",
+            "title": "Semantik olarak geçerli argümanda tamamlanmamış kanıt taslağı",
+            "expected_issue_codes": ["proof.target_not_reached"],
+            "next_rule": "l1 ve l2'ye →E uygulayarak B hedefini kök kapsamda yaz",
+            "proof": {
+                "id": "d26-incomplete-valid-argument",
+                "premises": ["A → B", "A"],
+                "target": "B",
+                "lines": [
+                    _line("l1", "A → B", "PR"),
+                    _line("l2", "A", "PR"),
+                ],
+            },
+        },
+        {
+            "id": "d26-error-affirming-consequent",
+            "kind": "error",
+            "title": "Sonucu onaylayan lisanssız satır ve bağımsız karşı değerleme",
+            "expected_issue_codes": ["rule.conditional_elimination_mismatch"],
+            "repair": "Bu argüman onarılamaz: A=F, B=T karşı değerlemesi öncülleri doğru ve sonucu yanlış yapar.",
+            "proof": {
+                "id": "d26-error-affirming-consequent",
+                "premises": ["A → B", "B"],
+                "target": "A",
+                "lines": [
+                    _line("l1", "A → B", "PR"),
+                    _line("l2", "B", "PR"),
+                    _line("l3", "A", "→E", citations=[_line_ref("l1"), _line_ref("l2")]),
+                ],
+            },
+        },
+    ]
+    lesson["semantic_cross_checks"] = [
+        {
+            "fixture_id": "d26-complete-proof-semantics",
+            "expected_proof_verified": True,
+            "expected_semantic_entails": True,
+            "expected_bridge_status": "corroborated",
+            "expected_countervaluations": [],
+        },
+        {
+            "fixture_id": "d26-complete-theorem",
+            "expected_proof_verified": True,
+            "expected_semantic_entails": True,
+            "expected_bridge_status": "corroborated",
+            "expected_countervaluations": [],
+        },
+        {
+            "fixture_id": "d26-incomplete-valid-argument",
+            "expected_proof_verified": False,
+            "expected_semantic_entails": True,
+            "expected_bridge_status": "proof_not_established",
+            "expected_countervaluations": [],
+        },
+        {
+            "fixture_id": "d26-error-affirming-consequent",
+            "expected_proof_verified": False,
+            "expected_semantic_entails": False,
+            "expected_bridge_status": "countervaluation",
+            "expected_countervaluations": [{"A": "F", "B": "T"}],
+        },
+    ]
+    return lesson
+
+
 STAGE_D_CANDIDATE_LESSONS = [
     _candidate_d20(),
     _candidate_d21(),
@@ -3363,6 +3840,7 @@ STAGE_D_CANDIDATE_LESSONS = [
     _candidate_d23(),
     _candidate_d24(),
     _candidate_d25(),
+    _candidate_d26(),
 ]
 
 STAGE_D_CANDIDATE_MAP = {

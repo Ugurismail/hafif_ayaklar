@@ -1,6 +1,9 @@
 from copy import deepcopy
+from html import unescape
 
-from django.test import SimpleTestCase
+from django.contrib.auth import get_user_model
+from django.test import SimpleTestCase, TestCase
+from django.urls import reverse
 
 from .logic_course_data import VISIBLE_LOGIC_LESSONS
 from .logic_fitch import (
@@ -10,6 +13,7 @@ from .logic_fitch import (
     D23_RULES,
     D24_RULES,
     D25_RULES,
+    D26_RULES,
     audit_fitch_proof,
 )
 from .logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
@@ -20,6 +24,14 @@ from .logic_phase3_stage_d import (
     STAGE_D_CANDIDATE_MAP,
     STAGE_D_SOURCE_REFERENCES,
 )
+from .logic_proof_semantics import (
+    BRIDGE_CORROBORATED,
+    BRIDGE_COUNTERVALUATION,
+    BRIDGE_PROOF_NOT_ESTABLISHED,
+    BRIDGE_SOUNDNESS_CONFLICT,
+    cross_validate_proof_semantics,
+)
+from .models import LogicLessonProgress
 
 
 def _proof_line(
@@ -80,13 +92,13 @@ class LogicPhase3StageDIntegrityTests(SimpleTestCase):
     def test_stage_d_contains_only_the_reviewed_candidates_in_order(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_D_CANDIDATE_LESSONS],
-            ["D20", "D21", "D22", "D23", "D24", "D25"],
+            ["D20", "D21", "D22", "D23", "D24", "D25", "D26"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_D_CANDIDATE_LESSONS],
-            [20, 21, 22, 23, 24, 25],
+            [20, 21, 22, 23, 24, 25, 26],
         )
-        self.assertEqual(len(STAGE_D_CANDIDATE_MAP), 6)
+        self.assertEqual(len(STAGE_D_CANDIDATE_MAP), 7)
 
     def test_stage_d_candidates_have_complete_fields_and_known_sources(self):
         for lesson in STAGE_D_CANDIDATE_LESSONS:
@@ -304,6 +316,63 @@ class LogicPhase3StageDIntegrityTests(SimpleTestCase):
         self.assertFalse(expansions["DS"]["classical_dependency"])
         self.assertFalse(expansions["MT"]["classical_dependency"])
         self.assertTrue(expansions["DNE"]["classical_dependency"])
+
+    def test_d26_adds_metatheory_without_unlocking_a_new_rule(self):
+        lesson = STAGE_D_CANDIDATE_LESSONS[6]
+
+        self.assertGreaterEqual(len(lesson["sections"]), 6)
+        self.assertGreaterEqual(len(lesson["worked_examples"]), 8)
+        self.assertGreaterEqual(len(lesson["practice"]), 12)
+        self.assertEqual(lesson["rule_scope"]["introduced"], [])
+        self.assertEqual(
+            set(lesson["rule_scope"]["review_only"]),
+            D26_RULES,
+        )
+        self.assertEqual(D26_RULES, D25_RULES)
+        self.assertEqual(
+            {fixture["kind"] for fixture in lesson["proof_fixtures"]},
+            {"complete", "incomplete", "error"},
+        )
+
+    def test_d26_records_soundness_and_completeness_in_opposite_directions(self):
+        lesson = STAGE_D_CANDIDATE_LESSONS[6]
+        bridges = {
+            bridge["name"]: bridge
+            for bridge in lesson["metatheory_bridges"]
+        }
+
+        self.assertEqual(set(bridges), {"Güvenirlik", "Tamlık"})
+        self.assertEqual(
+            (
+                bridges["Güvenirlik"]["antecedent"],
+                bridges["Güvenirlik"]["consequent"],
+                bridges["Güvenirlik"]["direction"],
+            ),
+            ("Γ ⊢ 𝒞", "Γ ⊨ 𝒞", "proof_to_semantics"),
+        )
+        self.assertEqual(
+            (
+                bridges["Tamlık"]["antecedent"],
+                bridges["Tamlık"]["consequent"],
+                bridges["Tamlık"]["direction"],
+            ),
+            ("Γ ⊨ 𝒞", "Γ ⊢ 𝒞", "semantics_to_proof"),
+        )
+
+    def test_d26_cross_checks_cover_every_proof_fixture(self):
+        lesson = STAGE_D_CANDIDATE_LESSONS[6]
+
+        self.assertEqual(
+            {
+                cross_check["fixture_id"]
+                for cross_check in lesson["semantic_cross_checks"]
+            },
+            {fixture["id"] for fixture in lesson["proof_fixtures"]},
+        )
+        self.assertIn(
+            "forallx-soundness-completeness",
+            lesson["source_ids"],
+        )
 
 
 class FitchProofAuditTests(SimpleTestCase):
@@ -1958,3 +2027,242 @@ class D25DerivedRuleAuditTests(SimpleTestCase):
                     ],
                     ["rule.de_morgan_mismatch"],
                 )
+
+
+class D26ProofSemanticsBridgeTests(SimpleTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.lesson = STAGE_D_CANDIDATE_LESSONS[6]
+        cls.fixtures = {
+            fixture["id"]: fixture
+            for fixture in cls.lesson["proof_fixtures"]
+        }
+
+    def test_complete_d26_fixtures_are_proof_and_semantic_witnesses(self):
+        for fixture in self.lesson["proof_fixtures"]:
+            if fixture["kind"] != "complete":
+                continue
+            with self.subTest(fixture=fixture["id"]):
+                result = cross_validate_proof_semantics(fixture["proof"])
+
+                self.assertTrue(result["proof_verified"])
+                self.assertTrue(result["semantic_entails"])
+                self.assertEqual(
+                    result["bridge_status"],
+                    BRIDGE_CORROBORATED,
+                )
+                self.assertNotEqual(
+                    result["bridge_status"],
+                    BRIDGE_SOUNDNESS_CONFLICT,
+                )
+
+    def test_every_semantically_parseable_complete_stage_d_proof_is_corroborated(self):
+        for lesson in STAGE_D_CANDIDATE_LESSONS:
+            for fixture in lesson["proof_fixtures"]:
+                proof = fixture["proof"]
+                if fixture["kind"] != "complete" or "⊥" in "".join(
+                    [*proof["premises"], proof["target"]]
+                ):
+                    continue
+
+                with self.subTest(
+                    lesson=lesson["curriculum_id"],
+                    fixture=fixture["id"],
+                ):
+                    result = cross_validate_proof_semantics(proof)
+
+                    self.assertTrue(result["proof_verified"])
+                    self.assertTrue(result["semantic_entails"])
+                    self.assertEqual(
+                        result["bridge_status"],
+                        BRIDGE_CORROBORATED,
+                    )
+
+    def test_every_declared_cross_check_matches_both_engines(self):
+        for cross_check in self.lesson["semantic_cross_checks"]:
+            fixture = self.fixtures[cross_check["fixture_id"]]
+            result = cross_validate_proof_semantics(fixture["proof"])
+
+            with self.subTest(fixture=fixture["id"]):
+                self.assertEqual(
+                    result["proof_verified"],
+                    cross_check["expected_proof_verified"],
+                )
+                self.assertEqual(
+                    result["semantic_entails"],
+                    cross_check["expected_semantic_entails"],
+                )
+                self.assertEqual(
+                    result["bridge_status"],
+                    cross_check["expected_bridge_status"],
+                )
+                self.assertEqual(
+                    result["countervaluations"],
+                    cross_check["expected_countervaluations"],
+                )
+
+    def test_incomplete_proof_does_not_become_semantic_invalidity(self):
+        fixture = self.fixtures["d26-incomplete-valid-argument"]
+        result = cross_validate_proof_semantics(fixture["proof"])
+
+        self.assertFalse(result["proof_verified"])
+        self.assertEqual(
+            result["proof_issue_codes"],
+            fixture["expected_issue_codes"],
+        )
+        self.assertTrue(result["semantic_entails"])
+        self.assertEqual(
+            result["bridge_status"],
+            BRIDGE_PROOF_NOT_ESTABLISHED,
+        )
+        self.assertEqual(result["countervaluations"], [])
+
+    def test_affirming_the_consequent_has_the_exact_countervaluation(self):
+        fixture = self.fixtures["d26-error-affirming-consequent"]
+        result = cross_validate_proof_semantics(fixture["proof"])
+
+        self.assertFalse(result["proof_verified"])
+        self.assertEqual(
+            result["proof_issue_codes"],
+            fixture["expected_issue_codes"],
+        )
+        self.assertFalse(result["semantic_entails"])
+        self.assertEqual(result["bridge_status"], BRIDGE_COUNTERVALUATION)
+        self.assertEqual(
+            result["countervaluations"],
+            [{"A": "F", "B": "T"}],
+        )
+
+    def test_cross_validation_does_not_mutate_the_proof_fixture(self):
+        proof = deepcopy(
+            self.fixtures["d26-complete-proof-semantics"]["proof"]
+        )
+        original = deepcopy(proof)
+
+        cross_validate_proof_semantics(proof)
+
+        self.assertEqual(proof, original)
+
+    def test_cross_validation_rejects_non_mapping_proof_data(self):
+        with self.assertRaisesRegex(TypeError, "sözlük"):
+            cross_validate_proof_semantics([])
+
+
+class LogicPhase3StageDPreviewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        user_model = get_user_model()
+        cls.staff_user = user_model.objects.create_user(
+            username="logic-stage-d-reviewer",
+            password="review-pass",
+            is_staff=True,
+        )
+        cls.regular_user = user_model.objects.create_user(
+            username="logic-stage-d-student",
+            password="student-pass",
+        )
+
+    def test_preview_requires_staff_access(self):
+        url = reverse("logic_stage_d_preview")
+
+        anonymous_response = self.client.get(url)
+        self.assertEqual(anonymous_response.status_code, 302)
+        self.assertIn(reverse("admin:login"), anonymous_response.url)
+
+        self.client.force_login(self.regular_user)
+        regular_response = self.client.get(url)
+        self.assertEqual(regular_response.status_code, 302)
+        self.assertIn(reverse("admin:login"), regular_response.url)
+
+    def test_staff_preview_contains_every_stage_d_candidate(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_d_preview"))
+        rendered_text = unescape(response.content.decode())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "core/logic_stage_a_preview.html")
+        self.assertIn(
+            "Faz 3D: Klasik TFL doğal türetimi",
+            rendered_text,
+        )
+        for lesson in STAGE_D_CANDIDATE_LESSONS:
+            with self.subTest(lesson=lesson["curriculum_id"]):
+                self.assertIn(lesson["curriculum_id"], rendered_text)
+                self.assertIn(lesson["title"], rendered_text)
+
+    def test_staff_preview_renders_every_structured_proof_line(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_d_preview"))
+        rendered_text = unescape(response.content.decode())
+
+        for lesson in STAGE_D_CANDIDATE_LESSONS:
+            for fixture in lesson["proof_fixtures"]:
+                with self.subTest(fixture=fixture["id"]):
+                    self.assertIn(
+                        f'data-proof-fixture="{fixture["id"]}"',
+                        rendered_text,
+                    )
+                    self.assertIn(fixture["proof"]["target"], rendered_text)
+                    for line in fixture["proof"]["lines"]:
+                        self.assertIn(line["id"], rendered_text)
+                        self.assertIn(line["formula"], rendered_text)
+                        self.assertIn(line["rule"], rendered_text)
+
+    def test_staff_preview_contains_semantic_cross_check_matrix(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_d_preview"))
+        rendered_text = unescape(response.content.decode())
+
+        self.assertIn("Kanıt ve semantik sonuç matrisi", rendered_text)
+        for cross_check in STAGE_D_CANDIDATE_LESSONS[6][
+            "semantic_cross_checks"
+        ]:
+            self.assertIn(cross_check["fixture_id"], rendered_text)
+            self.assertIn(
+                cross_check["expected_bridge_status"],
+                rendered_text,
+            )
+
+    def test_preview_lists_cross_stage_prerequisites_without_live_links(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_d_preview"))
+        rendered_text = unescape(response.content.decode())
+
+        self.assertIn("C18 · Geçerlilik ve Karşı Değerleme", rendered_text)
+        self.assertIn(
+            "C19 · Kısmi Tablolar ve TFL'nin Sınırları",
+            rendered_text,
+        )
+        self.assertIn(
+            "D25 · Türetilmiş Kurallar ve Eşdeğerliklerin Lisansı",
+            rendered_text,
+        )
+        self.assertNotIn('href="#aday-c18"', rendered_text)
+        self.assertNotIn('href="#aday-c19"', rendered_text)
+        self.assertIn('href="#aday-d25"', rendered_text)
+
+    def test_preview_is_read_only_and_has_no_learner_progress_hooks(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_d_preview"))
+
+        self.assertEqual(LogicLessonProgress.objects.count(), 0)
+        self.assertNotContains(response, "data-logic-lesson-page")
+        self.assertNotContains(response, "data-progress-url")
+        self.assertNotContains(response, reverse("logic_lesson_progress"))
+        self.assertNotContains(response, "logic_lesson.js")
+
+    def test_candidate_lesson_slugs_are_not_available_on_learner_routes(self):
+        self.client.force_login(self.regular_user)
+
+        for lesson in STAGE_D_CANDIDATE_LESSONS:
+            with self.subTest(lesson=lesson["curriculum_id"]):
+                response = self.client.get(
+                    reverse(
+                        "logic_lesson_detail",
+                        kwargs={"lesson_slug": lesson["slug"]},
+                    )
+                )
+                self.assertEqual(response.status_code, 404)
+
+        self.assertEqual(LogicLessonProgress.objects.count(), 0)

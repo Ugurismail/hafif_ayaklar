@@ -552,13 +552,15 @@ Bu tablo Faz D'nin **aday geliştirme** durumunu gösterir; canlıya hazır oldu
 
 | Ders | Sözleşme | Aday veri | Otomatik kural/sınır testi | Yetkili aşama önizlemesi |
 | --- | --- | --- | --- | --- |
-| D20 Kanıt Fikri, Satır Bağımlılığı ve Hedef Okuma | Hazır | Hazır | Hazır | Bekliyor |
-| D21 Birleşim ve Koşul Kuralları | Hazır | Hazır | Hazır | Bekliyor |
-| D22 Olumsuzlama, Alt Kanıt ve Çelişkiye İndirgeme | Hazır | Hazır | Hazır | Bekliyor |
-| D23 Ayrık Bağlaç ve Çift Yönlülük Kuralları | Hazır | Hazır | Hazır | Bekliyor |
-| D24 Geriye Doğru Planlama ve Kanıt Stratejisi | Hazır | Hazır | Hazır | Bekliyor |
-| D25 Türetilmiş Kurallar ve Eşdeğerliklerin Lisansı | Hazır | Hazır | Hazır | Bekliyor |
-| D26 Kanıt ile Semantik Geçerlilik Arasındaki İlişki | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| D20 Kanıt Fikri, Satır Bağımlılığı ve Hedef Okuma | Hazır | Hazır | Hazır | Hazır |
+| D21 Birleşim ve Koşul Kuralları | Hazır | Hazır | Hazır | Hazır |
+| D22 Olumsuzlama, Alt Kanıt ve Çelişkiye İndirgeme | Hazır | Hazır | Hazır | Hazır |
+| D23 Ayrık Bağlaç ve Çift Yönlülük Kuralları | Hazır | Hazır | Hazır | Hazır |
+| D24 Geriye Doğru Planlama ve Kanıt Stratejisi | Hazır | Hazır | Hazır | Hazır |
+| D25 Türetilmiş Kurallar ve Eşdeğerliklerin Lisansı | Hazır | Hazır | Hazır | Hazır |
+| D26 Kanıt ile Semantik Geçerlilik Arasındaki İlişki | Hazır | Hazır | Hazır | Hazır |
+
+Yetkili önizleme `/mantik/inceleme/faz-3d/` adresinde salt okunur ve yalnız personel erişimine açıktır. D26 çapraz denetimi Fitch kanıt denetleyicisi ile TFL semantik motorunu ayrı ayrı çalıştırır; başarısız bir kanıt taslağını semantik geçersizlik diye etiketlemez ve doğrulanmış kanıt/karşı değerleme çatışmasını yayın engeli olarak raporlar. Bu örnek denetimi güvenirlik veya tamlık metateoremlerinin ispatı değildir.
 
 ## Aday geliştirme kapıları
 
@@ -568,11 +570,11 @@ Bu tablo Faz D'nin **aday geliştirme** durumunu gösterir; canlıya hazır oldu
 - [x] Her dersin önkoşulu, ölçülebilir yetkinliği ve üretim kanıtı tanımlandı.
 - [x] Türetilmiş kural ve eşdeğerlik dönüşümü lisansı sınırlandı.
 - [x] Kanıt denetleyicisinin yapılandırılmış veri ve hata sözleşmesi yazıldı.
-- [ ] Aday ders verisi yazıldı.
-- [ ] Aday kanıt denetleyicisi ve sınır testleri yazıldı.
-- [ ] Aday veri ve önkoşul grafiği otomatik test edildi.
-- [ ] Aday içerik yalıtılmış, salt okunur yetkili önizlemede doğrulandı.
-- [ ] Mevcut öğrenci rotasının ve ilerleme verisinin değişmediği regresyonla kanıtlandı.
+- [x] Aday ders verisi yazıldı.
+- [x] Aday kanıt denetleyicisi ve sınır testleri yazıldı.
+- [x] Aday veri ve önkoşul grafiği otomatik test edildi.
+- [x] Aday içerik yalıtılmış, salt okunur yetkili önizlemede doğrulandı.
+- [x] Mevcut öğrenci rotasının ve ilerleme verisinin değişmediği regresyonla kanıtlandı.
 
 ## Canlıya alma kapıları
 

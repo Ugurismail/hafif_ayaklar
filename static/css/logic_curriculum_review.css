@@ -545,6 +545,188 @@
   padding: 22px;
 }
 
+.logic-review-proof-list {
+  display: grid;
+  gap: 18px;
+}
+
+.logic-review-proof {
+  overflow: hidden;
+  border: 1px solid var(--review-line);
+  border-radius: 4px;
+  background: var(--review-surface);
+}
+
+.logic-review-proof > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--review-soft-line);
+  background: var(--review-paper);
+}
+
+.logic-review-proof > header > div {
+  display: grid;
+  gap: 4px;
+}
+
+.logic-review-proof h3,
+.logic-review-semantic-checks h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.logic-review-proof header code,
+.logic-review-proof-kind,
+.logic-review-proof-lines,
+.logic-review-semantic-table {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.logic-review-proof header code {
+  color: var(--review-muted);
+  font-size: 11px;
+}
+
+.logic-review-proof-kind {
+  padding: 5px 8px;
+  border: 1px solid var(--review-line);
+  border-radius: 3px;
+  color: var(--review-muted);
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.logic-review-proof-kind.is-complete {
+  border-color: #b4c9be;
+  background: var(--review-green-soft);
+  color: var(--review-green);
+}
+
+.logic-review-proof-kind.is-error {
+  border-color: #e4c7be;
+  background: var(--review-rust-soft);
+  color: var(--review-rust);
+}
+
+.logic-review-proof-sequent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 0.7fr);
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--review-soft-line);
+}
+
+.logic-review-proof-sequent span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.logic-review-proof-sequent strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--review-muted);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.logic-review-proof-lines {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.logic-review-proof-lines li {
+  display: grid;
+  grid-template-columns: 42px 34px minmax(150px, 1fr) 64px minmax(90px, 0.55fr) minmax(100px, 0.65fr);
+  gap: 10px;
+  align-items: baseline;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--review-soft-line);
+}
+
+.logic-review-proof-lines li:last-child {
+  border-bottom: 0;
+}
+
+.logic-review-proof-depth,
+.logic-review-proof-citations,
+.logic-review-proof-scope {
+  color: var(--review-muted);
+  font-size: 12px;
+}
+
+.logic-review-proof-rule {
+  color: var(--review-green);
+  font-weight: 800;
+}
+
+.logic-review-proof-issues,
+.logic-review-proof > p {
+  margin: 0;
+  padding: 12px 18px;
+  border-top: 1px solid var(--review-soft-line);
+  background: var(--review-rust-soft);
+  color: #65453e;
+  font-size: 13px;
+}
+
+.logic-review-proof-issues.is-clear {
+  background: var(--review-green-soft);
+  color: var(--review-green);
+}
+
+.logic-review-semantic-checks {
+  display: grid;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.logic-review-semantic-checks > header {
+  display: grid;
+  gap: 5px;
+}
+
+.logic-review-semantic-table {
+  overflow-x: auto;
+  border: 1px solid var(--review-line);
+}
+
+.logic-review-semantic-table > div {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(130px, 1fr));
+  min-width: 760px;
+  border-bottom: 1px solid var(--review-soft-line);
+}
+
+.logic-review-semantic-table > div:last-child {
+  border-bottom: 0;
+}
+
+.logic-review-semantic-table span,
+.logic-review-semantic-table code {
+  padding: 11px 13px;
+  border-right: 1px solid var(--review-soft-line);
+  color: var(--review-ink);
+  font-size: 12px;
+}
+
+.logic-review-semantic-table span:last-child,
+.logic-review-semantic-table code:last-child {
+  border-right: 0;
+}
+
+.logic-review-semantic-table .is-heading {
+  background: var(--review-paper);
+  font-weight: 750;
+}
+
 .logic-review-section-stack {
   display: grid;
   gap: 22px;
@@ -1119,6 +1301,29 @@
 
   .logic-review-question-list > details > div {
     padding: 14px 14px 16px 42px;
+  }
+
+  .logic-review-proof > header,
+  .logic-review-proof-sequent {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-review-proof-sequent {
+    gap: 8px;
+  }
+
+  .logic-review-proof-sequent > span[aria-hidden="true"] {
+    display: none;
+  }
+
+  .logic-review-proof-lines {
+    overflow-x: auto;
+  }
+
+  .logic-review-proof-lines li {
+    min-width: 680px;
+    padding-right: 14px;
+    padding-left: 14px;
   }
 }
 

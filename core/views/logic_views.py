@@ -245,6 +245,37 @@ def logic_stage_c_preview(request):
     )
 
 
+@staff_member_required
+def logic_stage_d_preview(request):
+    """Render the isolated Stage D candidate for human curriculum review."""
+    from core.logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
+    from core.logic_phase3_stage_b import STAGE_B_CANDIDATE_MAP
+    from core.logic_phase3_stage_c import STAGE_C_CANDIDATE_MAP
+    from core.logic_phase3_stage_d import (
+        STAGE_D_CANDIDATE_LESSONS,
+        STAGE_D_CANDIDATE_MAP,
+        STAGE_D_SOURCE_REFERENCES,
+    )
+
+    return render(
+        request,
+        "core/logic_stage_a_preview.html",
+        _candidate_review_context(
+            STAGE_D_CANDIDATE_LESSONS,
+            STAGE_D_SOURCE_REFERENCES,
+            {
+                **STAGE_A_CANDIDATE_MAP,
+                **STAGE_B_CANDIDATE_MAP,
+                **STAGE_C_CANDIDATE_MAP,
+                **STAGE_D_CANDIDATE_MAP,
+            },
+            stage_code="Faz 3D",
+            stage_title="Klasik TFL doğal türetimi",
+            lesson_range="D20-D26",
+        ),
+    )
+
+
 def logic_lesson_detail(request, lesson_slug):
     lesson, redirect_slug = _logic_course_data().resolve_logic_lesson(lesson_slug)
     if redirect_slug:
