@@ -8,7 +8,7 @@ interactive proof editor is introduced.
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from .logic_tfl_semantics import TFLParseError, parse_tfl
+from .logic_tfl_semantics import TFLFormula, TFLParseError, parse_tfl
 
 
 D20_RULES = frozenset({"PR", "AS", "R"})
@@ -16,6 +16,7 @@ D21_RULES = D20_RULES | frozenset({"∧I", "∧E", "→I", "→E"})
 D22_RULES = D21_RULES | frozenset({"¬I", "¬E", "X", "IP"})
 D23_RULES = D22_RULES | frozenset({"∨I", "∨E", "↔I", "↔E"})
 D24_RULES = D23_RULES
+D25_RULES = D24_RULES | frozenset({"DS", "MT", "DNE", "LEM", "DeM"})
 REQUIRED_LINE_FIELDS = frozenset(
     {"id", "formula", "rule", "citations", "depth", "opens", "closes"}
 )
@@ -69,6 +70,45 @@ def _are_contradictories(first, second):
         getattr(first, "operator", None) == "¬" and first.right == second
     ) or (
         getattr(second, "operator", None) == "¬" and second.right == first
+    )
+
+
+def _negate(formula):
+    return TFLFormula(operator="¬", right=formula)
+
+
+def _de_morgan_transform(formula):
+    """Return the licensed De Morgan counterpart, if ``formula`` has one."""
+
+    if getattr(formula, "operator", None) == "¬":
+        compound = formula.right
+        if getattr(compound, "operator", None) == "∧":
+            return TFLFormula(
+                operator="∨",
+                left=_negate(compound.left),
+                right=_negate(compound.right),
+            )
+        if getattr(compound, "operator", None) == "∨":
+            return TFLFormula(
+                operator="∧",
+                left=_negate(compound.left),
+                right=_negate(compound.right),
+            )
+
+    if getattr(formula, "operator", None) not in {"∧", "∨"}:
+        return None
+    if not all(
+        getattr(component, "operator", None) == "¬"
+        for component in (formula.left, formula.right)
+    ):
+        return None
+    inner_operator = "∨" if formula.operator == "∧" else "∧"
+    return _negate(
+        TFLFormula(
+            operator=inner_operator,
+            left=formula.left.right,
+            right=formula.right.right,
+        )
     )
 
 
@@ -1157,6 +1197,230 @@ def audit_fitch_proof(
                                 line_id=issue_line_id,
                             )
                         )
+        elif rule == "DS":
+            if len(citations) != 2:
+                issues.append(
+                    _issue(
+                        "rule.disjunctive_syllogism_citation_count",
+                        "DS bir ayrık cümle ve bir ayrılanın olumsuzu olan iki satır ister.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_line_citations:
+                issues.append(
+                    _issue(
+                        "rule.disjunctive_syllogism_citation_type",
+                        "DS yalnız iki erişilebilir satıra atıf yapar.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif (
+                len(resolved_line_citations) == 2
+                and parsed_formula is not None
+                and all(
+                    item["formula"] is not None
+                    for item in resolved_line_citations
+                )
+            ):
+                first = resolved_line_citations[0]["formula"]
+                second = resolved_line_citations[1]["formula"]
+                licensed = any(
+                    disjunction.operator == "∨"
+                    and negation.operator == "¬"
+                    and (
+                        (
+                            negation.right == disjunction.left
+                            and parsed_formula == disjunction.right
+                        )
+                        or (
+                            negation.right == disjunction.right
+                            and parsed_formula == disjunction.left
+                        )
+                    )
+                    for disjunction, negation in (
+                        (first, second),
+                        (second, first),
+                    )
+                )
+                if not licensed:
+                    issues.append(
+                        _issue(
+                            "rule.disjunctive_syllogism_mismatch",
+                            "DS, ayrık cümlenin olumsuzlanan doğrudan ayrılanından öteki ayrılanı çıkarır.",
+                            line_id=issue_line_id,
+                        )
+                    )
+        elif rule == "MT":
+            if len(citations) != 2:
+                issues.append(
+                    _issue(
+                        "rule.modus_tollens_citation_count",
+                        "MT bir koşul ve onun artbileşeninin olumsuzu olan iki satır ister.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_line_citations:
+                issues.append(
+                    _issue(
+                        "rule.modus_tollens_citation_type",
+                        "MT yalnız iki erişilebilir satıra atıf yapar.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif (
+                len(resolved_line_citations) == 2
+                and parsed_formula is not None
+                and all(
+                    item["formula"] is not None
+                    for item in resolved_line_citations
+                )
+            ):
+                first = resolved_line_citations[0]["formula"]
+                second = resolved_line_citations[1]["formula"]
+                licensed = any(
+                    conditional.operator == "→"
+                    and negation.operator == "¬"
+                    and negation.right == conditional.right
+                    and parsed_formula == _negate(conditional.left)
+                    for conditional, negation in (
+                        (first, second),
+                        (second, first),
+                    )
+                )
+                if not licensed:
+                    issues.append(
+                        _issue(
+                            "rule.modus_tollens_mismatch",
+                            "MT, artbileşenin olumsuzundan tam önbileşenin olumsuzunu çıkarır.",
+                            line_id=issue_line_id,
+                        )
+                    )
+        elif rule == "DNE":
+            if len(citations) != 1:
+                issues.append(
+                    _issue(
+                        "rule.double_negation_elimination_citation_count",
+                        "DNE tam olarak bir çift olumsuzlama satırı ister.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_line_citations:
+                issues.append(
+                    _issue(
+                        "rule.double_negation_elimination_citation_type",
+                        "DNE yalnız bir erişilebilir satıra atıf yapar.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif len(resolved_line_citations) == 1:
+                source = resolved_line_citations[0]["formula"]
+                licensed = (
+                    getattr(source, "operator", None) == "¬"
+                    and getattr(source.right, "operator", None) == "¬"
+                    and parsed_formula == source.right.right
+                )
+                if not licensed:
+                    issues.append(
+                        _issue(
+                            "rule.double_negation_elimination_mismatch",
+                            "DNE yalnız ¬¬𝒜 biçiminden tam 𝒜 sonucunu çıkarır.",
+                            line_id=issue_line_id,
+                        )
+                    )
+        elif rule == "LEM":
+            if len(citations) != 2:
+                issues.append(
+                    _issue(
+                        "rule.excluded_middle_citation_count",
+                        "LEM iki kapalı kardeş alt kanıt aralığı ister.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_subproof_citations:
+                issues.append(
+                    _issue(
+                        "rule.excluded_middle_citation_type",
+                        "LEM yalnız iki alt kanıt aralığına atıf yapar.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif len(resolved_subproof_citations) == 2:
+                first_subproof, second_subproof = resolved_subproof_citations
+                if (
+                    first_subproof["scope"]["id"]
+                    == second_subproof["scope"]["id"]
+                ):
+                    issues.append(
+                        _issue(
+                            "rule.excluded_middle_duplicate_branch",
+                            "LEM aynı alt kanıtı iki durum yerine iki kez kullanamaz.",
+                            line_id=issue_line_id,
+                        )
+                    )
+                elif (
+                    first_subproof["scope"]["parent_path"]
+                    != second_subproof["scope"]["parent_path"]
+                ):
+                    issues.append(
+                        _issue(
+                            "rule.excluded_middle_not_siblings",
+                            "LEM dalları aynı ana kapsama bağlı kardeş alt kanıtlar olmalıdır.",
+                            line_id=issue_line_id,
+                        )
+                    )
+                else:
+                    first_start = first_subproof["start"]["formula"]
+                    second_start = second_subproof["start"]["formula"]
+                    if not _are_contradictories(first_start, second_start):
+                        issues.append(
+                            _issue(
+                                "rule.excluded_middle_assumptions",
+                                "LEM dalları tam 𝒜 ve ¬𝒜 varsayımlarıyla açılmalıdır.",
+                                line_id=issue_line_id,
+                            )
+                        )
+                    if (
+                        first_subproof["end"]["formula"] != parsed_formula
+                        or second_subproof["end"]["formula"] != parsed_formula
+                    ):
+                        issues.append(
+                            _issue(
+                                "rule.excluded_middle_conclusions",
+                                "LEM dallarının ikisi de dışarı yazılan aynı sonuçla bitmelidir.",
+                                line_id=issue_line_id,
+                            )
+                        )
+        elif rule == "DeM":
+            if len(citations) != 1:
+                issues.append(
+                    _issue(
+                        "rule.de_morgan_citation_count",
+                        "DeM tam olarak bir erişilebilir satıra atıf yapmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_line_citations:
+                issues.append(
+                    _issue(
+                        "rule.de_morgan_citation_type",
+                        "DeM yalnız bir satır atfı kullanır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif len(resolved_line_citations) == 1:
+                source = resolved_line_citations[0]["formula"]
+                if (
+                    source is not None
+                    and parsed_formula is not None
+                    and _de_morgan_transform(source) != parsed_formula
+                ):
+                    issues.append(
+                        _issue(
+                            "rule.de_morgan_mismatch",
+                            "DeM yalnız lisanslanan dört De Morgan yönünden birini uygular; sıra ve doğrudan bileşenler korunmalıdır.",
+                            line_id=issue_line_id,
+                        )
+                    )
 
         record = {
             "id": line_id,

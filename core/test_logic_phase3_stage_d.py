@@ -9,6 +9,7 @@ from .logic_fitch import (
     D22_RULES,
     D23_RULES,
     D24_RULES,
+    D25_RULES,
     audit_fitch_proof,
 )
 from .logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
@@ -79,13 +80,13 @@ class LogicPhase3StageDIntegrityTests(SimpleTestCase):
     def test_stage_d_contains_only_the_reviewed_candidates_in_order(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_D_CANDIDATE_LESSONS],
-            ["D20", "D21", "D22", "D23", "D24"],
+            ["D20", "D21", "D22", "D23", "D24", "D25"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_D_CANDIDATE_LESSONS],
-            [20, 21, 22, 23, 24],
+            [20, 21, 22, 23, 24, 25],
         )
-        self.assertEqual(len(STAGE_D_CANDIDATE_MAP), 5)
+        self.assertEqual(len(STAGE_D_CANDIDATE_MAP), 6)
 
     def test_stage_d_candidates_have_complete_fields_and_known_sources(self):
         for lesson in STAGE_D_CANDIDATE_LESSONS:
@@ -263,6 +264,46 @@ class LogicPhase3StageDIntegrityTests(SimpleTestCase):
         for fixture in lesson["proof_fixtures"]:
             with self.subTest(fixture=fixture["id"]):
                 self.assertIn(fixture["strategy_case_id"], strategy_ids)
+
+    def test_d25_has_derived_rule_depth_and_auditable_expansions(self):
+        lesson = STAGE_D_CANDIDATE_LESSONS[5]
+
+        self.assertGreaterEqual(len(lesson["sections"]), 6)
+        self.assertGreaterEqual(len(lesson["worked_examples"]), 8)
+        self.assertGreaterEqual(len(lesson["practice"]), 12)
+        self.assertEqual(
+            set(lesson["rule_scope"]["introduced"]),
+            {"DS", "MT", "DNE", "LEM", "DeM"},
+        )
+        self.assertEqual(
+            set(lesson["rule_scope"]["review_only"]),
+            D24_RULES,
+        )
+        self.assertEqual(
+            D25_RULES,
+            D24_RULES | {"DS", "MT", "DNE", "LEM", "DeM"},
+        )
+        self.assertEqual(
+            {fixture["kind"] for fixture in lesson["proof_fixtures"]},
+            {"complete", "incomplete", "error"},
+        )
+
+        expansions = {
+            expansion["rule"]: expansion
+            for expansion in lesson["derived_rule_expansions"]
+        }
+        self.assertEqual(set(expansions), {"DS", "MT", "DNE"})
+        for expansion in expansions.values():
+            with self.subTest(rule=expansion["rule"]):
+                self.assertTrue(expansion["basic_rules"])
+                self.assertEqual(
+                    set(expansion["preserves"]),
+                    {"premises", "target", "open assumptions"},
+                )
+
+        self.assertFalse(expansions["DS"]["classical_dependency"])
+        self.assertFalse(expansions["MT"]["classical_dependency"])
+        self.assertTrue(expansions["DNE"]["classical_dependency"])
 
 
 class FitchProofAuditTests(SimpleTestCase):
@@ -1563,3 +1604,357 @@ class D24StrategyAuditTests(SimpleTestCase):
                 )
             ],
         )
+
+
+class D25DerivedRuleAuditTests(SimpleTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.lesson = STAGE_D_CANDIDATE_LESSONS[5]
+        cls.fixtures = {
+            fixture["id"]: fixture
+            for fixture in cls.lesson["proof_fixtures"]
+        }
+
+    def _audit_three_line_rule(
+        self,
+        premises,
+        target,
+        rule,
+        *,
+        citation_order=("l1", "l2"),
+    ):
+        proof = {
+            "id": f"d25-{rule.lower()}-boundary",
+            "premises": premises,
+            "target": target,
+            "lines": [
+                _proof_line("l1", premises[0], "PR"),
+                _proof_line("l2", premises[1], "PR"),
+                _proof_line(
+                    "l3",
+                    target,
+                    rule,
+                    citations=[
+                        {"kind": "line", "id": citation_id}
+                        for citation_id in citation_order
+                    ],
+                ),
+            ],
+        }
+        return audit_fitch_proof(proof, allowed_rules=D25_RULES)
+
+    def test_complete_d25_fixtures_pass_the_expanded_rule_set(self):
+        for fixture in self.lesson["proof_fixtures"]:
+            if fixture["kind"] != "complete":
+                continue
+            with self.subTest(fixture=fixture["id"]):
+                self.assertEqual(
+                    audit_fitch_proof(
+                        fixture["proof"],
+                        allowed_rules=D25_RULES,
+                    ),
+                    [],
+                )
+
+    def test_d25_incomplete_lem_is_valid_before_final_discharge(self):
+        fixture = self.fixtures["d25-incomplete-lem-second-branch"]
+
+        self.assertEqual(
+            audit_fitch_proof(
+                fixture["proof"],
+                allowed_rules=D25_RULES,
+                require_complete=False,
+            ),
+            [],
+        )
+        self.assertEqual(
+            {
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    fixture["proof"],
+                    allowed_rules=D25_RULES,
+                )
+            },
+            {"proof.scope_unclosed", "proof.target_in_subproof"},
+        )
+
+    def test_d25_error_fixture_rejects_silent_equivalence_as_de_morgan(self):
+        fixture = self.fixtures["d25-error-silent-commutation-as-dem"]
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    fixture["proof"],
+                    allowed_rules=D25_RULES,
+                )
+            ],
+            fixture["expected_issue_codes"],
+        )
+
+    def test_ds_accepts_either_direct_disjunct_and_citation_order(self):
+        cases = [
+            (["A ∨ B", "¬A"], "B", ("l1", "l2")),
+            (["A ∨ B", "¬B"], "A", ("l2", "l1")),
+            (["(A ∧ C) ∨ B", "¬(A ∧ C)"], "B", ("l1", "l2")),
+        ]
+
+        for premises, target, citation_order in cases:
+            with self.subTest(
+                premises=premises,
+                target=target,
+                citation_order=citation_order,
+            ):
+                self.assertEqual(
+                    self._audit_three_line_rule(
+                        premises,
+                        target,
+                        "DS",
+                        citation_order=citation_order,
+                    ),
+                    [],
+                )
+
+    def test_ds_requires_the_negation_of_a_direct_disjunct(self):
+        issues = self._audit_three_line_rule(
+            ["(A ∧ C) ∨ B", "¬A"],
+            "B",
+            "DS",
+        )
+
+        self.assertEqual(
+            [issue["code"] for issue in issues],
+            ["rule.disjunctive_syllogism_mismatch"],
+        )
+
+    def test_mt_accepts_compound_formulas_in_either_citation_order(self):
+        for citation_order in (("l1", "l2"), ("l2", "l1")):
+            with self.subTest(citation_order=citation_order):
+                self.assertEqual(
+                    self._audit_three_line_rule(
+                        ["A → (B ∧ C)", "¬(B ∧ C)"],
+                        "¬A",
+                        "MT",
+                        citation_order=citation_order,
+                    ),
+                    [],
+                )
+
+    def test_mt_rejects_denying_the_antecedent(self):
+        issues = self._audit_three_line_rule(
+            ["A → B", "¬A"],
+            "¬B",
+            "MT",
+        )
+
+        self.assertEqual(
+            [issue["code"] for issue in issues],
+            ["rule.modus_tollens_mismatch"],
+        )
+
+    def test_dne_requires_exactly_two_outer_negations(self):
+        valid_proof = {
+            "id": "d25-compound-dne",
+            "premises": ["¬¬(A ∨ B)"],
+            "target": "A ∨ B",
+            "lines": [
+                _proof_line("l1", "¬¬(A ∨ B)", "PR"),
+                _proof_line(
+                    "l2",
+                    "A ∨ B",
+                    "DNE",
+                    citations=[{"kind": "line", "id": "l1"}],
+                ),
+            ],
+        }
+        invalid_proof = deepcopy(valid_proof)
+        invalid_proof["id"] = "d25-inexact-dne"
+        invalid_proof["target"] = "A"
+        invalid_proof["lines"][-1]["formula"] = "A"
+
+        self.assertEqual(
+            audit_fitch_proof(valid_proof, allowed_rules=D25_RULES),
+            [],
+        )
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    invalid_proof,
+                    allowed_rules=D25_RULES,
+                )
+            ],
+            ["rule.double_negation_elimination_mismatch"],
+        )
+
+    def test_lem_requires_exact_contradictory_assumptions(self):
+        proof = {
+            "id": "d25-lem-noncontradictory-branches",
+            "premises": ["C"],
+            "target": "C",
+            "lines": [
+                _proof_line("l1", "C", "PR"),
+                _proof_line("l2", "A", "AS", depth=1, opens="s1"),
+                _proof_line(
+                    "l3",
+                    "C",
+                    "R",
+                    citations=[{"kind": "line", "id": "l1"}],
+                    depth=1,
+                ),
+                _proof_line(
+                    "l4",
+                    "¬B",
+                    "AS",
+                    depth=1,
+                    opens="s2",
+                    closes=["s1"],
+                ),
+                _proof_line(
+                    "l5",
+                    "C",
+                    "R",
+                    citations=[{"kind": "line", "id": "l1"}],
+                    depth=1,
+                ),
+                _proof_line(
+                    "l6",
+                    "C",
+                    "LEM",
+                    citations=[
+                        {"kind": "subproof", "start": "l2", "end": "l3"},
+                        {"kind": "subproof", "start": "l4", "end": "l5"},
+                    ],
+                    closes=["s2"],
+                ),
+            ],
+        }
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D25_RULES,
+                )
+            ],
+            ["rule.excluded_middle_assumptions"],
+        )
+
+    def test_lem_requires_the_same_result_in_both_branches(self):
+        proof = {
+            "id": "d25-lem-different-results",
+            "premises": ["C", "D"],
+            "target": "C",
+            "lines": [
+                _proof_line("l1", "C", "PR"),
+                _proof_line("l2", "D", "PR"),
+                _proof_line("l3", "A", "AS", depth=1, opens="s1"),
+                _proof_line(
+                    "l4",
+                    "C",
+                    "R",
+                    citations=[{"kind": "line", "id": "l1"}],
+                    depth=1,
+                ),
+                _proof_line(
+                    "l5",
+                    "¬A",
+                    "AS",
+                    depth=1,
+                    opens="s2",
+                    closes=["s1"],
+                ),
+                _proof_line(
+                    "l6",
+                    "D",
+                    "R",
+                    citations=[{"kind": "line", "id": "l2"}],
+                    depth=1,
+                ),
+                _proof_line(
+                    "l7",
+                    "C",
+                    "LEM",
+                    citations=[
+                        {"kind": "subproof", "start": "l3", "end": "l4"},
+                        {"kind": "subproof", "start": "l5", "end": "l6"},
+                    ],
+                    closes=["s2"],
+                ),
+            ],
+        }
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D25_RULES,
+                )
+            ],
+            ["rule.excluded_middle_conclusions"],
+        )
+
+    def test_de_morgan_accepts_exactly_the_four_licensed_directions(self):
+        cases = [
+            ("¬(A ∧ B)", "¬A ∨ ¬B"),
+            ("¬A ∨ ¬B", "¬(A ∧ B)"),
+            ("¬(A ∨ B)", "¬A ∧ ¬B"),
+            ("¬A ∧ ¬B", "¬(A ∨ B)"),
+        ]
+
+        for source, target in cases:
+            proof = {
+                "id": "d25-dem-direction",
+                "premises": [source],
+                "target": target,
+                "lines": [
+                    _proof_line("l1", source, "PR"),
+                    _proof_line(
+                        "l2",
+                        target,
+                        "DeM",
+                        citations=[{"kind": "line", "id": "l1"}],
+                    ),
+                ],
+            }
+            with self.subTest(source=source, target=target):
+                self.assertEqual(
+                    audit_fitch_proof(proof, allowed_rules=D25_RULES),
+                    [],
+                )
+
+    def test_de_morgan_rejects_commutation_and_distribution(self):
+        cases = [
+            ("A ∧ B", "B ∧ A"),
+            ("¬(A ∧ (B ∨ C))", "¬A ∨ (¬B ∧ ¬C)"),
+        ]
+
+        for source, target in cases:
+            proof = {
+                "id": "d25-unlicensed-equivalence",
+                "premises": [source],
+                "target": target,
+                "lines": [
+                    _proof_line("l1", source, "PR"),
+                    _proof_line(
+                        "l2",
+                        target,
+                        "DeM",
+                        citations=[{"kind": "line", "id": "l1"}],
+                    ),
+                ],
+            }
+            with self.subTest(source=source, target=target):
+                self.assertEqual(
+                    [
+                        issue["code"]
+                        for issue in audit_fitch_proof(
+                            proof,
+                            allowed_rules=D25_RULES,
+                        )
+                    ],
+                    ["rule.de_morgan_mismatch"],
+                )

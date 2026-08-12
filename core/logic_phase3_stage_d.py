@@ -27,6 +27,14 @@ STAGE_D_SOURCE_REFERENCES = {
         "title": "forall x: Calgary - Constructing proofs",
         "url": "https://forallx.openlogicproject.org/html/Ch18.html",
     },
+    "forallx-additional-rules": {
+        "title": "forall x: Calgary - Additional rules for TFL",
+        "url": "https://forallx.openlogicproject.org/html/Ch19.html",
+    },
+    "forallx-derived-rules": {
+        "title": "forall x: Calgary - Derived rules",
+        "url": "https://forallx.openlogicproject.org/html/Ch21.html",
+    },
     "carnap-derivations": {
         "title": "Carnap - Derivations and proof checking",
         "url": "https://carnap.io/srv/doc/derivations.md",
@@ -2788,12 +2796,573 @@ def _candidate_d24():
     return lesson
 
 
+def _candidate_d25():
+    lesson = _lesson(
+        "D25",
+        "ders-turetilmis-kurallar-ve-esdegerliklerin-lisansi",
+        "Türetilmiş Kurallar ve Eşdeğerliklerin Lisansı",
+        "DS, MT, DNE, LEM ve De Morgan kurallarını ezberlenmiş kestirmeler olarak değil, temel kurallarla geri açılabilen ve yalnız açık kural etiketiyle kullanılabilen kanıt şemaları olarak uygular.",
+        "Kanıt şeması, kural ikamesi ve denetlenebilir kanıt sıkıştırması",
+        50,
+        [
+            "ders-geriye-dogru-planlama-ve-kanit-stratejisi",
+            "ders-mantiksal-esdegerlik-ve-tutarlilik",
+        ],
+        [
+            "nd.derived_rule_expand",
+            "nd.derived_rule_apply",
+            "nd.equivalence_license",
+            "nd.proof_compress",
+        ],
+        [
+            "Temel kural, ek kural ve türetilmiş kuralı kanıt sistemindeki işlevlerine göre ayırmak.",
+            "DS ve MT'nin her kullanımını temel kurallı bir kanıt şemasıyla ikame etmek.",
+            "DNE ve LEM'in bu dersteki klasik doğal türetim sistemine bağımlılığını görünür tutmak.",
+            "De Morgan dönüşümlerinin dört izinli yönünü kaynak, sonuç ve kural etiketiyle uygulamak.",
+            "Semantik eşdeğerlik ile kanıt içinde dönüşüm yapma lisansını birbirine karıştırmamak.",
+            "Kısa kanıtı, gizlediği temel şemayı ve koruduğu kapsam bağımlılıklarını açıklayarak denetlemek.",
+        ],
+        [
+            (
+                "Temel kural",
+                "Kanıt sisteminin başlangıç kural envanterinde doğrudan lisanslanan ve diğer kuralların açılımında kullanılan kural.",
+            ),
+            (
+                "Türetilmiş kural",
+                "Her örneği temel kurallarla aynı öncül ve hedefi koruyan bir kanıt şemasıyla sistematik olarak ikame edilebilen kısaltma.",
+            ),
+            (
+                "Kanıt şeması",
+                "𝒜, ℬ gibi üst dil değişkenleriyle yazılan ve yerine uygun TFL cümleleri konduğunda gerçek kanıtlar üreten tarif.",
+            ),
+            (
+                "DS",
+                "𝒜 ∨ ℬ ile doğrudan ayrılanlardan birinin olumsuzundan öteki doğrudan ayrılanı çıkaran ayrık tasım kuralı.",
+            ),
+            (
+                "MT",
+                "𝒜 → ℬ ile ¬ℬ'den ¬𝒜 çıkaran modus tollens kuralı.",
+            ),
+            (
+                "DNE",
+                "¬¬𝒜 biçiminden tam 𝒜 sonucuna geçen çift olumsuzlama giderme kuralı.",
+            ),
+            (
+                "LEM",
+                "𝒜 ve ¬𝒜 kardeş durumlarının ikisinde de aynı 𝒞 sonucu kurulunca 𝒞'yi dışarı taşıyan dışlanan orta kuralı.",
+            ),
+            (
+                "DeM",
+                "Olumsuzlanmış birleşim/ayrıklık ile bileşenlerin olumsuzlarından kurulan karşılık arasında dört açık yönde dönüşüm lisansı.",
+            ),
+            (
+                "Dönüşüm lisansı",
+                "Bir satırın belirli başka bir biçimde yazılmasına bu kanıt sistemi içinde açıkça izin veren kural ve yön.",
+            ),
+            (
+                "Kanıt sıkıştırması",
+                "Temel şemayı tek türetilmiş kural satırıyla değiştirirken öncül, hedef ve açık varsayım bağımlılıklarını koruma işlemi.",
+            ),
+        ],
+        [
+            _section(
+                "Temel kural ile türetilmiş kuralı ayırmak",
+                "Türetilmiş kural yeni sonuç üretme gücü eklemez. Onun her doğru kullanımı, aynı açık varsayımlar altında aynı sonuçla biten temel-kural şemasıyla değiştirilebilir.",
+                "Bir kısa kuralın neden meşru olduğunu açıklarken veya sistemin çekirdeği ile kullanıcı kolaylıklarını ayırırken.",
+                "türetilmiş satır ⇝ aynı öncül/varsayım bağımlılıklarıyla temel-kural bloğu",
+                "Şema tek bir somut kanıt değildir; 𝒜 ve ℬ yerine uygun TFL cümleleri konduğunda her kullanım için kanıt üretir. İkame, yalnız son formülü değil kapsam ve açık varsayım yükünü de korur.",
+                "Kısa, tanıdık veya semantik olarak geçerli görünen her çıkarımı otomatik kural sayma. Kuralın sistem sözleşmesinde bulunması ve temel açılımının gösterilebilmesi gerekir.",
+                [
+                    ("A ∨ B, ¬A ⊢ B; tek DS satırı", "Aynı problem ∨E, ¬E, X ve R ile daha uzun kurulabildiği için DS bir kısaltmadır."),
+                    ("A → B, ¬B ⊢ ¬A; tek MT satırı", "A varsayımı altında B ve ¬B'den ⊥ üretip ¬I ile kapatılan temel blokla ikame edilir."),
+                    ("A → B, B ⊢ A", "Semantik olarak geçersiz bu kalıp için kural listesinde veya temel sistemde bir açılım yoktur."),
+                ],
+                (
+                    "Kısa satırı, aynı öncül ve hedefi koruyan açık temel şemayla ilişkilendirmek.",
+                    "Türetilmiş kuralı temel kurallardan daha güçlü saymak.",
+                    "İkame edilebilirlik yeni türetilebilir sonuç eklenmediğini; yalnız kanıt yazımının kısaldığını gösterir.",
+                ),
+            ),
+            _section(
+                "DS'yi durum analizine geri açmak",
+                "DS, bir ayrık cümlenin doğrudan ayrılanlarından biri yadsındığında öteki doğrudan ayrılanı verir. Temel açılımda ∨E'nin iki kardeş dalı aynı sonuçla bitirilir.",
+                "Erişilebilir 𝒜 ∨ ℬ ile ¬𝒜'dan ℬ veya ¬ℬ'den 𝒜 hedeflenirken.",
+                "𝒜 ∨ ℬ, ¬𝒜 ⟹DS ℬ; açılım: [𝒜...⊥...ℬ] [ℬ...ℬ] ∨E",
+                "Olumsuzlanan dalda ¬E ile ⊥, X ile ortak sonuç üretilir. Öteki dal kendi varsayımını R ile ortak sonuç yapar. Dallar kardeştir ve sonuç doğrudan öteki ayrılan olmalıdır.",
+                "İç içe bir alt ayrılanı doğrudan ayrılan sanma; ¬𝒜 ile (𝒜 ∧ 𝒞) ∨ ℬ kaynağından DS kullanılamaz.",
+                [
+                    ("A ∨ B, ¬A ⊢ B", "A dalı çelişki ve X ile B'ye; B dalı R ile B'ye gider, sonra ∨E uygulanır."),
+                    ("A ∨ B, ¬B ⊢ A", "DS'nin simetrik biçimidir; yadsınan doğrudan ayrılan B, sonuç A'dır."),
+                    ("(A ∧ C) ∨ B, ¬A ⊢ B", "¬A, sol doğrudan ayrılan ¬(A ∧ C) değildir; DS satırı lisanssızdır."),
+                ],
+                (
+                    "Ayrık kaynağı, tam yadsınan ayrılanı ve kalan doğrudan ayrılanı eşleştirmek.",
+                    "Ayrılanın yalnız bir parçası yadsındı diye öteki tarafa geçmek.",
+                    "DS sözdizimsel olarak doğrudan bileşenlerle çalışır; benzer anlam veya içerme ilişkisi yetmez.",
+                ),
+            ),
+            _section(
+                "MT'yi olumsuzlama alt kanıtına geri açmak",
+                "MT, koşulun artbileşeninin tam olumsuzundan önbileşenin tam olumsuzunu çıkarır. Temel açılım, önbileşeni varsayıp →E ile artbileşeni ve ¬E ile ⊥'yi üretir.",
+                "𝒜 → ℬ ve ¬ℬ erişilebilirken hedef ¬𝒜 olduğunda.",
+                "𝒜 → ℬ, ¬ℬ ⟹MT ¬𝒜; açılım: [𝒜 AS, ℬ →E, ⊥ ¬E] ¬I",
+                "MT, geçerli karşıt-ters çıkarım şemasıdır. Sonucu onaylama veya önbileşeni yadsıma değildir; artbileşenin olumsuzu tam olarak eşleşmelidir.",
+                "𝒜 → ℬ ve ¬𝒜'dan ¬ℬ çıkarma. Bu, MT değil önbileşeni yadsıma safsatasıdır.",
+                [
+                    ("A → (B ∧ C), ¬(B ∧ C) ⊢ ¬A", "Artbileşenin tam olumsuzu verildiği için bileşik formülle MT uygulanır."),
+                    ("A → B, ¬B ⊢ ¬A", "A varsayımı →E ile B, hazır ¬B ile ⊥ ve ¬I ile ¬A verir."),
+                    ("A → B, ¬A ⊢ ¬B", "Artbileşen değil önbileşen yadsınmıştır; MT lisansı yoktur."),
+                ],
+                (
+                    "Koşulun sağ tarafını yadsıyan kaynaktan sol tarafın olumsuzuna geçmek.",
+                    "Koşulun herhangi bir tarafındaki olumsuzluğu MT saymak.",
+                    "MT'nin yönü, → bağlacının önbileşen/artbileşen yapısı tarafından belirlenir.",
+                ),
+            ),
+            _section(
+                "DNE ve LEM'de klasik bağımlılığı göstermek",
+                "DNE ve bu dersteki LEM kuralı klasik doğal türetimin kısaltmalarıdır. DNE'nin temel açılımı IP kullanır; LEM de klasik dışlanan orta veya onu kuran IP düzenine dayanır.",
+                "Çift olumsuzlamayı kaldırırken veya 𝒜/¬𝒜 durumlarının her ikisinden aynı sonucu çıkarırken.",
+                "¬¬𝒜 ⟹DNE 𝒜; [𝒜...𝒞] [¬𝒜...𝒞] ⟹LEM 𝒞",
+                "DNE'de ¬𝒜 varsayımı hazır ¬¬𝒜 ile ⊥ üretir ve IP hedef 𝒜'yı verir. LEM iki ayrı kardeş kapsam ister; dallar tam karşıt varsayımlarla açılıp aynı doğrudan sonuçla biter.",
+                "Klasik sistemde lisanslanan DNE'yi bütün mantık sistemlerinde veya doğal dildeki her çift olumsuz ifadede anlam eşitliği sayma.",
+                [
+                    ("¬¬A ⊢ A", "¬A varsayımı ve ¬¬A çelişir; IP ile A elde edilir."),
+                    ("A → C, ¬A → C ⊢ C", "A ve ¬A kardeş dallarının ikisi de C verdiği için LEM ile C dışarı taşınır."),
+                    ("A...C ve ¬B...C dalları", "Başlangıçlar tam karşıt olmadığı için LEM değildir."),
+                ],
+                (
+                    "DNE/LEM kullanırken klasik kural envanterini ve alt kanıt yükünü açıkça belirtmek.",
+                    "DNE'yi yalnız iki ¬ işaretini metinden silmek, LEM'i de iki rastgele durum diye kullanmak.",
+                    "Kurallar formül yapısı ve sistem seçimine bağlıdır; doğal dil sezgisi tek başına lisans vermez.",
+                ),
+            ),
+            _section(
+                "De Morgan'ın dört yönünü açıkça uygulamak",
+                "DeM bu derste yalnız iki eşdeğerlik ailesinin iki yönünü lisanslar: olumsuzlanmış birleşim ile olumsuzların ayrıklığı; olumsuzlanmış ayrıklık ile olumsuzların birleşimi.",
+                "Kaynak satır bu dört biçimden biriyken karşı biçime tek satırda geçmek için.",
+                "¬(𝒜∧ℬ) ⇄ ¬𝒜∨¬ℬ; ¬(𝒜∨ℬ) ⇄ ¬𝒜∧¬ℬ",
+                "Ana bağlaç dönüşür ve her doğrudan bileşen olumsuzlanır ya da olumsuzluğu ortak dış olumsuzluğa taşınır. Kaynaktaki sol-sağ sıra korunur; değişme, dağılma veya koşul dönüşümü DeM değildir.",
+                "A ∧ B'den B ∧ A'ya, A → B'den ¬A ∨ B'ye veya yalnız bir bileşeni olumsuzlayarak geçme.",
+                [
+                    ("¬(A ∧ B) ⊢ ¬A ∨ ¬B", "Birinci ileri DeM yönüdür."),
+                    ("¬A ∨ ¬B ⊢ ¬(A ∧ B)", "Aynı ailenin ters DeM yönüdür."),
+                    ("¬(A ∨ B) ⊢ ¬A ∧ ¬B", "Ayrıklık ailesinin ileri DeM yönüdür."),
+                    ("¬A ∧ ¬B ⊢ ¬(A ∨ B)", "Ayrıklık ailesinin ters DeM yönüdür."),
+                ],
+                (
+                    "Kaynak biçimini dört şablondan biriyle eşleştirip yönü kural etiketiyle göstermek.",
+                    "Doğruluk tablosunda eşdeğer bulunan her ifadeyi DeM adıyla yeniden yazmak.",
+                    "DeM genel eşdeğerlik motoru değil, açıkça sınırlandırılmış dört sözdizimsel dönüşümdür.",
+                ),
+            ),
+            _section(
+                "Semantik eşdeğerlikten kanıt lisansına geçiş",
+                "C17'de iki cümlenin bütün değerlemelerde aynı değeri aldığı gösterilmiş olabilir. D25'te bir kanıt satırını dönüştürmek için ayrıca bu sistemde kabul edilmiş bir kural ve doğru yön gerekir.",
+                "Doğruluk tablosu sonucunu Fitch kanıtında kullanırken veya kısa kanıtın geçerli dönüşüm adımlarını denetlerken.",
+                "𝒜 ≡ ℬ semantik bulgusu; 𝒜 ⟹kural ℬ ise kanıt içi lisans",
+                "Semantik eşdeğerlik ile karşılıklı türetilebilirlik bu TFL sistemi için yakından ilişkilidir, fakat biri değerlemeler, diğeri lisanslı kanıtlar hakkındadır. Sessiz yeniden yazma denetlenebilir satır yapısını ortadan kaldırır.",
+                "Kaynak göstermeden parantez, bağlaç, bileşen sırası veya olumsuzluk değiştirmek; doğru sonuca ulaştığı için ara dönüşümü kabul etmek.",
+                [
+                    ("¬(A ∨ B) satırından ¬A ∧ ¬B, DeM l1", "Semantik eşdeğerlik açık kanıt lisansıyla kullanılmıştır."),
+                    ("A ∧ B satırından B ∧ A, açıklama yok", "Sonuç semantik olarak eşdeğer olsa da bu dersin dönüşüm listesinde sessiz adım lisanssızdır."),
+                    ("Uzun DS bloğunu tek DS satırıyla değiştirmek", "Aynı açık kaynaklar ve hedef korunursa denetlenebilir sıkıştırmadır."),
+                ],
+                (
+                    "Her dönüşümde kaynak satırı, kural adı ve doğru yönü görünür yazmak.",
+                    "Semantik eşdeğerliği metin düzenleme izni saymak.",
+                    "Kanıt sistemi yalnız doğru sonuca değil, sonuca götüren lisansın açık olmasına da ihtiyaç duyar.",
+                ),
+            ),
+        ],
+        [
+            _worked("A ∨ B, ¬A ⊢ B", "DS tek satırda B verir; temel açılım iki kardeş ∨E dalında B sonucunu kurar.", "DS ve açılım"),
+            _worked("A ∨ B, ¬B ⊢ A", "Olumsuzlanan doğrudan ayrılan B olduğundan kalan doğrudan ayrılan A'dır.", "DS simetrisi"),
+            _worked("(A ∧ C) ∨ B, ¬A ⊢ B", "¬A sol doğrudan ayrılanın tam olumsuzu değildir; DS kullanılamaz.", "DS sınırı", "bad"),
+            _worked("A → B, ¬B ⊢ ¬A", "MT, A varsayımı altında B/¬B çelişkisini ve ¬I kapanışını kısaltır.", "MT ve açılım"),
+            _worked("A → B, ¬A ⊢ ¬B", "Önbileşeni yadsıma MT değildir ve hedef lisanslanmaz.", "MT safsatası", "bad"),
+            _worked("¬¬A ⊢ A", "DNE, ¬A varsayımıyla kurulan IP bloğunu tek satırda sıkıştırır.", "Klasik DNE"),
+            _worked("A → C, ¬A → C ⊢ C", "A ve ¬A kardeş dalları aynı C ile bittiği için LEM uygulanır.", "Klasik LEM"),
+            _worked("¬(A ∧ B) ⊢ ¬A ∨ ¬B", "DeM'nin birleşim ailesindeki ileri yönü uygulanır.", "DeM"),
+            _worked("¬A ∧ ¬B ⊢ ¬(A ∨ B)", "DeM'nin ayrıklık ailesindeki ters yönü uygulanır.", "DeM ters yön"),
+            _worked("A ∧ B ⊢ B ∧ A; sessiz yeniden yazma", "Semantik eşdeğerlik doğru olsa bile listelenmiş kural ve atıf olmadan kanıt satırı lisanssızdır.", "Lisanssız dönüşüm", "bad"),
+        ],
+        [
+            "Türetilmiş kuralı temel kurallardan daha güçlü veya daha doğru saymak.",
+            "DS'de doğrudan ayrılan yerine onun içindeki bir bileşenin olumsuzunu kullanmak.",
+            "MT ile önbileşeni yadsıma veya sonucu onaylama kalıplarını karıştırmak.",
+            "DNE ve LEM'in klasik sistem bağımlılığını gizlemek.",
+            "LEM dallarını kardeş açmamak veya farklı sonuçlarla bitirmek.",
+            "DeM etiketini değişme, dağılma veya koşul eşdeğerliği için kullanmak.",
+            "Semantik eşdeğerlik gördüğünde kaynak ve kural yazmadan satırı değiştirmek.",
+            "Kısaltmanın kapsam bağımlılıklarını koruyup korumadığını denetlememek.",
+        ],
+        _practice(
+            [
+                ("Türetilmiş kuralı meşru kılan nedir?", ["Kısa görünmesi", "Her kullanımının temel kurallarla sistematik olarak ikame edilebilmesi", "Doğal dilde tanıdık olması", "En az iki öncül istemesi"], "Her kullanımının temel kurallarla sistematik olarak ikame edilebilmesi", "Türetilmişlik bir kanıt şeması ve ikame edilebilirlik iddiasıdır.", "Temel"),
+                ("A ∨ B ve ¬A'dan DS ile ne çıkar?", ["A", "B", "¬B", "A ∧ B"], "B", "Olumsuzlanan doğrudan ayrılan A olduğundan öteki doğrudan ayrılan B kalır.", "Temel"),
+                ("DS'nin temel açılımındaki son ana kural hangisidir?", ["∨E", "→E", "↔I", "DNE"], "∨E", "İki kardeş ayrılan dalında aynı sonuç kurularak durum analizi tamamlanır.", "Temel"),
+                ("A → B ve ¬B'den MT hangi sonucu lisanslar?", ["A", "B", "¬A", "¬¬B"], "¬A", "Artbileşenin olumsuzu önbileşenin olumsuzunu verir.", "Temel"),
+                ("MT'nin temel açılımında hangi varsayım açılır?", ["A", "B", "¬A", "¬B"], "A", "A varsayımından B elde edilip hazır ¬B ile çelişki kurulur.", "Orta"),
+                ("¬¬(A ∨ B) satırından DNE ile ne çıkar?", ["A ∨ B", "¬A ∨ ¬B", "A ∧ B", "¬(A ∨ B)"], "A ∨ B", "DNE iki dış olumsuzluğu kaldırır ve içteki tam cümleyi korur.", "Orta"),
+                ("LEM için iki dal nasıl başlamalıdır?", ["A ve B", "A ve ¬A", "¬A ve ¬B", "A ∨ B ve ¬A"], "A ve ¬A", "Dallar aynı cümlenin tam olumlu ve olumsuz biçimleriyle açılır.", "Orta"),
+                ("LEM dallarının son satırları için ne gerekir?", ["Birbirinin olumsuzu olmaları", "Aynı sonuç olmaları", "İkisinin de ⊥ olması", "Birinin öncül olması"], "Aynı sonuç olmaları", "Dışarı taşınan sonuç her iki durumda da doğrudan kurulmalıdır.", "Orta"),
+                ("¬(A ∨ B) için doğru DeM sonucu hangisidir?", ["¬A ∨ ¬B", "¬A ∧ ¬B", "A ∧ B", "A → ¬B"], "¬A ∧ ¬B", "Olumsuzlanmış ayrıklık, olumsuzların birleşimine dönüşür.", "Orta"),
+                ("¬A ∨ ¬B kaynağından DeM ile hangisi çıkar?", ["¬(A ∧ B)", "¬(A ∨ B)", "A ∨ B", "A ∧ B"], "¬(A ∧ B)", "Bu, birleşim ailesinin ters DeM yönüdür.", "İleri"),
+                ("A ∧ B'nin B ∧ A ile semantik eşdeğerliği bu derste ne sağlar?", ["Sessiz yeniden yazma izni", "Tek başına hiçbir kanıt satırı lisansı sağlamaz", "Daima DeM kullanımı", "PR etiketi kullanımı"], "Tek başına hiçbir kanıt satırı lisansı sağlamaz", "Kanıt içinde ayrıca sistemde açık bir kural ve kaynak atfı gerekir.", "İleri"),
+                ("DNE neden sistem bağımlılığı notuyla öğretilir?", ["Yalnız atomlarda çalıştığı için", "Temel açılımı bu sistemde klasik IP kullandığı için", "İki öncül istediği için", "Semantik olarak geçersiz olduğu için"], "Temel açılımı bu sistemde klasik IP kullandığı için", "Kural klasik doğal türetim envanteri içinde lisanslanır; bütün mantık sistemlerine sessizce taşınmaz.", "Zor"),
+            ]
+        ),
+        {
+            "prompt": "A ∨ B, ¬A ⊢ B problemini önce yalnız temel kurallarla, sonra tek DS satırıyla çöz; iki sürümün açık kaynaklarını ve hedefini karşılaştır.",
+            "starter": "Uzun sürümde A ve B için kardeş dallar aç. Kısa sürümde ayrık satır ile tam ¬A satırını DS kaynağı yap.",
+            "checks": [
+                "Temel sürümde A ve B dalları aynı parent altında açıldı",
+                "A dalında ¬E ile ⊥ ve X ile B üretildi",
+                "B dalında R ile B korundu",
+                "∨E bir ayrık satır ve iki tam alt kanıt aralığına atıf yaptı",
+                "Kısa sürüm aynı iki açık kaynaktan aynı B hedefini DS ile üretti",
+                "Kısaltmanın yeni bir öncül veya açık varsayım eklemediği açıklandı",
+            ],
+            "solution": "Temel: l1 A ∨ B PR; l2 ¬A PR; l3 A AS; l4 ⊥ ¬E l2,l3; l5 B X l4; l6 B AS; l7 B R l6; l8 B ∨E l1,l3-l5,l6-l7. Kısa: l1 A ∨ B PR; l2 ¬A PR; l3 B DS l1,l2.",
+        },
+        [
+            _production_task(
+                "İki kanıtı önce temel kurallarla, sonra lisanslı türetilmiş kurallarla yaz; her kısa satırın gizlediği temel bloğu ve varsa klasik bağımlılığı ekle.",
+                [
+                    "A ∨ B, ¬A ⊢ B için uzun ∨E açılımını ve kısa DS sürümünü ver.",
+                    "A → B, ¬B ⊢ ¬A için uzun ¬I açılımını ve kısa MT sürümünü ver.",
+                    "En az bir DNE veya LEM kullanımında klasik IP/dışlanan orta bağımlılığını açıkla.",
+                    "Bir DeM dönüşümünde kaynak satırı, yönü ve tam sonucu göster.",
+                    "Her sıkıştırmada öncül, hedef ve açık varsayım bağımlılıklarının korunduğunu denetle.",
+                    "Semantik olarak eşdeğer fakat bu görevde lisanssız bir sessiz dönüşüm örneğini reddet.",
+                ],
+                "Değerlendirme yalnız kısa sonuca bakmaz; temel sürüm, kısa sürüm ve aralarındaki ikame gerekçesi birlikte incelenir.",
+                "Kanıt çiftleri",
+                [
+                    "A ∨ B, ¬A ⊢ B",
+                    "A → B, ¬B ⊢ ¬A",
+                    "¬¬(C ∨ D) ⊢ C ∨ D",
+                    "¬(E ∨ F) ⊢ ¬E ∧ ¬F",
+                ],
+                "DS ve MT zorunlu karşılaştırmalardır; DNE ile DeM'den en az biri ayrıca tamamlanmalıdır.",
+            )
+        ],
+        [
+            "Temel ve türetilmiş kuralı yeni mantıksal güç iddiasına başvurmadan doğru ayırır.",
+            "DS ve MT için aynı öncül/hedefi koruyan temel-kural açılımlarını eksiksiz kurar.",
+            "DNE veya LEM kullanımının klasik sistem bağımlılığını doğru adlandırır.",
+            "DeM'nin dört yönünden en az ikisini doğru kaynak, yön ve atıfla uygular.",
+            "Semantik eşdeğerlik ile kanıt içi dönüşüm lisansını ayırır ve sessiz adımı reddeder.",
+            "Kanıt sıkıştırmasında kapsam ve açık varsayım bağımlılıklarının korunduğunu denetler.",
+        ],
+        [
+            "Türetilmiş kural neden yeni türetilebilir sonuç eklemez?",
+            "DS'nin temel açılımında iki kardeş dal nasıl aynı sonuca ulaşır?",
+            "MT ile önbileşeni yadsıma arasındaki yapısal fark nedir?",
+            "DNE ve LEM neden klasik sistem notuyla birlikte okunmalıdır?",
+            "Semantik eşdeğerlik neden tek başına satır yeniden yazma lisansı değildir?",
+        ],
+        "Sonraki derste ⊢ ile ⊨ arasındaki farkı, güvenirlik ve tamlığın yönlerini ve aynı argümanın kanıt/semantik yöntemlerle bağımsız çapraz doğrulanmasını kuracağız.",
+        [
+            "forallx-basic-rules",
+            "forallx-proof-strategies",
+            "forallx-additional-rules",
+            "forallx-derived-rules",
+            "carnap-derivations",
+        ],
+        "Bu derste DS, MT, DNE, LEM ve dört DeM yönü açıkça lisanslanır. DNE ve LEM, seçilen klasik TFL doğal türetim sistemi içinde değerlendirilir. C17'deki semantik eşdeğerlikler kendiliğinden Fitch yeniden yazma kuralına dönüşmez; her kanıt dönüşümü etkin kural envanterine ve açık atfa dayanır.",
+        [
+            "ders-18-cikarim-kurallari-ii-ve-kisa-ispatlar",
+            "ders-25-dogal-turetim-ii",
+            "ders-26-reductio-ad-absurdum",
+        ],
+    )
+
+    lesson["reading_note"] = (
+        "Önce kısa kuralın kaynak ve sonucunu eşleştir; sonra aynı adımı temel kurallarla açabildiğini kontrol et. Eşdeğer bir cümle görmen yetmez: kanıt satırında dönüşüm kuralını ve yönünü açıkça yaz."
+    )
+    lesson["symbol_set"] = [
+        "𝒜",
+        "ℬ",
+        "𝒞",
+        "⊢",
+        "DS",
+        "MT",
+        "DNE",
+        "LEM",
+        "DeM",
+        "⇝",
+        "¬",
+        "∧",
+        "∨",
+        "→",
+        "⊥",
+    ]
+    lesson["proof_tools"] = [
+        "Temel/türetilmiş kural sınıflandırıcısı",
+        "Kısa satır kaynak eşleştiricisi",
+        "Temel-kural açılım kartı",
+        "Klasik bağımlılık etiketi",
+        "De Morgan dört yön tablosu",
+        "Sessiz dönüşüm denetimi",
+        "Kapsam koruyan sıkıştırma karşılaştırıcısı",
+    ]
+    lesson["rule_scope"] = {
+        "introduced": ["DS", "MT", "DNE", "LEM", "DeM"],
+        "review_only": [
+            "PR",
+            "AS",
+            "R",
+            "∧I",
+            "∧E",
+            "→I",
+            "→E",
+            "¬I",
+            "¬E",
+            "X",
+            "IP",
+            "∨I",
+            "∨E",
+            "↔I",
+            "↔E",
+        ],
+        "locked_until_later": [],
+    }
+    lesson["derived_rule_expansions"] = [
+        {
+            "rule": "DS",
+            "problem": "A ∨ B, ¬A ⊢ B",
+            "short_steps": ["A ∨ B", "¬A", "B DS"],
+            "basic_rules": ["AS", "¬E", "X", "R", "∨E"],
+            "preserves": ["premises", "target", "open assumptions"],
+            "classical_dependency": False,
+        },
+        {
+            "rule": "MT",
+            "problem": "A → B, ¬B ⊢ ¬A",
+            "short_steps": ["A → B", "¬B", "¬A MT"],
+            "basic_rules": ["AS", "→E", "¬E", "¬I"],
+            "preserves": ["premises", "target", "open assumptions"],
+            "classical_dependency": False,
+        },
+        {
+            "rule": "DNE",
+            "problem": "¬¬A ⊢ A",
+            "short_steps": ["¬¬A", "A DNE"],
+            "basic_rules": ["AS", "¬E", "IP"],
+            "preserves": ["premises", "target", "open assumptions"],
+            "classical_dependency": True,
+        },
+    ]
+    lesson["proof_fixtures"] = [
+        {
+            "id": "d25-complete-ds-short",
+            "kind": "complete",
+            "title": "DS ile kısa ayrık tasım",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d25-complete-ds-short",
+                "premises": ["A ∨ B", "¬A"],
+                "target": "B",
+                "lines": [
+                    _line("l1", "A ∨ B", "PR"),
+                    _line("l2", "¬A", "PR"),
+                    _line("l3", "B", "DS", citations=[_line_ref("l1"), _line_ref("l2")]),
+                ],
+            },
+        },
+        {
+            "id": "d25-complete-ds-expanded",
+            "kind": "complete",
+            "title": "DS'nin temel-kural açılımı",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d25-complete-ds-expanded",
+                "premises": ["A ∨ B", "¬A"],
+                "target": "B",
+                "lines": [
+                    _line("l1", "A ∨ B", "PR"),
+                    _line("l2", "¬A", "PR"),
+                    _line("l3", "A", "AS", depth=1, opens="s1"),
+                    _line("l4", "⊥", "¬E", citations=[_line_ref("l2"), _line_ref("l3")], depth=1),
+                    _line("l5", "B", "X", citations=[_line_ref("l4")], depth=1),
+                    _line("l6", "B", "AS", depth=1, opens="s2", closes=["s1"]),
+                    _line("l7", "B", "R", citations=[_line_ref("l6")], depth=1),
+                    _line(
+                        "l8",
+                        "B",
+                        "∨E",
+                        citations=[_line_ref("l1"), _subproof_ref("l3", "l5"), _subproof_ref("l6", "l7")],
+                        closes=["s2"],
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d25-complete-mt-short",
+            "kind": "complete",
+            "title": "MT ile kısa karşıt-ters çıkarım",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d25-complete-mt-short",
+                "premises": ["A → B", "¬B"],
+                "target": "¬A",
+                "lines": [
+                    _line("l1", "A → B", "PR"),
+                    _line("l2", "¬B", "PR"),
+                    _line("l3", "¬A", "MT", citations=[_line_ref("l1"), _line_ref("l2")]),
+                ],
+            },
+        },
+        {
+            "id": "d25-complete-mt-expanded",
+            "kind": "complete",
+            "title": "MT'nin temel-kural açılımı",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d25-complete-mt-expanded",
+                "premises": ["A → B", "¬B"],
+                "target": "¬A",
+                "lines": [
+                    _line("l1", "A → B", "PR"),
+                    _line("l2", "¬B", "PR"),
+                    _line("l3", "A", "AS", depth=1, opens="s1"),
+                    _line("l4", "B", "→E", citations=[_line_ref("l1"), _line_ref("l3")], depth=1),
+                    _line("l5", "⊥", "¬E", citations=[_line_ref("l2"), _line_ref("l4")], depth=1),
+                    _line("l6", "¬A", "¬I", citations=[_subproof_ref("l3", "l5")], closes=["s1"]),
+                ],
+            },
+        },
+        {
+            "id": "d25-complete-dne-short",
+            "kind": "complete",
+            "title": "DNE ile çift olumsuzlama giderme",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d25-complete-dne-short",
+                "premises": ["¬¬A"],
+                "target": "A",
+                "lines": [
+                    _line("l1", "¬¬A", "PR"),
+                    _line("l2", "A", "DNE", citations=[_line_ref("l1")]),
+                ],
+            },
+        },
+        {
+            "id": "d25-complete-dne-expanded",
+            "kind": "complete",
+            "title": "DNE'nin klasik IP açılımı",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d25-complete-dne-expanded",
+                "premises": ["¬¬A"],
+                "target": "A",
+                "lines": [
+                    _line("l1", "¬¬A", "PR"),
+                    _line("l2", "¬A", "AS", depth=1, opens="s1"),
+                    _line("l3", "⊥", "¬E", citations=[_line_ref("l1"), _line_ref("l2")], depth=1),
+                    _line("l4", "A", "IP", citations=[_subproof_ref("l2", "l3")], closes=["s1"]),
+                ],
+            },
+        },
+        {
+            "id": "d25-complete-lem",
+            "kind": "complete",
+            "title": "Tam karşıt kardeş dallarla LEM",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d25-complete-lem",
+                "premises": ["A → C", "¬A → C"],
+                "target": "C",
+                "lines": [
+                    _line("l1", "A → C", "PR"),
+                    _line("l2", "¬A → C", "PR"),
+                    _line("l3", "A", "AS", depth=1, opens="s1"),
+                    _line("l4", "C", "→E", citations=[_line_ref("l1"), _line_ref("l3")], depth=1),
+                    _line("l5", "¬A", "AS", depth=1, opens="s2", closes=["s1"]),
+                    _line("l6", "C", "→E", citations=[_line_ref("l2"), _line_ref("l5")], depth=1),
+                    _line("l7", "C", "LEM", citations=[_subproof_ref("l3", "l4"), _subproof_ref("l5", "l6")], closes=["s2"]),
+                ],
+            },
+        },
+        {
+            "id": "d25-complete-dem-conjunction",
+            "kind": "complete",
+            "title": "Birleşim ailesinde ileri De Morgan",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d25-complete-dem-conjunction",
+                "premises": ["¬(A ∧ B)"],
+                "target": "¬A ∨ ¬B",
+                "lines": [
+                    _line("l1", "¬(A ∧ B)", "PR"),
+                    _line("l2", "¬A ∨ ¬B", "DeM", citations=[_line_ref("l1")]),
+                ],
+            },
+        },
+        {
+            "id": "d25-complete-dem-disjunction-reverse",
+            "kind": "complete",
+            "title": "Ayrıklık ailesinde ters De Morgan",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d25-complete-dem-disjunction-reverse",
+                "premises": ["¬A ∧ ¬B"],
+                "target": "¬(A ∨ B)",
+                "lines": [
+                    _line("l1", "¬A ∧ ¬B", "PR"),
+                    _line("l2", "¬(A ∨ B)", "DeM", citations=[_line_ref("l1")]),
+                ],
+            },
+        },
+        {
+            "id": "d25-incomplete-lem-second-branch",
+            "kind": "incomplete",
+            "title": "İki dalı tamamlanmış ve LEM kapanışı bekleyen taslak",
+            "expected_issue_codes": [],
+            "next_rule": "s2'yi kapatıp l3-l4 ile l5-l6 aralıklarından LEM ile C yaz",
+            "proof": {
+                "id": "d25-incomplete-lem-second-branch",
+                "premises": ["A → C", "¬A → C"],
+                "target": "C",
+                "lines": [
+                    _line("l1", "A → C", "PR"),
+                    _line("l2", "¬A → C", "PR"),
+                    _line("l3", "A", "AS", depth=1, opens="s1"),
+                    _line("l4", "C", "→E", citations=[_line_ref("l1"), _line_ref("l3")], depth=1),
+                    _line("l5", "¬A", "AS", depth=1, opens="s2", closes=["s1"]),
+                    _line("l6", "C", "→E", citations=[_line_ref("l2"), _line_ref("l5")], depth=1),
+                ],
+            },
+        },
+        {
+            "id": "d25-error-silent-commutation-as-dem",
+            "kind": "error",
+            "title": "DeM etiketiyle gizlenen değişme dönüşümü",
+            "expected_issue_codes": ["rule.de_morgan_mismatch"],
+            "repair": "Bu derste A ∧ B'den B ∧ A'ya sessiz veya DeM etiketli geçme; sonucu temel ∧E ve ∧I adımlarıyla kur.",
+            "proof": {
+                "id": "d25-error-silent-commutation-as-dem",
+                "premises": ["A ∧ B"],
+                "target": "B ∧ A",
+                "lines": [
+                    _line("l1", "A ∧ B", "PR"),
+                    _line("l2", "B ∧ A", "DeM", citations=[_line_ref("l1")]),
+                ],
+            },
+        },
+    ]
+    return lesson
+
+
 STAGE_D_CANDIDATE_LESSONS = [
     _candidate_d20(),
     _candidate_d21(),
     _candidate_d22(),
     _candidate_d23(),
     _candidate_d24(),
+    _candidate_d25(),
 ]
 
 STAGE_D_CANDIDATE_MAP = {

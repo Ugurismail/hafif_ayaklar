@@ -557,7 +557,7 @@ Bu tablo Faz D'nin **aday geliştirme** durumunu gösterir; canlıya hazır oldu
 | D22 Olumsuzlama, Alt Kanıt ve Çelişkiye İndirgeme | Hazır | Hazır | Hazır | Bekliyor |
 | D23 Ayrık Bağlaç ve Çift Yönlülük Kuralları | Hazır | Hazır | Hazır | Bekliyor |
 | D24 Geriye Doğru Planlama ve Kanıt Stratejisi | Hazır | Hazır | Hazır | Bekliyor |
-| D25 Türetilmiş Kurallar ve Eşdeğerliklerin Lisansı | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| D25 Türetilmiş Kurallar ve Eşdeğerliklerin Lisansı | Hazır | Hazır | Hazır | Bekliyor |
 | D26 Kanıt ile Semantik Geçerlilik Arasındaki İlişki | Hazır | Bekliyor | Bekliyor | Bekliyor |
 
 ## Aday geliştirme kapıları
