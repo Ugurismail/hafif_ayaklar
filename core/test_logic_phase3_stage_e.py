@@ -19,6 +19,7 @@ from .logic_phase3_stage_d import STAGE_D_CANDIDATE_MAP
 from .logic_phase3_stage_e import (
     E27_SIGNATURE,
     E28_SIGNATURE,
+    E29_SIGNATURE,
     STAGE_E_CANDIDATE_LESSONS,
     STAGE_E_CANDIDATE_MAP,
     STAGE_E_SOURCE_REFERENCES,
@@ -192,15 +193,15 @@ class LogicPhase3StageECandidateTests(SimpleTestCase):
         "symbolization_fixtures",
     }
 
-    def test_stage_e_contains_contiguous_e27_and_e28_candidates(self):
+    def test_stage_e_contains_contiguous_e27_through_e29_candidates(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_E_CANDIDATE_LESSONS],
-            ["E27", "E28"],
+            ["E27", "E28", "E29"],
         )
-        self.assertEqual(len(STAGE_E_CANDIDATE_MAP), 2)
+        self.assertEqual(len(STAGE_E_CANDIDATE_MAP), 3)
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_E_CANDIDATE_LESSONS],
-            [27, 28],
+            [27, 28, 29],
         )
         for lesson in STAGE_E_CANDIDATE_LESSONS:
             with self.subTest(lesson=lesson["curriculum_id"]):
@@ -212,6 +213,7 @@ class LogicPhase3StageECandidateTests(SimpleTestCase):
                 )
         self.assertEqual(STAGE_E_CANDIDATE_LESSONS[0]["estimated_minutes"], 35)
         self.assertEqual(STAGE_E_CANDIDATE_LESSONS[1]["estimated_minutes"], 40)
+        self.assertEqual(STAGE_E_CANDIDATE_LESSONS[2]["estimated_minutes"], 35)
 
     def test_e27_prerequisites_bridge_completed_b_and_d_candidates(self):
         lesson = STAGE_E_CANDIDATE_LESSONS[0]
@@ -431,6 +433,127 @@ class LogicPhase3StageECandidateTests(SimpleTestCase):
             )
         )
 
+    def test_e29_prerequisite_is_e28(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[2]
+
+        self.assertEqual(
+            lesson["prerequisites"],
+            ["ders-fol-tek-niceleyicili-cumleler"],
+        )
+        prerequisite = STAGE_E_CANDIDATE_MAP[lesson["prerequisites"][0]]
+        self.assertEqual(prerequisite["curriculum_id"], "E28")
+        self.assertLess(prerequisite["order"], lesson["order"])
+
+    def test_e29_has_sufficient_relation_teaching_depth(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[2]
+
+        self.assertGreaterEqual(len(lesson["sections"]), 6)
+        self.assertGreaterEqual(len(lesson["worked_examples"]), 10)
+        self.assertGreaterEqual(len(lesson["practice"]), 12)
+        self.assertGreaterEqual(len(lesson["production_tasks"]), 1)
+        self.assertGreaterEqual(len(lesson["mastery_evidence"]), 5)
+        self.assertGreaterEqual(len(lesson["syntax_fixtures"]), 12)
+        self.assertGreaterEqual(len(lesson["symbolization_fixtures"]), 7)
+        self.assertIn("binary_predicate", lesson["syntax_scope"]["introduced"])
+        self.assertIn("ternary_predicate", lesson["syntax_scope"]["introduced"])
+        self.assertIn(
+            "multiple_quantifier",
+            lesson["syntax_scope"]["locked_until_later"],
+        )
+        self.assertIn(
+            "relation_property_semantics",
+            lesson["syntax_scope"]["locked_until_later"],
+        )
+
+    def test_e29_signature_declares_arity_and_role_order(self):
+        predicates = E29_SIGNATURE["predicates"]
+
+        self.assertEqual(predicates["F"]["arity"], 1)
+        self.assertEqual(predicates["T"]["arity"], 2)
+        self.assertEqual(predicates["L"]["arity"], 2)
+        self.assertEqual(predicates["I"]["arity"], 3)
+        for symbol, details in predicates.items():
+            with self.subTest(predicate=symbol):
+                self.assertEqual(len(details["roles"]), details["arity"])
+                self.assertTrue(all(details["roles"]))
+
+    def test_e29_sources_are_known_and_relevant(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[2]
+
+        self.assertEqual(
+            lesson["source_ids"],
+            [
+                "forallx-multiple-generality",
+                "forallx-fol-sentences",
+                "mit-logic-sequence",
+            ],
+        )
+        self.assertTrue(
+            set(lesson["source_ids"]).issubset(STAGE_E_SOURCE_REFERENCES)
+        )
+
+    def test_every_e29_syntax_fixture_matches_the_independent_parser(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[2]
+        signature = signature_from_data(lesson["fol_signature"])
+
+        for fixture in lesson["syntax_fixtures"]:
+            with self.subTest(fixture=fixture["id"]):
+                result = audit_fol_expression(fixture["source"], signature)
+                self.assertEqual(result["accepted"], fixture["accepted"])
+                if fixture["accepted"]:
+                    self.assertEqual(
+                        result["category"],
+                        fixture["expected_category"],
+                    )
+                else:
+                    self.assertEqual(
+                        result["issue_code"],
+                        fixture["expected_issue_code"],
+                    )
+
+    def test_every_e29_translation_check_has_the_declared_result(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[2]
+        signature = signature_from_data(lesson["fol_signature"])
+
+        for fixture in lesson["symbolization_fixtures"]:
+            accepted_sources = [
+                reading["source"]
+                for reading in fixture["accepted_readings"]
+            ]
+            for reading in fixture["accepted_readings"]:
+                formula = parse_fol(reading["source"], signature)
+                self.assertTrue(formula.is_sentence)
+                self.assertTrue(reading["context_condition"])
+                self.assertTrue(reading["back_translation"])
+            for check in fixture["checks"]:
+                with self.subTest(
+                    fixture=fixture["id"],
+                    source=check["source"],
+                ):
+                    result = assess_fol_symbolization(
+                        check["source"],
+                        accepted_sources,
+                        signature,
+                    )
+                    self.assertEqual(result["accepted"], check["accepted"])
+                    self.assertEqual(
+                        result["issue_code"],
+                        check["expected_issue_code"],
+                    )
+
+    def test_e29_competencies_are_stable_and_unique(self):
+        competencies = STAGE_E_CANDIDATE_LESSONS[2]["competencies"]
+
+        self.assertEqual(len(competencies), len(set(competencies)))
+        self.assertTrue(
+            all(
+                competency.startswith("fol.")
+                and competency.count(".") == 1
+                and competency.replace(".", "").replace("_", "").isalnum()
+                for competency in competencies
+            )
+        )
+
 
 class FOLSymbolizationAssessmentTests(SimpleTestCase):
     def setUp(self):
@@ -507,3 +630,39 @@ class FOLSymbolizationAssessmentTests(SimpleTestCase):
     def test_answer_key_cannot_be_empty(self):
         with self.assertRaises(ValueError):
             assess_fol_symbolization("F(a)", [], self.signature)
+
+    def test_checker_separates_argument_order_from_wrong_term(self):
+        signature = signature_from_data(E29_SIGNATURE)
+
+        reversed_result = assess_fol_symbolization(
+            "T(b,a)",
+            ["T(a,b)"],
+            signature,
+        )
+        wrong_term_result = assess_fol_symbolization(
+            "T(a,c)",
+            ["T(a,b)"],
+            signature,
+        )
+
+        self.assertEqual(
+            reversed_result["issue_code"],
+            "translation.argument_order",
+        )
+        self.assertEqual(wrong_term_result["issue_code"], "translation.term")
+
+    def test_checker_detects_ternary_role_permutations(self):
+        signature = signature_from_data(E29_SIGNATURE)
+
+        for source in ("I(b,a,c)", "I(a,c,b)", "I(c,b,a)"):
+            with self.subTest(source=source):
+                result = assess_fol_symbolization(
+                    source,
+                    ["I(a,b,c)"],
+                    signature,
+                )
+                self.assertFalse(result["accepted"])
+                self.assertEqual(
+                    result["issue_code"],
+                    "translation.argument_order",
+                )

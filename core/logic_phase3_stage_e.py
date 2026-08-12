@@ -90,6 +90,40 @@ E28_SIGNATURE = {
 }
 
 
+E29_SIGNATURE = {
+    "domain": "atölyedeki insanlar",
+    "names": {
+        "a": "Ada",
+        "b": "Bora",
+        "c": "Cem",
+        "d": "Deniz",
+    },
+    "variables": ["x", "y", "z"],
+    "predicates": {
+        "F": {
+            "arity": 1,
+            "reading": "x editör",
+            "roles": ["editör olan nesne"],
+        },
+        "T": {
+            "arity": 2,
+            "reading": "x, y'yi tanıyor",
+            "roles": ["tanıyan", "tanınan"],
+        },
+        "L": {
+            "arity": 2,
+            "reading": "x, y'nin solunda oturuyor",
+            "roles": ["solda oturan", "sağında oturulan"],
+        },
+        "I": {
+            "arity": 3,
+            "reading": "x, y'yi z ile tanıştırdı",
+            "roles": ["tanıştıran", "tanıştırılan", "kendisiyle tanıştırılan"],
+        },
+    },
+}
+
+
 def _syntax_fixture(
     fixture_id,
     source,
@@ -1313,9 +1347,353 @@ def _candidate_e28():
     return lesson
 
 
+def _candidate_e29():
+    lesson = _lesson(
+        "E29",
+        "ders-fol-baginti-arite-yon",
+        "Çok Yerli Yüklemler ve Bağıntı Yönü",
+        "Bir, iki ve üç yerli yüklemlerin aritesini sabitler; her argüman yerini doğal dildeki rolüyle eşleyerek etken, edilgen ve dönüşlü cümlelerde bağıntı yönünü korur.",
+        "Arite, argüman rolleri ve yön disiplini",
+        35,
+        ["ders-fol-tek-niceleyicili-cumleler"],
+        [
+            "fol.arity_validate",
+            "fol.argument_order",
+            "fol.relation_key",
+            "fol.active_passive_normalize",
+        ],
+        [
+            "Bir, iki ve üç yerli yüklemleri istedikleri terim sayısına göre ayırmak.",
+            "Bağıntı anahtarında her argüman yerinin rolünü ve sırasını açık yazmak.",
+            "T(a,b), T(b,a) ve T(a,a) atomlarını anahtara göre doğru geri okumak.",
+            "Etken ve edilgen yüzey yapılarını aynı rol sırasına normalleştirmek.",
+            "Arite, argüman sırası ve yanlış terim hatalarını ayrı ayrı tanımak.",
+            "Simetri veya nesne farklılığını atomik yazıma sessizce eklememek.",
+        ],
+        [
+            ("Arite", "Bir yüklemin atomik formül kurmak için istediği sabit terim sayısı."),
+            ("Bir yerli yüklem", "F(x) gibi tek nesne yeri bulunan özellik yüklemi."),
+            ("İki yerli yüklem", "T(x,y) gibi iki sıralı rolü birbirine bağlayan bağıntı."),
+            ("Üç yerli yüklem", "I(x,y,z) gibi üç rolü aynı atomda birleştiren bağıntı."),
+            ("Argüman yeri", "Anahtarda belirli bir doğal dil rolüne ayrılmış sıralı terim konumu."),
+            ("Bağıntı yönü", "Hangi nesnenin hangi rolü doldurduğunu belirleyen argüman sırası."),
+            ("Dönüşlü atom", "T(a,a) gibi aynı terimin birden fazla rolü doldurduğu atom."),
+            ("Simetrik bağıntı", "R(a,b) doğruysa R(b,a)'nın da doğru olmasını gerektiren ek bağıntı özelliği."),
+        ],
+        [
+            _section(
+                "Arite yüklemin sabit sözleşmesidir",
+                "F(x), T(x,y) ve I(x,y,z) sırasıyla bir, iki ve üç terim ister. Arite, formül kurulurken ihtiyaca göre değiştirilmez.",
+                "Yeni bir yüklem anahtarı kurarken veya eksik/fazla terimi denetlerken.",
+                "F: 1 yer · T: 2 yer · I: 3 yer",
+                "Doğal dilde mantıksal olarak izlenecek nesne rolleri anahtarda ilan edilir; her atom tam bu sayıda terimle tamamlanır.",
+                "Aynı T sembolünü bir cümlede bir, başka cümlede iki yerli kullanma; tekrar eden aynı nesne rol sayısını azaltmaz.",
+                [
+                    ("F(a)", "F bir yerli olduğu için tek terimle tamamlanır."),
+                    ("T(a,b)", "Tanıyan ve tanınan rolleri ayrı terimlerle doldurulur."),
+                    ("I(a,b,c)", "Üç ayrı rol üç sıralı terimle doldurulur."),
+                ],
+                (
+                    "Ariteyi ve rol sayısını atom yazmadan önce sabitlemek.",
+                    "Terim sayısını her cümlede yeniden seçmek.",
+                    "Aynı sembolün aritesi alıştırma boyunca değişmez.",
+                ),
+            ),
+            _section(
+                "Argüman yerleri rol taşır",
+                "T(x,y): x, y'yi tanıyor anahtarında ilk yer tanıyanı, ikinci yer tanınanı gösterir. Yer sırası bağıntının yönüdür.",
+                "Aynı iki nesne arasındaki ters yönlü iddiaları ayırırken.",
+                "T(a,b): Ada Bora'yı tanıyor · T(b,a): Bora Ada'yı tanıyor",
+                "Aynı adlar ve aynı yüklem bulunsa da yerler değişince roller değişir. Simetri ayrıca verilmedikçe atomlar birbirinin yerine geçmez.",
+                "Cümlede adı önce geçen kişiyi otomatik ilk argüman yapma; önce rolünü belirle.",
+                [
+                    ("T(a,b)", "a tanıyan, b tanınandır."),
+                    ("T(b,a)", "b tanıyan, a tanınandır."),
+                    ("L(a,b)", "Ada, Bora'nın solunda oturur."),
+                ],
+                (
+                    "Her terimi anahtardaki rol etiketiyle eşlemek.",
+                    "Aynı iki ad bulunduğu için sırayı önemsiz saymak.",
+                    "Sıralı yerler iddianın yönünü belirler.",
+                ),
+            ),
+            _section(
+                "Etken ve edilgen aynı rolleri korur",
+                "'Ada Bora'yı tanıyor' ve 'Bora Ada tarafından tanınıyor' farklı öğeyle başlar; ikisinde de tanıyan Ada, tanınan Bora'dır.",
+                "Edilgen çatı nesneyi doğal dilde öne çıkardığında.",
+                "Ada Bora'yı tanıyor = Bora Ada tarafından tanınıyor = T(a,b)",
+                "Sembolleştirme sözcük sırasını değil anahtardaki rolleri korur. Edilgen cümleyi önce rolü açık etken cümleye dönüştürmek yön hatasını azaltır.",
+                "Dilbilgisel özne ilk geldi diye onu bağıntının ilk rolü sanma; 'tarafından' öbeğindeki faili izle.",
+                [
+                    ("Bora Ada tarafından tanınıyor.", "Ada tanıyan, Bora tanınandır: T(a,b)."),
+                    ("Bora'nın sağında Ada oturuyor.", "Bora Ada'nın solundadır: L(b,a)."),
+                    ("Cem, Bora ile Ada tarafından tanıştırıldı.", "Ada faili, Cem ikinci, Bora üçüncü roldür: I(a,c,b)."),
+                ],
+                (
+                    "Cümleyi rol etiketli etken ara cümleye dönüştürmek.",
+                    "Adları doğal dilde göründükleri sırayla kopyalamak.",
+                    "Dilbilgisel yer değişebilir; mantıksal roller aynı kalır.",
+                ),
+            ),
+            _section(
+                "Aynı terim birden fazla rolü doldurabilir",
+                "T(a,a), Ada'nın hem tanıyan hem tanınan rolünde olduğunu söyler. Bu arite hatası değil, dönüşlü atomik bir iddiadır.",
+                "'Kendini', 'kendisinin' veya 'kendi kendine' yapıları bulunduğunda.",
+                "T(a,a): Ada kendini tanıyor",
+                "Argüman yerleri ayrı roller olsa da bu rolleri dolduran nesnelerin farklı olması gerekmez. Farklılık gerekiyorsa E32'de kimliksizlik ile yazılır.",
+                "Aynı ad iki kez geçti diye bir terimi silme; rol sayısı ile farklı nesne sayısını karıştırma.",
+                [
+                    ("T(a,a)", "Ada iki rolü de doldurur."),
+                    ("L(a,a)", "Sözdizimce düzenli, fakat sıra dışı bir iddiadır."),
+                    ("I(a,b,b)", "Üç rol doludur; son iki rol aynı nesneye verilmiştir."),
+                ],
+                (
+                    "Her rolü yazıp aynı nesneyse aynı adı tekrarlamak.",
+                    "Ayrı yerlerin zorunlu olarak ayrı nesne istediğini varsaymak.",
+                    "Arite rol sayısıdır, farklı nesne sayısı değildir.",
+                ),
+            ),
+            _section(
+                "Üç yerli yüklemde rol tablosu kullan",
+                "I(x,y,z): x, y'yi z ile tanıştırdı yüklemi üç kişiyi tek atomda izler. Bir terimin yerini değiştirmek doğal dil rollerini değiştirir.",
+                "Vermek, göndermek veya tanıştırmak gibi ikiden fazla rol gerektiren bağıntılarda.",
+                "I: 1 tanıştıran · 2 tanıştırılan · 3 kendisiyle tanıştırılan",
+                "Anahtar her konumun rolünü numaralı olarak sabitler; geri okuma bu tablodan yapılır.",
+                "İkinci ve üçüncü rolü cümlede yan yana göründükleri için birbirinin yerine koyma.",
+                [
+                    ("I(a,b,c)", "Ada Bora'yı Cem ile tanıştırdı."),
+                    ("I(a,c,b)", "Ada Cem'i Bora ile tanıştırdı."),
+                    ("I(c,a,b)", "Cem Ada'yı Bora ile tanıştırdı."),
+                ],
+                (
+                    "Her nesnenin rolünü numaralandırıp atomu o sırayla kurmak.",
+                    "Üç adı yüzeyde göründükleri sırada yazmak.",
+                    "Yüzey sıra değişebilir; anahtardaki rol sırası sabittir.",
+                ),
+            ),
+            _section(
+                "Simetriyi sembol biçiminden çıkarma",
+                "T ve L ikisi de iki yerli yazılır; fakat R(a,b)'den R(b,a)'ya geçmek için bağıntının simetrik olduğuna dair ayrıca gerekçe gerekir.",
+                "Bir atomdan ters yönlü atoma geçmenin haklı olup olmadığını değerlendirirken.",
+                "R(a,b) tek başına R(b,a)'yı vermez",
+                "Anahtar okuma ve rol sırası verir. Simetri ise E30 sonrasında ayrıca niceleyicili bir cümleyle ifade edilecek bağıntı özelliğidir.",
+                "'Arkadaşıdır' gibi gündelikte karşılıklı düşünülen ilişkilerde bile simetriyi sırf iki yerlilikten çıkarma.",
+                [
+                    ("Ada Bora'yı tanıyor.", "Bora'nın Ada'yı tanıdığını tek başına söylemez."),
+                    ("Ada Bora'nın solunda.", "Ters atom aynı iddiayı vermez."),
+                    ("Ada Bora ile aynı yaşta.", "Simetrik olabilir; bunu arite değil bağıntının özelliği destekler."),
+                ],
+                (
+                    "Ters atomu ayrı geri okuyup ek bilgi olmadan onaylamamak.",
+                    "Aynı iki terim kullanıldığı için atomları özdeş saymak.",
+                    "Argüman sırası korunur; simetri ayrı bir genellemedir.",
+                ),
+            ),
+        ],
+        [
+            _worked("F(a)", "F bir yerli; Ada tek özelliği doldurur.", "Ada editördür"),
+            _worked("T(a,b)", "İlk yer tanıyan, ikinci yer tanınandır.", "Ada Bora'yı tanıyor"),
+            _worked("T(b,a)", "Aynı adlar ters rollerdedir.", "Bora Ada'yı tanıyor"),
+            _worked("T(a,a)", "Ada iki rolü de doldurur.", "Ada kendini tanıyor"),
+            _worked("L(a,b)", "a solda oturan, b sağında oturulandır.", "Ada Bora'nın solunda"),
+            _worked("I(a,b,c)", "Üç rol anahtardaki sıradadır.", "Ada Bora'yı Cem ile tanıştırdı"),
+            _worked("I(a,c,b)", "İkinci ve üçüncü roller değişmiştir.", "Ada Cem'i Bora ile tanıştırdı"),
+            _worked("T(a)", "T iki terim ister; ikinci rol eksiktir.", "Eksik arite", "bad"),
+            _worked("T(a,b,c)", "T iki yerli; üçüncü terim fazladır.", "Fazla arite", "bad"),
+            _worked("I(b,a,c)", "Hedef cümleye göre ilk iki rol ters yazılmıştır.", "Argüman sırası hatası", "bad"),
+        ],
+        [
+            "İki yerli yüklemi tek terimle tamamlamak.",
+            "Doğal dilde ilk görünen adı otomatik ilk argümana koymak.",
+            "Etken ve edilgen cümleleri ayrı rol yapıları sanmak.",
+            "Simetrik olmayan bağıntıda terim sırasını sessizce ters çevirmek.",
+            "Aynı terimin iki rolde kullanılmasını arite eksikliği sanmak.",
+            "Ayrı yerlerin zorunlu olarak ayrı nesneler istediğini varsaymak.",
+            "Üç yerli anahtarda ikinci ve üçüncü rolü açıkça etiketlememek.",
+            "Bağıntının simetrisini aritesinden çıkarmak.",
+        ],
+        _practice(
+            [
+                ("T(x,y): x, y'yi tanıyor yükleminin aritesi kaçtır?", ["1", "2", "3", "Değişir"], "2", "Tanıyan ve tanınan iki sıralı roldür.", "Temel"),
+                ("T(a,b) hangisidir?", ["Ada Bora'yı tanıyor", "Bora Ada'yı tanıyor", "Ada kendini tanıyor", "Ada ve Bora editördür"], "Ada Bora'yı tanıyor", "a tanıyan, b tanınandır.", "Temel"),
+                ("T(a,a) için hangisi doğrudur?", ["Arite hatasıdır", "Ada kendini tanıyor", "İki farklı Ada vardır", "T bir yerli olur"], "Ada kendini tanıyor", "Aynı terim iki rolü doldurabilir.", "Temel"),
+                ("I(x,y,z) kaç yerlidir?", ["1", "2", "3", "4"], "3", "Üç rol ayrı izlenir.", "Temel"),
+                ("Bora Ada tarafından tanınıyor hangisidir?", ["T(a,b)", "T(b,a)", "T(a,a)", "T(b,b)"], "T(a,b)", "Tanıyan Ada, tanınan Bora'dır.", "Orta"),
+                ("Bora'nın sağında Ada oturuyor hangisidir?", ["L(a,b)", "L(b,a)", "L(a,a)", "T(a,b)"], "L(b,a)", "Bora Ada'nın solundadır.", "Orta"),
+                ("T(a) için ilk hata nedir?", ["Yanlış yön", "Eksik arite", "Serbest değişken", "Niceleyici"], "Eksik arite", "T iki terim ister.", "Orta"),
+                ("Ada Bora'yı Cem ile tanıştırdı hangisidir?", ["I(a,b,c)", "I(a,c,b)", "I(b,a,c)", "I(c,b,a)"], "I(a,b,c)", "Roller anahtar sırasındadır.", "Orta"),
+                ("Cem, Bora ile Ada tarafından tanıştırıldı hangisidir?", ["I(a,c,b)", "I(c,b,a)", "I(b,c,a)", "I(a,b,c)"], "I(a,c,b)", "Ada fail, Cem ikinci, Bora üçüncü roldür.", "Orta"),
+                ("R(a,b)'den R(b,a)'ya geçmek için ne gerekir?", ["İki yerlilik yeter", "Ad olmaları yeter", "Simetriye dair ek bilgi", "Her zaman geçilir"], "Simetriye dair ek bilgi", "Simetri ariteden ayrı bir özelliktir.", "İleri"),
+                ("I(a,b,b) için hangisi doğrudur?", ["Arite hatasıdır", "Üç rol dolduğu için sözdizimce düzenlidir", "I iki yerli olur", "b değişkendir"], "Üç rol dolduğu için sözdizimce düzenlidir", "Aynı nesne birden fazla rolü doldurabilir.", "İleri"),
+                ("Edilgen cümlede en güvenli ara adım nedir?", ["Adları soldan sağa kopyalamak", "Rol etiketli etken cümleye dönüştürmek", "Yüklemi bir yerli yapmak", "Sırayı otomatik ters çevirmek"], "Rol etiketli etken cümleye dönüştürmek", "Yüzey sıra yerine rolleri korur.", "İleri"),
+            ]
+        ),
+        {
+            "prompt": "On atomik cümleyi rol tablosuyla sembolleştir ve geri oku; iki arite, iki yön ve bir edilgen çatı hatasını ayrı sınıflarla onar.",
+            "starter": "Önce her yüklemin aritesini ve numaralı rollerini yaz; nesnelerin rollerini belirlemeden formül kurma.",
+            "checks": [
+                "Bir, iki ve üç yerli yüklemlerin ariteleri sabitlendi",
+                "Her argüman yerinin rolü yazıldı",
+                "Etken ve edilgen eş cümleler aynı atomla gösterildi",
+                "T(a,b), T(b,a) ve T(a,a) ayrı geri okundu",
+                "Arite ile argüman sırası hatası ayrıldı",
+                "Üç yerli örneklerde rol sırası korundu",
+                "Simetri veya nesne farklılığı sessizce eklenmedi",
+            ],
+            "solution": "Kontrol örnekleri: T(a,b) Ada Bora'yı tanıyor; T(b,a) Bora Ada'yı tanıyor; T(a,a) Ada kendini tanıyor; I(a,b,c) Ada Bora'yı Cem ile tanıştırdı.",
+        },
+        [
+            _production_task(
+                "Kendi bağlamında bir bir yerli, iki iki yerli ve bir üç yerli yüklem kur; etken, edilgen, ters yönlü ve dönüşlü on atomu sembolleştirip geri oku.",
+                [
+                    "Her yüklemin aritesi ve numaralı rolleri yazıldı.",
+                    "Aynı sembol her örnekte aynı arite ve rolle kullanıldı.",
+                    "İki etken/edilgen çift aynı atomla gösterildi.",
+                    "İki ters yönlü atom ayrı geri okundu.",
+                    "Bir dönüşlü atomda aynı terim iki rolü doldurdu.",
+                    "Üç yerli yüklemde terim rolleri tabloyla doğrulandı.",
+                    "Bir arite ve bir sıra hatası onarıldı.",
+                    "Simetri ve farklılık varsayımı eklenmedi.",
+                ],
+                "Değerlendirme yüzey sözcük sırasına değil, anahtardaki rol sırasının korunmasına bakar.",
+                "Bağlam",
+                ["Editöryal ekip", "Öğrenci topluluğu", "Kargo ağı", "Aile arşivi", "Rolleri açık başka bir bağlam"],
+                "Niceleyici, kimlik, model doğruluğu veya simetri aksiyomu ekleme.",
+            ),
+        ],
+        [
+            "Üç yerli bir yüklem için rol etiketli anahtar kurma.",
+            "Etken, edilgen, ters ve dönüşlü sekiz atomu doğru geri çevirme.",
+            "Arite ile yanlış argüman sırasını ayrı hata sayma.",
+            "Edilgen cümleyi rolü açık etken cümleye normalleştirme.",
+            "Simetrinin atomik yazımdan çıkmadığını açıklama.",
+        ],
+        [
+            "T(a,b) ile T(b,a) farkını hangi veri belirler?",
+            "Edilgen cümlede ilk ad neden otomatik ilk argüman değildir?",
+            "T(a,a) neden ariteyi bire düşürmez?",
+            "Üç yerli anahtarda rol numaraları neden gerekir?",
+            "R(a,b)'den R(b,a)'ya geçmek neden iki yerlilikle haklı çıkmaz?",
+        ],
+        "E30'da sabit argüman yerlerini birden fazla niceleyiciyle bağlayacak; ∀x∃y ile ∃y∀x arasındaki tanık bağımlılığını yönü bozmadan okuyacağız.",
+        ["forallx-multiple-generality", "forallx-fol-sentences", "mit-logic-sequence"],
+        "Ders yalnız arite ve argüman sırasını kurar. Simetri, dönüşlülük ve geçişlilik gibi model özellikleri atomik yazımdan çıkarılmaz; resmi model semantiği Faz F'ye ertelenir.",
+        ["ders-28-coklu-niceleyici-ve-kapsam", "ders-29-kimlik-yuklemler-ve-alan", "ders-31-dogal-dilden-yuklem-mantigina-ii"],
+    )
+    lesson["fol_signature"] = E29_SIGNATURE
+    lesson["syntax_scope"] = {
+        "introduced": [
+            "predicate_arity",
+            "binary_predicate",
+            "ternary_predicate",
+            "argument_role",
+            "argument_order",
+            "reflexive_atom",
+        ],
+        "review_only": ["name", "variable", "atomic_formula", "sentence", "open_formula"],
+        "locked_until_later": [
+            "multiple_quantifier",
+            "relation_property_semantics",
+            "=",
+            "distinctness",
+            "substitution",
+        ],
+    }
+    lesson["syntax_fixtures"] = [
+        _syntax_fixture("e29-unary", "F(a)", accepted=True, category="sentence", explanation="F bir yerli ve tek terimle tamamlanmıştır."),
+        _syntax_fixture("e29-binary-forward", "T(a,b)", accepted=True, category="sentence", explanation="Tanıyan ve tanınan rolleri doludur."),
+        _syntax_fixture("e29-binary-reverse", "T(b,a)", accepted=True, category="sentence", explanation="Aynı adlar ters rolde düzenli atom kurar."),
+        _syntax_fixture("e29-reflexive", "T(a,a)", accepted=True, category="sentence", explanation="Aynı ad iki rolü doldurabilir."),
+        _syntax_fixture("e29-ternary", "I(a,b,c)", accepted=True, category="sentence", explanation="I'nin üç rolü doludur."),
+        _syntax_fixture("e29-binary-open", "T(x,b)", accepted=True, category="open_formula", explanation="İlk roldeki x serbesttir."),
+        _syntax_fixture("e29-ternary-open", "I(a,y,c)", accepted=True, category="open_formula", explanation="İkinci roldeki y serbesttir."),
+        _syntax_fixture("e29-binary-too-few", "T(a)", accepted=False, issue_code="predicate.arity_mismatch", explanation="T iki terim ister."),
+        _syntax_fixture("e29-binary-too-many", "T(a,b,c)", accepted=False, issue_code="predicate.arity_mismatch", explanation="T yalnız iki terim ister."),
+        _syntax_fixture("e29-ternary-too-few", "I(a,b)", accepted=False, issue_code="predicate.arity_mismatch", explanation="I üç terim ister."),
+        _syntax_fixture("e29-ternary-too-many", "I(a,b,c,d)", accepted=False, issue_code="predicate.arity_mismatch", explanation="I yalnız üç terim ister."),
+        _syntax_fixture("e29-unknown-relation", "R(a,b)", accepted=False, issue_code="predicate.unknown", explanation="R anahtarda tanımlı değildir."),
+    ]
+    lesson["symbolization_fixtures"] = [
+        _symbolization_fixture(
+            "e29-ada-knows-bora",
+            "Ada Bora'yı tanıyor.",
+            [("T(a,b)", "İlk rol tanıyan, ikinci rol tanınandır.", "Ada Bora'yı tanıyor.")],
+            [
+                ("T(a,b)", True, None, "a tanıyan, b tanınandır."),
+                ("T(b,a)", False, "translation.argument_order", "Roller ters yazılmıştır."),
+                ("L(a,b)", False, "translation.predicate", "Yanlış bağıntı kullanılmıştır."),
+            ],
+            teaching_point="Sıra tanıyan/tanınan rollerini izler.",
+        ),
+        _symbolization_fixture(
+            "e29-passive-knowing",
+            "Bora Ada tarafından tanınıyor.",
+            [("T(a,b)", "Edilgen cümlede Ada fail, Bora tanınandır.", "Ada Bora'yı tanıyor.")],
+            [
+                ("T(a,b)", True, None, "Edilgen yüzey rolleri değiştirmez."),
+                ("T(b,a)", False, "translation.argument_order", "Yüzeydeki ilk ad yanlış role konmuştur."),
+            ],
+            teaching_point="Edilgen cümleyi rolü açık etken cümleye dönüştür.",
+        ),
+        _symbolization_fixture(
+            "e29-left-of",
+            "Ada Bora'nın solunda oturuyor.",
+            [("L(a,b)", "İlk rol solda oturandır.", "Ada Bora'nın solundadır.")],
+            [
+                ("L(a,b)", True, None, "a solda, b sağında oturulandır."),
+                ("L(b,a)", False, "translation.argument_order", "Mekânsal yön terstir."),
+            ],
+            teaching_point="Ters atom ters mekânsal iddiadır.",
+        ),
+        _symbolization_fixture(
+            "e29-right-surface",
+            "Bora'nın sağında Ada oturuyor.",
+            [("L(b,a)", "Bora Ada'nın solundadır.", "Bora Ada'nın solunda oturuyor.")],
+            [
+                ("L(b,a)", True, None, "Sağında yapısı solda olma anahtarına çevrilmiştir."),
+                ("L(a,b)", False, "translation.argument_order", "Sağ/sol yönü ters okunmuştur."),
+            ],
+            teaching_point="Sağında cümlesini solda olma anahtarına göre yeniden yaz.",
+        ),
+        _symbolization_fixture(
+            "e29-self-knowing",
+            "Ada kendini tanıyor.",
+            [("T(a,a)", "Aynı Ada iki rolü doldurur.", "Ada kendini tanıyor.")],
+            [
+                ("T(a,a)", True, None, "Aynı terim iki roldedir."),
+                ("T(a,b)", False, "translation.term", "Kendini yerine Bora kullanılmıştır."),
+            ],
+            teaching_point="Rol sayısı iki, farklı nesne sayısı bir olabilir.",
+        ),
+        _symbolization_fixture(
+            "e29-introduced",
+            "Ada Bora'yı Cem ile tanıştırdı.",
+            [("I(a,b,c)", "Sıra tanıştıran, tanıştırılan, kendisiyle tanıştırılandır.", "Ada Bora'yı Cem ile tanıştırdı.")],
+            [
+                ("I(a,b,c)", True, None, "Üç rol doğru sıradadır."),
+                ("I(b,a,c)", False, "translation.argument_order", "İlk iki rol terstir."),
+                ("I(a,c,b)", False, "translation.argument_order", "Son iki rol terstir."),
+            ],
+            teaching_point="Her terimi numaralı rol tablosuna yerleştir.",
+        ),
+        _symbolization_fixture(
+            "e29-passive-introduced",
+            "Cem, Bora ile Ada tarafından tanıştırıldı.",
+            [("I(a,c,b)", "Ada tanıştıran, Cem ikinci, Bora üçüncü roldür.", "Ada Cem'i Bora ile tanıştırdı.")],
+            [
+                ("I(a,c,b)", True, None, "Edilgen cümle rollere normalleştirilmiştir."),
+                ("I(c,b,a)", False, "translation.argument_order", "Adlar yüzey sırasıyla kopyalanmıştır."),
+            ],
+            teaching_point="Faili ve iki hedef rolünü ayrı belirle.",
+        ),
+    ]
+    return lesson
+
+
 STAGE_E_CANDIDATE_LESSONS = [
     _candidate_e27(),
     _candidate_e28(),
+    _candidate_e29(),
 ]
 
 STAGE_E_CANDIDATE_MAP = {

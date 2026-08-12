@@ -6,6 +6,7 @@ trees instead of being trusted as strings.  Semantics and proof rules are
 deliberately outside this module's responsibility.
 """
 
+from collections import Counter
 from dataclasses import dataclass
 from typing import Mapping
 
@@ -592,6 +593,16 @@ def formulas_alpha_equivalent(left: FOLFormula, right: FOLFormula) -> bool:
     return fol_structure_key(left) == fol_structure_key(right)
 
 
+def _term_binding_key(
+    term: FOLTerm,
+    binders: dict[str, list[object]],
+) -> tuple:
+    if term.kind == "name":
+        return ("name", term.symbol)
+    stack = binders.get(term.symbol, [])
+    return ("bound", stack[-1]) if stack else ("free", term.symbol)
+
+
 def _nodes_match_with_binders(
     candidate: FOLFormula,
     expected: FOLFormula,
@@ -600,12 +611,6 @@ def _nodes_match_with_binders(
 ) -> bool:
     """Compare two nodes while preserving binders introduced above them."""
 
-    def term_key(term: FOLTerm, binders: dict[str, list[object]]) -> tuple:
-        if term.kind == "name":
-            return ("name", term.symbol)
-        stack = binders.get(term.symbol, [])
-        return ("bound", stack[-1]) if stack else ("free", term.symbol)
-
     if candidate.kind != expected.kind:
         return False
     if candidate.kind == "predicate":
@@ -613,15 +618,15 @@ def _nodes_match_with_binders(
             candidate.predicate == expected.predicate
             and len(candidate.terms) == len(expected.terms)
             and all(
-                term_key(left, candidate_binders)
-                == term_key(right, expected_binders)
+                _term_binding_key(left, candidate_binders)
+                == _term_binding_key(right, expected_binders)
                 for left, right in zip(candidate.terms, expected.terms)
             )
         )
     if candidate.kind == "identity":
         return all(
-            term_key(left, candidate_binders)
-            == term_key(right, expected_binders)
+            _term_binding_key(left, candidate_binders)
+            == _term_binding_key(right, expected_binders)
             for left, right in zip(candidate.terms, expected.terms)
         )
     if candidate.kind == "negation":
@@ -761,6 +766,21 @@ def _translation_mismatch_code(
             return "translation.predicate"
         if len(candidate.terms) != len(expected.terms):
             return "translation.arity"
+        candidate_terms = tuple(
+            _term_binding_key(term, candidate_binders)
+            for term in candidate.terms
+        )
+        expected_terms = tuple(
+            _term_binding_key(term, expected_binders)
+            for term in expected.terms
+        )
+        if (
+            candidate_terms != expected_terms
+            and Counter(candidate_terms) == Counter(expected_terms)
+        ):
+            return "translation.argument_order"
+        if candidate_terms != expected_terms:
+            return "translation.term"
         return "translation.structure_mismatch"
 
     return "translation.structure_mismatch"
@@ -835,8 +855,10 @@ def assess_fol_symbolization(
         "translation.connective",
         "translation.negation_scope",
         "translation.free_variable",
+        "translation.argument_order",
         "translation.predicate",
         "translation.arity",
+        "translation.term",
         "translation.structure_mismatch",
     )
     issue_code = next(
