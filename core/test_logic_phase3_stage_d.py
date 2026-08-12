@@ -7,6 +7,7 @@ from .logic_fitch import (
     D20_RULES,
     D21_RULES,
     D22_RULES,
+    D23_RULES,
     audit_fitch_proof,
 )
 from .logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
@@ -77,13 +78,13 @@ class LogicPhase3StageDIntegrityTests(SimpleTestCase):
     def test_stage_d_contains_only_the_reviewed_candidates_in_order(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_D_CANDIDATE_LESSONS],
-            ["D20", "D21", "D22"],
+            ["D20", "D21", "D22", "D23"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_D_CANDIDATE_LESSONS],
-            [20, 21, 22],
+            [20, 21, 22, 23],
         )
-        self.assertEqual(len(STAGE_D_CANDIDATE_MAP), 3)
+        self.assertEqual(len(STAGE_D_CANDIDATE_MAP), 4)
 
     def test_stage_d_candidates_have_complete_fields_and_known_sources(self):
         for lesson in STAGE_D_CANDIDATE_LESSONS:
@@ -191,6 +192,25 @@ class LogicPhase3StageDIntegrityTests(SimpleTestCase):
         self.assertEqual(
             set(lesson["rule_scope"]["review_only"]),
             D21_RULES,
+        )
+        self.assertEqual(
+            {fixture["kind"] for fixture in lesson["proof_fixtures"]},
+            {"complete", "incomplete", "error"},
+        )
+
+    def test_d23_has_rule_scope_depth_and_all_fixture_kinds(self):
+        lesson = STAGE_D_CANDIDATE_LESSONS[3]
+
+        self.assertGreaterEqual(len(lesson["sections"]), 6)
+        self.assertGreaterEqual(len(lesson["worked_examples"]), 8)
+        self.assertGreaterEqual(len(lesson["practice"]), 12)
+        self.assertEqual(
+            set(lesson["rule_scope"]["introduced"]),
+            {"∨I", "∨E", "↔I", "↔E"},
+        )
+        self.assertEqual(
+            set(lesson["rule_scope"]["review_only"]),
+            D22_RULES,
         )
         self.assertEqual(
             {fixture["kind"] for fixture in lesson["proof_fixtures"]},
@@ -978,4 +998,398 @@ class D22RuleAuditTests(SimpleTestCase):
                     allowed_rules=D22_RULES,
                 )
             ],
+        )
+
+
+class D23RuleAuditTests(SimpleTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.lesson = STAGE_D_CANDIDATE_LESSONS[3]
+        cls.fixtures = {
+            fixture["id"]: fixture
+            for fixture in cls.lesson["proof_fixtures"]
+        }
+
+    def test_complete_d23_fixtures_pass_the_expanded_rule_set(self):
+        for fixture in self.lesson["proof_fixtures"]:
+            if fixture["kind"] != "complete":
+                continue
+            with self.subTest(fixture=fixture["id"]):
+                self.assertEqual(
+                    audit_fitch_proof(
+                        fixture["proof"],
+                        allowed_rules=D23_RULES,
+                    ),
+                    [],
+                )
+
+    def test_d23_incomplete_fixture_is_valid_before_second_case(self):
+        fixture = self.fixtures["d23-incomplete-disjunction-elimination"]
+
+        self.assertEqual(
+            audit_fitch_proof(
+                fixture["proof"],
+                allowed_rules=D23_RULES,
+                require_complete=False,
+            ),
+            [],
+        )
+        self.assertEqual(
+            {
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    fixture["proof"],
+                    allowed_rules=D23_RULES,
+                )
+            },
+            {
+                "proof.scope_unclosed",
+                "proof.target_in_subproof",
+            },
+        )
+
+    def test_error_fixture_rejects_different_case_results(self):
+        fixture = self.fixtures["d23-different-branch-results"]
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    fixture["proof"],
+                    allowed_rules=D23_RULES,
+                )
+            ],
+            fixture["expected_issue_codes"],
+        )
+
+    def test_disjunction_introduction_requires_a_direct_disjunct(self):
+        proof = {
+            "id": "nested-disjunction-introduction",
+            "premises": ["A"],
+            "target": "(A ∧ B) ∨ C",
+            "lines": [
+                _proof_line("l1", "A", "PR"),
+                _proof_line(
+                    "l2",
+                    "(A ∧ B) ∨ C",
+                    "∨I",
+                    citations=[{"kind": "line", "id": "l1"}],
+                ),
+            ],
+        }
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D23_RULES,
+                )
+            ],
+            ["rule.disjunction_introduction_mismatch"],
+        )
+
+    def test_disjunction_elimination_uses_the_two_direct_disjuncts(self):
+        proof = {
+            "id": "wrong-case-assumptions",
+            "premises": ["A ∨ B", "C"],
+            "target": "C",
+            "lines": [
+                _proof_line("l1", "A ∨ B", "PR"),
+                _proof_line("l2", "C", "PR"),
+                _proof_line("l3", "A", "AS", depth=1, opens="s1"),
+                _proof_line(
+                    "l4",
+                    "C",
+                    "R",
+                    citations=[{"kind": "line", "id": "l2"}],
+                    depth=1,
+                ),
+                _proof_line(
+                    "l5",
+                    "D",
+                    "AS",
+                    depth=1,
+                    opens="s2",
+                    closes=["s1"],
+                ),
+                _proof_line(
+                    "l6",
+                    "C",
+                    "R",
+                    citations=[{"kind": "line", "id": "l2"}],
+                    depth=1,
+                ),
+                _proof_line(
+                    "l7",
+                    "C",
+                    "∨E",
+                    citations=[
+                        {"kind": "line", "id": "l1"},
+                        {"kind": "subproof", "start": "l3", "end": "l4"},
+                        {"kind": "subproof", "start": "l5", "end": "l6"},
+                    ],
+                    closes=["s2"],
+                ),
+            ],
+        }
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D23_RULES,
+                )
+            ],
+            ["rule.disjunction_elimination_assumptions"],
+        )
+
+    def test_disjunction_elimination_rejects_reusing_one_branch_twice(self):
+        proof = {
+            "id": "duplicate-case-branch",
+            "premises": ["A ∨ B", "C"],
+            "target": "C",
+            "lines": [
+                _proof_line("l1", "A ∨ B", "PR"),
+                _proof_line("l2", "C", "PR"),
+                _proof_line("l3", "A", "AS", depth=1, opens="s1"),
+                _proof_line(
+                    "l4",
+                    "C",
+                    "R",
+                    citations=[{"kind": "line", "id": "l2"}],
+                    depth=1,
+                ),
+                _proof_line(
+                    "l5",
+                    "C",
+                    "∨E",
+                    citations=[
+                        {"kind": "line", "id": "l1"},
+                        {"kind": "subproof", "start": "l3", "end": "l4"},
+                        {"kind": "subproof", "start": "l3", "end": "l4"},
+                    ],
+                    closes=["s1"],
+                ),
+            ],
+        }
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D23_RULES,
+                )
+            ],
+            ["rule.disjunction_elimination_duplicate_branch"],
+        )
+
+    def test_disjunction_elimination_requires_sibling_branches(self):
+        proof = {
+            "id": "nested-case-branches",
+            "premises": ["A ∨ B", "C"],
+            "target": "C",
+            "lines": [
+                _proof_line("l1", "A ∨ B", "PR"),
+                _proof_line("l2", "C", "PR"),
+                _proof_line("l3", "A", "AS", depth=1, opens="s1"),
+                _proof_line(
+                    "l4",
+                    "C",
+                    "R",
+                    citations=[{"kind": "line", "id": "l2"}],
+                    depth=1,
+                ),
+                _proof_line("l5", "B", "AS", depth=2, opens="s2"),
+                _proof_line(
+                    "l6",
+                    "C",
+                    "R",
+                    citations=[{"kind": "line", "id": "l2"}],
+                    depth=2,
+                ),
+                _proof_line(
+                    "l7",
+                    "C",
+                    "∨E",
+                    citations=[
+                        {"kind": "line", "id": "l1"},
+                        {"kind": "subproof", "start": "l3", "end": "l4"},
+                        {"kind": "subproof", "start": "l5", "end": "l6"},
+                    ],
+                    closes=["s2", "s1"],
+                ),
+            ],
+        }
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D23_RULES,
+                )
+            ],
+            ["citation.subproof_inaccessible"],
+        )
+
+    def test_biconditional_elimination_accepts_both_directions_and_orders(self):
+        cases = (
+            ("A", "B", ["l1", "l2"]),
+            ("B", "A", ["l2", "l1"]),
+        )
+        for given, target, citation_order in cases:
+            proof = {
+                "id": f"biconditional-{given}-to-{target}",
+                "premises": ["A ↔ B", given],
+                "target": target,
+                "lines": [
+                    _proof_line("l1", "A ↔ B", "PR"),
+                    _proof_line("l2", given, "PR"),
+                    _proof_line(
+                        "l3",
+                        target,
+                        "↔E",
+                        citations=[
+                            {"kind": "line", "id": line_id}
+                            for line_id in citation_order
+                        ],
+                    ),
+                ],
+            }
+
+            with self.subTest(given=given, target=target):
+                self.assertEqual(
+                    audit_fitch_proof(
+                        proof,
+                        allowed_rules=D23_RULES,
+                    ),
+                    [],
+                )
+
+    def test_biconditional_elimination_rejects_an_unrelated_argument(self):
+        proof = {
+            "id": "unrelated-biconditional-argument",
+            "premises": ["A ↔ B", "C"],
+            "target": "A",
+            "lines": [
+                _proof_line("l1", "A ↔ B", "PR"),
+                _proof_line("l2", "C", "PR"),
+                _proof_line(
+                    "l3",
+                    "A",
+                    "↔E",
+                    citations=[
+                        {"kind": "line", "id": "l1"},
+                        {"kind": "line", "id": "l2"},
+                    ],
+                ),
+            ],
+        }
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D23_RULES,
+                )
+            ],
+            ["rule.biconditional_elimination_mismatch"],
+        )
+
+    def test_biconditional_introduction_rejects_one_range_used_twice(self):
+        proof = {
+            "id": "duplicate-biconditional-direction",
+            "premises": ["B"],
+            "target": "A ↔ B",
+            "lines": [
+                _proof_line("l1", "B", "PR"),
+                _proof_line("l2", "A", "AS", depth=1, opens="s1"),
+                _proof_line(
+                    "l3",
+                    "B",
+                    "R",
+                    citations=[{"kind": "line", "id": "l1"}],
+                    depth=1,
+                ),
+                _proof_line(
+                    "l4",
+                    "A ↔ B",
+                    "↔I",
+                    citations=[
+                        {"kind": "subproof", "start": "l2", "end": "l3"},
+                        {"kind": "subproof", "start": "l2", "end": "l3"},
+                    ],
+                    closes=["s1"],
+                ),
+            ],
+        }
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D23_RULES,
+                )
+            ],
+            ["rule.biconditional_introduction_duplicate_direction"],
+        )
+
+    def test_biconditional_introduction_requires_opposite_directions(self):
+        proof = {
+            "id": "same-biconditional-direction-twice",
+            "premises": ["B"],
+            "target": "A ↔ B",
+            "lines": [
+                _proof_line("l1", "B", "PR"),
+                _proof_line("l2", "A", "AS", depth=1, opens="s1"),
+                _proof_line(
+                    "l3",
+                    "B",
+                    "R",
+                    citations=[{"kind": "line", "id": "l1"}],
+                    depth=1,
+                ),
+                _proof_line(
+                    "l4",
+                    "A",
+                    "AS",
+                    depth=1,
+                    opens="s2",
+                    closes=["s1"],
+                ),
+                _proof_line(
+                    "l5",
+                    "B",
+                    "R",
+                    citations=[{"kind": "line", "id": "l1"}],
+                    depth=1,
+                ),
+                _proof_line(
+                    "l6",
+                    "A ↔ B",
+                    "↔I",
+                    citations=[
+                        {"kind": "subproof", "start": "l2", "end": "l3"},
+                        {"kind": "subproof", "start": "l4", "end": "l5"},
+                    ],
+                    closes=["s2"],
+                ),
+            ],
+        }
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D23_RULES,
+                )
+            ],
+            ["rule.biconditional_introduction_directions"],
         )

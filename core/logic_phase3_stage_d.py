@@ -1782,10 +1782,512 @@ def _candidate_d22():
     return lesson
 
 
+def _candidate_d23():
+    lesson = _lesson(
+        "D23",
+        "ders-ayrik-baglac-ve-cift-yonluluk-kurallari",
+        "Ayrık Bağlaç ve Çift Yönlülük Kuralları",
+        "Ayrık bir öncülü iki kardeş alt kanıtta tüketip ortak sonuca ulaşır; çift yönlülüğü ise iki yönü bağımsız olarak lisanslayarak kurar ve kullanır.",
+        "Durum analizi, kardeş kapsamlar ve iki yönlü kanıt yükü",
+        55,
+        [
+            "ders-olumsuzlama-alt-kanit-ve-celiskiye-indirgeme",
+            "ders-19-veya-ve-ise",
+            "ders-kosul-yalnizca-cift-yonluluk",
+            "ders-mantiksal-esdegerlik-ve-tutarlilik",
+        ],
+        [
+            "nd.disjunction_introduce",
+            "nd.cases_prove",
+            "nd.biconditional_rules",
+            "nd.sibling_scope_manage",
+        ],
+        [
+            "Erişilebilir bir cümleyi hedef ayrık yapının sol veya sağ doğrudan ayrılanı olarak ∨I ile yerleştirmek.",
+            "𝒜 ∨ ℬ satırı için 𝒜 ve ℬ ile açılan iki kardeş alt kanıtta aynı 𝒞 sonucuna ulaşıp ∨E ile 𝒞'yi dışarı taşımak.",
+            "Bir kardeş alt kanıtın varsayım ve iç satırlarını diğer kardeş dalda kullanmamak.",
+            "𝒜 ↔ ℬ ile taraflardan birini kullanarak ↔E ile tam karşı tarafı üretmek.",
+            "𝒜'dan ℬ'ye ve ℬ'den 𝒜'ya giden iki ayrı kardeş alt kanıtı ↔I ile boşaltarak 𝒜 ↔ ℬ kurmak.",
+        ],
+        [
+            (
+                "Ayrık bağlaç giriş (∨I)",
+                "Erişilebilir 𝒜 cümlesinden, 𝒜'nın iki doğrudan ayrılandan biri olduğu 𝒜 ∨ ℬ veya ℬ ∨ 𝒜 cümlesini üretme kuralı.",
+            ),
+            (
+                "Durum analizi (∨E)",
+                "𝒜 ∨ ℬ ile, 𝒜 varsayımından 𝒞 ve ℬ varsayımından aynı 𝒞 sonucunu veren iki kardeş alt kanıttan 𝒞 çıkarma kuralı.",
+            ),
+            (
+                "Kardeş alt kanıt",
+                "Aynı ana kapsam altında açılan, birbirinin içinde olmayan ve iç satırları karşılıklı erişilemez iki ayrı alt kanıt.",
+            ),
+            (
+                "Ortak dal sonucu",
+                "∨E ile dışarı çıkarılan ve iki alt kanıtın da son doğrudan satırında aynen bulunan cümle.",
+            ),
+            (
+                "Çift yönlülük eleme (↔E)",
+                "𝒜 ↔ ℬ ve taraflardan biri erişilebilirken tam karşı tarafı çıkarma kuralı.",
+            ),
+            (
+                "Çift yönlülük giriş (↔I)",
+                "𝒜 varsayımından ℬ ve ℬ varsayımından 𝒜 çıkaran iki ayrı kardeş alt kanıtı kullanarak 𝒜 ↔ ℬ kurma kuralı.",
+            ),
+            (
+                "İki yönlü kanıt yükü",
+                "Bir çift yönlülüğün sol-sağ ve sağ-sol yönlerinin birbirinden bağımsız olarak lisanslanması gereği.",
+            ),
+        ],
+        [
+            _section(
+                "∨I ile ayrık hedef kurmak",
+                "∨I, eldeki bir cümleyi daha zayıf bir ayrık iddiaya yerleştirir. Kaynak cümle sonuçtaki iki doğrudan ayrılandan biri olmalıdır; öteki ayrılan için ayrıca kanıt gerekmez.",
+                "Hedefin ana bağlacı ∨ olduğunda ve ayrılanlardan en az biri zaten erişilebilir olduğunda.",
+                "𝒜 ⟹ 𝒜 ∨ ℬ veya ℬ ∨ 𝒜 · ∨I",
+                "Eklenen ℬ herhangi bir TFL cümlesi olabilir. Buna rağmen kaynak 𝒜 sonuçta aynen bir doğrudan ayrılan olarak görünmelidir; iç içe bir alt formül yetmez.",
+                "A'dan (A ∧ B) ∨ C üretmek veya hedefte hazır ayrılan varken gereksiz alt kanıt açmak.",
+                [
+                    ("A ⊢ A ∨ B", "A sol ayrılan olduğu için tek ∨I adımı yeterlidir."),
+                    ("A ⊢ B ∨ A", "A sağ ayrılan olarak da yerleştirilebilir."),
+                    ("A ⊢ (A ∧ B) ∨ C", "A, A ∧ B'nin yalnız alt formülüdür; doğrudan ayrılan değildir."),
+                ],
+                (
+                    "Kaynağı hedefin iki doğrudan ayrılanıyla tam eşleştir.",
+                    "Kaynak hedefin herhangi bir yerinde geçiyorsa ∨I uygula.",
+                    "Kural sözdizim ağacının yalnız ana ∨ düğümündeki çocuklarını kullanır.",
+                ),
+            ),
+            _section(
+                "∨E ile bütün durumları tüketmek",
+                "Ayrık bir satır tek başına hangi ayrılanın doğru olduğunu söylemez. ∨E, her ayrılanı geçici olarak varsayan iki ayrı dalda aynı sonucu kurarak bu belirsizliği güvenli biçimde tüketir.",
+                "Erişilebilir 𝒜 ∨ ℬ satırından, iki olası durumda da kanıtlanabilen ortak 𝒞 sonucuna ihtiyaç duyulduğunda.",
+                "𝒜 ∨ ℬ; [𝒜 AS ... 𝒞]; [ℬ AS ... 𝒞] ⟹ 𝒞 · ∨E",
+                "∨E üç kaynak türü ister: bir ayrık satır ve iki kapalı alt kanıt. Dalların başlangıçları iki ayrılanla, sonları ise dışarı yazılan aynı 𝒞 ile tam eşleşir.",
+                "A ∨ B'den doğrudan A çıkarmak, yalnız A dalını kanıtlamak veya dalları C ve D gibi farklı sonuçlarda bitirmek.",
+                [
+                    ("A ∨ B, A → C, B → C ⊢ C", "A ve B dalları ayrı →E adımlarıyla C'de buluşur."),
+                    ("(P ∧ Q) ∨ (P ∧ R) ⊢ P", "Her dalda ∧E ile aynı P çıkarılır."),
+                    ("A dalı C; B dalı D; sonuç C", "İkinci dal C'yi garanti etmediği için ∨E lisanssızdır."),
+                ],
+                (
+                    "Önce dışarı taşınacak ortak 𝒞'yi seç, sonra iki dalı ona göre kur.",
+                    "Her dalda ulaşılabilen herhangi bir sonuç yeterlidir.",
+                    "Durum analizi, hangi durum gerçekleşirse gerçekleşsin aynı sonucun güvence altında olduğunu gösterir.",
+                ),
+            ),
+            _section(
+                "Kardeş kapsamları korumak",
+                "∨E dalları aynı ana kapsamda açılır, fakat birbirinin içinde değildir. İlk dal kapandığında onun varsayımı ve türetilmiş satırları ikinci dalda kullanılamaz; yalnız ortak üst kapsam satırları iki dalda da erişilebilirdir.",
+                "İki veya daha fazla vaka dalı içeren kanıtlarda gizli varsayım aktarımını önlemek için.",
+                "ana kapsam Γ; dal 1 Γ+𝒜; dal 2 Γ+ℬ; dal 1 ↛ dal 2",
+                "İkinci dalı açan AS satırı aynı anda ilk dalı kapatabilir. İki dalın `parent_path` değeri aynı, kapsam kimlikleri ayrı olmalıdır.",
+                "İlk dalda elde edilen C'yi ikinci dalda R ile yinelemek veya ikinci dalı birinci dalın içinde açarak kardeş sanmak.",
+                [
+                    ("Kök P; A dalı P kullanır; B dalı P kullanır", "Kök P iki dalın ortak üst kapsamında olduğu için erişilebilirdir."),
+                    ("A dalında C; B dalında C R", "İlk dal kapanınca C ikinci dal için erişilemez olur."),
+                    ("A dalının içinde B dalı", "B dalı kardeş değil iç içe alt kanıttır; ∨E şemasına uymaz."),
+                ],
+                (
+                    "Her dalın bağımlılıklarını yalnız üst kapsam ve kendi açık varsayımlarıyla izle.",
+                    "Ekranda önce görünen her satırı sonraki dalda kullanılabilir say.",
+                    "Erişilebilirlik kronolojiye değil açık kapsam yoluna bağlıdır.",
+                ),
+            ),
+            _section(
+                "↔E ile doğru yönü seçmek",
+                "𝒜 ↔ ℬ iki koşul yönünü birlikte taşır. ↔E, çift yönlülük satırıyla 𝒜 verilmişse ℬ'yi; ℬ verilmişse 𝒜'yı üretir.",
+                "Bir çift yönlülüğün taraflarından biri erişilebilirken diğer taraf ara hedef olduğunda.",
+                "𝒜 ↔ ℬ, 𝒜 ⟹ ℬ; 𝒜 ↔ ℬ, ℬ ⟹ 𝒜 · ↔E",
+                "Atıf sırası kural motorunda esnek olsa da okunurluk için çift yönlülüğü önce göstermek iyidir. Verilen argüman iki taraftan biriyle tam eşleşmelidir.",
+                "𝒜 ↔ ℬ ile ilgisiz 𝒞'den 𝒜 çıkarmak veya sonucu verilen tarafla aynı bırakmak.",
+                [
+                    ("A ↔ B, A ⊢ B", "Sol taraftan sağ tarafa ↔E."),
+                    ("A ↔ B, B ⊢ A", "Sağ taraftan sol tarafa ↔E."),
+                    ("A ↔ B, C ⊢ A", "C çift yönlülüğün tarafı olmadığı için kural uygulanamaz."),
+                ],
+                (
+                    "Verilen tarafı belirle ve tam karşı tarafı sonuç olarak yaz.",
+                    "↔ işaretini iki formül arasında serbest geçiş izni san.",
+                    "Kural yalnız aynı çift yönlülüğün iki doğrudan tarafını bağlar.",
+                ),
+            ),
+            _section(
+                "↔I ile iki yönü ayrı kanıtlamak",
+                "𝒜 ↔ ℬ hedefi iki bağımsız yük doğurur: 𝒜 varsayımı altında ℬ ve ℬ varsayımı altında 𝒜. ↔I bu iki kardeş alt kanıtın ikisini birden boşaltır.",
+                "Hedefin ana bağlacı ↔ olduğunda ve iki yönün her biri mevcut kurallarla kurulabildiğinde.",
+                "[𝒜 AS ... ℬ] ve [ℬ AS ... 𝒜] ⟹ 𝒜 ↔ ℬ · ↔I",
+                "Yön alt kanıtları herhangi sırada gelebilir ve aralarında başka kök satırlar bulunabilir. Ancak tek bir koşul, aynı alt kanıtı iki kez göstermek veya iki aynı yön yeterli değildir.",
+                "Yalnız A'dan B'ye yönü kurup A ↔ B yazmak; A ve B'yi birlikte erişilebilir gördüğü için ↔I uygulamak.",
+                [
+                    ("A ∧ B ↔ B ∧ A", "Her yönde ∧E ile bileşenler çıkarılıp ters sırada ∧I yapılır."),
+                    ("A ↔ A", "Yine de iki ayrı kardeş alt kanıtta iki yön gösterilir."),
+                    ("A AS ... B; aynı aralığı iki kez ↔I", "İki ayrı yön yükü yerine aynı kanıt tekrarlandığı için lisanssızdır."),
+                ],
+                (
+                    "İki yönü ayrı alt hedef ve ayrı kapsam kimlikleriyle planla.",
+                    "Bir yön kanıtlandıysa ters yönü simetriden otomatik kabul et.",
+                    "Doğal dilde simetrik görünen ilişkiler bile biçimsel kanıtta iki ayrı lisans ister.",
+                ),
+            ),
+            _section(
+                "Durum analizi ile iki yönlü yükü planlamak",
+                "∨E ve ↔I ikişer alt kanıt kullanır ama amaçları farklıdır. ∨E farklı başlangıçlardan aynı sonuca, ↔I ise iki taraf arasında ters yönlü sonuçlara gider.",
+                "Çoklu alt kanıt gerektiren bir hedefte doğru kural şemasını seçmek ve dalları ekonomik biçimde düzenlemek için.",
+                "∨E: A→C ve B→C; ↔I: A→B ve B→A (alt kanıt biçiminde)",
+                "Plan tablosunda her dal için başlangıç varsayımı, gereken son satır ve ortak üst kapsam kaynakları önceden yazılabilir. Bu, kardeş kapsam sızıntısını erkenden görünür kılar.",
+                "İki alt kanıt gördüğü için ↔I ile ∨E'yi birbirinin yerine kullanmak veya dal sonlarını planlamadan AS satırları açmak.",
+                [
+                    ("A ∨ B, A → C, B → C ⊢ C", "İki başlangıç, tek ortak sonuç: ∨E."),
+                    ("⊢ (A ∧ B) ↔ (B ∧ A)", "İki başlangıç birbirinin sonucuna gider: ↔I."),
+                    ("A ↔ B, A ∨ B ⊢ A ∧ B", "Vaka dallarında ↔E ile eksik taraf bulunur, sonra ortak birleşim kurulur."),
+                ],
+                (
+                    "Kuralı dal başlangıç/son desenine göre seç.",
+                    "Alt kanıt sayısını görüp kuralı tahmin et.",
+                    "Yapısal şema, yalnız kaç dal bulunduğundan daha fazla bilgi taşır.",
+                ),
+            ),
+        ],
+        [
+            _worked("A ⊢ A ∨ B", "Kaynak A hedefin sol doğrudan ayrılanıdır.", "∨I"),
+            _worked("A ⊢ B ∨ A", "Kaynak A sağ doğrudan ayrılan olarak da kullanılabilir.", "∨I"),
+            _worked(
+                "A ∨ B, A → C, B → C ⊢ C",
+                "A ve B kardeş dalları ayrı →E adımlarıyla aynı C'de biter.",
+                "∨E",
+            ),
+            _worked(
+                "A ∨ B; A dalı C; B dalı D; sonuç C",
+                "İkinci dal C'yi güvenceye almadığı için durum analizi tamamlanmamıştır.",
+                "Farklı dal sonucu",
+                "bad",
+            ),
+            _worked("A ↔ B, A ⊢ B", "↔E verilen taraftan tam karşı tarafa geçer.", "↔E"),
+            _worked("A ↔ B, B ⊢ A", "↔E ters yönde de aynı çift yönlülüğü kullanır.", "↔E"),
+            _worked(
+                "⊢ (A ∧ B) ↔ (B ∧ A)",
+                "İki kardeş alt kanıt birleşimin iki sırasını karşılıklı kurar.",
+                "↔I",
+            ),
+            _worked(
+                "A AS ... B; aynı aralık iki kez; sonuç A ↔ B",
+                "Tek alt kanıt iki ayrı yönün kanıtı sayılamaz.",
+                "Eksik yön",
+                "bad",
+            ),
+        ],
+        [
+            "∨I kaynağını hedefte doğrudan ayrılan yerine yalnız alt formül olarak bulmak.",
+            "A ∨ B'den doğrudan A veya B çıkarmak.",
+            "∨E için yalnız bir dal kurmak veya iki dalı farklı sonuçlarda bitirmek.",
+            "İlk kardeş dalın varsayım ya da iç satırını ikinci dalda kullanmak.",
+            "↔E ile verilen tarafı aynen tekrar etmek veya ilgisiz bir cümleyi yön girdisi yapmak.",
+            "↔I için tek yönü, aynı yönü iki kez veya aynı alt kanıtı iki kez göstermek.",
+            "Kardeş olması gereken iki alt kanıttan birini diğerinin içinde açmak.",
+        ],
+        _practice(
+            [
+                ("A'dan hangisi tek ∨I ile çıkar?", ["A ∨ B", "A ∧ B", "B", "A → B"], "A ∨ B", "A hedefin doğrudan ayrılanıdır.", "Temel"),
+                ("A'dan B ∨ A çıkar mı?", ["Evet", "Hayır", "Yalnız B öncülse", "Yalnız IP ile"], "Evet", "Kaynak sağ ayrılan olarak yerleştirilebilir.", "Temel"),
+                ("A ∨ B tek başına hangisini lisanslar?", ["A", "B", "Ne A ne B tek başına", "A ∧ B"], "Ne A ne B tek başına", "Hangi ayrılanın doğru olduğu belirlenmemiştir.", "Temel"),
+                ("∨E dalları hangi sonuçla bitmelidir?", ["Farklı sonuçlarla", "Aynı dış sonuçla", "Daima ⊥ ile", "Kendi varsayımlarıyla"], "Aynı dış sonuçla", "Her olası durumda dış sonucun güvenceye alınması gerekir.", "Temel"),
+                ("A ↔ B ve A hangi sonucu ↔E ile verir?", ["A", "B", "A ↔ A", "⊥"], "B", "Verilen sol taraf karşı sağ tarafı lisanslar.", "Temel"),
+                ("A ↔ B hedefi için ↔I kaç alt kanıt ister?", ["Sıfır", "Bir", "İki", "Üç"], "İki", "Her yön ayrı bir alt kanıtta kanıtlanır.", "Orta"),
+                ("A ∨ B için ∨E dal varsayımları hangileridir?", ["İki kez A", "A ve B", "¬A ve ¬B", "A ∧ B ve A"], "A ve B", "Dallar iki doğrudan ayrılanla açılır.", "Orta"),
+                ("İlk ∨E dalındaki C ikinci dalda R ile kullanılabilir mi?", ["Evet", "Hayır", "Yalnız C atomikse", "Yalnız hedef C ise"], "Hayır", "İlk dal kapandığında iç satırları kardeş dal için erişilemezdir.", "Orta"),
+                ("↔I yönleri hangi biçimdedir?", ["A'dan B ve B'den A", "A'dan B ve A'dan B", "A'dan A ve B'den B", "A ∨ B'den A"], "A'dan B ve B'den A", "İki ters yön çift yönlülüğü lisanslar.", "Orta"),
+                ("(A ∧ B) ∨ (A ∧ C) ⊢ A için dal sonları ne olmalı?", ["B ve C", "A ve A", "A ∧ B ve A ∧ C", "⊥ ve A"], "A ve A", "Her dalda ∧E ile ortak A elde edilir.", "İleri"),
+                ("A ↔ B ve A ∨ B'den A ∧ B planında her dal ne yapar?", ["Yalnız varsayımı tekrarlar", "↔E ile eksik tarafı bulup ∧I yapar", "X kullanır", "IP ile dalı kapatır"], "↔E ile eksik tarafı bulup ∧I yapar", "Her iki durumda da ortak A ∧ B sonucu kurulur.", "İleri"),
+                ("İki alt kanıt aynı parent altında ama aynı scope kimliğine sahip. ↔I olur mu?", ["Evet", "Hayır, iki ayrı yön kapsamı gerekir", "Yalnız sonuç atomikse", "Yalnız R kullanıldıysa"], "Hayır, iki ayrı yön kapsamı gerekir", "Aynı alt kanıtı iki kez göstermek iki bağımsız yön değildir.", "Zor"),
+            ]
+        ),
+        {
+            "prompt": "A ∨ B, A → C, B → C ⊢ C iskeletinde iki kardeş dalı ve son ∨E atfını tamamla.",
+            "starter": "Ayrık öncülün sol ayrılanıyla ilk dalı, sağ ayrılanıyla ikinci dalı aç; iki koşulu ortak C hedefine bağla.",
+            "checks": [
+                "İlk dal A AS ile açıldı ve C ile bitti",
+                "İkinci dal aynı ana kapsamda B AS ile açıldı ve C ile bitti",
+                "İlk dalın iç satırları ikinci dalda kullanılmadı",
+                "∨E bir ayrık satır ile iki tam alt kanıt aralığına atıf yaptı",
+            ],
+            "solution": "l1 A ∨ B PR; l2 A → C PR; l3 B → C PR; l4 A AS; l5 C →E l2,l4; l6 B AS; l7 C →E l3,l6; l8 C ∨E l1,l4-l5,l6-l7.",
+        },
+        [
+            _production_task(
+                "Bir durum analizi ve bir çift yönlülük kanıtı kur; dal bağımlılıklarını açıkça göster.",
+                [
+                    "A ∨ B, A → C, B → C ⊢ C türetiminde iki kardeş dalı aynı C'de bitir.",
+                    "A ↔ B ⊢ (A ∧ B) ∨ (¬A ∧ ¬B) için önce vaka ayrımını sağlayacak ara hedefi planla.",
+                    "İkinci kanıtta A dalında ve ¬A dalında ortak ayrık hedefe nasıl ulaşılacağını ayrı yaz.",
+                    "Her kapatılan alt kanıtın başlangıç, son ve ana kapsam kimliğini denetle.",
+                ],
+                "İkinci problemde önce A ∨ ¬A ara hedefini klasik IP ile kurabilir, ardından iki vakayı A ↔ B ile ortak hedefe bağlayabilirsin.",
+                "Türetim problemleri",
+                [
+                    "A ∨ B, A → C, B → C ⊢ C",
+                    "A ↔ B ⊢ (A ∧ B) ∨ (¬A ∧ ¬B)",
+                ],
+                "Uzun ikinci kanıtta önce yalnız kapsam planını yaz; doğru ama kontrol edilemeyen tek seferlik bir satır yığını kurma.",
+            )
+        ],
+        [
+            "∨I kaynağını hedef ayrık yapının doğrudan ayrılanlarından biriyle tam eşleştirir.",
+            "∨E için ayrık kaynak, iki ayrı kardeş alt kanıt ve aynı dal sonucunu eksiksiz gösterir.",
+            "Kardeş dallar arasında tekil satır atfını reddeder, ortak üst kapsam kaynaklarını doğru kullanır.",
+            "↔E ile verilen tarafın tam karşı tarafını iki yönde de doğru üretir.",
+            "↔I için iki ters yönü ayrı kardeş alt kanıtlarda tamamlar ve aynı alt kanıtı iki kez kullanmaz.",
+            "∨E ile ↔I yapılarını başlangıç/son desenleri ve kanıt amaçları bakımından açıklar.",
+        ],
+        [
+            "∨E dalları neden aynı cümleyle bitmelidir?",
+            "Bir kardeş alt kanıttaki satır öteki dalda neden kullanılamaz?",
+            "↔I için tek bir yön neden yetersizdir?",
+            "∨I neden eklenen öteki ayrılan için ayrıca kanıt istemez?",
+        ],
+        "Sonraki derste yeni kural eklemek yerine bütün temel kuralları hedefe göre geriye ve kaynaklara göre ileri planlamayı öğreneceğiz.",
+        [
+            "forallx-basic-rules",
+            "forallx-proof-strategies",
+            "carnap-derivations",
+            "carnap-feedback",
+        ],
+        "D23'te ∨E iki ayrı kardeş alt kanıtın aynı sonuçla bitmesini, ↔I ise iki ters yönün ayrı alt kanıtlarda kurulmasını zorunlu kılar. DS, MT, LEM ve eşdeğerlik dönüşümleri D25'e kadar kapalıdır; uzun üretim görevi yalnız o ana kadar açılmış temel kurallarla çözülür.",
+        [
+            "ders-19-veya-ve-ise",
+            "ders-25-dogal-turetim-ii",
+        ],
+    )
+
+    lesson["reading_note"] = (
+        "∨E planında iki dalın başlangıçlarını ayrılanlarla, sonlarını ortak hedefle eşleştir. ↔I planında ise aynı hedefe değil, sol-sağ ve sağ-sol yönlerine giden iki ayrı kardeş kapsam kur."
+    )
+    lesson["symbol_set"] = [
+        "𝒜",
+        "ℬ",
+        "𝒞",
+        "∨",
+        "↔",
+        "∨I",
+        "∨E",
+        "↔I",
+        "↔E",
+        "AS",
+        "⊢",
+    ]
+    lesson["proof_tools"] = [
+        "Doğrudan ayrılan eşleştirme",
+        "Durum analizi dal tablosu",
+        "Kardeş kapsam yolu denetimi",
+        "Ortak dal sonucu denetimi",
+        "Çift yön yükü matrisi",
+        "Çoklu alt kanıt atfı",
+    ]
+    lesson["rule_scope"] = {
+        "introduced": ["∨I", "∨E", "↔I", "↔E"],
+        "review_only": [
+            "PR",
+            "AS",
+            "R",
+            "∧I",
+            "∧E",
+            "→I",
+            "→E",
+            "¬I",
+            "¬E",
+            "X",
+            "IP",
+        ],
+        "locked_until_later": ["DS", "MT", "DNE", "LEM", "DeM"],
+    }
+    lesson["proof_fixtures"] = [
+        {
+            "id": "d23-complete-disjunction-introduction",
+            "kind": "complete",
+            "title": "Hazır cümleyi sağ ayrılan olarak yerleştirme",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d23-complete-disjunction-introduction",
+                "premises": ["A"],
+                "target": "B ∨ A",
+                "lines": [
+                    _line("l1", "A", "PR"),
+                    _line(
+                        "l2",
+                        "B ∨ A",
+                        "∨I",
+                        citations=[_line_ref("l1")],
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d23-complete-disjunction-elimination",
+            "kind": "complete",
+            "title": "İki kardeş koşul dalını ortak sonuçta birleştirme",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d23-complete-disjunction-elimination",
+                "premises": ["A ∨ B", "A → C", "B → C"],
+                "target": "C",
+                "lines": [
+                    _line("l1", "A ∨ B", "PR"),
+                    _line("l2", "A → C", "PR"),
+                    _line("l3", "B → C", "PR"),
+                    _line("l4", "A", "AS", depth=1, opens="s1"),
+                    _line(
+                        "l5",
+                        "C",
+                        "→E",
+                        citations=[_line_ref("l2"), _line_ref("l4")],
+                        depth=1,
+                    ),
+                    _line(
+                        "l6",
+                        "B",
+                        "AS",
+                        depth=1,
+                        opens="s2",
+                        closes=["s1"],
+                    ),
+                    _line(
+                        "l7",
+                        "C",
+                        "→E",
+                        citations=[_line_ref("l3"), _line_ref("l6")],
+                        depth=1,
+                    ),
+                    _line(
+                        "l8",
+                        "C",
+                        "∨E",
+                        citations=[
+                            _line_ref("l1"),
+                            _subproof_ref("l4", "l5"),
+                            _subproof_ref("l6", "l7"),
+                        ],
+                        closes=["s2"],
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d23-complete-biconditional-elimination",
+            "kind": "complete",
+            "title": "Çift yönlülüğün sağından soluna geçme",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d23-complete-biconditional-elimination",
+                "premises": ["A ↔ B", "B"],
+                "target": "A",
+                "lines": [
+                    _line("l1", "A ↔ B", "PR"),
+                    _line("l2", "B", "PR"),
+                    _line(
+                        "l3",
+                        "A",
+                        "↔E",
+                        citations=[_line_ref("l1"), _line_ref("l2")],
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d23-complete-biconditional-introduction",
+            "kind": "complete",
+            "title": "Birleşim sırasını iki yönde kanıtlama",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d23-complete-biconditional-introduction",
+                "premises": [],
+                "target": "(A ∧ B) ↔ (B ∧ A)",
+                "lines": [
+                    _line("l1", "A ∧ B", "AS", depth=1, opens="s1"),
+                    _line("l2", "A", "∧E", citations=[_line_ref("l1")], depth=1),
+                    _line("l3", "B", "∧E", citations=[_line_ref("l1")], depth=1),
+                    _line("l4", "B ∧ A", "∧I", citations=[_line_ref("l3"), _line_ref("l2")], depth=1),
+                    _line("l5", "B ∧ A", "AS", depth=1, opens="s2", closes=["s1"]),
+                    _line("l6", "B", "∧E", citations=[_line_ref("l5")], depth=1),
+                    _line("l7", "A", "∧E", citations=[_line_ref("l5")], depth=1),
+                    _line("l8", "A ∧ B", "∧I", citations=[_line_ref("l7"), _line_ref("l6")], depth=1),
+                    _line(
+                        "l9",
+                        "(A ∧ B) ↔ (B ∧ A)",
+                        "↔I",
+                        citations=[
+                            _subproof_ref("l1", "l4"),
+                            _subproof_ref("l5", "l8"),
+                        ],
+                        closes=["s2"],
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d23-incomplete-disjunction-elimination",
+            "kind": "incomplete",
+            "title": "İkinci kardeş dalı henüz eklenmemiş doğru ilk dal",
+            "expected_issue_codes": [],
+            "next_rule": "s1'i kapat, B AS ile s2'yi aç",
+            "proof": {
+                "id": "d23-incomplete-disjunction-elimination",
+                "premises": ["A ∨ B", "A → C", "B → C"],
+                "target": "C",
+                "lines": [
+                    _line("l1", "A ∨ B", "PR"),
+                    _line("l2", "A → C", "PR"),
+                    _line("l3", "B → C", "PR"),
+                    _line("l4", "A", "AS", depth=1, opens="s1"),
+                    _line(
+                        "l5",
+                        "C",
+                        "→E",
+                        citations=[_line_ref("l2"), _line_ref("l4")],
+                        depth=1,
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d23-different-branch-results",
+            "kind": "error",
+            "title": "∨E dallarını farklı sonuçlarda bitirme",
+            "expected_issue_codes": ["rule.disjunction_elimination_conclusions"],
+            "proof": {
+                "id": "d23-different-branch-results",
+                "premises": ["A ∨ B", "A → C", "B → D"],
+                "target": "C",
+                "lines": [
+                    _line("l1", "A ∨ B", "PR"),
+                    _line("l2", "A → C", "PR"),
+                    _line("l3", "B → D", "PR"),
+                    _line("l4", "A", "AS", depth=1, opens="s1"),
+                    _line("l5", "C", "→E", citations=[_line_ref("l2"), _line_ref("l4")], depth=1),
+                    _line("l6", "B", "AS", depth=1, opens="s2", closes=["s1"]),
+                    _line("l7", "D", "→E", citations=[_line_ref("l3"), _line_ref("l6")], depth=1),
+                    _line(
+                        "l8",
+                        "C",
+                        "∨E",
+                        citations=[
+                            _line_ref("l1"),
+                            _subproof_ref("l4", "l5"),
+                            _subproof_ref("l6", "l7"),
+                        ],
+                        closes=["s2"],
+                    ),
+                ],
+            },
+        },
+    ]
+    return lesson
+
+
 STAGE_D_CANDIDATE_LESSONS = [
     _candidate_d20(),
     _candidate_d21(),
     _candidate_d22(),
+    _candidate_d23(),
 ]
 
 STAGE_D_CANDIDATE_MAP = {

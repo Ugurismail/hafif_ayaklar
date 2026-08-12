@@ -14,6 +14,7 @@ from .logic_tfl_semantics import TFLParseError, parse_tfl
 D20_RULES = frozenset({"PR", "AS", "R"})
 D21_RULES = D20_RULES | frozenset({"∧I", "∧E", "→I", "→E"})
 D22_RULES = D21_RULES | frozenset({"¬I", "¬E", "X", "IP"})
+D23_RULES = D22_RULES | frozenset({"∨I", "∨E", "↔I", "↔E"})
 REQUIRED_LINE_FIELDS = frozenset(
     {"id", "formula", "rule", "citations", "depth", "opens", "closes"}
 )
@@ -904,6 +905,257 @@ def audit_fitch_proof(
                         line_id=issue_line_id,
                     )
                 )
+        elif rule == "∨I":
+            if len(citations) != 1:
+                issues.append(
+                    _issue(
+                        "rule.disjunction_introduction_citation_count",
+                        "∨I tam olarak bir erişilebilir satıra atıf yapmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_line_citations:
+                issues.append(
+                    _issue(
+                        "rule.disjunction_introduction_citation_type",
+                        "∨I yalnız bir satır atfı kullanır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif getattr(parsed_formula, "operator", None) != "∨":
+                issues.append(
+                    _issue(
+                        "rule.disjunction_introduction_conclusion",
+                        "∨I sonucunun ana bağlacı ∨ olmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif (
+                len(resolved_line_citations) == 1
+                and parsed_formula is not None
+                and resolved_line_citations[0]["formula"] is not None
+                and resolved_line_citations[0]["formula"]
+                not in (parsed_formula.left, parsed_formula.right)
+            ):
+                issues.append(
+                    _issue(
+                        "rule.disjunction_introduction_mismatch",
+                        "∨I kaynağı sonuçtaki iki doğrudan ayrılandan biri olmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+        elif rule == "∨E":
+            line_citation_count = sum(
+                isinstance(citation, dict)
+                and citation.get("kind") == "line"
+                for citation in citations
+            )
+            subproof_citation_count = sum(
+                isinstance(citation, dict)
+                and citation.get("kind") == "subproof"
+                for citation in citations
+            )
+            if len(citations) != 3:
+                issues.append(
+                    _issue(
+                        "rule.disjunction_elimination_citation_count",
+                        "∨E bir ayrık satır ve iki kapalı alt kanıt ister.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif line_citation_count != 1 or subproof_citation_count != 2:
+                issues.append(
+                    _issue(
+                        "rule.disjunction_elimination_citation_type",
+                        "∨E atıfları bir satır ve iki alt kanıt aralığından oluşmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif (
+                len(resolved_line_citations) == 1
+                and len(resolved_subproof_citations) == 2
+                and parsed_formula is not None
+            ):
+                disjunction = resolved_line_citations[0]["formula"]
+                first_subproof, second_subproof = resolved_subproof_citations
+                if getattr(disjunction, "operator", None) != "∨":
+                    issues.append(
+                        _issue(
+                            "rule.disjunction_elimination_source",
+                            "∨E satır kaynağının ana bağlacı ∨ olmalıdır.",
+                            line_id=issue_line_id,
+                        )
+                    )
+                elif (
+                    first_subproof["scope"]["id"]
+                    == second_subproof["scope"]["id"]
+                ):
+                    issues.append(
+                        _issue(
+                            "rule.disjunction_elimination_duplicate_branch",
+                            "∨E aynı alt kanıtı iki dal yerine iki kez kullanamaz.",
+                            line_id=issue_line_id,
+                        )
+                    )
+                elif (
+                    first_subproof["scope"]["parent_path"]
+                    != second_subproof["scope"]["parent_path"]
+                ):
+                    issues.append(
+                        _issue(
+                            "rule.disjunction_elimination_not_siblings",
+                            "∨E dalları aynı ana kapsama bağlı kardeş alt kanıtlar olmalıdır.",
+                            line_id=issue_line_id,
+                        )
+                    )
+                else:
+                    starts = {
+                        first_subproof["start"]["formula"],
+                        second_subproof["start"]["formula"],
+                    }
+                    if starts != {disjunction.left, disjunction.right}:
+                        issues.append(
+                            _issue(
+                                "rule.disjunction_elimination_assumptions",
+                                "∨E dalları ayrık cümlenin iki doğrudan ayrılanıyla açılmalıdır.",
+                                line_id=issue_line_id,
+                            )
+                        )
+                    if (
+                        first_subproof["end"]["formula"] != parsed_formula
+                        or second_subproof["end"]["formula"] != parsed_formula
+                    ):
+                        issues.append(
+                            _issue(
+                                "rule.disjunction_elimination_conclusions",
+                                "∨E dallarının ikisi de dışarıda yazılan aynı sonuçla bitmelidir.",
+                                line_id=issue_line_id,
+                            )
+                        )
+        elif rule == "↔E":
+            if len(citations) != 2:
+                issues.append(
+                    _issue(
+                        "rule.biconditional_elimination_citation_count",
+                        "↔E bir çift yönlülük ve onun bir tarafı olan iki satır ister.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_line_citations:
+                issues.append(
+                    _issue(
+                        "rule.biconditional_elimination_citation_type",
+                        "↔E yalnız satır atıfları kullanır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif (
+                len(resolved_line_citations) == 2
+                and parsed_formula is not None
+                and all(
+                    item["formula"] is not None
+                    for item in resolved_line_citations
+                )
+            ):
+                first = resolved_line_citations[0]["formula"]
+                second = resolved_line_citations[1]["formula"]
+                licensed = any(
+                    biconditional.operator == "↔"
+                    and argument in (
+                        biconditional.left,
+                        biconditional.right,
+                    )
+                    and parsed_formula
+                    == (
+                        biconditional.right
+                        if argument == biconditional.left
+                        else biconditional.left
+                    )
+                    for biconditional, argument in (
+                        (first, second),
+                        (second, first),
+                    )
+                )
+                if not licensed:
+                    issues.append(
+                        _issue(
+                            "rule.biconditional_elimination_mismatch",
+                            "↔E çift yönlülüğün verilen tarafından tam karşı tarafını üretmelidir.",
+                            line_id=issue_line_id,
+                        )
+                    )
+        elif rule == "↔I":
+            if len(citations) != 2:
+                issues.append(
+                    _issue(
+                        "rule.biconditional_introduction_citation_count",
+                        "↔I iki kapalı alt kanıt aralığı ister.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_subproof_citations:
+                issues.append(
+                    _issue(
+                        "rule.biconditional_introduction_citation_type",
+                        "↔I yalnız iki alt kanıt aralığına atıf yapmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif getattr(parsed_formula, "operator", None) != "↔":
+                issues.append(
+                    _issue(
+                        "rule.biconditional_introduction_conclusion",
+                        "↔I sonucunun ana bağlacı ↔ olmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif len(resolved_subproof_citations) == 2:
+                first_subproof, second_subproof = resolved_subproof_citations
+                if (
+                    first_subproof["scope"]["id"]
+                    == second_subproof["scope"]["id"]
+                ):
+                    issues.append(
+                        _issue(
+                            "rule.biconditional_introduction_duplicate_direction",
+                            "↔I aynı alt kanıtı iki yön yerine iki kez kullanamaz.",
+                            line_id=issue_line_id,
+                        )
+                    )
+                elif (
+                    first_subproof["scope"]["parent_path"]
+                    != second_subproof["scope"]["parent_path"]
+                ):
+                    issues.append(
+                        _issue(
+                            "rule.biconditional_introduction_not_siblings",
+                            "↔I yönleri aynı ana kapsama bağlı kardeş alt kanıtlar olmalıdır.",
+                            line_id=issue_line_id,
+                        )
+                    )
+                elif parsed_formula is not None:
+                    direction_pairs = {
+                        (
+                            first_subproof["start"]["formula"],
+                            first_subproof["end"]["formula"],
+                        ),
+                        (
+                            second_subproof["start"]["formula"],
+                            second_subproof["end"]["formula"],
+                        ),
+                    }
+                    expected_pairs = {
+                        (parsed_formula.left, parsed_formula.right),
+                        (parsed_formula.right, parsed_formula.left),
+                    }
+                    if direction_pairs != expected_pairs:
+                        issues.append(
+                            _issue(
+                                "rule.biconditional_introduction_directions",
+                                "↔I, çift yönlülüğün iki yönünü ayrı alt kanıtlarda tamamlamalıdır.",
+                                line_id=issue_line_id,
+                            )
+                        )
 
         record = {
             "id": line_id,
