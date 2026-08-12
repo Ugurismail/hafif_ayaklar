@@ -170,10 +170,10 @@ Bu liste uygulama emri değil, ayrıntılı ders sözleşmelerini yazmak için a
 
 27. Alan, adlar, yüklemler ve açık cümleler.
 28. Tek niceleyicili cümleler.
-29. Çoklu genellik ve niceleyici sırası.
-30. Kapsam ve niceleyici olumsuzlaması.
-31. İkili bağıntılar ve bağıntı yönü.
-32. Kimlik.
+29. Çok yerli yüklemler ve bağıntı yönü.
+30. Çoklu genellik, niceleyici sırası ve bağımlılık.
+31. Kapsam ve niceleyici olumsuzlaması.
+32. Kimlik ve sayısal ifadeler.
 33. Serbest/bağlı değişken, yerine koyma ve iyi kurulmuş formül.
 34. Birinci derece mantıkta belirsizlik ve sembolleştirme atölyesi.
 
