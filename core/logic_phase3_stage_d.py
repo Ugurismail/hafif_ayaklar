@@ -69,6 +69,10 @@ def _line_ref(line_id):
     return {"kind": "line", "id": line_id}
 
 
+def _subproof_ref(start_id, end_id):
+    return {"kind": "subproof", "start": start_id, "end": end_id}
+
+
 def _candidate_d20():
     lesson = _lesson(
         "D20",
@@ -618,7 +622,589 @@ def _candidate_d20():
     return lesson
 
 
-STAGE_D_CANDIDATE_LESSONS = [_candidate_d20()]
+def _candidate_d21():
+    lesson = _lesson(
+        "D21",
+        "ders-birlesim-ve-kosul-kurallari",
+        "Birleşim ve Koşul Kuralları",
+        "Birleşim ve koşul için giriş/eleme kurallarını hedefin ana bağlacı, erişilebilir kaynakların biçimi ve alt kanıt sınırlarıyla eşleştirir.",
+        "∧ ve → kurallarıyla ilk tamamlanmış türetimler",
+        50,
+        [
+            "ders-kanit-fikri-satir-bagimliligi-hedef-okuma",
+            "ders-18-degil-ve-ve-baglaclari",
+            "ders-kosul-yalnizca-cift-yonluluk",
+            "ders-degerlemeler-ve-dogruluk-islevleri",
+        ],
+        [
+            "nd.conjunction_rules",
+            "nd.conditional_eliminate",
+            "nd.conditional_introduce",
+            "nd.subproof_discharge",
+        ],
+        [
+            "İki erişilebilir cümleden hedefteki sıraya uygun birleşim kurmak ve birleşimin iki doğrudan bileşenini ayrı ayrı çıkarmak.",
+            "Bir koşul ile tam önbileşeninden artbileşeni üretmek; sonucu onaylama ve önbileşeni yadsıma biçimlerini reddetmek.",
+            "Koşul hedefinde önbileşeni geçici varsayarak alt kanıt açmak, artbileşene ulaşmak ve varsayımı doğru aralıkla boşaltmak.",
+            "Dış kapsamda erişilebilir satırları alt kanıt içinde kullanırken kapanmış iç satırları dışarı taşımamak.",
+            "Hedeften geriye giriş kuralı, kaynaklardan ileri eleme kuralı seçimini bir ara hedefte birleştirmek.",
+        ],
+        [
+            (
+                "Birleşim girişi (∧I)",
+                "Erişilebilir 𝒜 ve ℬ satırlarından, atıf sırasına uygun 𝒜 ∧ ℬ sonucunu kuran kural.",
+            ),
+            (
+                "Birleşim eleme (∧E)",
+                "𝒜 ∧ ℬ satırından doğrudan bileşenlerden 𝒜 veya ℬ'yi çıkaran kural.",
+            ),
+            (
+                "Koşul eleme (→E)",
+                "𝒜 → ℬ koşulu ile 𝒜 önbileşeninden ℬ artbileşenini çıkaran kural.",
+            ),
+            (
+                "Koşul girişi (→I)",
+                "𝒜 varsayımıyla açılan alt kanıt ℬ ile bittiğinde bu varsayımı boşaltıp 𝒜 → ℬ kuran kural.",
+            ),
+            (
+                "Varsayım boşaltma",
+                "Alt kanıttaki geçici varsayımı artık dış kapsamın açık varsayımları arasında bırakmadan, bütün alt kanıt aralığını bir giriş kuralında kullanma.",
+            ),
+            (
+                "Önbileşen",
+                "𝒜 → ℬ koşulunun sol tarafı; →E için ayrıca erişilebilir olması gereken cümle.",
+            ),
+            (
+                "Artbileşen",
+                "𝒜 → ℬ koşulunun sağ tarafı; →E'nin ürettiği ve →I alt kanıtının bitirmesi gereken cümle.",
+            ),
+        ],
+        [
+            _section(
+                "Birleşim kurmak: ∧I",
+                "∧I iki erişilebilir satırı tek birleşimde bir araya getirir. Sonuçtaki sol ve sağ bileşen, atıf yapılan kaynaklarla aynı sırada ve aynı sözdizimsel yapıda olmalıdır.",
+                "Hedefin ana bağlacı ∧ olduğunda veya daha sonraki bir kural için iki sonucu tek cümlede toplamak gerektiğinde.",
+                "𝒜, ℬ ⟹ 𝒜 ∧ ℬ · ∧I",
+                "İki kaynağın aynı satırda yan yana görünmesi yetmez; ikisi de mevcut kapsamdan erişilebilir olmalıdır. Bileşen sırası doğruluk bakımından eşdeğer sonuç verebilse de kanıt satırının formülü açıkça lisanslanmalıdır.",
+                "𝒜 ile ℬ'yi kullanıp gerekçe yazmadan ℬ ∧ 𝒜 üretme; hedefteki sıraya göre atıfları da sırala.",
+                [
+                    (
+                        "l1: A; l2: B; l3: A ∧ B ∧I l1,l2",
+                        "Sol ve sağ bileşen kaynaklarla sırayla eşleşir.",
+                    ),
+                    (
+                        "l1: A; l2: B; l3: B ∧ A ∧I l2,l1",
+                        "Ters sıralı hedef de mümkündür; atıf sırası buna göre değişir.",
+                    ),
+                    (
+                        "l1 kökte A; l2 açık s1 içinde B",
+                        "s1 içinde A ∧ B kurulabilir; s1 kapandıktan sonra B'ye doğrudan dayanarak kökte kurulamaz.",
+                    ),
+                ],
+                (
+                    "Hedef bileşenlerini kaynak satırlarla soldan sağa eşlemek.",
+                    "Birleşimin değişme özelliğini sessiz yeniden yazma lisansı sanmak.",
+                    "Bu sistemde her satır, semantik eşdeğerlikten bağımsız olarak uygulanan kuralın şemasına uymalıdır.",
+                ),
+            ),
+            _section(
+                "Birleşimi açmak: ∧E",
+                "∧E, birleşimin yalnız doğrudan sol veya sağ bileşenini çıkarır. Daha derindeki alt formüle ulaşmak için kural birden fazla kez uygulanabilir.",
+                "Erişilebilir bir birleşim içindeki bileşenlerden biri sonraki kuralın girdisi olduğunda.",
+                "𝒜 ∧ ℬ ⟹ 𝒜 veya ℬ · ∧E",
+                "A ∧ (B ∧ C) satırından tek adımda A veya B ∧ C çıkar. B ya da C için önce sağ bileşen, sonra o birleşimin ilgili bileşeni çıkarılmalıdır.",
+                "Birleşimde yalnız içeride geçen herhangi bir formülü tek ∧E adımıyla çıkarma.",
+                [
+                    (
+                        "A ∧ B ⟹ A",
+                        "Sol doğrudan bileşen ∧E ile çıkarılır.",
+                    ),
+                    (
+                        "A ∧ B ⟹ B",
+                        "Sağ doğrudan bileşen de aynı kural ailesiyle çıkarılır.",
+                    ),
+                    (
+                        "A ∧ (B ∧ C) ⟹ B ∧ C ⟹ C",
+                        "İç içe yapı iki ayrı ∧E satırı gerektirir.",
+                    ),
+                ],
+                (
+                    "Önce kaynak birleşimin oluşum ağacındaki doğrudan çocukları belirlemek.",
+                    "Parantezi görmezden gelip içerideki her atomu doğrudan seçmek.",
+                    "Kural, metinde geçen sembollere değil ana bağlacın doğrudan bileşenlerine uygulanır.",
+                ),
+            ),
+            _section(
+                "Koşulu uygulamak: →E",
+                "→E için bir koşul ve o koşulun tam önbileşeni gerekir. Bu ikisi sağlandığında yalnız artbileşen çıkar.",
+                "Erişilebilir koşulun artbileşeni hedef veya yararlı bir ara hedef olduğunda.",
+                "𝒜 → ℬ, 𝒜 ⟹ ℬ · →E",
+                "Kaynak satırların kanıttaki sırası önemli değildir; denetleyici hangi satırın koşul, hangisinin onun önbileşeni olduğunu yapısal olarak bulur. Formül eşleşmesi tam olmalıdır.",
+                "ℬ ile 𝒜 → ℬ'den 𝒜 çıkarma veya ¬𝒜 ile 𝒜 → ℬ'den ¬ℬ çıkarma; bunlar →E değildir.",
+                [
+                    (
+                        "A → B, A ⟹ B",
+                        "Koşul ve tam önbileşen artbileşeni lisanslar.",
+                    ),
+                    (
+                        "A → (B ∧ C), A ⟹ B ∧ C",
+                        "Önce bütün artbileşen çıkar; B veya C için ayrıca ∧E gerekir.",
+                    ),
+                    (
+                        "(A ∧ B) → C, A",
+                        "A, koşulun önbileşeni A ∧ B ile aynı değildir; →E henüz uygulanamaz.",
+                    ),
+                ],
+                (
+                    "Koşulun sol alt formülünü ikinci kaynakla tam eşlemek.",
+                    "Doğal dilde makul görünen ters yönü →E saymak.",
+                    "→E koşulun yazılı yönünü izler; ters veya karşıt-ters yön ayrı kanıt yükü ister.",
+                ),
+            ),
+            _section(
+                "Koşul kurmak: →I ve varsayım boşaltma",
+                "→I, önbileşeni geçici varsayım olarak açar; alt kanıtın son doğrudan satırı artbileşen olduğunda bütün aralığı kullanıp koşulu dış kapsamda kurar.",
+                "Hedefin ana bağlacı → olduğunda ve önbileşeni varsayarak artbileşene ulaşılabildiğinde.",
+                "[𝒜 AS ... ℬ] ⟹ 𝒜 → ℬ · →I alt-kanıt-aralığı",
+                "Sonuç 𝒜 → ℬ, 𝒜'nın dışarıda doğru kabul edildiğini söylemez. Tam tersine 𝒜 varsayımı boşaltılır; dış kapsamın diğer açık varsayımları koşulun bağımlılığı olarak kalabilir.",
+                "Alt kanıtın başlangıcını, son satırını veya kapanışını yanlış göstermek; içeride herhangi bir yerde ℬ geçmesini yeterli saymak.",
+                [
+                    (
+                        "A öncül; B AS; A R; sonuç B → A",
+                        "B varsayımı altında A'ya ulaşıldığı için B → A kurulur ve B boşaltılır.",
+                    ),
+                    (
+                        "A AS; B AS; A R; B → A; sonuç A → (B → A)",
+                        "İç varsayım önce, dış varsayım sonra boşaltılır.",
+                    ),
+                    (
+                        "A AS; C; B; sonuç A → B",
+                        "B alt kanıtın son doğrudan satırıysa aradaki C satırı sorun değildir.",
+                    ),
+                ],
+                (
+                    "Başlangıç varsayımını ve son doğrudan satırı hedef koşulun iki tarafıyla eşlemek.",
+                    "Alt kanıtta hedef bir kez göründü diye daha sonraki satırları yok sayarak aralığı kapatmak.",
+                    "Atıf, gerçekten kapatılan alt kanıtın tam başlangıç ve sonunu göstermelidir.",
+                ),
+            ),
+            _section(
+                "İleri ve geri çalışmayı buluşturmak",
+                "Giriş kuralları hedefi alt hedeflere, eleme kuralları mevcut satırları kullanılabilir parçalara açar. İlk kısa kanıtlar bu iki yönün bir ara hedefte buluşmasıyla kurulur.",
+                "Birden fazla kural seçeneği varken rastgele satır üretmek yerine küçük bir kanıt planı yapmak için.",
+                "hedefin ana bağlacı → geri → alt hedef; birleşim öncülü ileri ∧E → koşula girdi",
+                "Örneğin C ∧ A hedefi iki alt hedef verir. C için A → (B → C), A ∧ B zinciri ileri açılır; A aynı birleşimden çıkarılır; son adım ∧I olur.",
+                "Ulaşılabilir her formülü üretmek veya hedef koşul olduğu için içeride neye ulaşılacağını planlamadan AS açmak.",
+                [
+                    (
+                        "A → (B → C), A ∧ B ⊢ C ∧ A",
+                        "A ve B ∧E ile çıkar; iki →E C'yi, son ∧I hedefi üretir.",
+                    ),
+                    (
+                        "A ∧ B ⊢ C → (A ∧ C)",
+                        "C varsayılır, A öncülden çıkarılır, A ∧ C kurulur ve →I ile C boşaltılır.",
+                    ),
+                    (
+                        "Hedef atomik C",
+                        "Giriş kuralı ipucu yoktur; erişilebilir koşul zincirlerinden ileri çalışmak gerekir.",
+                    ),
+                ],
+                (
+                    "Son kuralı hedeften, ara girdileri kaynaklardan gerekçelendirmek.",
+                    "Kuralları uygulanabilir oldukları için hedefsiz biçimde sıralamak.",
+                    "İyi plan her satırın nihai hedefte hangi işi yaptığını görünür kılar.",
+                ),
+            ),
+        ],
+        [
+            _worked(
+                "A, B ⊢ A ∧ B",
+                "İki öncül kök kapsamda erişilebilir; sonuç ∧I ile aynı sırada kurulur.",
+                "∧I",
+            ),
+            _worked(
+                "A ∧ (B ∧ C) ⊢ C",
+                "Önce B ∧ C, sonra C olmak üzere iki ∧E gerekir.",
+                "İki aşamalı ∧E",
+            ),
+            _worked(
+                "A → B, A ⊢ B",
+                "Koşul ve tam önbileşen →E ile artbileşeni lisanslar.",
+                "→E",
+            ),
+            _worked(
+                "A → B, B ⊢ A",
+                "Artbileşenden önbileşene dönüş →E değildir; sonucu onaylama hatasıdır.",
+                "Yön hatası",
+                "bad",
+            ),
+            _worked(
+                "A ⊢ B → A",
+                "B varsayımı altında kök A yinelenir; alt kanıt kapatılıp B → A kurulur.",
+                "→I",
+            ),
+            _worked(
+                "A ∧ B ⊢ C → (A ∧ C)",
+                "C varsayılır; A, öncülden ∧E ile çıkarılır; A ∧ C kurulup C varsayımı boşaltılır.",
+                "Geri + ileri",
+            ),
+            _worked(
+                "A AS ... B ... C; A → B →I",
+                "B alt kanıtın son satırı değilse gösterilen aralık A'dan B'ye bitmez.",
+                "Aralık hatası",
+                "bad",
+            ),
+        ],
+        [
+            "∧I sonucundaki bileşen sırası ile atıf sırasını eşleştirmemek.",
+            "∧E ile yalnız doğrudan bileşen yerine iç içe herhangi bir alt formülü tek adımda çıkarmak.",
+            "→E'yi sonucu onaylama veya önbileşeni yadsıma yönünde kullanmak.",
+            "→I alt kanıtında hedef artbileşenin son doğrudan satır olmasını denetlememek.",
+            "→I sonrasında boşaltılan varsayımı dış kapsamda yeniden kullanmak.",
+            "Kapanmış alt kanıt iç satırını bir sonraki kanıtta erişilebilir saymak.",
+        ],
+        _practice(
+            [
+                (
+                    "A ve B erişilebilirse B ∧ A nasıl lisanslanır?",
+                    ["∧I A,B", "∧I B,A", "∧E A", "R A"],
+                    "∧I B,A",
+                    "Sonucun sol bileşeni B, sağ bileşeni A olduğundan atıf sırası buna uyar.",
+                    "Temel",
+                ),
+                (
+                    "A ∧ (B ∧ C) satırından tek ∧E ile hangisi çıkabilir?",
+                    ["B", "C", "B ∧ C", "A ∧ C"],
+                    "B ∧ C",
+                    "Tek adım yalnız doğrudan sol A veya sağ B ∧ C bileşenini çıkarır.",
+                    "Temel",
+                ),
+                (
+                    "A → B ile hangi ek satır →E için gerekir?",
+                    ["B", "¬A", "A", "A ∧ B"],
+                    "A",
+                    "→E koşulun tam önbileşenini ister.",
+                    "Temel",
+                ),
+                (
+                    "A → B ve B'den A çıkarmak hangi hatadır?",
+                    ["Geçerli →E", "Sonucu onaylama", "∧E", "Yineleme"],
+                    "Sonucu onaylama",
+                    "Koşul yalnız A'dan B yönünü lisanslar.",
+                    "Temel",
+                ),
+                (
+                    "Hedef A → B ise →I alt kanıtı hangi satırla açılır?",
+                    ["B AS", "A AS", "A → B AS", "¬B AS"],
+                    "A AS",
+                    "Koşul girişinde önbileşen geçici varsayılır.",
+                    "Orta",
+                ),
+                (
+                    "A AS ile açılan alt kanıt C ile biterse →I ne kurabilir?",
+                    ["C → A", "A → C", "A ∧ C", "¬A"],
+                    "A → C",
+                    "Başlangıç varsayımı önbileşen, son doğrudan satır artbileşendir.",
+                    "Orta",
+                ),
+                (
+                    "Dış kök satır A, B AS alt kanıtında kullanılabilir mi?",
+                    ["Evet", "Hayır", "Yalnız ∧I ile", "Yalnız hedef A ise"],
+                    "Evet",
+                    "Kök kapsam açık alt kanıtı çevrelediği için erişilebilirdir.",
+                    "Orta",
+                ),
+                (
+                    "→I uygulandıktan sonra boşaltılan AS satırı ne olur?",
+                    [
+                        "Kök kapsamda öncül olur",
+                        "Yalnız kapalı alt kanıtın bağımlılığı olarak kalır",
+                        "Doğruluk değeri F olur",
+                        "PR etiketi alır",
+                    ],
+                    "Yalnız kapalı alt kanıtın bağımlılığı olarak kalır",
+                    "Koşul dışarı çıkar; geçici varsayım dışarıda kullanılabilir satır olmaz.",
+                    "Orta",
+                ),
+                (
+                    "(A ∧ B) → C ve A varken →E neden uygulanamaz?",
+                    [
+                        "C atomik olduğu için",
+                        "A, tam önbileşen A ∧ B olmadığı için",
+                        "Koşullar kullanılamadığı için",
+                        "Önce →I gerektiği için",
+                    ],
+                    "A, tam önbileşen A ∧ B olmadığı için",
+                    "Önce B ve ardından A ∧ B için ayrıca lisans gerekir.",
+                    "İleri",
+                ),
+                (
+                    "C ∧ A hedefinde en doğal son adım hangisidir?",
+                    ["→E", "∧I", "∧E", "R"],
+                    "∧I",
+                    "Hedefin ana bağlacı ∧ olduğundan C ve A alt hedefleri ayrı kurulabilir.",
+                    "İleri",
+                ),
+                (
+                    "A AS, B, A satırlarıyla biten alt kanıttan A → B kurulabilir mi?",
+                    [
+                        "Evet, B bir yerde geçti",
+                        "Hayır, alt kanıtın son doğrudan satırı A'dır",
+                        "Yalnız A öncülse",
+                        "Yalnız B atomikse",
+                    ],
+                    "Hayır, alt kanıtın son doğrudan satırı A'dır",
+                    "→I aralığı varsayımdan son satıra kadar olan gerçek alt kanıtı kullanır.",
+                    "İleri",
+                ),
+                (
+                    "A → (B → C), A ∧ B ⊢ C için ilk yararlı ileri adım hangisidir?",
+                    [
+                        "C'yi AS yapmak",
+                        "A ∧ B'den A ve B'yi ∧E ile çıkarmak",
+                        "A → (B → C)'yi R ile C yapmak",
+                        "Hedefe ∧I uygulamak",
+                    ],
+                    "A ∧ B'den A ve B'yi ∧E ile çıkarmak",
+                    "Bu bileşenler koşul zincirindeki iki →E adımının girdileridir.",
+                    "Zor",
+                ),
+            ]
+        ),
+        {
+            "prompt": "A ∧ B ⊢ C → (A ∧ C) iskeletindeki boş kural ve atıfları doldur.",
+            "starter": "Hedef koşul olduğu için önce C varsayımını aç; sonra A'yı dış öncülden içeri taşıyacak yolu bul.",
+            "checks": [
+                "C, AS ile yeni kapsam açtı",
+                "A, A ∧ B'den ∧E ile çıkarıldı",
+                "A ∧ C, ∧I ile doğru sırada kuruldu",
+                "→I doğru alt kanıt aralığını kapattı",
+            ],
+            "solution": "l1 A ∧ B PR; l2 C AS; l3 A ∧E l1; l4 A ∧ C ∧I l3,l2; l5 C → (A ∧ C) →I l2-l4.",
+        },
+        [
+            _production_task(
+                "İki türetimi kur, satır bağımlılıklarını göster ve bir hatalı koşul kanıtını ilk bozuk satırdan onar.",
+                [
+                    "A → (B → C), A ∧ B ⊢ C ∧ A türetiminde dört yeni kuralı gerektiği yerde kullan.",
+                    "A ∧ B ⊢ C → (A ∧ C) türetiminde AS ve →I aralığını açıkça göster.",
+                    "Her satırın kararlı kimliğini, kuralını ve yapılandırılmış atfını yaz.",
+                    "Sonucu onaylama içeren hatalı →E satırını neden lisanssız olduğunu belirterek düzelt.",
+                ],
+                "Kanıt planında son kuralı hedeften geriye, →E için gerekli önbileşenleri öncüllerden ileri çıkar.",
+                "Türetim problemleri",
+                [
+                    "A → (B → C), A ∧ B ⊢ C ∧ A",
+                    "A ∧ B ⊢ C → (A ∧ C)",
+                    "Hata adayı: A → B, B ⊢ A · →E",
+                ],
+                "İkinci türetimde C varsayımının dış kapsamda açık kalmadığını ayrıca doğrula.",
+            )
+        ],
+        [
+            "∧I, ∧E, →I ve →E kurallarını en az bir kez doğru kullanan iki bağımsız türetim kurar.",
+            "→I kapanışında doğru AS başlangıcını, son doğrudan satırı ve boşaltılan kapsamı gösterir.",
+            "İç içe birleşimde doğrudan bileşen ile daha derin alt formülü ayırır.",
+            "Sonucu onaylama, önbileşeni yadsıma ve kapsam dışı atıf hatalarını doğru kod ve gerekçeyle teşhis eder.",
+            "Hedefin ana bağlacına göre son kuralı, kaynakların ana bağlacına göre yararlı ara adımları açıklar.",
+        ],
+        [
+            "→I neden bir alt kanıt aralığı ister?",
+            "𝒜 → ℬ ile ℬ hangi sonucu tek başına lisanslamaz?",
+            "Dış kapsamdaki bir öncül alt kanıt içinde ne zaman kullanılabilir?",
+            "A ∧ (B ∧ C) satırından C'ye kaç ∧E adımı gerekir?",
+        ],
+        "Sonraki derste çelişki işareti, olumsuzlama kuralları, patlama ve klasik dolaylı kanıt için alt kanıt disiplinini genişleteceğiz.",
+        [
+            "forallx-basic-rules",
+            "forallx-proof-strategies",
+            "carnap-derivations",
+            "carnap-feedback",
+        ],
+        "D21 yalnız PR, AS, R ile ∧I, ∧E, →I ve →E kurallarını kullanır. Eşdeğerlik dönüşümleri, MT/DS gibi türetilmiş kurallar ve olumsuzlama stratejileri henüz kapalıdır. →I, yalnız kapalı ve erişilebilir alt kanıt aralığıyla lisanslanır.",
+        [
+            "ders-17-cikarim-kurallari-i",
+            "ders-24-dogal-turetim-i",
+        ],
+    )
+
+    lesson["reading_note"] = (
+        "Hedef ∧ veya → ise geriye doğru son kuralı yaz. Sonra öncüllerdeki ∧ ve → yapılarını yalnız hedefte ihtiyaç duyulan ara cümleler için ileri aç."
+    )
+    lesson["symbol_set"] = [
+        "𝒜",
+        "ℬ",
+        "𝒞",
+        "∧",
+        "→",
+        "∧I",
+        "∧E",
+        "→I",
+        "→E",
+        "PR",
+        "AS",
+        "R",
+        "⊢",
+    ]
+    lesson["proof_tools"] = [
+        "Hedef ana bağlaç planı",
+        "Doğrudan bileşen ağacı",
+        "Önbileşen eşleştirme",
+        "Alt kanıt aralığı atfı",
+        "Varsayım boşaltma denetimi",
+        "İleri/geri ara hedef köprüsü",
+    ]
+    lesson["rule_scope"] = {
+        "introduced": ["∧I", "∧E", "→I", "→E"],
+        "review_only": ["PR", "AS", "R"],
+        "locked_until_later": [
+            "¬I",
+            "¬E",
+            "X",
+            "IP",
+            "∨I",
+            "∨E",
+            "↔I",
+            "↔E",
+            "DS",
+            "MT",
+            "DNE",
+            "LEM",
+            "DeM",
+        ],
+    }
+    lesson["proof_fixtures"] = [
+        {
+            "id": "d21-complete-rule-chain",
+            "kind": "complete",
+            "title": "Birleşimi açıp koşul zincirini uygulama",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d21-complete-rule-chain",
+                "premises": ["A → (B → C)", "A ∧ B"],
+                "target": "C ∧ A",
+                "lines": [
+                    _line("l1", "A → (B → C)", "PR"),
+                    _line("l2", "A ∧ B", "PR"),
+                    _line(
+                        "l3",
+                        "A",
+                        "∧E",
+                        citations=[_line_ref("l2")],
+                    ),
+                    _line(
+                        "l4",
+                        "B",
+                        "∧E",
+                        citations=[_line_ref("l2")],
+                    ),
+                    _line(
+                        "l5",
+                        "B → C",
+                        "→E",
+                        citations=[_line_ref("l1"), _line_ref("l3")],
+                    ),
+                    _line(
+                        "l6",
+                        "C",
+                        "→E",
+                        citations=[_line_ref("l4"), _line_ref("l5")],
+                    ),
+                    _line(
+                        "l7",
+                        "C ∧ A",
+                        "∧I",
+                        citations=[_line_ref("l6"), _line_ref("l3")],
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d21-complete-conditional-introduction",
+            "kind": "complete",
+            "title": "Kök öncülü alt kanıtta yineleyip koşul kurma",
+            "expected_issue_codes": [],
+            "proof": {
+                "id": "d21-complete-conditional-introduction",
+                "premises": ["A"],
+                "target": "B → A",
+                "lines": [
+                    _line("l1", "A", "PR"),
+                    _line("l2", "B", "AS", depth=1, opens="s1"),
+                    _line(
+                        "l3",
+                        "A",
+                        "R",
+                        citations=[_line_ref("l1")],
+                        depth=1,
+                    ),
+                    _line(
+                        "l4",
+                        "B → A",
+                        "→I",
+                        citations=[_subproof_ref("l2", "l3")],
+                        closes=["s1"],
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d21-incomplete-conditional",
+            "kind": "incomplete",
+            "title": "→I kapanışı henüz eklenmemiş doğru alt kanıt",
+            "expected_issue_codes": [],
+            "next_rule": "→I l2-l3",
+            "proof": {
+                "id": "d21-incomplete-conditional",
+                "premises": ["A"],
+                "target": "B → A",
+                "lines": [
+                    _line("l1", "A", "PR"),
+                    _line("l2", "B", "AS", depth=1, opens="s1"),
+                    _line(
+                        "l3",
+                        "A",
+                        "R",
+                        citations=[_line_ref("l1")],
+                        depth=1,
+                    ),
+                ],
+            },
+        },
+        {
+            "id": "d21-swapped-conditional-range",
+            "kind": "error",
+            "title": "→I sonucunun alt kanıt başlangıç ve sonuyla ters eşleşmesi",
+            "expected_issue_codes": ["rule.conditional_introduction_mismatch"],
+            "proof": {
+                "id": "d21-swapped-conditional-range",
+                "premises": ["A"],
+                "target": "A → B",
+                "lines": [
+                    _line("l1", "A", "PR"),
+                    _line("l2", "B", "AS", depth=1, opens="s1"),
+                    _line(
+                        "l3",
+                        "A",
+                        "R",
+                        citations=[_line_ref("l1")],
+                        depth=1,
+                    ),
+                    _line(
+                        "l4",
+                        "A → B",
+                        "→I",
+                        citations=[_subproof_ref("l2", "l3")],
+                        closes=["s1"],
+                    ),
+                ],
+            },
+        },
+    ]
+    return lesson
+
+
+STAGE_D_CANDIDATE_LESSONS = [_candidate_d20(), _candidate_d21()]
 
 STAGE_D_CANDIDATE_MAP = {
     lesson["slug"]: lesson

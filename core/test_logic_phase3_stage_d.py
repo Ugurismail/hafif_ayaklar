@@ -3,7 +3,7 @@ from copy import deepcopy
 from django.test import SimpleTestCase
 
 from .logic_course_data import VISIBLE_LOGIC_LESSONS
-from .logic_fitch import D20_RULES, audit_fitch_proof
+from .logic_fitch import D20_RULES, D21_RULES, audit_fitch_proof
 from .logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
 from .logic_phase3_stage_b import STAGE_B_CANDIDATE_MAP
 from .logic_phase3_stage_c import STAGE_C_CANDIDATE_MAP
@@ -48,47 +48,51 @@ class LogicPhase3StageDIntegrityTests(SimpleTestCase):
         "proof_fixtures",
     }
 
-    def test_stage_d_starts_with_only_the_reviewed_d20_candidate(self):
+    def test_stage_d_contains_only_the_reviewed_candidates_in_order(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_D_CANDIDATE_LESSONS],
-            ["D20"],
+            ["D20", "D21"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_D_CANDIDATE_LESSONS],
-            [20],
+            [20, 21],
         )
-        self.assertEqual(len(STAGE_D_CANDIDATE_MAP), 1)
+        self.assertEqual(len(STAGE_D_CANDIDATE_MAP), 2)
 
-    def test_d20_has_complete_candidate_fields_and_known_sources(self):
-        lesson = STAGE_D_CANDIDATE_LESSONS[0]
+    def test_stage_d_candidates_have_complete_fields_and_known_sources(self):
+        for lesson in STAGE_D_CANDIDATE_LESSONS:
+            with self.subTest(lesson=lesson["curriculum_id"]):
+                self.assertTrue(self.common_required_fields.issubset(lesson))
+                self.assertEqual(lesson["release_status"], "candidate")
+                self.assertEqual(
+                    lesson["duration"],
+                    f'{lesson["estimated_minutes"]} dk',
+                )
+                self.assertTrue(lesson["source_ids"])
+                self.assertTrue(
+                    set(lesson["source_ids"]).issubset(
+                        STAGE_D_SOURCE_REFERENCES
+                    )
+                )
 
-        self.assertTrue(self.common_required_fields.issubset(lesson))
-        self.assertEqual(lesson["release_status"], "candidate")
-        self.assertEqual(
-            lesson["duration"],
-            f'{lesson["estimated_minutes"]} dk',
-        )
-        self.assertTrue(lesson["source_ids"])
-        self.assertTrue(
-            set(lesson["source_ids"]).issubset(STAGE_D_SOURCE_REFERENCES)
-        )
-
-    def test_d20_prerequisites_exist_and_point_backwards(self):
+    def test_stage_d_prerequisites_exist_and_point_backwards(self):
         all_candidates = {
             **STAGE_A_CANDIDATE_MAP,
             **STAGE_B_CANDIDATE_MAP,
             **STAGE_C_CANDIDATE_MAP,
             **STAGE_D_CANDIDATE_MAP,
         }
-        lesson = STAGE_D_CANDIDATE_LESSONS[0]
-
-        for prerequisite in lesson["prerequisites"]:
-            with self.subTest(prerequisite=prerequisite):
-                self.assertIn(prerequisite, all_candidates)
-                self.assertLess(
-                    all_candidates[prerequisite]["order"],
-                    lesson["order"],
-                )
+        for lesson in STAGE_D_CANDIDATE_LESSONS:
+            for prerequisite in lesson["prerequisites"]:
+                with self.subTest(
+                    lesson=lesson["curriculum_id"],
+                    prerequisite=prerequisite,
+                ):
+                    self.assertIn(prerequisite, all_candidates)
+                    self.assertLess(
+                        all_candidates[prerequisite]["order"],
+                        lesson["order"],
+                    )
 
     def test_d20_remains_isolated_from_the_learner_course(self):
         visible_slugs = {lesson["slug"] for lesson in VISIBLE_LOGIC_LESSONS}
@@ -128,6 +132,25 @@ class LogicPhase3StageDIntegrityTests(SimpleTestCase):
                 self.assertEqual(fixture["id"], fixture["proof"]["id"])
                 self.assertTrue(fixture["proof"]["lines"])
                 self.assertIn("expected_issue_codes", fixture)
+
+    def test_d21_has_rule_scope_depth_and_all_fixture_kinds(self):
+        lesson = STAGE_D_CANDIDATE_LESSONS[1]
+
+        self.assertGreaterEqual(len(lesson["sections"]), 5)
+        self.assertGreaterEqual(len(lesson["worked_examples"]), 7)
+        self.assertGreaterEqual(len(lesson["practice"]), 12)
+        self.assertEqual(
+            set(lesson["rule_scope"]["introduced"]),
+            {"∧I", "∧E", "→I", "→E"},
+        )
+        self.assertEqual(
+            set(lesson["rule_scope"]["review_only"]),
+            D20_RULES,
+        )
+        self.assertEqual(
+            {fixture["kind"] for fixture in lesson["proof_fixtures"]},
+            {"complete", "incomplete", "error"},
+        )
 
 
 class FitchProofAuditTests(SimpleTestCase):
@@ -396,4 +419,287 @@ class FitchProofAuditTests(SimpleTestCase):
         self.assertIn(
             ("formula.invalid", "l1"),
             {(issue["code"], issue["line_id"]) for issue in issues},
+        )
+
+
+class D21RuleAuditTests(SimpleTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.lesson = STAGE_D_CANDIDATE_LESSONS[1]
+        cls.fixtures = {
+            fixture["id"]: fixture
+            for fixture in cls.lesson["proof_fixtures"]
+        }
+
+    def test_complete_d21_fixtures_pass_the_expanded_rule_set(self):
+        complete_fixtures = [
+            fixture
+            for fixture in self.lesson["proof_fixtures"]
+            if fixture["kind"] == "complete"
+        ]
+
+        for fixture in complete_fixtures:
+            with self.subTest(fixture=fixture["id"]):
+                self.assertEqual(
+                    audit_fitch_proof(
+                        fixture["proof"],
+                        allowed_rules=D21_RULES,
+                    ),
+                    [],
+                )
+
+    def test_d21_incomplete_fixture_is_valid_before_conditional_closure(self):
+        fixture = self.fixtures["d21-incomplete-conditional"]
+
+        self.assertEqual(
+            audit_fitch_proof(
+                fixture["proof"],
+                allowed_rules=D21_RULES,
+                require_complete=False,
+            ),
+            [],
+        )
+        self.assertEqual(
+            {
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    fixture["proof"],
+                    allowed_rules=D21_RULES,
+                )
+            },
+            {
+                "proof.scope_unclosed",
+                "proof.target_in_subproof",
+                "proof.target_not_reached",
+            },
+        )
+
+    def test_d21_error_fixture_detects_swapped_conditional_sides(self):
+        fixture = self.fixtures["d21-swapped-conditional-range"]
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    fixture["proof"],
+                    allowed_rules=D21_RULES,
+                )
+            ],
+            fixture["expected_issue_codes"],
+        )
+
+    def test_conjunction_introduction_preserves_component_order(self):
+        proof = deepcopy(
+            self.fixtures["d21-complete-rule-chain"]["proof"]
+        )
+        proof["lines"][-1]["citations"] = [
+            {"kind": "line", "id": "l3"},
+            {"kind": "line", "id": "l6"},
+        ]
+
+        self.assertIn(
+            "rule.conjunction_introduction_mismatch",
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D21_RULES,
+                )
+            ],
+        )
+
+    def test_conjunction_elimination_only_returns_a_direct_component(self):
+        proof = {
+            "id": "nested-conjunction",
+            "premises": ["A ∧ (B ∧ C)"],
+            "target": "C",
+            "lines": [
+                {
+                    "id": "l1",
+                    "formula": "A ∧ (B ∧ C)",
+                    "rule": "PR",
+                    "citations": [],
+                    "depth": 0,
+                    "opens": None,
+                    "closes": [],
+                },
+                {
+                    "id": "l2",
+                    "formula": "C",
+                    "rule": "∧E",
+                    "citations": [{"kind": "line", "id": "l1"}],
+                    "depth": 0,
+                    "opens": None,
+                    "closes": [],
+                },
+            ],
+        }
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D21_RULES,
+                )
+            ],
+            ["rule.conjunction_elimination_mismatch"],
+        )
+
+    def test_conditional_elimination_accepts_either_citation_order(self):
+        fixture = self.fixtures["d21-complete-rule-chain"]
+        line_six = fixture["proof"]["lines"][5]
+
+        self.assertEqual(line_six["rule"], "→E")
+        self.assertEqual(
+            line_six["citations"],
+            [
+                {"kind": "line", "id": "l4"},
+                {"kind": "line", "id": "l5"},
+            ],
+        )
+        self.assertEqual(
+            audit_fitch_proof(
+                fixture["proof"],
+                allowed_rules=D21_RULES,
+            ),
+            [],
+        )
+
+    def test_conditional_elimination_rejects_affirming_the_consequent(self):
+        proof = {
+            "id": "affirming-consequent",
+            "premises": ["A → B", "B"],
+            "target": "A",
+            "lines": [
+                {
+                    "id": "l1",
+                    "formula": "A → B",
+                    "rule": "PR",
+                    "citations": [],
+                    "depth": 0,
+                    "opens": None,
+                    "closes": [],
+                },
+                {
+                    "id": "l2",
+                    "formula": "B",
+                    "rule": "PR",
+                    "citations": [],
+                    "depth": 0,
+                    "opens": None,
+                    "closes": [],
+                },
+                {
+                    "id": "l3",
+                    "formula": "A",
+                    "rule": "→E",
+                    "citations": [
+                        {"kind": "line", "id": "l1"},
+                        {"kind": "line", "id": "l2"},
+                    ],
+                    "depth": 0,
+                    "opens": None,
+                    "closes": [],
+                },
+            ],
+        }
+
+        self.assertEqual(
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D21_RULES,
+                )
+            ],
+            ["rule.conditional_elimination_mismatch"],
+        )
+
+    def test_conditional_introduction_requires_a_closed_subproof(self):
+        proof = {
+            "id": "open-subproof-citation",
+            "premises": ["A"],
+            "target": "B → A",
+            "lines": [
+                {
+                    "id": "l1",
+                    "formula": "A",
+                    "rule": "PR",
+                    "citations": [],
+                    "depth": 0,
+                    "opens": None,
+                    "closes": [],
+                },
+                {
+                    "id": "l2",
+                    "formula": "B",
+                    "rule": "AS",
+                    "citations": [],
+                    "depth": 1,
+                    "opens": "s1",
+                    "closes": [],
+                },
+                {
+                    "id": "l3",
+                    "formula": "A",
+                    "rule": "R",
+                    "citations": [{"kind": "line", "id": "l1"}],
+                    "depth": 1,
+                    "opens": None,
+                    "closes": [],
+                },
+                {
+                    "id": "l4",
+                    "formula": "B → A",
+                    "rule": "→I",
+                    "citations": [
+                        {"kind": "subproof", "start": "l2", "end": "l3"}
+                    ],
+                    "depth": 1,
+                    "opens": None,
+                    "closes": [],
+                },
+            ],
+        }
+
+        self.assertIn(
+            "citation.subproof_open",
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D21_RULES,
+                    require_complete=False,
+                )
+            ],
+        )
+
+    def test_subproof_reference_must_end_on_its_last_direct_line(self):
+        proof = deepcopy(
+            self.fixtures["d21-complete-conditional-introduction"]["proof"]
+        )
+        proof["lines"].insert(
+            3,
+            {
+                "id": "l3a",
+                "formula": "B",
+                "rule": "R",
+                "citations": [{"kind": "line", "id": "l2"}],
+                "depth": 1,
+                "opens": None,
+                "closes": [],
+            },
+        )
+
+        self.assertIn(
+            "citation.subproof_end_not_last",
+            [
+                issue["code"]
+                for issue in audit_fitch_proof(
+                    proof,
+                    allowed_rules=D21_RULES,
+                )
+            ],
         )

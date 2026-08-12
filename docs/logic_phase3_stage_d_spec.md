@@ -194,7 +194,7 @@ Verilen kısa Fitch türetimini bağımlılık kenarlarıyla yeniden çiz; iki l
 ### Ders sözleşmesi
 
 - **Tahmini süre:** 50 dakika (pilotla doğrulanacak)
-- **Önkoşul:** D20, B9, B10, C14
+- **Önkoşul:** D20, B8, B10, C14
 - **Ana eşik:** `∧` ve `→` için giriş/eleme kurallarını hedef türü ile erişilebilir veri türünü birleştirerek uygulamak.
 - **Yetkinlikler:** `nd.conjunction_rules`, `nd.conditional_eliminate`, `nd.conditional_introduce`, `nd.subproof_discharge`
 - **İlk kurallar:** `∧I`, `∧E`, `→I`, `→E`
@@ -553,7 +553,7 @@ Bu tablo Faz D'nin **aday geliştirme** durumunu gösterir; canlıya hazır oldu
 | Ders | Sözleşme | Aday veri | Otomatik kural/sınır testi | Yetkili aşama önizlemesi |
 | --- | --- | --- | --- | --- |
 | D20 Kanıt Fikri, Satır Bağımlılığı ve Hedef Okuma | Hazır | Hazır | Hazır | Bekliyor |
-| D21 Birleşim ve Koşul Kuralları | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| D21 Birleşim ve Koşul Kuralları | Hazır | Hazır | Hazır | Bekliyor |
 | D22 Olumsuzlama, Alt Kanıt ve Çelişkiye İndirgeme | Hazır | Bekliyor | Bekliyor | Bekliyor |
 | D23 Ayrık Bağlaç ve Çift Yönlülük Kuralları | Hazır | Bekliyor | Bekliyor | Bekliyor |
 | D24 Geriye Doğru Planlama ve Kanıt Stratejisi | Hazır | Bekliyor | Bekliyor | Bekliyor |

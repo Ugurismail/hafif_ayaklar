@@ -11,6 +11,7 @@ from .logic_tfl_semantics import TFLParseError, parse_tfl
 
 
 D20_RULES = frozenset({"PR", "AS", "R"})
+D21_RULES = D20_RULES | frozenset({"∧I", "∧E", "→I", "→E"})
 REQUIRED_LINE_FIELDS = frozenset(
     {"id", "formula", "rule", "citations", "depth", "opens", "closes"}
 )
@@ -102,6 +103,7 @@ def audit_fitch_proof(
 
     active_scopes = []
     opened_scopes = set()
+    scope_records = {}
     seen_lines = {}
     last_line = None
 
@@ -169,6 +171,7 @@ def audit_fitch_proof(
                     )
                 )
                 continue
+            scope_records[scope_id]["closed_at"] = position
             active_scopes.pop()
 
         opens = line.get("opens")
@@ -192,8 +195,17 @@ def audit_fitch_proof(
                 )
                 opens = None
             else:
+                parent_path = tuple(active_scopes)
                 opened_scopes.add(opens)
                 active_scopes.append(opens)
+                scope_records[opens] = {
+                    "id": opens,
+                    "start_id": line_id,
+                    "parent_path": parent_path,
+                    "scope_path": tuple(active_scopes),
+                    "closed_at": None,
+                    "last_direct_line_id": None,
+                }
 
         scope_path = tuple(active_scopes)
         depth = line.get("depth")
@@ -253,54 +265,176 @@ def audit_fitch_proof(
             citations = []
 
         resolved_line_citations = []
+        resolved_subproof_citations = []
         for citation in citations:
-            if not isinstance(citation, dict) or citation.get("kind") != "line":
+            if not isinstance(citation, dict):
                 issues.append(
                     _issue(
                         "citation.kind_invalid",
-                        "Satır atıfları {kind: 'line', id: '...'} biçiminde olmalıdır.",
+                        "Atıf yapılandırılmış bir sözlük olmalıdır.",
                         line_id=issue_line_id,
                     )
                 )
                 continue
 
-            cited_id = citation.get("id")
-            if not isinstance(cited_id, str) or not cited_id:
+            citation_kind = citation.get("kind")
+            if citation_kind == "line":
+                cited_id = citation.get("id")
+                if not isinstance(cited_id, str) or not cited_id:
+                    issues.append(
+                        _issue(
+                            "citation.id_invalid",
+                            "Atıf geçerli bir satır kimliği taşımalıdır.",
+                            line_id=issue_line_id,
+                        )
+                    )
+                    continue
+
+                cited_line = seen_lines.get(cited_id)
+                if cited_line is None:
+                    code = (
+                        "citation.forward"
+                        if all_line_positions.get(cited_id, -1) >= position
+                        else "citation.unknown"
+                    )
+                    issues.append(
+                        _issue(
+                            code,
+                            f"{cited_id} satırı henüz erişilebilir bir kaynak değil.",
+                            line_id=issue_line_id,
+                        )
+                    )
+                    continue
+
+                if not _scope_is_accessible(
+                    cited_line["scope_path"],
+                    scope_path,
+                ):
+                    issues.append(
+                        _issue(
+                            "citation.inaccessible",
+                            f"{cited_id} kapanmış veya kardeş bir alt kanıtta.",
+                            line_id=issue_line_id,
+                        )
+                    )
+                    continue
+                resolved_line_citations.append(cited_line)
+                continue
+
+            if citation_kind != "subproof":
                 issues.append(
                     _issue(
-                        "citation.id_invalid",
-                        "Atıf geçerli bir satır kimliği taşımalıdır.",
+                        "citation.kind_invalid",
+                        "Atıf türü 'line' veya 'subproof' olmalıdır.",
                         line_id=issue_line_id,
                     )
                 )
                 continue
 
-            cited_line = seen_lines.get(cited_id)
-            if cited_line is None:
-                code = (
-                    "citation.forward"
-                    if all_line_positions.get(cited_id, -1) >= position
-                    else "citation.unknown"
-                )
+            start_id = citation.get("start")
+            end_id = citation.get("end")
+            if not all(
+                isinstance(item, str) and item
+                for item in (start_id, end_id)
+            ):
                 issues.append(
                     _issue(
-                        code,
-                        f"{cited_id} satırı henüz erişilebilir bir kaynak değil.",
+                        "citation.subproof_range_invalid",
+                        "Alt kanıt atfı geçerli başlangıç ve bitiş kimlikleri taşımalıdır.",
                         line_id=issue_line_id,
                     )
                 )
                 continue
 
-            if not _scope_is_accessible(cited_line["scope_path"], scope_path):
+            start_line = seen_lines.get(start_id)
+            end_line = seen_lines.get(end_id)
+            missing_ids = [
+                item_id
+                for item_id, item in (
+                    (start_id, start_line),
+                    (end_id, end_line),
+                )
+                if item is None
+            ]
+            if missing_ids:
+                has_forward_id = any(
+                    all_line_positions.get(item_id, -1) >= position
+                    for item_id in missing_ids
+                )
                 issues.append(
                     _issue(
-                        "citation.inaccessible",
-                        f"{cited_id} kapanmış veya kardeş bir alt kanıtta.",
+                        (
+                            "citation.subproof_forward"
+                            if has_forward_id
+                            else "citation.subproof_unknown"
+                        ),
+                        "Alt kanıt aralığındaki satırlardan biri henüz erişilebilir değil.",
                         line_id=issue_line_id,
                     )
                 )
                 continue
-            resolved_line_citations.append(cited_line)
+
+            scope_id = start_line.get("opens")
+            cited_scope = scope_records.get(scope_id)
+            if (
+                start_line.get("rule") != "AS"
+                or cited_scope is None
+                or cited_scope["start_id"] != start_id
+            ):
+                issues.append(
+                    _issue(
+                        "citation.subproof_start_invalid",
+                        "Alt kanıt aralığı AS ile kapsam açan satırdan başlamalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+                continue
+            if end_line["scope_path"] != cited_scope["scope_path"]:
+                issues.append(
+                    _issue(
+                        "citation.subproof_end_scope",
+                        "Alt kanıtın son satırı doğrudan atıf yapılan kapsamda olmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+                continue
+            if cited_scope["last_direct_line_id"] != end_id:
+                issues.append(
+                    _issue(
+                        "citation.subproof_end_not_last",
+                        "Atıf alt kanıtın son doğrudan satırında bitmelidir.",
+                        line_id=issue_line_id,
+                    )
+                )
+                continue
+            if cited_scope["closed_at"] is None:
+                issues.append(
+                    _issue(
+                        "citation.subproof_open",
+                        "Atıf yapılmadan önce alt kanıt kapatılmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+                continue
+            if not _scope_is_accessible(
+                cited_scope["parent_path"],
+                scope_path,
+            ):
+                issues.append(
+                    _issue(
+                        "citation.subproof_inaccessible",
+                        "Alt kanıtın ana kapsamı mevcut satırdan erişilebilir değil.",
+                        line_id=issue_line_id,
+                    )
+                )
+                continue
+            resolved_subproof_citations.append(
+                {
+                    "start": start_line,
+                    "end": end_line,
+                    "scope": cited_scope,
+                }
+            )
 
         if opens is not None and rule != "AS":
             issues.append(
@@ -310,6 +444,16 @@ def audit_fitch_proof(
                     line_id=issue_line_id,
                 )
             )
+
+        only_line_citations = all(
+            isinstance(citation, dict) and citation.get("kind") == "line"
+            for citation in citations
+        )
+        only_subproof_citations = all(
+            isinstance(citation, dict)
+            and citation.get("kind") == "subproof"
+            for citation in citations
+        )
 
         if rule == "PR":
             if citations:
@@ -373,6 +517,14 @@ def audit_fitch_proof(
                         line_id=issue_line_id,
                     )
                 )
+            elif not only_line_citations:
+                issues.append(
+                    _issue(
+                        "rule.r_citation_type",
+                        "R bir satır atfı gerektirir; alt kanıt aralığı kullanmaz.",
+                        line_id=issue_line_id,
+                    )
+                )
             elif len(resolved_line_citations) == 1 and (
                 parsed_formula is not None
                 and resolved_line_citations[0]["formula"] is not None
@@ -385,6 +537,184 @@ def audit_fitch_proof(
                         line_id=issue_line_id,
                     )
                 )
+        elif rule == "∧I":
+            if len(citations) != 2:
+                issues.append(
+                    _issue(
+                        "rule.conjunction_introduction_citation_count",
+                        "∧I iki erişilebilir satıra atıf yapmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_line_citations:
+                issues.append(
+                    _issue(
+                        "rule.conjunction_introduction_citation_type",
+                        "∧I yalnız satır atıfları kullanır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif parsed_formula is not None and parsed_formula.operator != "∧":
+                issues.append(
+                    _issue(
+                        "rule.conjunction_introduction_conclusion",
+                        "∧I sonucunun ana bağlacı ∧ olmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif (
+                len(resolved_line_citations) == 2
+                and parsed_formula is not None
+                and all(
+                    item["formula"] is not None
+                    for item in resolved_line_citations
+                )
+                and (
+                    parsed_formula.left
+                    != resolved_line_citations[0]["formula"]
+                    or parsed_formula.right
+                    != resolved_line_citations[1]["formula"]
+                )
+            ):
+                issues.append(
+                    _issue(
+                        "rule.conjunction_introduction_mismatch",
+                        "∧I atıfları sonucun sol ve sağ bileşenleriyle sırayla eşleşmelidir.",
+                        line_id=issue_line_id,
+                    )
+                )
+        elif rule == "∧E":
+            if len(citations) != 1:
+                issues.append(
+                    _issue(
+                        "rule.conjunction_elimination_citation_count",
+                        "∧E bir birleşim satırına atıf yapmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_line_citations:
+                issues.append(
+                    _issue(
+                        "rule.conjunction_elimination_citation_type",
+                        "∧E yalnız bir satır atfı kullanır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif len(resolved_line_citations) == 1:
+                source_formula = resolved_line_citations[0]["formula"]
+                if (
+                    source_formula is not None
+                    and source_formula.operator != "∧"
+                ):
+                    issues.append(
+                        _issue(
+                            "rule.conjunction_elimination_source",
+                            "∧E kaynağının ana bağlacı ∧ olmalıdır.",
+                            line_id=issue_line_id,
+                        )
+                    )
+                elif (
+                    source_formula is not None
+                    and parsed_formula is not None
+                    and parsed_formula
+                    not in (source_formula.left, source_formula.right)
+                ):
+                    issues.append(
+                        _issue(
+                            "rule.conjunction_elimination_mismatch",
+                            "∧E yalnız birleşimin doğrudan bileşenlerinden birini çıkarır.",
+                            line_id=issue_line_id,
+                        )
+                    )
+        elif rule == "→E":
+            if len(citations) != 2:
+                issues.append(
+                    _issue(
+                        "rule.conditional_elimination_citation_count",
+                        "→E bir koşul ve onun önbileşeni olan iki satır ister.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_line_citations:
+                issues.append(
+                    _issue(
+                        "rule.conditional_elimination_citation_type",
+                        "→E yalnız satır atıfları kullanır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif (
+                len(resolved_line_citations) == 2
+                and parsed_formula is not None
+                and all(
+                    item["formula"] is not None
+                    for item in resolved_line_citations
+                )
+            ):
+                first = resolved_line_citations[0]["formula"]
+                second = resolved_line_citations[1]["formula"]
+                licensed = any(
+                    conditional.operator == "→"
+                    and argument == conditional.left
+                    and parsed_formula == conditional.right
+                    for conditional, argument in (
+                        (first, second),
+                        (second, first),
+                    )
+                )
+                if not licensed:
+                    issues.append(
+                        _issue(
+                            "rule.conditional_elimination_mismatch",
+                            "→E için bir koşul, onun önbileşeni ve artbileşenle eşleşen sonuç gerekir.",
+                            line_id=issue_line_id,
+                        )
+                    )
+        elif rule == "→I":
+            if len(citations) != 1:
+                issues.append(
+                    _issue(
+                        "rule.conditional_introduction_citation_count",
+                        "→I tam olarak bir kapalı alt kanıt aralığı ister.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif not only_subproof_citations:
+                issues.append(
+                    _issue(
+                        "rule.conditional_introduction_citation_type",
+                        "→I satır değil, alt kanıt aralığına atıf yapmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif parsed_formula is not None and parsed_formula.operator != "→":
+                issues.append(
+                    _issue(
+                        "rule.conditional_introduction_conclusion",
+                        "→I sonucunun ana bağlacı → olmalıdır.",
+                        line_id=issue_line_id,
+                    )
+                )
+            elif len(resolved_subproof_citations) == 1:
+                cited_subproof = resolved_subproof_citations[0]
+                start_formula = cited_subproof["start"]["formula"]
+                end_formula = cited_subproof["end"]["formula"]
+                if (
+                    parsed_formula is not None
+                    and start_formula is not None
+                    and end_formula is not None
+                    and (
+                        parsed_formula.left != start_formula
+                        or parsed_formula.right != end_formula
+                    )
+                ):
+                    issues.append(
+                        _issue(
+                            "rule.conditional_introduction_mismatch",
+                            "→I önbileşeni varsayım satırıyla, artbileşeni alt kanıtın son satırıyla eşleşmelidir.",
+                            line_id=issue_line_id,
+                        )
+                    )
 
         record = {
             "id": line_id,
@@ -392,9 +722,14 @@ def audit_fitch_proof(
             "scope_path": scope_path,
             "depth": depth,
             "position": position,
+            "rule": rule,
+            "opens": opens,
+            "closes": closes,
         }
         if line_id not in seen_lines:
             seen_lines[line_id] = record
+        if active_scopes:
+            scope_records[active_scopes[-1]]["last_direct_line_id"] = line_id
         last_line = record
 
     if require_complete:
