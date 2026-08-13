@@ -774,6 +774,27 @@
         return '';
     }
 
+    function getCsrfToken() {
+        const tokenInput = root.querySelector('input[name="csrfmiddlewaretoken"]');
+        return tokenInput ? tokenInput.value : getCookie('csrftoken');
+    }
+
+    async function readJsonResponse(response) {
+        const contentType = response.headers.get('content-type') || '';
+        if (response.redirected || !contentType.includes('application/json')) {
+            if (response.status === 401 || response.status === 403 || response.redirected) {
+                throw new Error('Oturum doğrulanamadı. Sayfayı yenileyip tekrar deneyin.');
+            }
+            throw new Error(`Sunucu beklenmeyen bir yanıt verdi (HTTP ${response.status}).`);
+        }
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || `İşlem tamamlanamadı (HTTP ${response.status}).`);
+        }
+        return data;
+    }
+
     function generatePersonId(sectionKey) {
         if (window.crypto && typeof window.crypto.randomUUID === 'function') {
             return `p-${sectionKey}-${window.crypto.randomUUID()}`.replace(/[^A-Za-z0-9_-]/g, '-');
@@ -880,14 +901,14 @@
     }
 
     async function saveState(dateValue) {
-        if (!saveUrl || !dateInput) return;
+        if (!saveUrl || !dateInput) return false;
         setStatus('Kaydediliyor...');
         try {
             const response = await fetch(saveUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-CSRFToken': getCsrfToken(),
                 },
                 body: JSON.stringify({
                     date: dateValue || dateInput.value,
@@ -895,11 +916,13 @@
                     marks: collectMarks(),
                 }),
             });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            await readJsonResponse(response);
             setStatus('Kaydedildi');
+            return true;
         } catch (error) {
-            setStatus('Kaydedilemedi');
+            setStatus(error.message || 'Kaydedilemedi');
             console.warn('Devam cetveli kaydedilemedi:', error);
+            return false;
         }
     }
 
@@ -939,7 +962,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-CSRFToken': getCsrfToken(),
                 },
                 body: JSON.stringify({
                     action,
@@ -948,8 +971,7 @@
                     end_date: endInput.value,
                 }),
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+            const data = await readJsonResponse(response);
 
             const actionText = action === 'apply' ? 'izinli işaretlendi' : 'izin işaretlerinden kaldırıldı';
             await fetchDateMarks();
@@ -1219,11 +1241,11 @@
             const url = new URL(dayStateUrl, window.location.origin);
             url.searchParams.set('date', dateInput.value);
             const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const data = await response.json();
+            const data = await readJsonResponse(response);
             applyMarks(data.marks || {});
             setStatus('');
         } catch (error) {
+            setStatus(error.message || 'Tarih işaretleri alınamadı');
             console.warn('Devam cetveli tarih işaretleri alınamadı:', error);
         }
     }
@@ -1262,7 +1284,14 @@
 
     const printButton = root.querySelector('[data-print-attendance]');
     if (printButton) {
-        printButton.addEventListener('click', () => window.print());
+        printButton.addEventListener('click', async () => {
+            if (saveTimer) {
+                window.clearTimeout(saveTimer);
+                saveTimer = null;
+            }
+            await saveState(activeDate || (dateInput && dateInput.value));
+            window.print();
+        });
     }
 })();
 </script>
