@@ -12,7 +12,7 @@ from typing import Mapping
 
 
 BINARY_CONNECTIVES = frozenset({"∧", "∨", "→", "↔"})
-LOGICAL_SYMBOLS = frozenset({"¬", "∀", "∃", "=", *BINARY_CONNECTIVES})
+LOGICAL_SYMBOLS = frozenset({"¬", "∀", "∃", "=", "≠", *BINARY_CONNECTIVES})
 PUNCTUATION = frozenset({"(", ")", ","})
 SUBSCRIPT_DIGITS = frozenset("₀₁₂₃₄₅₆₇₈₉")
 DEFAULT_VARIABLES = frozenset("stuvwxyz")
@@ -172,6 +172,11 @@ class FOLFormula:
         if self.kind == "identity":
             return f"{self.terms[0].render()}={self.terms[1].render()}"
         if self.kind == "negation":
+            if self.body.kind == "identity":
+                return (
+                    f"{self.body.terms[0].render()}"
+                    f"≠{self.body.terms[1].render()}"
+                )
             return f"¬{self.body.render()}"
         if self.kind == "binary":
             return (
@@ -456,7 +461,7 @@ class _Parser:
     def _parse_identity_formula(self) -> FOLFormula:
         left = self._parse_term()
         equals = self._peek()
-        if equals is None or equals.value != "=":
+        if equals is None or equals.value not in {"=", "≠"}:
             raise FOLParseError(
                 "formula.term_without_identity",
                 f"{left.symbol} bir terimdir; tek başına FOL formülü değildir.",
@@ -470,12 +475,21 @@ class _Parser:
                 equals.end,
             )
         right = self._parse_term()
-        return FOLFormula(
+        identity = FOLFormula(
             kind="identity",
             start=left.start,
             end=right.end,
             operator="=",
             terms=(left, right),
+        )
+        if equals.value == "=":
+            return identity
+        return FOLFormula(
+            kind="negation",
+            start=left.start,
+            end=right.end,
+            operator="¬",
+            body=identity,
         )
 
     def _parse_term(self) -> FOLTerm:
@@ -558,10 +572,14 @@ def fol_structure_key(formula: FOLFormula) -> tuple:
                 tuple(term_key(term) for term in node.terms),
             )
         if node.kind == "identity":
+            terms = sorted(
+                (term_key(node.terms[0]), term_key(node.terms[1])),
+                key=repr,
+            )
             return (
                 "identity",
-                term_key(node.terms[0]),
-                term_key(node.terms[1]),
+                terms[0],
+                terms[1],
             )
         if node.kind == "negation":
             return ("negation", visit(node.body))
@@ -624,10 +642,17 @@ def _nodes_match_with_binders(
             )
         )
     if candidate.kind == "identity":
-        return all(
-            _term_binding_key(left, candidate_binders)
-            == _term_binding_key(right, expected_binders)
-            for left, right in zip(candidate.terms, expected.terms)
+        candidate_terms = tuple(
+            _term_binding_key(term, candidate_binders)
+            for term in candidate.terms
+        )
+        expected_terms = tuple(
+            _term_binding_key(term, expected_binders)
+            for term in expected.terms
+        )
+        return (
+            candidate_terms == expected_terms
+            or candidate_terms == tuple(reversed(expected_terms))
         )
     if candidate.kind == "negation":
         return _nodes_match_with_binders(
@@ -773,6 +798,27 @@ def _has_quantifier_order_mismatch(
     return candidate_mapped_order != expected_order
 
 
+def _identity_usage(formula: FOLFormula) -> tuple[bool, bool]:
+    """Return whether a formula uses equality and explicit distinctness."""
+
+    if formula.kind == "identity":
+        return True, False
+    if formula.kind == "negation":
+        if formula.body.kind == "identity":
+            return False, True
+        return _identity_usage(formula.body)
+    if formula.kind == "binary":
+        left_equality, left_distinctness = _identity_usage(formula.left)
+        right_equality, right_distinctness = _identity_usage(formula.right)
+        return (
+            left_equality or right_equality,
+            left_distinctness or right_distinctness,
+        )
+    if formula.kind == "quantifier":
+        return _identity_usage(formula.body)
+    return False, False
+
+
 def _translation_mismatch_code(
     candidate: FOLFormula,
     expected: FOLFormula,
@@ -783,6 +829,16 @@ def _translation_mismatch_code(
 
     candidate_binders = candidate_binders if candidate_binders is not None else {}
     expected_binders = expected_binders if expected_binders is not None else {}
+    candidate_equality, candidate_distinctness = _identity_usage(candidate)
+    expected_equality, expected_distinctness = _identity_usage(expected)
+    if expected_distinctness and not candidate_distinctness:
+        return "translation.distinctness_missing"
+    if expected_equality and not candidate_equality:
+        return "translation.identity_missing"
+    if candidate_distinctness and not expected_distinctness:
+        return "translation.distinctness_extra"
+    if candidate_equality and not expected_equality:
+        return "translation.identity_extra"
     if _has_quantifier_order_mismatch(candidate, expected):
         return "translation.quantifier_order"
     if candidate.kind != expected.kind:
@@ -949,6 +1005,10 @@ def assess_fol_symbolization(
     ]
     priority = (
         "translation.condition_direction",
+        "translation.identity_missing",
+        "translation.distinctness_missing",
+        "translation.distinctness_extra",
+        "translation.identity_extra",
         "translation.quantifier_order",
         "translation.negation_scope",
         "translation.quantifier_kind",

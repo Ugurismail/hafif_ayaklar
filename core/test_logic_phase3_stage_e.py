@@ -22,6 +22,7 @@ from .logic_phase3_stage_e import (
     E29_SIGNATURE,
     E30_SIGNATURE,
     E31_SIGNATURE,
+    E32_SIGNATURE,
     STAGE_E_CANDIDATE_LESSONS,
     STAGE_E_CANDIDATE_MAP,
     STAGE_E_SOURCE_REFERENCES,
@@ -74,6 +75,33 @@ class FOLSyntaxCoreTests(SimpleTestCase):
         self.assertEqual(quantified.operator, "∀")
         self.assertTrue(quantified.is_sentence)
         self.assertEqual(quantified.render(), "∀x(F(x) → G(x))")
+
+    def test_not_equal_is_normalized_to_negated_identity(self):
+        formula = parse_fol("a≠b", self.signature)
+
+        self.assertEqual(formula.kind, "negation")
+        self.assertEqual(formula.body.kind, "identity")
+        self.assertEqual(formula.render(), "a≠b")
+        self.assertTrue(
+            formulas_alpha_equivalent(
+                formula,
+                parse_fol("¬a=b", self.signature),
+            )
+        )
+
+    def test_identity_is_symmetric_but_predicate_arguments_are_not(self):
+        self.assertTrue(
+            formulas_alpha_equivalent(
+                parse_fol("a=b", self.signature),
+                parse_fol("b=a", self.signature),
+            )
+        )
+        self.assertFalse(
+            formulas_alpha_equivalent(
+                parse_fol("R(a,b)", self.signature),
+                parse_fol("R(b,a)", self.signature),
+            )
+        )
 
     def test_predicate_arity_is_checked_against_the_signature(self):
         for source in ("F()", "F(a,b)", "R(a)", "R(a,b,x)"):
@@ -195,15 +223,15 @@ class LogicPhase3StageECandidateTests(SimpleTestCase):
         "symbolization_fixtures",
     }
 
-    def test_stage_e_contains_contiguous_e27_through_e31_candidates(self):
+    def test_stage_e_contains_contiguous_e27_through_e32_candidates(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_E_CANDIDATE_LESSONS],
-            ["E27", "E28", "E29", "E30", "E31"],
+            ["E27", "E28", "E29", "E30", "E31", "E32"],
         )
-        self.assertEqual(len(STAGE_E_CANDIDATE_MAP), 5)
+        self.assertEqual(len(STAGE_E_CANDIDATE_MAP), 6)
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_E_CANDIDATE_LESSONS],
-            [27, 28, 29, 30, 31],
+            [27, 28, 29, 30, 31, 32],
         )
         for lesson in STAGE_E_CANDIDATE_LESSONS:
             with self.subTest(lesson=lesson["curriculum_id"]):
@@ -218,6 +246,7 @@ class LogicPhase3StageECandidateTests(SimpleTestCase):
         self.assertEqual(STAGE_E_CANDIDATE_LESSONS[2]["estimated_minutes"], 35)
         self.assertEqual(STAGE_E_CANDIDATE_LESSONS[3]["estimated_minutes"], 45)
         self.assertEqual(STAGE_E_CANDIDATE_LESSONS[4]["estimated_minutes"], 40)
+        self.assertEqual(STAGE_E_CANDIDATE_LESSONS[5]["estimated_minutes"], 45)
 
     def test_e27_prerequisites_bridge_completed_b_and_d_candidates(self):
         lesson = STAGE_E_CANDIDATE_LESSONS[0]
@@ -792,6 +821,128 @@ class LogicPhase3StageECandidateTests(SimpleTestCase):
 
     def test_e31_competencies_are_stable_and_unique(self):
         competencies = STAGE_E_CANDIDATE_LESSONS[4]["competencies"]
+
+        self.assertEqual(len(competencies), len(set(competencies)))
+        self.assertTrue(
+            all(
+                competency.startswith("fol.")
+                and competency.count(".") == 1
+                and competency.replace(".", "").replace("_", "").isalnum()
+                for competency in competencies
+            )
+        )
+
+    def test_e32_prerequisite_is_the_scope_lesson(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[5]
+
+        self.assertEqual(
+            lesson["prerequisites"],
+            ["ders-fol-kapsam-niceleyici-olumsuzlama"],
+        )
+        prerequisite = STAGE_E_CANDIDATE_MAP[lesson["prerequisites"][0]]
+        self.assertLess(prerequisite["order"], lesson["order"])
+
+    def test_e32_has_sufficient_identity_and_cardinality_depth(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[5]
+
+        self.assertGreaterEqual(len(lesson["sections"]), 7)
+        self.assertGreaterEqual(len(lesson["worked_examples"]), 12)
+        self.assertGreaterEqual(len(lesson["practice"]), 12)
+        self.assertGreaterEqual(len(lesson["production_tasks"]), 1)
+        self.assertGreaterEqual(len(lesson["mastery_evidence"]), 6)
+        self.assertGreaterEqual(len(lesson["syntax_fixtures"]), 14)
+        self.assertGreaterEqual(len(lesson["symbolization_fixtures"]), 9)
+        self.assertIn("identity", lesson["syntax_scope"]["introduced"])
+        self.assertIn("exactly_n", lesson["syntax_scope"]["introduced"])
+        self.assertIn(
+            "identity_proof_rules",
+            lesson["syntax_scope"]["locked_until_later"],
+        )
+
+    def test_e32_signature_supports_three_witnesses_and_a_binary_relation(self):
+        signature = signature_from_data(E32_SIGNATURE)
+
+        self.assertEqual(signature.predicates["F"], 1)
+        self.assertEqual(signature.predicates["T"], 2)
+        self.assertTrue({"x", "y", "z"}.issubset(signature.variables))
+        self.assertEqual(signature.names, frozenset({"a", "b", "c"}))
+
+    def test_e32_sources_are_known_and_relevant(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[5]
+
+        self.assertEqual(
+            lesson["source_ids"],
+            [
+                "forallx-identity",
+                "forallx-multiple-generality",
+                "forallx-fol-sentences",
+                "mit-logic-sequence",
+            ],
+        )
+        self.assertTrue(
+            set(lesson["source_ids"]).issubset(STAGE_E_SOURCE_REFERENCES)
+        )
+
+    def test_every_e32_syntax_fixture_matches_the_independent_parser(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[5]
+        signature = signature_from_data(lesson["fol_signature"])
+
+        for fixture in lesson["syntax_fixtures"]:
+            with self.subTest(fixture=fixture["id"]):
+                result = audit_fol_expression(fixture["source"], signature)
+                self.assertEqual(result["accepted"], fixture["accepted"])
+                if fixture["accepted"]:
+                    self.assertEqual(
+                        result["category"],
+                        fixture["expected_category"],
+                    )
+                else:
+                    self.assertEqual(
+                        result["issue_code"],
+                        fixture["expected_issue_code"],
+                    )
+
+    def test_every_e32_translation_check_has_the_declared_result(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[5]
+        signature = signature_from_data(lesson["fol_signature"])
+
+        for fixture in lesson["symbolization_fixtures"]:
+            accepted_sources = [
+                reading["source"]
+                for reading in fixture["accepted_readings"]
+            ]
+            for reading in fixture["accepted_readings"]:
+                formula = parse_fol(reading["source"], signature)
+                self.assertTrue(formula.is_sentence)
+                self.assertTrue(reading["context_condition"])
+                self.assertTrue(reading["back_translation"])
+            for check in fixture["checks"]:
+                with self.subTest(
+                    fixture=fixture["id"],
+                    source=check["source"],
+                ):
+                    result = assess_fol_symbolization(
+                        check["source"],
+                        accepted_sources,
+                        signature,
+                    )
+                    self.assertEqual(result["accepted"], check["accepted"])
+                    self.assertEqual(
+                        result["issue_code"],
+                        check["expected_issue_code"],
+                    )
+
+    def test_every_e32_worked_formula_is_parseable(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[5]
+        signature = signature_from_data(lesson["fol_signature"])
+
+        for example in lesson["worked_examples"]:
+            with self.subTest(source=example["text"]):
+                formula = parse_fol(example["text"], signature)
+                self.assertTrue(formula.is_sentence)
+
+    def test_e32_competencies_are_stable_and_unique(self):
+        competencies = STAGE_E_CANDIDATE_LESSONS[5]["competencies"]
 
         self.assertEqual(len(competencies), len(set(competencies)))
         self.assertTrue(

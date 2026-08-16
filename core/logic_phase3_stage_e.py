@@ -196,6 +196,34 @@ E31_SIGNATURE = {
 }
 
 
+E32_SIGNATURE = {
+    "domain": "araştırma ekibindeki insanlar",
+    "names": {
+        "a": "Ada",
+        "b": "Bora",
+        "c": "Cem",
+    },
+    "variables": ["w", "x", "y", "z"],
+    "predicates": {
+        "F": {
+            "arity": 1,
+            "reading": "x araştırmacı",
+            "roles": ["araştırmacı olan"],
+        },
+        "G": {
+            "arity": 1,
+            "reading": "x görevlendirildi",
+            "roles": ["görevlendirilen"],
+        },
+        "T": {
+            "arity": 2,
+            "reading": "x, y'yi tanıyor",
+            "roles": ["tanıyan", "tanınan"],
+        },
+    },
+}
+
+
 def _syntax_fixture(
     fixture_id,
     source,
@@ -2552,12 +2580,418 @@ def _candidate_e31():
     return lesson
 
 
+def _candidate_e32():
+    lesson = _lesson(
+        "E32",
+        "ders-fol-kimlik-sayisal-ifadeler",
+        "Kimlik ve Sayısal İfadeler",
+        "Kimliği benzerlikten ayırır; 'başka', 'yalnız', 'hariç', en az, en çok ve tam olarak ifadelerini açık varlık ve farklılık koşullarıyla kurar.",
+        "Kimlik, farklılık ve nicelik sayma kalıpları",
+        45,
+        ["ders-fol-kapsam-niceleyici-olumsuzlama"],
+        [
+            "fol.identity_read",
+            "fol.distinctness_construct",
+            "fol.cardinality_at_least",
+            "fol.cardinality_at_most",
+            "fol.cardinality_exactly",
+        ],
+        [
+            "a=b ifadesini iki adın aynı nesneyi gösterdiği iddiası olarak okumak.",
+            "x≠y ile iki tanığın farklı olmasını açıkça zorunlu kılmak.",
+            "'Başka', 'kendisi dışında', 'yalnız' ve 'hariç' kalıplarının kimlik koşullarını ayırmak.",
+            "En az iki ve en az üç için bütün gerekli ikili farklılıkları yazmak.",
+            "En çok bir ve en çok iki kalıplarını koşullu kimlikle kurmak.",
+            "Tam olarak n ifadesini varlık ile üst sınırın birlikte sağlanması olarak açıklamak.",
+        ],
+        [
+            ("Kimlik", "İki terimin aynı alan nesnesini gösterdiğini söyleyen = bağıntısı."),
+            ("Farklılık", "İki terimin farklı nesneleri gösterdiğini söyleyen x≠y, yani ¬(x=y), koşulu."),
+            ("Eş gönderim", "Farklı adların aynı nesneyi göstermesi; a=b bunun mantıksal iddiasıdır."),
+            ("Ayrık tanık", "Başka bir tanıkla özdeş olmadığı açık bir ≠ koşuluyla belirtilen nesne."),
+            ("Alt sınır", "En az n farklı nesnenin hedef özelliği taşıdığını söyleyen koşul."),
+            ("Üst sınır", "n'den fazla farklı hedef nesne bulunmasını dışlayan koşul."),
+            ("Tam sayı koşulu", "Aynı özellik için alt ve üst sınırın birlikte kurulması."),
+            ("Varlık önkabulu", "Gündelik 'yalnız' veya 'hariç' ifadesinin hedef nesnenin gerçekten varlığını ayrıca gerektirip gerektirmediği."),
+        ],
+        [
+            _section(
+                "Kimlik benzerlik değil, aynı nesnedir",
+                "a=b, Ada ve Bora adlarının benzer kişileri değil aynı alan nesnesini gösterdiğini söyler. = mantıksal bir işarettir; sembol anahtarında yeni bir yüklem değildir.",
+                "İki adın veya değişkenin aynı nesneyi gösterip göstermediği ifade edilirken.",
+                "a=b · x=y · x≠y kısaltması: ¬(x=y)",
+                "Önce iki terimin gönderimini sor; aynı gönderim iddia ediliyorsa =, farklı gönderim zorunluysa ≠ kullan.",
+                "a=b'yi Ada ile Bora'nın aynı özelliklere sahip olması diye okumak.",
+                [
+                    ("a=b", "Ada adı ile Bora adı aynı kişiyi gösterir."),
+                    ("a≠b", "Ada ile Bora farklı kişilerdir."),
+                    ("F(a) ∧ F(b)", "İki adın da araştırmacı olması onların aynı kişi olduğunu göstermez."),
+                ],
+                (
+                    "Terimlerin özelliklerini değil gönderimlerini karşılaştırmak.",
+                    "Aynı özellikleri taşıyan nesneleri özdeş saymak.",
+                    "Kimlik, nitel benzerlikten daha güçlüdür.",
+                ),
+            ),
+            _section(
+                "İki niceleyici iki farklı tanık garanti etmez",
+                "∃x∃y(F(x)∧F(y)) ifadesinde x ile y aynı kişiyi seçebilir. En az iki araştırmacı için x≠y ayrıca yazılmalıdır.",
+                "'İki', 'başka biri' veya 'farklı kişiler' denildiğinde.",
+                "∃x∃y((F(x) ∧ F(y)) ∧ x≠y)",
+                "Her yeni tanık için hedef özellikleri yaz; sonra ayrı olması gereken tanık çiftlerini ≠ ile bağla.",
+                "Değişken harfleri farklı olduğu için nesnelerin de kendiliğinden farklı olduğunu sanmak.",
+                [
+                    ("∃x∃y(F(x) ∧ F(y))", "Bir araştırmacı bile bu formülü doğru yapabilir."),
+                    ("∃x∃y((F(x) ∧ F(y)) ∧ x≠y)", "En az iki farklı araştırmacı vardır."),
+                    ("∀x∃y(x≠y ∧ T(x,y))", "Herkes kendisi dışında en az birini tanır."),
+                ],
+                (
+                    "Değişken adı ile seçilen nesneyi ayrı tutmak.",
+                    "x ve y harflerini farklılık kanıtı saymak.",
+                    "Farklılık nesnelere ilişkin ek bir iddiadır.",
+                ),
+            ),
+            _section(
+                "En az n: tanıkları kur ve bütün çiftleri ayır",
+                "En az iki için bir, en az üç için üç ikili farklılık gerekir. Üç tanıkta x≠y ve y≠z yazmak x ile z'nin aynı olmasını hâlâ mümkün bırakır.",
+                "Bir özelliği taşıyan en az iki veya üç nesne sayılırken.",
+                "en az 3: F(x), F(y), F(z), x≠y, x≠z, y≠z",
+                "n tanığı yaz; her tanığa yüklemi uygula; sonra n(n−1)/2 farklı tanık çiftinin tamamını denetle.",
+                "Zincir biçiminde iki farklılık yazarak bütün üçlünün ayrık olduğunu sanmak.",
+                [
+                    ("∃xF(x)", "En az bir araştırmacı vardır."),
+                    ("∃x∃y((F(x) ∧ F(y)) ∧ x≠y)", "En az iki farklı araştırmacı vardır."),
+                    ("x≠y, x≠z, y≠z", "Üç tanığın bütün ikili farklılık listesi."),
+                ],
+                (
+                    "Tanıkları düğüm, ≠ koşullarını bütün çiftleri birleştiren kenar olarak kontrol etmek.",
+                    "Üç tanıkta yalnız komşu harfleri ayırmak.",
+                    "Her tanık çifti ayrı ayrı farklılaştırılır.",
+                ),
+            ),
+            _section(
+                "En çok n: fazla tanıkların çakışmasını zorunlu kıl",
+                "En çok bir F, herhangi iki F tanığının aynı olmasını ister. En çok iki F ise üç F tanığından en az ikisinin aynı olmasını zorunlu kılar.",
+                "Bir sınıfın üst sınırı belirtilirken ve varlık iddiası eklenmek istenmezken.",
+                "en çok 1: ∀x∀y((F(x)∧F(y))→x=y)",
+                "n+1 keyfi hedef tanığı varsay; bunlardan en az ikisinin özdeş olması gerektiğini sonuçta yaz.",
+                "En çok bir cümlesine gereksizce ∃xF(x) ekleyip hiç F bulunmaması olasılığını dışlamak.",
+                [
+                    ("∀x∀y((F(x) ∧ F(y)) → x=y)", "Araştırmacı sayısı sıfır veya birdir."),
+                    ("¬∃x∃y((F(x) ∧ F(y)) ∧ x≠y)", "İki farklı araştırmacı bulunamaz."),
+                    ("∀x∀y∀z(((F(x) ∧ F(y)) ∧ F(z)) → ((x=y ∨ x=z) ∨ y=z))", "Üç araştırmacı adayı arasında en az bir eşit çift vardır."),
+                ],
+                (
+                    "Üst sınırın varlık değil fazla ayrık tanık yasağı olduğunu görmek.",
+                    "En çok biri tam olarak bir diye okumak.",
+                    "Üst sınır tek başına alt sınır kurmaz.",
+                ),
+            ),
+            _section(
+                "Tam olarak n: alt ve üst sınırı birlikte kur",
+                "Tam olarak bir, en az bir ve en çok bir koşullarını; tam olarak iki ise iki farklı tanık ve bütün hedef nesnelerin bu ikisinden biri olması koşulunu birlikte gerektirir.",
+                "Sayı hem eksik hem fazla olamayacak biçimde sabitlenirken.",
+                "tam 2: ∃x∃y(Fx ∧ Fy ∧ x≠y ∧ ∀z(Fz→(z=x∨z=y)))",
+                "Önce gerekli farklı tanıkları kur; sonra keyfi bir hedef nesnenin seçilmiş tanıklardan birine eşit olduğunu söyle.",
+                "Yalnız varlığı yazarak fazladan örnekleri veya yalnız üst sınırı yazarak sıfır örneği açık bırakmak.",
+                [
+                    ("∃x(F(x) ∧ ∀y(F(y) → y=x))", "Tam olarak bir araştırmacı vardır."),
+                    ("∃x∃y(((F(x) ∧ F(y)) ∧ x≠y) ∧ ∀z(F(z) → (z=x ∨ z=y)))", "Tam olarak iki araştırmacı vardır."),
+                    ("∃x∃y((F(x) ∧ F(y)) ∧ x≠y)", "Yalnız en az iki; üçüncü araştırmacıyı dışlamaz."),
+                ],
+                (
+                    "Formülü alt sınır ve üst sınır diye iki renkte denetlemek.",
+                    "Tam sayıyı yalnız bir yarısıyla ifade etmek.",
+                    "Tamlık iki bağımsız sınırın birleşimidir.",
+                ),
+            ),
+            _section(
+                "Yalnız ve hariç: varlık iddiasını açıklaştır",
+                "'Yalnız Ada araştırmacıdır' hem F(a)'yı hem bütün araştırmacıların Ada olduğunu söyler. 'Ada hariç herkes görevlendirildi' ise tek başına Ada'nın görevlendirilmediğini söylemeyebilir.",
+                "Doğal dil bir kişiyi tek örnek veya istisna olarak sunduğunda.",
+                "yalnız Ada F: F(a) ∧ ∀x(F(x)→x=a)",
+                "Önce hedef kişinin özelliği taşıdığını ayrıca ileri sürüp sürmediğini; sonra diğer nesnelerin nasıl kısıtlandığını yaz.",
+                "'Yalnız Ada F' için sadece ∀x(F(x)→x=a) yazıp Ada'nın F olmasını garanti ettiğini sanmak.",
+                [
+                    ("(F(a) ∧ ∀x(F(x) → x=a))", "Ada araştırmacıdır ve başka araştırmacı yoktur."),
+                    ("∀x(x≠a → G(x))", "Ada dışındaki herkes görevlendirildi; Ada'nın durumu açık bırakılır."),
+                    ("(¬G(a) ∧ ∀x(x≠a → G(x)))", "Ada görevlendirilmedi, diğer herkes görevlendirildi."),
+                ],
+                (
+                    "Varlık, teklik ve istisna iddialarını ayrı satırlarda yazmak.",
+                    "Gündelik vurguya gizlenmiş varlık koşulunu otomatik varsaymak veya unutmak.",
+                    "Doğal dil önkabulleri formülde açık karara dönüşür.",
+                ),
+            ),
+            _section(
+                "Kimlik kalıplarını geri çeviriyle denetle",
+                "Kimlik içeren uzun formüllerde yalnız sembol dizisine bakmak hata üretir. Her = ve ≠ koşulu doğal dilde ayrı okunmalı, sonra bütün formülün sayı iddiası yeniden kurulmalıdır.",
+                "En az/en çok/tam olarak formülü tamamlandıktan sonra.",
+                "tanıklar → farklılıklar → kapsama sınırı → geri çeviri",
+                "Seçilen tanıkları listele, her farklılık çiftini oku, en içteki üst sınırı açıklayıp tam cümleye dön.",
+                "Doğru şablona benzediği için eksik bir farklılık veya varlık koşulunu gözden kaçırmak.",
+                [
+                    ("x=y", "x ile y aynı nesnedir."),
+                    ("x≠y", "x ile y farklı nesnelerdir."),
+                    ("∀z(F(z) → (z=x ∨ z=y))", "Her araştırmacı x veya y'den biridir."),
+                ],
+                (
+                    "Her atomik kimlik iddiasını sesli geri okumak.",
+                    "Kalıbı anlamadan ezberden kopyalamak.",
+                    "Geri çeviri eksik sınırı görünür kılar.",
+                ),
+            ),
+        ],
+        [
+            _worked("a=b", "İki adın aynı alan nesnesini gösterdiği ileri sürülür.", "Ada, Bora ile aynı kişidir"),
+            _worked("a≠b", "≠, ¬(a=b) kısaltmasıdır.", "Ada ile Bora farklı kişilerdir"),
+            _worked("∀x∃y(x≠y ∧ T(x,y))", "Her x için ondan farklı bir y tanığı seçilir.", "Herkes kendisi dışında birini tanır"),
+            _worked("∃x∃y((F(x) ∧ F(y)) ∧ x≠y)", "İki F tanığı açık farklılıkla ayrılır.", "En az iki araştırmacı var"),
+            _worked("∃x∃y∃z((((F(x) ∧ F(y)) ∧ F(z)) ∧ x≠y) ∧ (x≠z ∧ y≠z))", "Üç F tanığı ve üç ikili farklılık birlikte kurulur.", "En az üç araştırmacı var"),
+            _worked("∀x∀y((F(x) ∧ F(y)) → x=y)", "Her iki F tanığı çakışmak zorundadır.", "En çok bir araştırmacı var"),
+            _worked("∀x∀y∀z(((F(x) ∧ F(y)) ∧ F(z)) → ((x=y ∨ x=z) ∨ y=z))", "Üç F adayı arasında eşit bir çift bulunmalıdır.", "En çok iki araştırmacı var"),
+            _worked("∃x(F(x) ∧ ∀y(F(y) → y=x))", "Bir F vardır ve bütün F'ler odur.", "Tam olarak bir araştırmacı var"),
+            _worked("∃x∃y(((F(x) ∧ F(y)) ∧ x≠y) ∧ ∀z(F(z) → (z=x ∨ z=y)))", "İki farklı F vardır ve başka F yoktur.", "Tam olarak iki araştırmacı var"),
+            _worked("(F(a) ∧ ∀x(F(x) → x=a))", "Ada'nın F oluşu ile teklik koşulu birlikte yazılır.", "Yalnız Ada araştırmacıdır"),
+            _worked("∃x∃y(F(x) ∧ F(y))", "x ve y aynı kişiyi seçebildiği için iki farklı araştırmacı çıkmaz.", "Eksik farklılık", "bad"),
+            _worked("∀x∀y((F(x) ∧ F(y)) → x≠y)", "İki F varsa farklı olmasını istemek sayıyı üstten sınırlamaz; hatta tek F aynı değişkenle çelişki üretir.", "Yanlış üst sınır", "bad"),
+        ],
+        [
+            "='yi aynı özelliklere sahip olma veya benzerlik diye okumak.",
+            "Farklı değişkenlerin kendiliğinden farklı nesneler seçtiğini sanmak.",
+            "En az iki formülünde x≠y koşulunu unutmak.",
+            "En az üçte x≠z gibi bir ikili farklılığı atlamak.",
+            "En çok bir formülünü varoluş iddiası sanmak.",
+            "En çok iki için üç hedef tanığı değil yalnız iki tanığı karşılaştırmak.",
+            "Tam olarak birde varlık veya teklik yarısından yalnız birini yazmak.",
+            "Tam olarak ikide seçilen iki tanık dışındaki hedefleri dışlamamak.",
+            "'Yalnız Ada' cümlesinde F(a) varlık koşulunu unutmak.",
+            "'Ada hariç' ifadesinin Ada hakkında olumsuz iddia taşıyıp taşımadığını açıklamamak.",
+        ],
+        _practice(
+            [
+                ("a=b ne söyler?", ["a ve b aynı nesneyi gösterir", "a ile b benzerdir", "a ve b aynı yüklemdir", "a, b'yi tanır"], "a ve b aynı nesneyi gösterir", "Kimlik gönderimlerin aynılığıdır.", "Temel"),
+                ("x≠y hangi yapının kısaltmasıdır?", ["¬(x=y)", "F(x)∧F(y)", "x=y", "¬F(x)"], "¬(x=y)", "Farklılık kimliğin yadsınmasıdır.", "Temel"),
+                ("∃x∃y(F(x)∧F(y)) neden en az iki F demez?", ["x ve y aynı nesneyi seçebilir", "İki ∃ yasaktır", "F tek yerli değildir", "Alan boş olmalıdır"], "x ve y aynı nesneyi seçebilir", "Niceleyiciler ayrık tanık garantilemez.", "Temel"),
+                ("En az iki F için eksik olmayan koşul hangisidir?", ["∃x∃y((F(x)∧F(y))∧x≠y)", "∃x∃y(F(x)∧F(y))", "∀xF(x)", "∃xF(x)"], "∃x∃y((F(x)∧F(y))∧x≠y)", "İki F tanığı açıkça ayrılır.", "Orta"),
+                ("Üç tanık için kaç ikili farklılık gerekir?", ["3", "2", "1", "6"], "3", "x≠y, x≠z ve y≠z gerekir.", "Orta"),
+                ("En çok bir F formülü F'nin varlığını garanti eder mi?", ["Hayır", "Evet", "Yalnız alan doluysa", "Yalnız iki ad varsa"], "Hayır", "Sıfır F de üst sınırı sağlar.", "Orta"),
+                ("∀x∀y((F(x)∧F(y))→x=y) ne söyler?", ["En çok bir F vardır", "En az iki F vardır", "Tam iki F vardır", "Her şey F'dir"], "En çok bir F vardır", "Her iki F tanığı aynı olmak zorundadır.", "Orta"),
+                ("Tam olarak bir F için hangi iki parça gerekir?", ["Varlık ve en çok bir", "İki varlık", "Yalnız en çok bir", "Yalnız en az iki"], "Varlık ve en çok bir", "Tamlık alt ve üst sınırı birleştirir.", "Orta"),
+                ("En çok iki F kontrolünde neden üç değişken kullanılır?", ["Üç F adayı arasında ikisini eşitlemek için", "Arite üç olduğu için", "Alan üç kişi olduğu için", "Bir değişken serbest kalsın diye"], "Üç F adayı arasında ikisini eşitlemek için", "Üç farklı F olasılığı dışlanır.", "İleri"),
+                ("'Yalnız Ada F'dir' için F(a) neden ayrıca gerekir?", ["Ada'nın gerçekten F olduğunu garanti etmek için", "a'yı değişken yapmak için", "Alanı doldurmak için", "Kimliği kaldırmak için"], "Ada'nın gerçekten F olduğunu garanti etmek için", "∀x(F(x)→x=a) tek başına hiç F yokken de doğrudur.", "İleri"),
+                ("∀x(x≠a→G(x)) Ada hakkında ne söyler?", ["G olup olmadığını açık bırakır", "Kesinlikle G değildir", "Kesinlikle G'dir", "Ada yoktur"], "G olup olmadığını açık bırakır", "Koşul yalnız a'dan farklı nesnelere uygulanır.", "İleri"),
+                ("Tam olarak iki F formülünün üst sınır parçası hangisidir?", ["∀z(F(z)→(z=x∨z=y))", "x≠y", "F(x)∧F(y)", "∃x∃y"], "∀z(F(z)→(z=x∨z=y))", "Her F seçilen iki tanıktan biri olmak zorundadır.", "İleri"),
+            ]
+        ),
+        {
+            "prompt": "Bir özellik için en az bir, en az iki, en az üç, en çok bir, en çok iki, tam bir ve tam iki formüllerini aynı anahtar altında kur; her birini tanık, farklılık ve sınır tablosuyla geri oku.",
+            "starter": "Önce gerekli tanık sayısını ve bütün farklı tanık çiftlerini listele; üst sınır gerekiyorsa bir fazla keyfi tanığı denetle.",
+            "checks": [
+                "Kimlik benzerlik değil aynı gönderim olarak okundu",
+                "En az iki için x≠y açıkça yazıldı",
+                "En az üç için üç ikili farklılık tamamlandı",
+                "En çok kalıpları gereksiz varlık iddiası eklemedi",
+                "Tam sayı kalıpları alt ve üst sınırı birlikte kurdu",
+                "Yalnız ve hariç cümlelerinde varlık önkabulleri açıklandı",
+                "Her uzun formül doğal dile geri çevrildi",
+            ],
+            "solution": "Kontrol örneği: tam iki F, iki farklı F tanığı ve her F'nin bu iki tanıktan biri olması koşuludur.",
+        },
+        [
+            _production_task(
+                "Kendi bağlamında bir kimlik vakası, bir 'başka', bir 'yalnız/hariç' ve en az/en çok/tam olarak sayı cümleleri üret; her formülü tanık-farklılık-sınır tablosuyla denetle.",
+                [
+                    "Alan, adlar ve yüklemler açık anahtarla verildi.",
+                    "Kimlik ile nitel benzerlik ayrıldı.",
+                    "Başka/kendisi dışında cümlesinde ≠ koşulu doğru bağlandı.",
+                    "En az üçte bütün ikili farklılıklar yazıldı.",
+                    "En çok bir ve en çok iki varlık iddiasından ayrıldı.",
+                    "Tam bir ve tam iki alt-üst sınır bileşimiyle kuruldu.",
+                    "Yalnız/hariç ifadesinin varlık önkabulu açıklandı.",
+                    "Her formül geri çeviriyle denetlendi.",
+                ],
+                "Değerlendirme şablon ezberinden çok her =/≠ koşulunun işlevini ve sayı sınırlarının eksiksizliğini ölçer.",
+                "Bağlam",
+                ["Araştırma ekibi", "Kütüphane koleksiyonu", "Turnuva katılımcıları", "Aile ilişkileri", "Kendi sayı bağlamın"],
+                "En az bir örnekte gündelik 'yalnız' ifadesinin varlık önkabulünü tartış.",
+            ),
+        ],
+        [
+            "Kimliği aynı özelliklere sahip olmaktan ayırma.",
+            "İki tanığın farklılığı için açık ≠ koşulu kurma.",
+            "En az üçte bütün ikili farklılıkları eksiksiz yazma.",
+            "En çok bir ve en çok iki kalıplarını varlık iddiasından ayırma.",
+            "Tam olarak bir ve ikiyi alt-üst sınır bileşimiyle kurma.",
+            "Yalnız ve hariç cümlelerinde varlık önkabullerini açıklama.",
+        ],
+        [
+            "a=b neden a ile b'nin benzer olduğu anlamına gelmez?",
+            "İki varoluş niceleyicisi neden iki farklı nesne garanti etmez?",
+            "En az üçte hangi farklılık çiftleri gerekir?",
+            "En çok bir neden tam olarak bir değildir?",
+            "Tam olarak iki formülünde üst sınır hangi parçada kurulur?",
+            "Yalnız ve hariç ifadelerinde hangi varlık iddiaları ayrıca kararlaştırılır?",
+        ],
+        "E33'te bu uzun formülleri oluşturan terim ve formül kurallarını tümevarımsal olarak kesinleştirecek; serbest/bağlı oluşum ile güvenli yerine koymayı öğreneceğiz.",
+        ["forallx-identity", "forallx-multiple-generality", "forallx-fol-sentences", "mit-logic-sequence"],
+        "Ders standart özdeşlikli birinci-derece mantığı kullanır. Sayı ifadeleri sonlu sayı şemalarıdır; betimlemeler kuramı, fonksiyon sembolleri ve kimliğin kanıt kuralları bu aşamada açılmaz.",
+        ["ders-29-kimlik-yuklemler-ve-alan"],
+    )
+    lesson["fol_signature"] = E32_SIGNATURE
+    lesson["syntax_scope"] = {
+        "introduced": [
+            "identity",
+            "distinctness",
+            "at_least_n",
+            "at_most_n",
+            "exactly_n",
+            "only_except_patterns",
+        ],
+        "review_only": [
+            "multiple_quantifier",
+            "quantifier_negation",
+            "conditional_restriction",
+            "argument_order",
+        ],
+        "locked_until_later": [
+            "identity_proof_rules",
+            "definite_descriptions",
+            "function_symbols",
+            "formal_model_truth",
+            "substitution",
+        ],
+    }
+    lesson["syntax_fixtures"] = [
+        _syntax_fixture("e32-name-identity", "a=b", accepted=True, category="sentence", explanation="İki ad arasındaki kimlik kapalı cümledir."),
+        _syntax_fixture("e32-name-distinct", "a≠b", accepted=True, category="sentence", explanation="≠, kimliğin yadsınması olarak ayrıştırılır."),
+        _syntax_fixture("e32-variable-identity", "x=y", accepted=True, category="open_formula", explanation="İki değişken de serbesttir."),
+        _syntax_fixture("e32-bound-identity", "∀x∃y(x=y ∨ F(y))", accepted=True, category="sentence", explanation="Kimlik atomu niceleyicilerin kapsamındadır."),
+        _syntax_fixture("e32-other", "∀x∃y(x≠y ∧ T(x,y))", accepted=True, category="sentence", explanation="Her kişi için farklı bir tanık bağlanır."),
+        _syntax_fixture("e32-at-least-two", "∃x∃y((F(x) ∧ F(y)) ∧ x≠y)", accepted=True, category="sentence", explanation="İki farklı F tanığı vardır."),
+        _syntax_fixture("e32-at-most-one", "∀x∀y((F(x) ∧ F(y)) → x=y)", accepted=True, category="sentence", explanation="Her iki F tanığı özdeş olmak zorundadır."),
+        _syntax_fixture("e32-exactly-one", "∃x(F(x) ∧ ∀y(F(y) → y=x))", accepted=True, category="sentence", explanation="Varlık ve teklik birlikte kurulur."),
+        _syntax_fixture("e32-exactly-two", "∃x∃y(((F(x) ∧ F(y)) ∧ x≠y) ∧ ∀z(F(z) → (z=x ∨ z=y)))", accepted=True, category="sentence", explanation="İki farklı tanık ve üst sınır vardır."),
+        _syntax_fixture("e32-identity-right-missing", "a=", accepted=False, issue_code="identity.right_term_missing", explanation="Kimliğin sağ terimi eksiktir."),
+        _syntax_fixture("e32-distinct-right-missing", "x≠", accepted=False, issue_code="identity.right_term_missing", explanation="Farklılığın sağ terimi eksiktir."),
+        _syntax_fixture("e32-unknown-term", "a=q", accepted=False, issue_code="term.unknown", explanation="q anahtarda terim değildir."),
+        _syntax_fixture("e32-bare-term", "a", accepted=True, category="name", explanation="Ad bir terimdir; sınıflandırılır fakat tek başına formül değildir."),
+        _syntax_fixture("e32-bad-equality-target", "a=F(a)", accepted=False, issue_code="term.expected", explanation="Kimliğin sağında formül değil terim gerekir."),
+    ]
+    lesson["symbolization_fixtures"] = [
+        _symbolization_fixture(
+            "e32-same-person",
+            "Ada, Bora ile aynı kişidir.",
+            [("a=b", "İki adın gönderimi özdeşleştirilir.", "Ada ve Bora adları aynı kişiyi gösterir.")],
+            [
+                ("a=b", True, None, "Kimlik doğrudan kurulmuştur."),
+                ("b=a", True, None, "Kimlik simetriktir."),
+                ("(F(a) ∧ F(b))", False, "translation.identity_missing", "Ortak özellik aynı kişi olmayı göstermez."),
+            ],
+            teaching_point="Kimlik, ortak yüklemden değil aynı gönderimden söz eder.",
+        ),
+        _symbolization_fixture(
+            "e32-different-people",
+            "Ada ile Bora farklı kişilerdir.",
+            [("a≠b", "İki ad arasındaki kimlik yadsınır.", "Ada, Bora değildir.")],
+            [
+                ("a≠b", True, None, "Farklılık açıkça kurulmuştur."),
+                ("b≠a", True, None, "Farklılık simetriktir."),
+                ("a=b", False, "translation.distinctness_missing", "Kimlik, hedef farklılığın tersidir."),
+            ],
+            teaching_point="≠, ayrı değişken harflerinden bağımsız bir nesne iddiasıdır.",
+        ),
+        _symbolization_fixture(
+            "e32-knows-other",
+            "Herkes kendisi dışında en az birini tanır.",
+            [("∀x∃y(x≠y ∧ T(x,y))", "Tanıdığı kişi x'ten farklı olmak zorundadır.", "Her kişi için ondan farklı, tanıdığı bir kişi vardır.")],
+            [
+                ("∀x∃y(x≠y ∧ T(x,y))", True, None, "Farklı tanık ve bağıntı aynı y üzerinde birleşir."),
+                ("∀x∃yT(x,y)", False, "translation.distinctness_missing", "Kişinin kendisini seçmesi engellenmemiştir."),
+                ("∀x∃y(x≠y ∧ T(y,x))", False, "translation.argument_order", "Tanıyan ve tanınan rolleri ters çevrilmiştir."),
+            ],
+            teaching_point="'Başka' sözcüğü tanığın farklılığını formüle ekler.",
+        ),
+        _symbolization_fixture(
+            "e32-at-least-two",
+            "En az iki araştırmacı vardır.",
+            [("∃x∃y((F(x) ∧ F(y)) ∧ x≠y)", "İki F tanığı açıkça ayrılır.", "Birbirinden farklı en az iki araştırmacı vardır.")],
+            [
+                ("∃x∃y((F(x) ∧ F(y)) ∧ x≠y)", True, None, "İki farklı F tanığı kurulmuştur."),
+                ("∃x∃y(F(x) ∧ F(y))", False, "translation.distinctness_missing", "İki değişken aynı araştırmacıyı seçebilir."),
+                ("∀x∀y((F(x) ∧ F(y)) → x≠y)", False, "translation.quantifier_kind", "Alt sınır yerine hatalı tümel koşul kurulmuştur."),
+            ],
+            teaching_point="Tanık sayısını değişken sayısı değil ≠ koşulu garanti eder.",
+        ),
+        _symbolization_fixture(
+            "e32-at-most-one",
+            "En çok bir araştırmacı vardır.",
+            [
+                ("∀x∀y((F(x) ∧ F(y)) → x=y)", "Her iki F tanığı çakışır.", "İki araştırmacı adayı varsa aynı kişidir."),
+                ("¬∃x∃y((F(x) ∧ F(y)) ∧ x≠y)", "İki farklı F tanığı dışlanır.", "İki farklı araştırmacı yoktur."),
+            ],
+            [
+                ("∀x∀y((F(x) ∧ F(y)) → x=y)", True, None, "Koşullu kimlik üst sınırı kurar."),
+                ("¬∃x∃y((F(x) ∧ F(y)) ∧ x≠y)", True, None, "İki farklı tanık yadsınmıştır."),
+                ("∃xF(x)", False, "translation.identity_missing", "Varlık teklik sağlamaz."),
+            ],
+            teaching_point="En çok bir, hiç örnek bulunmaması olasılığıyla uyumludur.",
+        ),
+        _symbolization_fixture(
+            "e32-exactly-one",
+            "Tam olarak bir araştırmacı vardır.",
+            [("∃x(F(x) ∧ ∀y(F(y) → y=x))", "Bir F tanığı vardır ve bütün F'ler ona eşittir.", "Bir araştırmacı vardır ve başka araştırmacı yoktur.")],
+            [
+                ("∃x(F(x) ∧ ∀y(F(y) → y=x))", True, None, "Alt ve üst sınır birleşmiştir."),
+                ("∃xF(x)", False, "translation.identity_missing", "Yalnız varlık vardır; fazladan araştırmacılar dışlanmaz."),
+                ("∀x∀y((F(x) ∧ F(y)) → x=y)", False, "translation.quantifier_kind", "Yalnız üst sınır vardır; araştırmacı bulunmayabilir."),
+            ],
+            teaching_point="Tam bir, varlık ile teklik koşulunun ikisini de ister.",
+        ),
+        _symbolization_fixture(
+            "e32-exactly-two",
+            "Tam olarak iki araştırmacı vardır.",
+            [("∃x∃y(((F(x) ∧ F(y)) ∧ x≠y) ∧ ∀z(F(z) → (z=x ∨ z=y)))", "İki farklı F vardır ve bütün F'ler bu ikisinden biridir.", "Tam iki farklı araştırmacı vardır.")],
+            [
+                ("∃x∃y(((F(x) ∧ F(y)) ∧ x≠y) ∧ ∀z(F(z) → (z=x ∨ z=y)))", True, None, "Alt ve üst sınır eksiksizdir."),
+                ("∃x∃y((F(x) ∧ F(y)) ∧ x≠y)", False, "translation.identity_missing", "En az iki vardır; üçüncü tanık dışlanmamıştır."),
+                ("∃x∃y((F(x) ∧ F(y)) ∧ ∀z(F(z) → (z=x ∨ z=y)))", False, "translation.distinctness_missing", "Seçilen iki tanığın farklılığı garanti edilmemiştir."),
+            ],
+            teaching_point="Tam iki formülünde farklılık ve kapsama üst sınırı bağımsız denetlenir.",
+        ),
+        _symbolization_fixture(
+            "e32-only-ada",
+            "Yalnız Ada araştırmacıdır.",
+            [("(F(a) ∧ ∀x(F(x) → x=a))", "Ada F'dir ve her F Ada'dır.", "Ada araştırmacıdır; ondan başka araştırmacı yoktur.")],
+            [
+                ("(F(a) ∧ ∀x(F(x) → x=a))", True, None, "Varlık ve yalnızlık birlikte kurulmuştur."),
+                ("∀x(F(x) → x=a)", False, "translation.quantifier_scope", "Ada'nın araştırmacı olması garanti edilmemiştir."),
+                ("F(a)", False, "translation.identity_missing", "Başka araştırmacılar dışlanmamıştır."),
+            ],
+            teaching_point="'Yalnız Ada' hem Ada'nın özelliğini hem tekliğini ileri sürer.",
+        ),
+        _symbolization_fixture(
+            "e32-except-ada",
+            "Ada hariç herkes görevlendirildi; Ada'nın durumu belirtilmiyor.",
+            [("∀x(x≠a → G(x))", "a'dan farklı bütün nesneler G'dir.", "Ada dışındaki herkes görevlendirildi.")],
+            [
+                ("∀x(x≠a → G(x))", True, None, "İstisna koşulu Ada'nın durumunu açık bırakır."),
+                ("(¬G(a) ∧ ∀x(x≠a → G(x)))", False, "translation.quantifier_scope", "Ada hakkında istenmeyen ek olumsuz iddia vardır."),
+                ("∀xG(x)", False, "translation.distinctness_missing", "Ada da görevlendirilmiş sayılmıştır."),
+            ],
+            teaching_point="Hariç kalıbında istisna kişinin kendi özelliği ayrıca kararlaştırılır.",
+        ),
+    ]
+    return lesson
+
+
 STAGE_E_CANDIDATE_LESSONS = [
     _candidate_e27(),
     _candidate_e28(),
     _candidate_e29(),
     _candidate_e30(),
     _candidate_e31(),
+    _candidate_e32(),
 ]
 
 STAGE_E_CANDIDATE_MAP = {
