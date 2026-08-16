@@ -950,10 +950,10 @@ def assess_fol_symbolization(
     priority = (
         "translation.condition_direction",
         "translation.quantifier_order",
+        "translation.negation_scope",
         "translation.quantifier_kind",
         "translation.quantifier_scope",
         "translation.connective",
-        "translation.negation_scope",
         "translation.free_variable",
         "translation.argument_order",
         "translation.predicate",

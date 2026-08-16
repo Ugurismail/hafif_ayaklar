@@ -163,6 +163,39 @@ E30_SIGNATURE = {
 }
 
 
+E31_SIGNATURE = {
+    "domain": "seminere katılan insanlar",
+    "names": {
+        "a": "Ada",
+        "b": "Bora",
+        "c": "Cem",
+    },
+    "variables": ["x", "y", "z"],
+    "predicates": {
+        "F": {
+            "arity": 1,
+            "reading": "x araştırmacı",
+            "roles": ["araştırmacı olan"],
+        },
+        "G": {
+            "arity": 1,
+            "reading": "x meraklı",
+            "roles": ["meraklı olan"],
+        },
+        "H": {
+            "arity": 1,
+            "reading": "x geç kaldı",
+            "roles": ["geç kalan"],
+        },
+        "T": {
+            "arity": 2,
+            "reading": "x, y'yi tanıyor",
+            "roles": ["tanıyan", "tanınan"],
+        },
+    },
+}
+
+
 def _syntax_fixture(
     fixture_id,
     source,
@@ -2120,11 +2153,411 @@ def _candidate_e30():
     return lesson
 
 
+def _candidate_e31():
+    lesson = _lesson(
+        "E31",
+        "ders-fol-kapsam-niceleyici-olumsuzlama",
+        "Kapsam ve Niceleyici Olumsuzlaması",
+        "Olumsuzluğun niceleyiciye, kısıtlayıcı yükleme veya ana yükleme uygulanmasını ayırır; 'hepsi değil' ile 'hiçbiri'ni geniş ve dar kapsam üzerinden çözümler.",
+        "Olumsuzluk kapsamı ve niceleyici dönüşümü",
+        40,
+        [
+            "ders-fol-coklu-niceleyici-bagimlilik",
+            "ders-mantiksal-esdegerlik-ve-tutarlilik",
+        ],
+        [
+            "fol.scope_mark",
+            "fol.quantifier_negate",
+            "fol.not_all_distinguish",
+            "fol.wide_narrow_read",
+        ],
+        [
+            "¬∀x𝒜, ∀x¬𝒜, ¬∃x𝒜 ve ∃x¬𝒜 yapılarını ayrı geri okumak.",
+            "Niceleyici olumsuzlamasında olumsuzluğu içeri taşırken niceleyici türünü değiştirmek.",
+            "'Hepsi değil' ile 'hiçbiri' ve 'bazısı değil' okumalarını ayırmak.",
+            "Kısıtlı niceleme içinde olumsuzluğun koşulun hangi tarafına uygulandığını göstermek.",
+            "Çoklu niceleyicide geniş ve dar kapsam olumsuzluklarını bağımlılık farkıyla karşılaştırmak.",
+            "Belirsiz Türkçe cümleleri bağlam koşullarıyla birden fazla açık formüle ayırmak.",
+        ],
+        [
+            ("Geniş kapsam", "Bir işlecin daha büyük formül parçasını, özellikle bütün niceleyicili cümleyi kapsaması."),
+            ("Dar kapsam", "Bir işlecin yalnız içteki yüklem veya daha küçük formül parçasına uygulanması."),
+            ("Niceleyici olumsuzlaması", "¬∀x𝒜 ile ∃x¬𝒜; ¬∃x𝒜 ile ∀x¬𝒜 arasındaki standart eşdeğer yeniden yazım."),
+            ("Hepsi değil", "Tümel iddianın yanlış olduğunu, dolayısıyla en az bir karşı örnek bulunduğunu söyleyen okuma."),
+            ("Hiçbiri", "Alan içindeki hiçbir nesnenin hedef özelliği taşımadığını söyleyen daha güçlü okuma."),
+            ("Kapsam belirsizliği", "Yüzey cümlesinin olumsuzluk ile niceliğin sırasını tek başına belirlemediği durum."),
+            ("Kısıtlayıcı yüklem", "Alan içinden ilgilenilen alt sınıfı koşulun solunda belirleyen yüklem."),
+            ("Karşı örnek tanığı", "Tümel iddianın yanlışlığını gösteren ve ∃x¬𝒜 biçiminde görünür olan nesne."),
+        ],
+        [
+            _section(
+                "Olumsuzluğun kapsamını parantezle görünür kıl",
+                "¬∀xG(x), bütün tümel iddiayı yadsır. ∀x¬G(x) ise her nesne için G'nin yanlış olduğunu söyler. Semboller aynı olsa da kapsam farklıdır.",
+                "Olumsuzluk ile niceleyici aynı cümlede bulunduğunda.",
+                "¬[∀x G(x)] ≠ ∀x[¬G(x)]",
+                "Önce yadsınan tam cümle paranteze alınır; sonra olumsuzluk işareti bu parçanın önüne yerleştirilir.",
+                "Türkçedeki 'değil' sözcüğünü en yakın yüklemin önüne otomatik taşıma.",
+                [
+                    ("¬∀xG(x)", "Herkesin meraklı olduğu doğru değildir."),
+                    ("∀x¬G(x)", "Hiç kimse meraklı değildir."),
+                    ("∃x¬G(x)", "En az bir kişi meraklı değildir."),
+                ],
+                (
+                    "Olumsuzluğun yadsıdığı en büyük formül parçasını işaretlemek.",
+                    "Aynı semboller bulunduğu için kapsamları özdeş saymak.",
+                    "İşleç sırası, yadsınan iddianın gücünü belirler.",
+                ),
+            ),
+            _section(
+                "Tümeli yadsımak karşı örnek ister",
+                "¬∀x𝒜, 'her x için 𝒜' iddiasının başarısız olduğunu söyler ve standart olarak ∃x¬𝒜 biçiminde yeniden yazılır.",
+                "'Hepsi değil', 'herkesin ... olduğu doğru değil' veya tümel iddiaya itiraz ifadelerinde.",
+                "¬∀x𝒜 ≡ ∃x¬𝒜",
+                "Olumsuzluk niceleyicinin içinden geçerken ∀, ∃'ye dönüşür ve matris yadsınır.",
+                "Olumsuzluğu içeri taşıyıp ∀ işaretini aynı bırakma.",
+                [
+                    ("¬∀xG(x)", "Herkes meraklı değildir okumasının geniş kapsam biçimi."),
+                    ("∃x¬G(x)", "Meraklı olmayan en az bir kişi vardır."),
+                    ("¬∀x(F(x) → G(x))", "Bütün araştırmacıların meraklı olduğu doğru değildir."),
+                ],
+                (
+                    "Tümel iddiayı bozan en az bir tanığı aramak.",
+                    "Tümel yadsımayı herkes için olumsuz özellik diye güçlendirmek.",
+                    "Tümelin yanlışlığı tek bir karşı örnekle gösterilebilir.",
+                ),
+            ),
+            _section(
+                "Varoluşu yadsımak hiçbir örnek bırakmaz",
+                "¬∃x𝒜, 𝒜 olan hiçbir x bulunmadığını söyler ve standart olarak ∀x¬𝒜 biçiminde yeniden yazılır.",
+                "'Hiç kimse', 'hiçbir ...' veya '... olan biri yok' ifadelerinde.",
+                "¬∃x𝒜 ≡ ∀x¬𝒜",
+                "Olumsuzluk ∃ üzerinden içeri taşınırken niceleyici ∀ olur; her olası tanığın 𝒜'yı sağlamadığı belirtilir.",
+                "¬∃x𝒜'yı ∃x¬𝒜 ile karıştırma; ikincisi yalnız bir olumsuz örnek ister.",
+                [
+                    ("¬∃xG(x)", "Meraklı hiç kimse yoktur."),
+                    ("∀x¬G(x)", "Herkes için meraklı olmak yanlıştır."),
+                    ("¬∃x(F(x) ∧ G(x))", "Hem araştırmacı hem meraklı olan hiç kimse yoktur."),
+                ],
+                (
+                    "Bir olumlu tanığın bulunmasının tüm cümleyi bozup bozmadığını sormak.",
+                    "Hiçbiri iddiasını bazısı değil düzeyine zayıflatmak.",
+                    "Varoluşun yadsınması bütün olası örnekleri dışlar.",
+                ),
+            ),
+            _section(
+                "Kısıtlı tümelde hepsi değil ile hiçbiri ayrılır",
+                "'Her F, G'dir' cümlesinin yadsınması ¬∀x(F(x)→G(x)) olur. 'Hiçbir F, G değildir' ise ∀x(F(x)→¬G(x)) biçimindedir.",
+                "Alt sınıf hakkında olumsuz nicelik cümleleri kurulurken.",
+                "hepsi değil: ∃x(F(x)∧¬G(x)) · hiçbiri: ¬∃x(F(x)∧G(x))",
+                "İlk form bir F karşı örneği ister; ikinci form F ve G'nin ortak örneğini bütünüyle dışlar.",
+                "'Her F, G değildir' yüzeyini bağlam sormadan iki okumadan birine zorlamamak.",
+                [
+                    ("¬∀x(F(x) → G(x))", "Bütün araştırmacılar meraklı değildir: en az bir karşı örnek vardır."),
+                    ("∀x(F(x) → ¬G(x))", "Hiçbir araştırmacı meraklı değildir."),
+                    ("∃x(F(x) ∧ ¬G(x))", "Araştırmacı olup meraklı olmayan biri vardır."),
+                ],
+                (
+                    "Önce cümlenin bir karşı örnek mi yoksa sıfır ortak örnek mi istediğini belirlemek.",
+                    "Hepsi değil ile hiçbiri arasında güç farkını yok saymak.",
+                    "Karşı örnek varlığı, bütün ortak örneklerin yokluğu değildir.",
+                ),
+            ),
+            _section(
+                "Olumsuzluğun koşuldaki yerini koru",
+                "∀x(F(x)→¬G(x)) ana yüklemi yadsır. ∀x(¬F(x)→G(x)) ise araştırmacı olmayanları kısıtlayıcı sınıf yapar ve bambaşka bir iddia kurar.",
+                "Kısıtlayıcı ve ana yüklemin ikisi de olumsuzlanabilir göründüğünde.",
+                "kısıt: F(x) · hedef: G(x)",
+                "Doğal dilde 'hangi nesneler hakkında?' sorusu koşulun solunu, 'onlar hakkında ne söyleniyor?' sorusu sağını belirler.",
+                "Olumsuzluk işaretini koşulun bir tarafından diğerine eşdeğerlik varmış gibi taşıma.",
+                [
+                    ("∀x(F(x) → ¬G(x))", "Her araştırmacı meraklı değildir; hiçbiri okuması."),
+                    ("∀x(¬F(x) → G(x))", "Araştırmacı olmayan herkes meraklıdır."),
+                    ("¬∀x(F(x) → G(x))", "Tüm araştırmacı-meraklı genellemesi yadsınır."),
+                ],
+                (
+                    "Kısıtlayıcı sınıfı ve o sınıfa yüklenen özelliği ayrı yazmak.",
+                    "Olumsuzluğu koşulun içinde serbestçe dolaştırmak.",
+                    "Koşulun iki tarafı farklı doğal dil rolleridir.",
+                ),
+            ),
+            _section(
+                "Çoklu niceleyicide geniş ve dar kapsam",
+                "¬∀x∃yT(x,y), herkesin birini tanıdığı iddiasını yadsır. ∀x¬∃yT(x,y) ise hiç kimsenin kimseyi tanımadığını söyler ve çok daha güçlüdür.",
+                "Olumsuzluk bir ∀∃ veya ∃∀ zinciriyle birlikte bulunduğunda.",
+                "¬[∀x∃yT(x,y)] ≡ ∃x∀y¬T(x,y)",
+                "Olumsuzluğu her niceleyicinin üzerinden geçirirken türünü sırayla değiştir; bağıntı yönünü ve değişken rollerini koru.",
+                "Olumsuzluğu yalnız en içteki atoma taşıyıp niceleyicileri değiştirmeden bırakma.",
+                [
+                    ("¬∀x∃yT(x,y)", "En az bir kişi hiç kimseyi tanımıyor."),
+                    ("∀x¬∃yT(x,y)", "Hiç kimse kimseyi tanımıyor."),
+                    ("∃y¬∀xT(x,y)", "Herkes tarafından tanınmayan en az bir kişi var."),
+                ],
+                (
+                    "Olumsuzluğu bir katman taşırken niceleyici türünü de değiştirmek.",
+                    "Dış ve iç niceleyiciyi aynı anda atlayıp bağımlılığı kaybetmek.",
+                    "Her kapsam katmanı ayrı dönüştürülür.",
+                ),
+            ),
+            _section(
+                "Belirsizliği tek cevaba zorlamadan kaydet",
+                "'Herkes gelmedi' gündelik Türkçede bağlama göre 'bazıları gelmedi' veya 'hiç kimse gelmedi' diye kullanılabilir. Biçimselleştirme önce bağlam koşulunu açıklar.",
+                "Yüzey cümlesi nicelik ile olumsuzluğun kapsamını tek başına sabitlemediğinde.",
+                "okuma 1: ¬∀xG(x) · okuma 2: ∀x¬G(x)",
+                "Her savunulabilir okuma ayrı formül, geri çeviri ve onu destekleyen bağlamla yazılır. Belirsizlik formülde gizlenmez.",
+                "Bağlam vermeden bir formülü tek resmi doğru cevap ilan etme.",
+                [
+                    ("Toplantıda üç kişiden biri eksik.", "¬∀xG(x) okumasını destekler."),
+                    ("Salon tamamen boş.", "∀x¬G(x) okumasını destekler."),
+                    ("Bağlam verilmedi.", "İki okuma da aday olarak tutulur."),
+                ],
+                (
+                    "Yüzey cümlesi, olası okumalar ve bağlam kanıtını üç ayrı sütunda yazmak.",
+                    "Mantıksal gösterimin doğal dil belirsizliğini kendiliğinden çözmesini beklemek.",
+                    "Formül seçimi bağlamsal bir çözümleme kararıdır.",
+                ),
+            ),
+        ],
+        [
+            _worked("¬∀xG(x)", "Olumsuzluk bütün tümel iddiayı kapsar.", "Herkesin meraklı olduğu doğru değil"),
+            _worked("∃x¬G(x)", "Tümel iddianın karşı örnek tanığı görünürdür.", "Meraklı olmayan biri var"),
+            _worked("¬∃xG(x)", "Meraklı bir tanığın varlığı bütünüyle yadsınır.", "Meraklı hiç kimse yok"),
+            _worked("∀x¬G(x)", "Her nesne için G yanlış denir.", "Hiç kimse meraklı değil"),
+            _worked("¬∀x(F(x) → G(x))", "En az bir F, G değildir.", "Bütün araştırmacıların meraklı olduğu doğru değil"),
+            _worked("∃x(F(x) ∧ ¬G(x))", "Araştırmacı ve meraklı olmayan ortak tanık kurulur.", "Meraklı olmayan bir araştırmacı var"),
+            _worked("∀x(F(x) → ¬G(x))", "F olanların tamamında G yadsınır.", "Hiçbir araştırmacı meraklı değil"),
+            _worked("¬∃x(F(x) ∧ G(x))", "F ve G ortak tanığı dışlanır.", "Araştırmacı ve meraklı olan hiç kimse yok"),
+            _worked("¬∀x∃yT(x,y)", "Dıştaki tümel iddia geniş kapsamda yadsınır.", "Herkesin birini tanıdığı doğru değil"),
+            _worked("∀x¬∃yT(x,y)", "Her kişi için herhangi bir tanıma ilişkisi yadsınır.", "Hiç kimse kimseyi tanımıyor"),
+            _worked("∀x¬G(x)", "Hedef 'hepsi değil' ise bu form hiçbiri diye gereksizce güçlendirilmiştir.", "Olumsuzluk kapsamı hatası", "bad"),
+            _worked("¬∀x(F(x) → ¬G(x))", "Olumsuzluk hem dışta hem hedefte bırakılmış; hedef iddia tersine dönmüştür.", "Çifte kapsam hatası", "bad"),
+        ],
+        [
+            "¬∀x𝒜'yı ∀x¬𝒜 ile özdeş saymak.",
+            "¬∃x𝒜'yı ∃x¬𝒜 ile karıştırmak.",
+            "Olumsuzluğu içeri taşırken niceleyici türünü değiştirmemek.",
+            "Hepsi değil okumasını hiçbiri düzeyine güçlendirmek.",
+            "Kısıtlayıcı yüklem ile ana yüklemdeki olumsuzluğu yer değiştirmek.",
+            "Koşulun sağındaki olumsuzluğu bütün koşulun olumsuzluğu sanmak.",
+            "Çoklu niceleyicide yalnız en içteki atomu yadsıyıp dış niceleyicileri olduğu gibi bırakmak.",
+            "Bağıntı yönünü niceleyici olumsuzlaması sırasında ters çevirmek.",
+            "Belirsiz Türkçe cümleye bağlam vermeden tek formül dayatmak.",
+        ],
+        _practice(
+            [
+                ("¬∀xG(x) en iyi nasıl okunur?", ["Herkes G değildir / hepsi değil", "Hiç kimse G değildir", "Bazı herkes G'dir", "G olan biri yoktur"], "Herkes G değildir / hepsi değil", "Tümel iddia geniş kapsamda yadsınır.", "Temel"),
+                ("∀x¬G(x) ne söyler?", ["Hiç kimse G değildir", "Bazı kişi G değildir", "Herkes G'dir", "G olan biri vardır"], "Hiç kimse G değildir", "Her nesne için G yadsınır.", "Temel"),
+                ("¬∃xG(x) hangisine eşdeğerdir?", ["∀x¬G(x)", "∃x¬G(x)", "¬∀xG(x)", "∀xG(x)"], "∀x¬G(x)", "Varoluş yadsınırken ∃, ∀ olur.", "Temel"),
+                ("¬∀xG(x) hangisine eşdeğerdir?", ["∃x¬G(x)", "∀x¬G(x)", "¬∃xG(x)", "∃xG(x)"], "∃x¬G(x)", "Tümel yadsımaya bir karşı örnek yeter.", "Temel"),
+                ("'Bütün F'ler G değildir' yalnız hepsi değil anlamındaysa hangisidir?", ["¬∀x(F(x) → G(x))", "∀x(F(x) → ¬G(x))", "¬∃x(F(x) ∧ G(x))", "∀x(F(x) ∧ ¬G(x))"], "¬∀x(F(x) → G(x))", "En az bir F karşı örneği istenir.", "Orta"),
+                ("'Hiçbir F, G değildir' hangisidir?", ["∀x(F(x) → ¬G(x))", "¬∀x(F(x) → G(x))", "∃x(F(x) ∧ ¬G(x))", "∀x(¬F(x) → G(x))"], "∀x(F(x) → ¬G(x))", "Her F için G yadsınır.", "Orta"),
+                ("∀x(¬F(x) → G(x)) hangi sınıfı kısıtlar?", ["F olmayanları", "F olanları", "G olmayanları", "Herkesi F yapar"], "F olmayanları", "Koşulun solu kısıtlayıcı sınıftır.", "Orta"),
+                ("¬∀x∃yT(x,y) neyi garanti eder?", ["En az bir kişi hiç kimseyi tanımıyor", "Hiç kimse kimseyi tanımıyor", "Herkes aynı kişiyi tanıyor", "Birisi herkesi tanıyor"], "En az bir kişi hiç kimseyi tanımıyor", "¬∀, ∃¬ olur; içteki ∃ de yadsınır.", "Orta"),
+                ("∀x¬∃yT(x,y) hangisidir?", ["Hiç kimse kimseyi tanımıyor", "Bazı kişi kimseyi tanımıyor", "Herkes birini tanıyor", "Birini herkes tanıyor"], "Hiç kimse kimseyi tanımıyor", "Her x için herhangi bir y ile T bağı yadsınır.", "Orta"),
+                ("Olumsuzluk bir niceleyicinin içinden geçirilirken ne olur?", ["Niceleyici türü değişir", "Bağıntı yönü değişir", "Değişken ad olur", "Arite azalır"], "Niceleyici türü değişir", "∀ ile ∃ birbirine dönüşür ve iç formül yadsınır.", "İleri"),
+                ("'Herkes gelmedi' bağlamsızsa en güvenli yaklaşım nedir?", ["İki olası okumayı bağlam koşullarıyla yazmak", "Her zaman hiçbiri saymak", "Her zaman hepsi değil saymak", "Niceleyiciyi kaldırmak"], "İki olası okumayı bağlam koşullarıyla yazmak", "Yüzey cümlesi kapsamı tek başına sabitlemeyebilir.", "İleri"),
+                ("Hepsi değil ile hiçbiri arasındaki temel fark nedir?", ["Bir karşı örnek ile bütün örneklerin dışlanması", "Yüklem aritesi", "Değişken harfi", "Alan büyüklüğü"], "Bir karşı örnek ile bütün örneklerin dışlanması", "Hepsi değil en az bir karşı örnek; hiçbiri sıfır olumlu örnek ister.", "İleri"),
+            ]
+        ),
+        {
+            "prompt": "Sekiz olumsuz nicelik cümlesinde yadsınan parçayı işaretle, geniş/dar kapsam formüllerini yaz, eşdeğer yeniden ifadeyi ver ve iki belirsiz cümleyi bağlam koşullarıyla dallandır.",
+            "starter": "Önce olumsuzluk olmadan ileri sürülen cümleyi yaz; sonra yadsınan tam parçayı köşeli paranteze al.",
+            "checks": [
+                "Her olumsuzluğun kapsamı açıkça işaretlendi",
+                "¬∀ ile ∃¬; ¬∃ ile ∀¬ dönüşümleri doğru yapıldı",
+                "Hepsi değil ve hiçbiri ayrı geri okundu",
+                "Kısıtlayıcı ve ana yüklem olumsuzlukları karıştırılmadı",
+                "Çoklu niceleyicide her katman sırayla dönüştürüldü",
+                "Bağıntı yönü dönüşüm boyunca korundu",
+                "Belirsiz okumalar bağlam koşullarıyla ayrı formüllere ayrıldı",
+            ],
+            "solution": "Temel kontrol: ¬∀xG(x) ≡ ∃x¬G(x), fakat ∀x¬G(x) ≡ ¬∃xG(x). İlki hepsi değil, ikincisi hiçbiri okumasıdır.",
+        },
+        [
+            _production_task(
+                "Kendi bağlamından hepsi değil, hiçbiri, bazısı değil ve iki çoklu niceleyici olumsuzluğu üret; her biri için kapsam ağacı, eşdeğer yeniden yazım ve geri çeviri ver.",
+                [
+                    "Alan ve sembol anahtarı açık yazıldı.",
+                    "Her formülde yadsınan tam parça işaretlendi.",
+                    "En az bir ¬∀/∃¬ ve bir ¬∃/∀¬ çifti doğru kuruldu.",
+                    "Hepsi değil ile hiçbiri aynı örnekte karşılaştırıldı.",
+                    "Kısıtlayıcı yüklem ile ana yüklemdeki olumsuzluk ayrıldı.",
+                    "Bir ∀∃ zincirinde olumsuzluk katman katman taşındı.",
+                    "İki belirsiz yüzey cümlesi bağlam koşullarıyla dallandırıldı.",
+                    "Resmi semantik ispatı veya model doğruluğu iddiası eklenmedi.",
+                ],
+                "Değerlendirme formül benzerliğine değil, kapsamın doğal dilde doğru geri okunmasına ve bağlam kararının açık olmasına bakar.",
+                "Bağlam",
+                ["Seminer katılımı", "Araştırma ekibi", "Sosyal ağ", "Kütüphane üyeliği", "Olumsuz nicelik içeren başka bir bağlam"],
+                "En az bir cümle bağlam verilmeden iki savunulabilir okumaya sahip olsun.",
+            ),
+        ],
+        [
+            "Dört temel olumsuz niceleme yapısını ayrı geri okuma.",
+            "Niceleyici olumsuzlamasını tür değiştirerek doğru uygulama.",
+            "Hepsi değil ve hiçbiri için güç farkını karşı örnekle açıklama.",
+            "Kısıtlayıcı ve ana yüklem olumsuzluklarını ayırma.",
+            "Çoklu niceleyicide geniş ve dar kapsam biçimlerini kurma.",
+            "Belirsiz Türkçe cümleye bağlam koşullu iki savunulabilir form verme.",
+        ],
+        [
+            "¬∀x𝒜 ile ∀x¬𝒜 arasında hangi güç farkı vardır?",
+            "¬∃x𝒜 neden ∃x¬𝒜 değildir?",
+            "Kısıtlı tümelde olumsuzluğun koşulun sağında olması neyi söyler?",
+            "¬∀x∃yT(x,y) ile ∀x¬∃yT(x,y) nasıl ayrılır?",
+            "Belirsiz bir yüzey cümlesinde formül seçimini ne gerekçelendirir?",
+        ],
+        "E32'de olumsuzluğun yanına kimlik ekleyecek; 'başka', 'yalnız', en az, en çok ve tam olarak sayı ifadelerini farklılık koşullarıyla kuracağız.",
+        ["forallx-one-quantifier", "forallx-multiple-generality", "forallx-fol-ambiguity", "mit-logic-sequence"],
+        "Ders standart klasik niceleyici olumsuzlamalarını çeviri ve geri okuma aracı olarak kullanır. Eşdeğerliklerin resmi model kuramsal gerekçesi Faz F'ye; kimlik ve sayı kalıpları E32'ye ertelenir.",
+        ["ders-27-niceleyici-olumsuzlamalari", "ders-28-coklu-niceleyici-ve-kapsam", "ders-31-dogal-dilden-yuklem-mantigina-ii"],
+    )
+    lesson["fol_signature"] = E31_SIGNATURE
+    lesson["syntax_scope"] = {
+        "introduced": [
+            "quantifier_negation",
+            "wide_scope_negation",
+            "narrow_scope_negation",
+            "not_all_pattern",
+            "none_pattern",
+        ],
+        "review_only": [
+            "universal_quantifier",
+            "existential_quantifier",
+            "multiple_quantifier",
+            "conditional_restriction",
+            "argument_order",
+        ],
+        "locked_until_later": [
+            "formal_equivalence_proof",
+            "formal_model_truth",
+            "=",
+            "distinctness",
+            "substitution",
+        ],
+    }
+    lesson["syntax_fixtures"] = [
+        _syntax_fixture("e31-not-all", "¬∀xG(x)", accepted=True, category="sentence", explanation="Olumsuzluk bütün tümel cümleyi kapsar."),
+        _syntax_fixture("e31-some-not", "∃x¬G(x)", accepted=True, category="sentence", explanation="Meraklı olmayan bir tanık vardır."),
+        _syntax_fixture("e31-none-wide", "¬∃xG(x)", accepted=True, category="sentence", explanation="G olan bir tanığın varlığı yadsınır."),
+        _syntax_fixture("e31-none-narrow", "∀x¬G(x)", accepted=True, category="sentence", explanation="Her nesne için G yadsınır."),
+        _syntax_fixture("e31-restricted-not-all", "¬∀x(F(x) → G(x))", accepted=True, category="sentence", explanation="Bütün F'lerin G olduğu iddiası yadsınır."),
+        _syntax_fixture("e31-restricted-none", "∀x(F(x) → ¬G(x))", accepted=True, category="sentence", explanation="Her F için G yadsınır."),
+        _syntax_fixture("e31-no-overlap", "¬∃x(F(x) ∧ G(x))", accepted=True, category="sentence", explanation="F ve G ortak tanığı dışlanır."),
+        _syntax_fixture("e31-multiple-wide", "¬∀x∃yT(x,y)", accepted=True, category="sentence", explanation="Bütün ∀∃ iddiası yadsınır."),
+        _syntax_fixture("e31-multiple-narrow", "∀x¬∃yT(x,y)", accepted=True, category="sentence", explanation="Her x için tanıdığı bir y bulunması yadsınır."),
+        _syntax_fixture("e31-open-negation", "¬G(x)", accepted=True, category="open_formula", explanation="x serbest kaldığı için ifade cümle değildir."),
+        _syntax_fixture("e31-missing-body", "¬∀x", accepted=False, issue_code="formula.incomplete", explanation="Niceleyicinin gövdesi eksiktir."),
+        _syntax_fixture("e31-bad-arity", "¬∃xT(x)", accepted=False, issue_code="predicate.arity_mismatch", explanation="T iki terim ister."),
+    ]
+    lesson["symbolization_fixtures"] = [
+        _symbolization_fixture(
+            "e31-not-everyone-curious",
+            "Herkesin meraklı olduğu doğru değildir.",
+            [
+                ("¬∀xG(x)", "Olumsuzluk tümel iddiayı geniş kapsamda yadsır.", "Herkes meraklı değildir; hepsi değil."),
+                ("∃x¬G(x)", "Standart niceleyici olumsuzlamasıyla karşı örnek görünürdür.", "Meraklı olmayan biri vardır."),
+            ],
+            [
+                ("¬∀xG(x)", True, None, "Geniş kapsam korunmuştur."),
+                ("∃x¬G(x)", True, None, "Eşdeğer karşı örnek formudur."),
+                ("∀x¬G(x)", False, "translation.negation_scope", "Hepsi değil, hiçbiri diye güçlendirilmiştir."),
+            ],
+            teaching_point="Tümel iddianın yadsınması tek karşı örnek ister.",
+        ),
+        _symbolization_fixture(
+            "e31-nobody-curious",
+            "Hiç kimse meraklı değildir.",
+            [
+                ("¬∃xG(x)", "Meraklı bir tanığın varlığı yadsınır.", "Meraklı hiç kimse yoktur."),
+                ("∀x¬G(x)", "Her kişi için meraklılık yadsınır.", "Hiç kimse meraklı değildir."),
+            ],
+            [
+                ("¬∃xG(x)", True, None, "Varoluşun geniş kapsam yadsımasıdır."),
+                ("∀x¬G(x)", True, None, "Eşdeğer dar kapsam formudur."),
+                ("∃x¬G(x)", False, "translation.negation_scope", "Yalnız bir olumsuz örnek hiçbiri için yetmez."),
+            ],
+            teaching_point="Hiçbiri, olumlu tanıkların tamamını dışlar.",
+        ),
+        _symbolization_fixture(
+            "e31-not-all-researchers",
+            "Bütün araştırmacıların meraklı olduğu doğru değildir.",
+            [
+                ("¬∀x(F(x) → G(x))", "Tüm araştırmacı-meraklı genellemesi yadsınır.", "Bütün araştırmacılar meraklı değildir; hepsi değil."),
+                ("∃x(F(x) ∧ ¬G(x))", "Karşı örnek araştırmacı açıkça kurulur.", "Meraklı olmayan bir araştırmacı vardır."),
+            ],
+            [
+                ("¬∀x(F(x) → G(x))", True, None, "Kısıtlı tümel geniş kapsamda yadsınır."),
+                ("∃x(F(x) ∧ ¬G(x))", True, None, "Eşdeğer karşı örnek formudur."),
+                ("∀x(F(x) → ¬G(x))", False, "translation.negation_scope", "Hepsi değil, hiçbir araştırmacı diye güçlendirilmiştir."),
+            ],
+            teaching_point="Kısıtlı tümelin yadsınması F ve ¬G ortak tanığını gerektirir.",
+        ),
+        _symbolization_fixture(
+            "e31-no-researcher-curious",
+            "Hiçbir araştırmacı meraklı değildir.",
+            [
+                ("∀x(F(x) → ¬G(x))", "Her araştırmacı için meraklılık yadsınır.", "Hiçbir araştırmacı meraklı değildir."),
+                ("¬∃x(F(x) ∧ G(x))", "Araştırmacı ve meraklı ortak tanığı dışlanır.", "Hem araştırmacı hem meraklı biri yoktur."),
+            ],
+            [
+                ("∀x(F(x) → ¬G(x))", True, None, "Kısıtlı hiçbiri kalıbıdır."),
+                ("¬∃x(F(x) ∧ G(x))", True, None, "Eşdeğer ortak-tanık yadsımasıdır."),
+                ("¬∀x(F(x) → G(x))", False, "translation.negation_scope", "Yalnız bir karşı örnek hiçbiri için yetmez."),
+            ],
+            teaching_point="Hiçbiri, F ve G kesişimini bütünüyle dışlar.",
+        ),
+        _symbolization_fixture(
+            "e31-not-everyone-knows-someone",
+            "Herkesin birini tanıdığı doğru değildir.",
+            [
+                ("¬∀x∃yT(x,y)", "Olumsuzluk bütün ∀∃ iddiasını kapsar.", "En az bir kişi hiç kimseyi tanımıyor."),
+                ("∃x¬∃yT(x,y)", "Tümel yadsıma karşı örnek kişiyi görünür kılar.", "Hiç kimseyi tanımayan en az bir kişi var."),
+            ],
+            [
+                ("¬∀x∃yT(x,y)", True, None, "Geniş kapsam doğru kurulmuştur."),
+                ("∃x¬∃yT(x,y)", True, None, "Eşdeğer karşı örnek yapısıdır."),
+                ("∀x¬∃yT(x,y)", False, "translation.negation_scope", "En az bir kişi yerine hiç kimse kimseyi tanımıyor denmiştir."),
+            ],
+            teaching_point="Dıştaki tümelin yadsınması bir x karşı örneği bulur.",
+        ),
+        _symbolization_fixture(
+            "e31-someone-not-known-by-all",
+            "Herkes tarafından tanınmayan en az bir kişi vardır.",
+            [
+                ("∃y¬∀xT(x,y)", "Bir y seçilir ve bütün x'lerin onu tanıdığı iddiası yadsınır.", "En az bir kişi vardır; onu tanımayan biri bulunur."),
+                ("∃y∃x¬T(x,y)", "Niceleyici olumsuzlaması tanımayan x tanığını görünür kılar.", "Bir kişi ve onu tanımayan bir kişi vardır."),
+            ],
+            [
+                ("∃y¬∀xT(x,y)", True, None, "Ortak y için tümel tanınma yadsınmıştır."),
+                ("∃y∃x¬T(x,y)", True, None, "Eşdeğer tanımayan çift formudur."),
+                ("∃y∀x¬T(x,y)", False, "translation.negation_scope", "Bir kişi hiç kimse tarafından tanınmıyor diye güçlendirilmiştir."),
+            ],
+            teaching_point="Herkes tarafından tanınmamak, hiç kimse tarafından tanınmamak değildir.",
+        ),
+        _symbolization_fixture(
+            "e31-ambiguous-everyone-did-not-arrive",
+            "Herkes geç kalmadı.",
+            [
+                ("¬∀xH(x)", "Cümle 'hepsi geç kalmadı' anlamında kullanılıyorsa.", "Geç kalmayan en az bir kişi vardır."),
+                ("∀x¬H(x)", "Cümle 'hiç kimse geç kalmadı' anlamında kullanılıyorsa.", "Hiç kimse geç kalmadı."),
+            ],
+            [
+                ("¬∀xH(x)", True, None, "Hepsi değil okuması açıkça temsil edilir."),
+                ("∀x¬H(x)", True, None, "Hiçbiri okuması açıkça temsil edilir."),
+                ("¬∃x¬H(x)", False, "translation.negation_scope", "Bu, herkesin geç kaldığını söyleyen farklı bir yapıdır."),
+            ],
+            teaching_point="Bağlam verilmezse iki okuma da koşuluyla birlikte tutulur.",
+        ),
+    ]
+    return lesson
+
+
 STAGE_E_CANDIDATE_LESSONS = [
     _candidate_e27(),
     _candidate_e28(),
     _candidate_e29(),
     _candidate_e30(),
+    _candidate_e31(),
 ]
 
 STAGE_E_CANDIDATE_MAP = {
