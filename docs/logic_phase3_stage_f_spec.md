@@ -194,9 +194,9 @@ geçilemez.
 | F35 Yorum, Gönderim ve Doğruluk | Hazır | Hazır | Hazır | Bekliyor |
 | F36 Model ve Karşı Model | Hazır | Hazır | Hazır | Bekliyor |
 | F37 Bağıntı Özellikleri | Hazır | Hazır | Hazır | Bekliyor |
-| F38 Niceleyici Kurallarına Giriş | Hazır | Bekliyor | Bekliyor | Bekliyor |
-| F39 Özad Disiplini ve Kanıt Stratejisi | Hazır | Bekliyor | Bekliyor | Bekliyor |
-| F40 Kimlik İçeren Kanıtlar | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| F38 Niceleyici Kurallarına Giriş | Hazır | Hazır | Hazır | Bekliyor |
+| F39 Özad Disiplini ve Kanıt Stratejisi | Hazır | Hazır | Hazır | Bekliyor |
+| F40 Kimlik İçeren Kanıtlar | Hazır | Hazır | Hazır | Bekliyor |
 | F41 Çeviri-Model-Kanıt Projesi | Hazır | Bekliyor | Bekliyor | Bekliyor |
 
 ## Aday geliştirme kapıları
@@ -208,7 +208,7 @@ geçilemez.
   sabitlendi.
 - [x] Her dersin önkoşulu, yetkinliği ve ustalık kanıtı tanımlandı.
 - [x] Aday semantik motoru ve sınır testleri yazıldı.
-- [ ] Aday FOL kanıt motoru ve sınır testleri yazıldı.
+- [x] Aday FOL kanıt motoru ve sınır testleri yazıldı.
 - [ ] F35-F41 aday ders verisi yazıldı.
 - [ ] Aday önkoşul grafiği ve kaynak sözleşmesi otomatik test edildi.
 - [ ] Aday içerik yalıtılmış, salt okunur yetkili önizlemede doğrulandı.

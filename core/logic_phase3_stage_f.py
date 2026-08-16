@@ -105,6 +105,20 @@ F37_SIGNATURE = {
 }
 
 
+FOL_PROOF_SIGNATURE = {
+    "domain": "kanıtta konu edilen nesneler",
+    "names": {"a": "Ada", "b": "Bora", "c": "keyfi/taze nesne", "d": "dördüncü nesne"},
+    "variables": ["x", "y", "z"],
+    "predicates": {
+        "F": {"arity": 1, "reading": "x araştırmacı"},
+        "G": {"arity": 1, "reading": "x dikkatli"},
+        "H": {"arity": 1, "reading": "x rapor verdi"},
+        "K": {"arity": 1, "reading": "x koordinatör"},
+        "R": {"arity": 2, "reading": "x, y'ye danıştı", "roles": ["danışan", "danışılan"]},
+    },
+}
+
+
 def _stage_f_lesson(*args, **kwargs):
     lesson = _lesson(*args, **kwargs)
     lesson.update(
@@ -119,6 +133,35 @@ def _stage_f_lesson(*args, **kwargs):
         }
     )
     return lesson
+
+
+def _proof_line(line_id, formula, rule, citations=(), *, depth=0, opens=None, closes=()):
+    return {
+        "id": line_id,
+        "formula": formula,
+        "rule": rule,
+        "citations": list(citations),
+        "depth": depth,
+        "opens": opens,
+        "closes": list(closes),
+    }
+
+
+def _cite(line_id):
+    return {"kind": "line", "id": line_id}
+
+
+def _cite_subproof(start, end):
+    return {"kind": "subproof", "start": start, "end": end}
+
+
+def _proof_fixture(fixture_id, kind, premises, target, lines, expected_codes=()):
+    return {
+        "id": fixture_id,
+        "kind": kind,
+        "proof": {"premises": premises, "target": target, "lines": lines},
+        "expected_codes": list(expected_codes),
+    }
 
 
 def _candidate_f35():
@@ -770,10 +813,347 @@ def _candidate_f37():
     return lesson
 
 
+def _candidate_f38():
+    lesson = _stage_f_lesson(
+        "F38",
+        "ders-38-tumel-acma-ve-varlik-genellemesi",
+        "Tümeli Açma ve Varlık Genellemesi",
+        "Semantikteki her-nesne ve en-az-bir-nesne fikirlerini `∀E` ile `∃I` kanıt adımlarına dönüştürür; yerine koyma örneğini yalnız harf değişimi değil, ayrıştırılmış formül yapısı üzerinden denetler.",
+        "Kısıtsız niceleyici kuralları",
+        42,
+        ["ders-37-baginti-ozelliklerini-modellerde-okuma"],
+        [
+            "fol_proof.universal_elimination",
+            "fol_proof.existential_introduction",
+            "fol_proof.substitution_instance",
+            "fol_proof.quantifier_propositional_mix",
+            "fol_proof.direction_explain",
+        ],
+        [
+            "Tümel bir cümleden belirli bir ad örneğini `∀E` ile çıkarmak.",
+            "Bir ad örneğinden uygun varoluşsal cümleyi `∃I` ile kurmak.",
+            "Bağlı değişkenin yalnız serbest oluşumlarını yakalamasız değiştirmek.",
+            "Aynı adın yalnız seçili oluşumlarını genelleyen meşru `∃I` hedeflerini tanımak.",
+            "Niceleyici adımlarını önerme mantığı kurallarıyla birleştirmek.",
+        ],
+        [
+            ("Tümel eleme (∀E)", "`∀xA(x)`den, A'nın bir adla yakalamasız yerine koyma örneğini çıkaran kural."),
+            ("Varoluşsal giriş (∃I)", "Bir A(c) örneğinden c'nin seçili oluşumlarını değişkene çeviren `∃xA(x)` sonucunu kuran kural."),
+            ("Yerine koyma örneği", "Niceleyici gövdesindeki değişkenin serbest oluşumlarına aynı terimin yerleştirilmesiyle elde edilen formül."),
+            ("Seçili genelleme", "Kaynak addaki bazı oluşumların hedef matrisinde değişkene çevrilmesi; hedef yine kaynakla gerçek bir yerine koyma ilişkisi taşır."),
+            ("Kural yönü", "Bir çıkarım kuralının hangi biçimden hangi biçime geçmeye izin verdiği."),
+        ],
+        [
+            _section(
+                "Semantikten kanıt kuralına",
+                "`∀xA(x)` her nesnede doğruysa seçilen adın gösterdiği nesnede de doğrudur; A(c) doğruysa en az bir A olan vardır. Bu iki güvenli geçiş sırasıyla `∀E` ve `∃I`dir.",
+                "Niceleyicili bir öncülden somut bir ara satır çıkarırken veya somut satırı varoluşsal hedefe yükseltirken.",
+                "∀xA(x) ⟹ A(c); A(c) ⟹ ∃xA(x)",
+                "Kurallar semantik gerekçeye dayanır ama kanıtta yalnız formül ve atıf sözleşmesiyle uygulanır.",
+                "Okları ters çevirme: A(c)den `∀xA(x)` veya `∃xA(x)`den A(c) bu dersin kuralları değildir.",
+                [("∀xF(x) ⟹ F(a)", "Her nesne F ise Ada da F'dir."), ("G(b) ⟹ ∃xG(x)", "Bora bir G tanığıdır.")],
+                ("Kuralı lisanslı yönde kullanmak.", "Niceleyici işaretini yalnız silmek veya eklemek.", "Kuralın yönü ve yerine koyma ilişkisi birlikte gerekir."),
+            ),
+            _section(
+                "∀E ve tek biçimli yerine koyma",
+                "Tümel gövdenin niceleyicinin bağladığı serbest x oluşumları aynı adla değiştirilir; içte yeniden bağlanan x oluşumları korunur.",
+                "Bir tümel cümleden doğru örneği seçerken.",
+                "∀xR(x,x) / R(a,a)",
+                "Tek niceleyicinin iki oluşumu da bağladığı örnekte iki konum aynı adla doldurulur.",
+                "`∀xR(x,x)`den R(a,b) çıkarma; bu iki farklı nesne seçer ve gövdenin örneği değildir.",
+                [("∀x(F(x)→G(x))", "a için `(F(a)→G(a))` çıkar."), ("∀x∃yR(x,y)", "a için `∃yR(a,y)` çıkar; iç y bağlı kalır.")],
+                ("AST'deki bağlı x oluşumlarını aynı terimle değiştirmek.", "Metindeki bütün x harflerini körlemesine değiştirmek.", "Bağlanma kapsamı harf görünümünden daha belirleyicidir."),
+            ),
+            _section(
+                "∃I ve seçili oluşumlar",
+                "Hedef matris, niceleyici değişkenine kaynak adı yerleştirildiğinde kaynak satırı vermelidir. Böylece R(a,a)den hem `∃xR(x,a)` hem `∃xR(a,x)` hem de `∃xR(x,x)` çıkabilir.",
+                "Kaynakta aynı ad birden çok kez geçtiğinde neyin genellendiğini açık seçerken.",
+                "R(a,a) ⟹ ∃xR(x,a) / ∃xR(a,x) / ∃xR(x,x)",
+                "Hedef formül hangi oluşumların tanık tarafından doldurulduğunu açıkça kodlar.",
+                "R(a,b)den `∃xR(x,x)` çıkarma; tek x hem a hem b olamaz.",
+                [("R(a,a) ⟹ ∃xR(x,a)", "İlk oluşum genellenmiştir."), ("R(a,b) ⟹ ∃xR(x,b)", "a varoluş tanığıdır.")],
+                ("Hedefi tekrar örnekleyip kaynağa dönüp dönmediğini sınamak.", "Her ad geçen yeri değişken yapmak zorunda sanmak.", "Seçili genelleme meşrudur; fakat hedef gerçek bir örnek ilişkisi taşımalıdır."),
+            ),
+            _section(
+                "İç niceleyici ve yakalanmama",
+                "Dış niceleyicinin değişkeni yerine ad koyarken iç niceleyicinin bağladığı değişkenler ve kapsam yapısı değişmez.",
+                "İç içe niceleyici bulunan `∀E` veya `∃I` adımlarında.",
+                "∀x(F(x)→∃yR(x,y)) ⟹ F(a)→∃yR(a,y)",
+                "Adlar niceleyiciler tarafından bağlanmadığı için a iç y niceleyicisi altında serbest bir ad olarak kalır.",
+                "İçteki y'yi de a yapmak veya niceleyiciyi düşürmek.",
+                [("∀x∃xF(x)", "İç x dış x'i gölgeler; dış örnekleme iç gövdeyi değiştirmez."), ("∃x∀yR(x,y)", "R(a,y) matrisinde y hâlâ ∀ tarafından bağlıdır.")],
+                ("Bağlanma ağacını korumak.", "Karakter bul-değiştir uygulamak.", "Yakalanmasız yerine koyma sözdizim ağacı işlemidir."),
+            ),
+            _section(
+                "Önerme kurallarıyla zincir",
+                "Niceleyiciyi açtıktan sonra elde edilen koşullu veya bağlaçlı cümlede Faz D kuralları uygulanır; sonuç sonra `∃I` ile yeniden niceleyicili olabilir.",
+                "`∀x(F(x)→G(x)), F(a) ⊢ ∃xG(x)` türü karma kanıtlarda.",
+                "∀E → →E → ∃I",
+                "Her satır tek lisanslı dönüşüm yapar; iki kural tek etikette sıkıştırılmaz.",
+                "Tümel öncülden doğrudan varoluşsal sonucu, aradaki örnek ve koşullu eleme olmadan yazmak.",
+                [("∀x(F→G)", "Önce a örneği alınır."), ("G(a)", "Sonra a tanığıyla `∃xG(x)` kurulur.")],
+                ("Ara satırları ve atıfları görünür tutmak.", "Birden çok kuralı tek satırda varsaymak.", "Denetlenebilir kanıt her geçişin gerekçesini ayırır."),
+            ),
+            _section(
+                "Bu derste tazelik neden yok",
+                "`∀E` mevcut tümel bilgiyi belirli örneğe indirir; `∃I` mevcut bir tanığı varoluşa yükseltir. Bu yönlerde seçilen adın yeni olması gerekmez.",
+                "Yanlışlıkla F39'un özad koşullarını bu iki kurala taşımamak için.",
+                "∀E/∃I: ad serbest; ∀I/∃E: özad koşulu var",
+                "Kısıtların kural yönüne bağlı olması, ezberlenecek rastgele bir fark değildir.",
+                "Her niceleyici kuralında taze ad istemek veya hiçbirinde istememek.",
+                [("∀xF(x), F(a) / F(a) ∀E", "a öncülde zaten geçse de sorun yok."), ("F(a) / ∃xF(x) ∃I", "Tanık adı yeni olmak zorunda değildir.")],
+                ("Kural başına koşul tablosu kullanmak.", "Niceleyici görünce tek genel tazelik sloganı uygulamak.", "F39'daki kurallar farklı semantik görevlere sahiptir."),
+            ),
+        ],
+        [
+            _worked("∀xF(x), öyleyse F(a).", "a'nın gönderimi alan üyesidir; tümel cümle o üyeyi de kapsar.", "∀E"),
+            _worked("∀xR(x,x), öyleyse R(a,a).", "İki bağlı x oluşumu aynı adla örneklenir.", "Doğru örnek"),
+            _worked("∀xR(x,x), öyleyse R(a,b).", "Gövde tek değişkenin aynı nesneye gönderildiği iki oluşumunu ister.", "Yerine koyma hatası", "bad"),
+            _worked("∀x∃yR(x,y), öyleyse ∃yR(a,y).", "Dış x örneklenir; iç y bağlı kalır.", "İç kapsam"),
+            _worked("F(a), öyleyse ∃xF(x).", "a varoluşsal tanıktır.", "∃I"),
+            _worked("R(a,a), öyleyse ∃xR(x,a).", "Yalnız ilk oluşum genellenebilir.", "Seçili genelleme"),
+            _worked("R(a,b), öyleyse ∃xR(x,x).", "Tek x iki farklı adı aynı anda geri üretemez.", "Örnek hatası", "bad"),
+            _worked("∃xF(x), öyleyse F(a).", "Var olan F'nin a olduğu verilmemiştir; bu ∃E değildir.", "Yön hatası", "bad"),
+            _worked("F(a), öyleyse ∀xF(x).", "Ada'dan bütün nesnelere genelleme lisanssızdır.", "Yön hatası", "bad"),
+            _worked("∀x(F(x)→G(x)), F(a) ⊢ G(a)", "∀E ile koşullu örnek, sonra →E kullanılır.", "Karma zincir"),
+            _worked("G(a) ⊢ ∃xG(x)", "Tanığın kim olduğu varoluş sonucunda saklanabilir.", "Tanık"),
+            _worked("∀xF(x) ⊢ ∃xF(x)", "Boş olmayan alan semantiğinde bir ad örneği alınıp ∃I uygulanabilir.", "İki adım"),
+        ],
+        [
+            "`∀E`yi niceleyici silme işlemi sanmak.",
+            "`∃I` hedefinin kaynağa geri örneklenip örneklenmediğini denetlememek.",
+            "İç niceleyicinin bağlı değişkenini de değiştirmek.",
+            "R(a,b)den tek değişkenli R(x,x) matrisi üretmek.",
+            "`∃xF(x)`den keyfî F(a) çıkarmak.",
+            "Her niceleyici kuralına gereksiz tazelik şartı eklemek.",
+        ],
+        _practice([
+            ("`∀xF(x)`den hangisi `∀E` ile çıkar?", ["F(a)", "∃xF(x)", "F(x)", "∀xG(x)"], "A", "a ile doğru örnek alınır.", "Temel"),
+            ("`∀xR(x,x)`den hangisi çıkmaz?", ["R(a,a)", "R(b,b)", "R(a,b)", "R(c,c)"], "C", "İki x aynı adla doldurulmalıdır.", "Temel"),
+            ("`R(a,a)`den hangisi `∃I` ile çıkar?", ["∃xR(x,a)", "∀xR(x,a)", "R(a,b)", "∃xR(x,b)"], "A", "İlk a oluşumu genellenir.", "Orta"),
+            ("`R(a,b)` neden `∃xR(x,x)`i lisanslamaz?", ["x yasak", "Tek x iki farklı adı geri veremez", "R ikili", "a yeni değil"], "B", "Yerine koyma örneği şartı bozulur.", "Orta"),
+            ("`∀x∃yR(x,y)`nin a örneği nedir?", ["∃yR(a,y)", "R(a,a)", "∀yR(a,y)", "∃xR(x,a)"], "A", "Yalnız dış x örneklenir.", "Orta"),
+            ("`F(a)`den doğrudan hangisi çıkar?", ["∀xF(x)", "∃xF(x)", "F(b)", "¬F(a)"], "B", "a varoluş tanığıdır.", "Temel"),
+            ("∀E için ad taze olmalı mı?", ["Her zaman", "Hayır", "Yalnız ikili yüklemde", "Yalnız a için"], "B", "Tazelik bu kural yönünde gerekmez.", "Temel"),
+            ("∃I için ad taze olmalı mı?", ["Evet", "Hayır", "Yalnız sonuçta", "Yalnız öncülde"], "B", "Mevcut tanık adı kullanılabilir.", "Temel"),
+            ("`∀x(F(x)→G(x))`den a örneği hangisi?", ["F(a)→G(a)", "F(x)→G(x)", "F(a)→G(b)", "∀xG(x)"], "A", "İki serbest x oluşumu aynı a ile değiştirilir.", "Orta"),
+            ("Karma zincirin sırası hangisi?", ["∃I,∀E,→E", "∀E,→E,∃I", "→E,∀I,∃E", "∀I,=E,∃I"], "B", "Önce örnek, sonra önerme kuralı, sonra varoluş genellemesi.", "Orta"),
+            ("Yakalanmasız yerine koyma neyi korur?", ["Yalnız harf sayısını", "Bağlanma kapsamını", "Satır numarasını", "Doğruluk tablosunu"], "B", "İç niceleyicilerin bağları değişmemelidir.", "İleri"),
+            ("Bir ∃I hedefini nasıl denetlersin?", ["Niceleyiciyi sil", "Hedef matrisine tanık adı koyup kaynağı geri elde et", "Adı değiştir", "Model çiz"], "B", "Geri örnekleme yapısal denetimdir.", "İleri"),
+        ]),
+        {
+            "prompt": "`∀x(F(x)→G(x)), F(a)` öncüllerinden `∃xG(x)` hedefini satır satır kur.",
+            "starter": "Önce tümel koşullunun a örneğini yaz; sonra →E ve ∃I uygula.",
+            "checks": ["∀E örneği doğru", "→E iki doğru satıra atıflı", "∃I hedefi kaynağa geri örnekleniyor"],
+            "solution": "1 ∀x(F(x)→G(x)) PR; 2 F(a) PR; 3 F(a)→G(a) ∀E 1; 4 G(a) →E 3,2; 5 ∃xG(x) ∃I 4.",
+        },
+        [
+            _production_task("Altı `∀E` ve altı `∃I` adımını örnek ilişkisiyle denetle.", ["Her kaynak/hedef ayrıştırılmış", "Seçili oluşumlar işaretli", "İç kapsam korunmuş", "Hatalar kural koduyla açıklanmış"], "En az iki hata aynı harfin farklı kapsamda kullanılmasını içersin.", "Denetlenecek çiftler", ["∀xR(x,x) / R(a,a)", "∀xR(x,x) / R(a,b)", "R(a,a) / ∃xR(x,a)", "R(a,b) / ∃xR(x,x)"]),
+            _production_task("Bir `∀E → önerme kuralı → ∃I` kanıtı üret ve her adımın semantik gerekçesini yaz.", ["En az iki öncül", "En az bir koşullu", "Atıflar açık", "Sonuç varoluşsal"], "Kanıt denetleyicisi sıfır hata vermeli.", "Başlangıç şablonları", ["∀x(F(x)→G(x)), F(a)", "∀x(F(x)∧G(x))", "∀xR(x,a), F(b)"]),
+        ],
+        ["On iki yerine koyma çiftini doğru/yanlış gerekçesiyle sınıflandırır.", "En az iki seçili ∃I genellemesini geri örneklemeyle doğrular.", "İç niceleyiciyi koruyan üç ∀E adımı kurar.", "Önerme kurallarıyla birleşen eksiksiz bir kanıt üretir."],
+        ["∀E neden varoluşsal eleme değildir?", "R(a,a)den kaç farklı meşru tek değişkenli varoluş sonucu kurulabilir?", "∃I hedefinin kaynakla ilişkisini nasıl mekanik olarak sınarsın?"],
+        "F39'da ters yönlerdeki `∀I` ve `∃E` için özad tazeliği ve alt kanıt disiplini eklenecek.",
+        ["forallx-fol-rules", "forallx-quantifier-proofs"],
+        "Bu ders yalnız kısıtsız iki niceleyici kuralını açar. `F(a) ⊢ ∀xF(x)` ve `∃xF(x) ⊢ F(a)` özellikle geçersiz karşı biçimler olarak tutulur.",
+        ["Niceleyici Kanıtları"],
+    )
+    lesson["fol_signature"] = FOL_PROOF_SIGNATURE
+    lesson["proof_fixtures"] = [
+        _proof_fixture("f38-universal-instance", "valid", ["∀x(F(x) → G(x))", "F(a)"], "∃xG(x)", [
+            _proof_line("l1", "∀x(F(x) → G(x))", "PR"),
+            _proof_line("l2", "F(a)", "PR"),
+            _proof_line("l3", "(F(a) → G(a))", "∀E", [_cite("l1")]),
+            _proof_line("l4", "G(a)", "→E", [_cite("l3"), _cite("l2")]),
+            _proof_line("l5", "∃xG(x)", "∃I", [_cite("l4")]),
+        ]),
+        _proof_fixture("f38-selective-existential", "valid", ["R(a,a)"], "∃xR(x,a)", [
+            _proof_line("l1", "R(a,a)", "PR"),
+            _proof_line("l2", "∃xR(x,a)", "∃I", [_cite("l1")]),
+        ]),
+        _proof_fixture("f38-bad-universal-instance", "invalid", ["∀xR(x,x)"], "R(a,b)", [
+            _proof_line("l1", "∀xR(x,x)", "PR"),
+            _proof_line("l2", "R(a,b)", "∀E", [_cite("l1")]),
+        ], ["rule.universal_elimination_substitution"]),
+        _proof_fixture("f38-bad-existential-instance", "invalid", ["R(a,b)"], "∃xR(x,x)", [
+            _proof_line("l1", "R(a,b)", "PR"),
+            _proof_line("l2", "∃xR(x,x)", "∃I", [_cite("l1")]),
+        ], ["rule.existential_introduction_substitution"]),
+    ]
+    return lesson
+
+
+def _candidate_f39():
+    lesson = _stage_f_lesson(
+        "F39",
+        "ders-39-ozad-disiplini-tumel-ve-varlik-elemesi",
+        "Özad Disiplini: Tümel Giriş ve Varlık Elemesi",
+        "`∀I`de keyfî nesne ile `∃E`de geçici tanığı birbirinden ayırır; adın hangi açık öncül, varsayım ve sonuçta geçmesinin kuralı bozduğunu bağımlılık ağacıyla denetler.",
+        "Taze ad ve alt kanıt",
+        48,
+        ["ders-38-tumel-acma-ve-varlik-genellemesi"],
+        ["fol_proof.universal_introduction", "fol_proof.existential_elimination", "fol_proof.eigenname_check", "fol_proof.dependency_trace", "fol_proof.subproof_discharge"],
+        ["Keyfî bir ad örneğinden `∀I` ile güvenli genelleme yapmak.", "Varoluş tanığını kapalı alt kanıtta kullanıp `∃E` ile tanıktan bağımsız sonuç çıkarmak.", "Ad tazeliğini bütün kanıtta değil, ilgili açık bağımlılıklarda denetlemek.", "Tanık adının varoluşsal öncüle veya sonuca sızmasını teşhis etmek.", "Başarısız kanıt girişiminin geçersizlik kanıtı olmadığını açıklamak."],
+        [("Taze özad", "İlgili kuralın yasakladığı açık bağımlılık ve sonuçlarda geçmeyen geçici ad."), ("Keyfî nesne", "Özel bir bilgiye bağlanmadan seçilen ve bu nedenle genellenebilen nesne."), ("Tanık varsayımı", "∃E alt kanıtında varoluşsal gövdenin taze ad örneği olarak geçici kabul edilen cümle."), ("Açık bağımlılık", "Bir satırın doğruluğu için hâlâ dayanılan, boşaltılmamış öncül veya varsayım."), ("Boşaltma", "Alt kanıt varsayımını sonuç satırının dışına çıkarırken bağımlılıktan kaldırma işlemi."), ("Özad sızıntısı", "Geçici adın sonuçta veya yasaklı dış bağımlılıkta kalması." )],
+        [
+            _section("∀I'nin semantik fikri", "A(c) yalnız c hakkında özel bir varsayıma dayanmadan gösterildiyse c keyfî nesneyi temsil edebilir ve `∀xA(x)` çıkarılır.", "Bir kanıtı tümel hedefle bitirirken.", "A(c) / ∀xA(x), c açık bağımlılıklarda yok", "Kural c'nin dünyadaki kimliğini bilmediğimiz için değil, kanıtın c'ye özgü bilgi kullanmaması nedeniyle güvenlidir.", "F(c) öncülünden ∀xF(x) çıkarmak; c öncülde geçer.", [("∀x(F→G),∀xF ⊢ ∀xG", "c yalnız tümel öncüllerin örneklenmesinde kullanılır."), ("F(c) ⊢ ∀xF(x)", "c'ye özgü öncül nedeniyle yasaktır.")], ("Kaynak satırın bağımlılıklarını izlemek.", "Ad yalnız sonuçta görünmüyor diye taze saymak.", "Tazelik sözcük taraması değil bağımlılık koşuludur.")),
+            _section("∀I için ad seçimi", "Kanıtın başında bir ad seçmek tek başına yeterli değildir; o ad sonradan açık bir varsayımda kullanılırsa genelleme engellenir.", "Genellemeden hemen önce özad denetimi yaparken.", "blocked(c)=adlar(açık bağımlılıklar)", "Kapanmış alt kanıt varsayımları doğru biçimde boşaltılmışsa artık engel değildir.", "Kanıtta herhangi bir yerde görünmüş adı sonsuza dek yasak saymak.", [("c yalnız ara örneklerde", "Tümel öncüllerden geliyorsa genellenebilir."), ("c açık AS satırında", "O varsayım boşaltılmadan genellenemez.")], ("Satırın gerçek bağımlılık kümesini kullanmak.", "Tüm geçmiş satırların metnini taramak.", "Kullanılmamış veya boşaltılmış satırlar genellemeyi gereksizce engellememelidir.")),
+            _section("∃E'nin alt kanıtı", "`∃xA(x)`den doğrudan A(c) çıkarılmaz. Bunun yerine A(c) taze tanık varsayımıyla bir alt kanıt açılır; tanıktan bağımsız B elde edilip kapsam kapatılır.", "Varoluşsal öncüden tanığın kimliğine bağlı olmayan sonuç çıkarırken.", "∃xA(x), [A(c) ... B] / B", "Alt kanıt, hangi nesnenin A olduğunu bilmeden her olası tanığın aynı B'yi sağladığını temsil eder.", "A(c)yi kök satıra taşımak veya alt kanıtı kapatmadan B yazmak.", [("∃xF(x),∀x(F→G) ⊢ ∃xG(x)", "F(c) varsayımından G(c), sonra ∃xG(x)."), ("∃xF(x) ⊢ F(c)", "Tanığın c olduğu garanti edilmez.")], ("Tanık varsayımını kapsam içine hapsetmek.", "Varoluşsal cümleyi bir adlandırma cümlesi sanmak.", "∃ varlığı garanti eder, kimliği değil.")),
+            _section("∃E tazelik üçlüsü", "Tanık adı varoluşsal öncülde, alt kanıt sonucunda veya alt kanıt dışındaki açık bağımlılıklarda geçemez.", "Bir ∃E uygulamasını kabul etmeden önce.", "c ∉ names(∃xA), names(B), names(dış bağımlılıklar)", "Üç yasak birlikte, sonucun geçici tanığın kimliğine dayanmadığını garanti eder.", "Yalnız sonuçta görünmemeyi kontrol edip dış öncüldeki c'yi kaçırmak.", [("Sonuç ∃xG(x)", "c görünmez; uygun olabilir."), ("Sonuç G(c)", "Tanık sızmıştır; yasak.")], ("Üç ayrı tazelik kutusunu işaretlemek.", "Tek 'ad yeni mi?' sorusuyla yetinmek.", "Aynı ad farklı yerlerde farklı bağımlılık riski yaratır.")),
+            _section("Bağımlılık ağacı", "Her PR satırı bir öncüle, her AS satırı açtığı kapsama bağımlıdır. Atıflar bağımlılıkları birleştirir; →I, ¬I ve ∃E ilgili alt kanıt varsayımını boşaltır.", "Karma kanıtta adın gerçekten hangi varsayıma bağlı olduğunu bulurken.", "deps(sonuç)=⋃deps(atıflar)−boşaltılan kapsam", "Tazelik kontrolü bu yapılandırılmış kümeye uygulanır.", "Bir satırın yalnız hemen önceki satıra bağlı olduğunu varsaymak.", [("R ile tekrar", "Kaynağın bütün bağımlılıklarını taşır."), ("→I", "Alt kanıt başlangıç varsayımını sonuç bağımlılığından çıkarır.")], ("Atıflardan bağımlılık hesaplamak.", "Görsel yakınlığı bağımlılık sanmak.", "Fitch çizgileri kapsamı, atıflar ise gerçek gerekçeyi kodlar.")),
+            _section("Kanıt bulunamaması ne göstermez", "Bir özad ihlali yalnız o kanıt girişimini bozar. Başka bir kanıt olabilir; geçersizlik için karşı model gerekir.", "Denetleyici hata verdiğinde epistemik sonucu doğru sınırlarken.", "invalid proof ≠ invalid argument", "F36 semantiği ile kanıt denetimi birbirini tamamlar ama aynı karar yöntemi değildir.", "Kırmızı kanıt satırından argüman geçersiz sonucuna atlamak.", [("Özad hatası", "Kanıtı onar veya başka strateji dene."), ("Karşı model", "Tüm öncüller doğru, sonuç yanlışsa geçersizlik gösterir.")], ("Biçim hatasını argüman statüsünden ayırmak.", "Denetleyiciyi karar verici sanmak.", "Eksik/yanlış türetim semantik karşı örnek değildir.")),
+        ],
+        [
+            _worked("∀x(F(x)→G(x)), ∀xF(x) ⊢ ∀xG(x)", "c yalnız tümel öncüllerin örneklerinde kullanıldığı için ∀I güvenlidir.", "Geçerli ∀I"),
+            _worked("F(c) ⊢ ∀xF(x)", "c açık öncülde geçtiği için keyfî değildir.", "Özad ihlali", "bad"),
+            _worked("[F(c)] ... G(c), sonra ∀xG(x)", "F(c) varsayımı açıkken c'ye özgü bağımlılık sürer.", "Açık varsayım", "bad"),
+            _worked("∃xF(x), [F(c) ... ∃xF(x)] ⊢ ∃xF(x)", "Sonuç c içermediği ve tanık tazeyse biçimsel olarak güvenlidir.", "Geçerli ∃E"),
+            _worked("∃xF(x), [F(c) ... G(c)] ⊢ G(c)", "Geçici tanık sonuçta sızar.", "Sonuç sızıntısı", "bad"),
+            _worked("∃xR(x,c), [R(c,c)...B]", "c varoluşsal öncülde zaten geçtiği için tanık olamaz.", "Kaynak sızıntısı", "bad"),
+            _worked("K(c), ∃xF(x), [F(c)...B]", "B, K(c) dış öncülüne dayanıyorsa c taze değildir.", "Dış bağımlılık", "bad"),
+            _worked("∃xF(x), ∀x(F(x)→G(x)) ⊢ ∃xG(x)", "F(c) alt kanıtında G(c), sonra tanıktan bağımsız varoluş sonucu elde edilir.", "Geçerli ∃E"),
+            _worked("∃xF(x) ⊢ F(a)", "a'nın tanık olduğu verilmez.", "Doğrudan örnekleme", "bad"),
+            _worked("Kapanmış AS bağımlılığı ∀I'yi her zaman engeller.", "Yalnız kaynak satır hâlâ o kapsama bağımlıysa engeller.", "Yanlış genelleme", "bad"),
+            _worked("Bir kanıtta c geçti, artık kullanılamaz.", "Tazelik bütün geçmiş metne değil ilgili bağımlılıklara göre ölçülür.", "Aşırı kısıt", "bad"),
+            _worked("Kanıt denetleyicisi reddetti, argüman geçersiz.", "Reddedilen yalnız bu türetimdir; karşı model gerekir.", "Epistemik sınır", "bad"),
+        ],
+        ["∀I'yi öncülde geçen adla uygulamak.", "∃E'yi doğrudan örnek seçme kuralı sanmak.", "Tanık adını sonuçta bırakmak.", "Tanık adının varoluşsal öncülde geçtiğini kaçırmak.", "Dış açık bağımlılıkları denetlememek.", "Kanıt hatasını geçersizlik göstergesi saymak."],
+        _practice([
+            ("∀I için c neyi temsil etmeli?", ["Ada'yı", "Keyfî nesneyi", "Tek tanığı", "Boş alanı"], "B", "c özel bilgiye bağlı olmamalıdır.", "Temel"),
+            ("F(c) öncülünden ∀xF(x) neden çıkmaz?", ["F yasak", "c öncülde açık bağımlılık", "∀ yok", "Alan sonlu"], "B", "c keyfî değildir.", "Temel"),
+            ("∃E alt kanıtı neyle başlar?", ["A(c) taze tanık varsayımı", "B sonucu", "¬A(c)", "∀xA(x)"], "A", "Varoluşsal matrisin taze ad örneği varsayılır.", "Temel"),
+            ("Tanık adı nerede geçemez?", ["Yalnız satır numarasında", "Varoluşsal öncül, sonuç ve dış bağımlılıkta", "Alt kanıt varsayımında", "Kural etiketinde"], "B", "Üç tazelik bölgesi vardır.", "Orta"),
+            ("∃xF(x)den doğrudan F(a) çıkar mı?", ["Evet", "Hayır", "Yalnız a tazeyse", "Yalnız iki nesnede"], "B", "Varoluş tanığın kimliğini vermez.", "Temel"),
+            ("∃E sonucu G(c) olabilir mi?", ["Her zaman", "Tanık c ise", "Hayır, c sonuçta sızar", "Yalnız G tekli"], "C", "Sonuç tanık adından bağımsız olmalıdır.", "Orta"),
+            ("Bağımlılık neyle taşınır?", ["Yalnız satır sırasıyla", "Atıflarla", "Fontla", "Model alanıyla"], "B", "Atıf yapılan satırların bağımlılıkları birleşir.", "Temel"),
+            ("Alt kanıt varsayımı ne zaman boşaltılır?", ["Açılırken", "Uygun kuralla kapatıldığında", "Her R adımında", "Model çizilince"], "B", "Kapsam kullanan kural varsayımı bağımlılıktan çıkarır.", "Orta"),
+            ("Kanıt hatası neyi gösterir?", ["Argüman kesin geçersiz", "Bu kanıt girişimi lisanssız", "Karşı model bulundu", "Öncüller yanlış"], "B", "Başka kanıt olabilir.", "Temel"),
+            ("Geçersizliği ne gösterir?", ["Özad hatası", "Tek karşı model", "Uzun kanıt", "Taze ad"], "B", "Tüm öncülleri doğru, sonucu yanlış yapan model yeterlidir.", "Temel"),
+            ("c yalnız kapanmış ve boşaltılmış varsayımda geçtiyse ∀I otomatik yasak mı?", ["Evet", "Hayır, kaynak bağımlılığına bakılır", "Yalnız c için", "Yalnız kimlikte"], "B", "Gerçek bağımlılık belirleyicidir.", "İleri"),
+            ("∃E'de dış bağımlılık denetimi neden var?", ["Satırları azaltmak", "Sonucun tanığın kimliğine gizlice dayanmasını önlemek", "Adları alfabetik yapmak", "Modeli büyütmek"], "B", "Dış c bilgisi tanığı özel kılar.", "İleri"),
+        ]),
+        {"prompt": "`∃xF(x), ∀x(F(x)→G(x))` öncüllerinden `∃xG(x)` için taze c ile alt kanıt kur.", "starter": "F(c) varsayımı aç; tümel koşulu c için örnekle; G(c)den varoluş sonucu çıkar ve kapsamı kapat.", "checks": ["c öncüllerde yok", "c sonuçta yok", "Alt kanıt son satırı ∃xG(x)", "∃E kapsam kapandıktan sonra"], "solution": "1 ∃xF(x) PR; 2 ∀x(F(x)→G(x)) PR; 3 [F(c) AS; 4 F(c)→G(c) ∀E 2; 5 G(c) →E 4,3; 6 ∃xG(x) ∃I 5]; 7 ∃xG(x) ∃E 1,3-6."},
+        [
+            _production_task("Dört ∀I girişimini bağımlılık kümeleriyle denetle ve hatalı olanları onar.", ["PR/AS bağımlılıkları işaretli", "Boşaltılan kapsam çıkarılmış", "Genellenen ad belirlenmiş", "Hata kodu doğru"], "En az biri kullanılmayan eski c satırı içersin.", "Kanıt iskeletleri", ["F(c) / ∀xF(x)", "∀xF(x) / F(c) / ∀xF(x)", "[F(c)...G(c)] / ∀xG(x)"]),
+            _production_task("İki geçerli ve üç hatalı ∃E kanıtı tasarla.", ["Tanık varsayımı doğru örnek", "Kapsam kapalı", "Sonuç tanıktan bağımsız", "Dış bağımlılıklar denetlenmiş"], "Üç hata sırasıyla kaynak, sonuç ve dış bağımlılık sızıntısı olsun.", "Zorunlu hata türleri", ["source name leak", "conclusion name leak", "external dependency leak"]),
+        ],
+        ["Geçerli bir ∀I kanıtında genellenen adın bağımlılık raporunu çıkarır.", "Üç ayrı ∃E özad ihlalini doğru hata koduyla ayırır.", "Kapsamı doğru kapanan karma ∃E kanıtı üretir.", "Kanıt hatası ile karşı modelin epistemik farkını açıklar."],
+        ["∀I için adın bütün kanıtta hiç geçmemesi neden fazla güçlü bir koşuldur?", "∃E'nin üç tazelik bölgesi hangileridir?", "Bir alt kanıt varsayımı bağımlılıktan nasıl boşaltılır?"],
+        "F40'ta bu özad disiplini kimlik yerine koyması ve daha uzun karma kanıtlarla birleştirilecek.",
+        ["forallx-fol-rules", "forallx-quantifier-proofs"],
+        "Özad denetimi ham metin aramasıyla değil ayrıştırılmış ad oluşumları ve satır bağımlılıklarıyla yapılır. Reddedilen kanıt argüman geçersizliği olarak etiketlenmez.",
+        ["Özad ve Niceleyici Stratejisi"],
+    )
+    lesson["fol_signature"] = FOL_PROOF_SIGNATURE
+    lesson["proof_fixtures"] = [
+        _proof_fixture("f39-valid-universal", "valid", ["∀x(F(x) → G(x))", "∀xF(x)"], "∀xG(x)", [
+            _proof_line("l1", "∀x(F(x) → G(x))", "PR"), _proof_line("l2", "∀xF(x)", "PR"),
+            _proof_line("l3", "(F(c) → G(c))", "∀E", [_cite("l1")]), _proof_line("l4", "F(c)", "∀E", [_cite("l2")]),
+            _proof_line("l5", "G(c)", "→E", [_cite("l3"), _cite("l4")]), _proof_line("l6", "∀xG(x)", "∀I", [_cite("l5")]),
+        ]),
+        _proof_fixture("f39-invalid-universal-name", "invalid", ["F(c)"], "∀xF(x)", [
+            _proof_line("l1", "F(c)", "PR"), _proof_line("l2", "∀xF(x)", "∀I", [_cite("l1")]),
+        ], ["rule.universal_introduction_name_not_fresh"]),
+        _proof_fixture("f39-valid-existential", "valid", ["∃xF(x)", "∀x(F(x) → G(x))"], "∃xG(x)", [
+            _proof_line("l1", "∃xF(x)", "PR"), _proof_line("l2", "∀x(F(x) → G(x))", "PR"),
+            _proof_line("l3", "F(c)", "AS", depth=1, opens="w"), _proof_line("l4", "(F(c) → G(c))", "∀E", [_cite("l2")], depth=1),
+            _proof_line("l5", "G(c)", "→E", [_cite("l4"), _cite("l3")], depth=1), _proof_line("l6", "∃xG(x)", "∃I", [_cite("l5")], depth=1),
+            _proof_line("l7", "∃xG(x)", "∃E", [_cite("l1"), _cite_subproof("l3", "l6")], closes=["w"]),
+        ]),
+        _proof_fixture("f39-invalid-existential-leak", "invalid", ["∃xF(x)"], "F(c)", [
+            _proof_line("l1", "∃xF(x)", "PR"), _proof_line("l2", "F(c)", "AS", depth=1, opens="w"),
+            _proof_line("l3", "F(c)", "R", [_cite("l2")], depth=1), _proof_line("l4", "F(c)", "∃E", [_cite("l1"), _cite_subproof("l2", "l3")], closes=["w"]),
+        ], ["rule.existential_elimination_name_not_fresh"]),
+    ]
+    return lesson
+
+
+def _candidate_f40():
+    lesson = _stage_f_lesson(
+        "F40",
+        "ders-40-kimlik-ve-karma-fol-kanitlari",
+        "Kimlik ve Karma FOL Kanıtları",
+        "Kimliğin özdeşlik ve seçili yerine koyma kurallarını niceleyici, bağlaç ve özad kurallarıyla birleştirir; uzun kanıtı hedeften geriye ve öncüllerden ileri iki yönlü planlar.",
+        "Kimlik ve kanıt stratejisi",
+        50,
+        ["ders-39-ozad-disiplini-tumel-ve-varlik-elemesi"],
+        ["fol_proof.identity_introduction", "fol_proof.identity_elimination", "fol_proof.selected_identity_substitution", "fol_proof.mixed_strategy", "fol_proof.audit_repair"],
+        ["Atıfsız `=I` ile her ad için özdeşlik satırı kurmak.", "`=E` ile eş adların seçili serbest oluşumlarını iki yönde değiştirmek.", "Kimlik yerine koymasını bağıntı argüman sırası ve niceleyici kapsamıyla uyumlu uygulamak.", "Tümel/varoluşsal ve önerme kurallarını kimlikle birleştirmek.", "Hatalı uzun kanıtı ilk lisanssız satırdan başlayarak onarmak."],
+        [("Kimlik giriş (=I)", "Her ad c için c=c sonucunu atıfsız veren kural."), ("Kimlik eleme (=E)", "a=b ve a içeren bir formülden seçili a oluşumlarını b ile değiştiren kural."), ("Seçili yerine koyma", "Eş adın bütün oluşumlarını değil, bir veya daha fazlasını değiştirmeye izin veren yapı koruyucu işlem."), ("Kimliğin simetrisi", "a=b ise b=a; =E iki yöndeki yerine koymayı lisanslayabilir."), ("İleri planlama", "Öncüllerin ana bağlaç/niceleyicilerinin açtığı satırları üretmek."), ("Geri planlama", "Hedefin son kuralını ve o kuralın gerektirdiği alt hedefleri belirlemek." )],
+        [
+            _section("=I: özdeşliğin başlangıç satırı", "`c=c` için öncül veya atıf gerekmez. Bu, c'nin hangi nesneye gönderildiğinden bağımsız olarak aynı nesnenin kendisiyle özdeş olmasına dayanır.", "Bir kanıtta refleksif kimlik gerektiğinde.", "— / c=c =I", "Kimlik işareti sıradan R yüklemi olmadığı için modelden ayrıca uzantı okunmaz.", "a=b'yi =I ile yazmak; iki farklı ad aynı nesneye gidebilir ama bu kanıtta verilmiş değildir.", [("a=a", "=I ile doğrudan."), ("a=b", "Yalnız =I ile çıkmaz.")], ("Yalnız aynı terimin iki yanını yazmak.", "Farklı adların olası ortak gönderimini varsaymak.", "Olasılık kanıt satırı değildir.")),
+            _section("=E: eşleri yerine koymak", "a=b ve A(a) satırlarından A(b) elde edilebilir. Kaynak kimlik ile değiştirilecek formül ayrı atıflardır.", "Bir nesne hakkında bir adla verilen bilgiyi eş adına taşırken.", "a=b, A(a) / A(b)", "Eş adlar aynı gönderime sahip olduğundan yüklem üyeliği ve bağıntı rolü korunur.", "a=b ve F(a)dan G(b) çıkarmak; yüklem de değiştirilmiştir.", [("a=b, F(a) / F(b)", "Meşru."), ("a=b, R(a,c) / R(b,c)", "İlk argüman değiştirilir.")], ("Yalnız ad oluşumunu değiştirmek.", "Kimlik bahanesiyle yüklem, bağlaç veya başka adı değiştirmek.", "=E formül iskeletini korur.")),
+            _section("Seçili oluşum ve yön", "R(a,a) gibi bir satırda tek veya iki a oluşumu b ile değiştirilebilir: R(b,a), R(a,b), R(b,b). Ayrıca a=b kimliği ters yönde de kullanılabilir.", "Aynı ad birden çok rolde geçtiğinde.", "a=b, R(a,a) / R(b,a) veya R(a,b) veya R(b,b)", "Her hedef, kaynakta en az bir eş ad oluşumunu değiştirir; diğer yapı aynıdır.", "Aynı adın sıfır oluşumunu değiştirip =E etiketi kullanmak veya c'yi d yapmak.", [("R(a,a)→R(b,a)", "İlk oluşum seçildi."), ("R(a,c)→R(b,d)", "c→d kimlikle lisanslı değil.")], ("Değişen terim konumlarını tek tek işaretlemek.", "Bütün formülü eşdeğer sanmak.", "Kimlik yerine koyması yerel ve izlenebilir olmalıdır.")),
+            _section("Kimlik ve niceleyici kapsam", "Kimlik satırı bir niceleyicinin gövdesindeki ad oluşumunu değiştirebilir; bağlı değişkenler ve niceleyici kapsamı korunur.", "`a=b, ∀xR(x,a) ⊢ ∀xR(x,b)` gibi adımlarda.", "a=b, ∀xR(x,a) / ∀xR(x,b)", "Değiştirilen a addır; bağlı x oluşumları etkilenmez.", "x değişkenini a=b üzerinden değiştirmek veya niceleyici harfini yeniden adlandırmayı =E saymak.", [("∃xR(a,x)→∃xR(b,x)", "Serbest ad oluşumu değişir."), ("∀xR(x,a)→∀xR(b,a)", "Bağlı x, a=b ile b yapılamaz.")], ("Ad ve bağlı değişken türünü ayırmak.", "Aynı küçük harf görünümünden hareket etmek.", "İmza adlarla değişkenleri ayrık tutar.")),
+            _section("İleri ve geri planı buluşturmak", "Öncüllerden ∀E/=E ile kullanılabilir örnekler üret; hedeften son kuralı belirle. İki cephe ortak bir ara formülde buluşur.", "Beşten uzun karma kanıtlarda.", "ileri: aç/taşı; geri: hedefin ana işareti", "Varoluşsal hedef çoğu kez son `∃I`; tümel hedef çoğu kez son `∀I`; koşullu hedef çoğu kez `→I` ister.", "Rastgele bütün öncülleri açmak veya hedef biçimini görmeden satır üretmek.", [("Hedef ∃xG(x)", "Bir G(c) ara satırı ara."), ("Hedef ∀x(c=x→F(x))", "Keyfî ad ve →I alt kanıtı planla.")], ("Son kural ve ara hedef yazmak.", "Yalnız ileri zincirle kör arama yapmak.", "Strateji arama alanını küçültür.")),
+            _section("İlk hatada dur ve onar", "Uzun kanıtta sonraki satırlar ilk lisanssız satıra dayanabilir. Önce en erken hata düzeltilir, sonra bağımlı satırlar yeniden denetlenir.", "Denetleyici birden çok hata verdiğinde.", "ilk hata → onarım → yeniden denetim", "Hata kodları biçim, kapsam, atıf, yerine koyma ve tazelik sorunlarını ayırır.", "Son satırı hedefe benzetip ara hataları bırakmak.", [("=E substitution", "Yanlış ad/yüklem değişimini düzelt."), ("∀I name_not_fresh", "Keyfî ad seçimini veya bağımlılığı yeniden kur.")], ("Kök nedeni sırayla onarmak.", "Bütün kırmızı satırları bağımsız sanmak.", "Bağımlı kanıtta erken hata zincirleme etki yaratır.")),
+        ],
+        [
+            _worked("a=a =I", "Aynı adın gönderimi kendisiyle özdeştir; atıf gerekmez.", "=I"),
+            _worked("a=b =I", "Farklı adların özdeşliği öncülsüz kurulamaz.", "Yanlış =I", "bad"),
+            _worked("a=b, F(a) ⊢ F(b)", "F yüklemi korunur, eş ad değiştirilir.", "=E"),
+            _worked("a=b, R(a,a) ⊢ R(b,a)", "Seçili ilk oluşum değiştirilebilir.", "Seçili =E"),
+            _worked("a=b, R(a,a) ⊢ R(b,b)", "İki a oluşumu da b ile değiştirilebilir.", "Tam =E"),
+            _worked("a=b, R(a,c) ⊢ R(b,d)", "c→d değişimi kimlikçe lisanslı değildir.", "Fazla değişim", "bad"),
+            _worked("a=b, F(b) ⊢ F(a)", "Kimlik iki yönde yerine koymaya izin verir.", "Ters yön"),
+            _worked("a=b, ∀xR(x,a) ⊢ ∀xR(x,b)", "Yalnız serbest ad oluşumu değişir.", "Kapsam korunur"),
+            _worked("a=b, ∀xR(x,a) ⊢ ∀xR(b,a)", "Bağlı x oluşumunu adla değiştirmek =E değildir.", "Bağlanma hatası", "bad"),
+            _worked("a=b,F(a),∀x(F(x)→G(x)) ⊢ ∃xG(x)", "=E, ∀E, →E ve ∃I sıralı kullanılabilir.", "Karma kanıt"),
+            _worked("F(a) ⊢ ∀x(x=a→F(x))", "Keyfî c için c=a varsayımından =E ile F(c), sonra →I ve ∀I.", "Kimlikli tümel"),
+            _worked("Denetleyici =E hatası verdi, argüman geçersiz.", "Yalnız türetim hatalıdır; semantik karar için karşı model gerekir.", "Sınır", "bad"),
+        ],
+        ["=I ile farklı adların özdeşliğini varsaymak.", "=E sırasında yüklemi veya ilişkisiz adı değiştirmek.", "Seçili oluşum yerine bütün satırı yeniden yazmak.", "Bağlı değişkeni kimlik üzerinden adla değiştirmek.", "Kimlikten sonra özad kısıtlarını unutmak.", "Uzun kanıtta ilk hata yerine yalnız son satırı düzeltmek."],
+        _practice([
+            ("=I hangisini lisanslar?", ["a=a", "a=b", "F(a)", "∀xF(x)"], "A", "Özdeşlik refleksif biçimidir.", "Temel"),
+            ("a=b,F(a)den ne çıkar?", ["G(b)", "F(b)", "a=a yalnız", "∀xF(x)"], "B", "Eş ad aynı yüklem konumuna taşınır.", "Temel"),
+            ("a=b,R(a,a)den hangisi çıkar?", ["R(b,a)", "R(c,a)", "G(b)", "R(a,c)"], "A", "İlk a seçilerek b yapılır.", "Orta"),
+            ("a=b,R(a,c)den R(b,d) neden çıkmaz?", ["R ikili", "c→d lisanssız", "b taze", "a=b yanlış"], "B", "Kimlik yalnız a/b değişimini lisanslar.", "Temel"),
+            ("=E yönü hangisidir?", ["Yalnız a→b", "Yalnız b→a", "Kimliğin iki yönü", "Hiçbiri"], "C", "Eşlik simetriktir.", "Temel"),
+            ("∀xR(x,a)de a=b ile ne değişebilir?", ["Bağlı x", "Serbest a", "∀ işareti", "R yüklemi"], "B", "a addır; x niceleyiciye bağlıdır.", "Orta"),
+            ("Varoluşsal hedefte tipik son kural?", ["∃I", "∀E", "=I", "PR"], "A", "Bir tanık ara satırı genellenir.", "Temel"),
+            ("Tümel hedefte tipik son kural?", ["∃E", "∀I", "=E", "∨I"], "B", "Keyfî örnek genellenir.", "Temel"),
+            ("Koşullu hedefte tipik plan?", ["→I alt kanıtı", "∃I", "=I", "DS"], "A", "Ön bileşen varsayılıp art bileşen türetilir.", "Orta"),
+            ("İlk hata yaklaşımı neden kullanılır?", ["Fontu düzeltmek", "Sonraki satırlar erken hataya bağımlı olabilir", "Modeli küçültmek", "Adları silmek"], "B", "Kök hata zincirleme sorun yaratır.", "Orta"),
+            ("Kimlikli tümel kanıtta ∀I öncesi ne denetlenir?", ["Adın açık bağımlılıklarda geçmemesi", "Yalnız satır sayısı", "Model alanı", "Kaynak yılı"], "A", "Kimlik özad şartını kaldırmaz.", "İleri"),
+            ("Hatalı =E kanıtı argüman hakkında ne gösterir?", ["Geçersizlik", "Yalnız bu adımın lisanssızlığı", "Karşı model", "Öncül yanlışlığı"], "B", "Semantik statü ayrı sınanır.", "İleri"),
+        ]),
+        {"prompt": "`a=b, F(a), ∀x(F(x)→G(x))` öncüllerinden `∃xG(x)` hedefini kur.", "starter": "Önce F(a)yı eş ad b'ye taşı; tümel koşulu b için aç; G(b)yi varoluşa yükselt.", "checks": ["=E yalnız adı değiştirdi", "∀E b örneği doğru", "→E atıfları doğru", "∃I hedefi geri örnekleniyor"], "solution": "1 a=b PR; 2 F(a) PR; 3 ∀x(F(x)→G(x)) PR; 4 F(b) =E 1,2; 5 F(b)→G(b) ∀E 3; 6 G(b) →E 5,4; 7 ∃xG(x) ∃I 6."},
+        [
+            _production_task("Sekiz =E adayını seçili oluşum tablosuyla denetle.", ["Kimlik yönü yazılı", "Değişen konumlar işaretli", "Formül iskeleti korunmuş", "En az bir değişim var"], "İkisi niceleyici kapsamı, ikisi ikili bağıntı içersin.", "Kimlik çiftleri", ["a=b / R(a,a)", "a=b / ∀xR(x,a)", "a=b / ∃xR(a,x)", "a=b / F(c)"]),
+            _production_task("En az sekiz satırlı kimlik ve niceleyici kanıtı üret, sonra kasıtlı üç hata ekleyip onar.", ["=E", "En az iki niceleyici kuralı", "Bir alt kanıt", "Hata kodlarına göre onarım"], "Hatalar yerine koyma, kapsam ve özad türlerinden olsun.", "Hedef seçenekleri", ["∀x(x=a→F(x))", "∃xG(x)", "∀x∃yR(x,y)"]),
+        ],
+        ["=I ve =E'yi doğru atıf sayısıyla uygular.", "Seçili kimlik değiştirmesini en az altı yapısal örnekte denetler.", "Kimlik, niceleyici ve önerme kurallı eksiksiz kanıt üretir.", "Uzun kanıtta ilk lisanssız satırı bulup bağımlı zinciri onarır."],
+        ["=E neden bütün eşdeğer formüller arasında serbest geçiş değildir?", "Bağlı değişken ile ad oluşumunu nasıl ayırırsın?", "Hedefin ana işareti son kuralı nasıl önerir?"],
+        "F41'de çeviri, model araması ve kanıt aynı argüman üzerinde bağımsız çalıştırılıp çapraz denetlenecek.",
+        ["forallx-identity-rules", "forallx-quantifier-proofs"],
+        "Kimlik yerine koyması yalnız ayrıştırılmış serbest ad oluşumlarında çalışır. Kimlik kuralları özad kısıtlarını veya kapsam disiplinini askıya almaz.",
+        ["Kimlik Kanıtları"],
+    )
+    lesson["fol_signature"] = FOL_PROOF_SIGNATURE
+    lesson["proof_fixtures"] = [
+        _proof_fixture("f40-identity-introduction", "valid", [], "a=a", [_proof_line("l1", "a=a", "=I")]),
+        _proof_fixture("f40-selected-substitution", "valid", ["a=b", "R(a,a)"], "R(b,a)", [
+            _proof_line("l1", "a=b", "PR"), _proof_line("l2", "R(a,a)", "PR"), _proof_line("l3", "R(b,a)", "=E", [_cite("l1"), _cite("l2")]),
+        ]),
+        _proof_fixture("f40-mixed", "valid", ["a=b", "F(a)", "∀x(F(x) → G(x))"], "∃xG(x)", [
+            _proof_line("l1", "a=b", "PR"), _proof_line("l2", "F(a)", "PR"), _proof_line("l3", "∀x(F(x) → G(x))", "PR"),
+            _proof_line("l4", "F(b)", "=E", [_cite("l1"), _cite("l2")]), _proof_line("l5", "(F(b) → G(b))", "∀E", [_cite("l3")]),
+            _proof_line("l6", "G(b)", "→E", [_cite("l5"), _cite("l4")]), _proof_line("l7", "∃xG(x)", "∃I", [_cite("l6")]),
+        ]),
+        _proof_fixture("f40-bad-substitution", "invalid", ["a=b", "R(a,c)"], "R(b,d)", [
+            _proof_line("l1", "a=b", "PR"), _proof_line("l2", "R(a,c)", "PR"), _proof_line("l3", "R(b,d)", "=E", [_cite("l1"), _cite("l2")]),
+        ], ["rule.identity_elimination_substitution"]),
+    ]
+    return lesson
+
+
 STAGE_F_CANDIDATE_LESSONS = [
     _candidate_f35(),
     _candidate_f36(),
     _candidate_f37(),
+    _candidate_f38(),
+    _candidate_f39(),
+    _candidate_f40(),
 ]
 
 

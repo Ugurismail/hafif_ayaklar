@@ -9,6 +9,7 @@ from .logic_fol_semantics import (
     interpretation_from_data,
     search_countermodel,
 )
+from .logic_fol_fitch import F38_RULES, F39_RULES, F40_RULES, audit_fol_fitch_proof
 from .logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
 from .logic_phase3_stage_b import STAGE_B_CANDIDATE_MAP
 from .logic_phase3_stage_c import STAGE_C_CANDIDATE_MAP
@@ -25,11 +26,11 @@ class LogicPhase3StageFCandidateTests(SimpleTestCase):
     def test_stage_f_current_candidates_are_contiguous_and_isolated(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_F_CANDIDATE_LESSONS],
-            ["F35", "F36", "F37"],
+            ["F35", "F36", "F37", "F38", "F39", "F40"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_F_CANDIDATE_LESSONS],
-            [35, 36, 37],
+            [35, 36, 37, 38, 39, 40],
         )
         visible_slugs = {lesson["slug"] for lesson in VISIBLE_LOGIC_LESSONS}
         self.assertTrue(set(STAGE_F_CANDIDATE_MAP).isdisjoint(visible_slugs))
@@ -84,19 +85,16 @@ class LogicPhase3StageFCandidateTests(SimpleTestCase):
                 for source_id in lesson["source_ids"]:
                     self.assertIn(source_id, STAGE_F_SOURCE_REFERENCES)
 
-    def test_f35_bridges_e34_and_f36_f37_form_a_chain(self):
+    def test_f35_bridges_e34_and_stage_f_forms_a_chain(self):
         self.assertEqual(
             STAGE_F_CANDIDATE_LESSONS[0]["prerequisites"],
             ["ders-fol-belirsizlik-sembollestirme-atolyesi"],
         )
-        self.assertEqual(
-            STAGE_F_CANDIDATE_LESSONS[1]["prerequisites"],
-            [STAGE_F_CANDIDATE_LESSONS[0]["slug"]],
-        )
-        self.assertEqual(
-            STAGE_F_CANDIDATE_LESSONS[2]["prerequisites"],
-            [STAGE_F_CANDIDATE_LESSONS[1]["slug"]],
-        )
+        for previous, current in zip(
+            STAGE_F_CANDIDATE_LESSONS,
+            STAGE_F_CANDIDATE_LESSONS[1:],
+        ):
+            self.assertEqual(current["prerequisites"], [previous["slug"]])
 
     def test_practice_answers_and_production_stimuli_are_auditable(self):
         for lesson in STAGE_F_CANDIDATE_LESSONS:
@@ -228,3 +226,59 @@ class LogicPhase3F37RelationFixtureTests(SimpleTestCase):
         mistake_text = " ".join(self.lesson["mistakes"])
         self.assertIn("Yansımalı değil", mistake_text)
         self.assertIn("Simetrik değil", mistake_text)
+
+
+class LogicPhase3F38ToF40ProofFixtureTests(SimpleTestCase):
+    RULES = {
+        "F38": F38_RULES,
+        "F39": F39_RULES,
+        "F40": F40_RULES,
+    }
+
+    def test_every_proof_fixture_is_recomputed_by_the_fol_auditor(self):
+        for lesson in STAGE_F_CANDIDATE_LESSONS[3:6]:
+            signature = signature_from_data(lesson["fol_signature"])
+            for fixture in lesson["proof_fixtures"]:
+                issues = audit_fol_fitch_proof(
+                    fixture["proof"],
+                    signature,
+                    allowed_rules=self.RULES[lesson["curriculum_id"]],
+                )
+                actual_codes = {issue["code"] for issue in issues}
+                with self.subTest(
+                    lesson=lesson["curriculum_id"],
+                    fixture=fixture["id"],
+                ):
+                    if fixture["kind"] == "valid":
+                        self.assertEqual(issues, [])
+                    else:
+                        self.assertTrue(fixture["expected_codes"])
+                        self.assertTrue(
+                            set(fixture["expected_codes"]).issubset(actual_codes)
+                        )
+
+    def test_rule_availability_grows_without_removing_prior_rules(self):
+        self.assertLess(F38_RULES, F39_RULES)
+        self.assertLess(F39_RULES, F40_RULES)
+        self.assertEqual(F39_RULES - F38_RULES, {"∀I", "∃E"})
+        self.assertEqual(F40_RULES - F39_RULES, {"=I", "=E"})
+
+    def test_eigenname_and_identity_limits_are_explicit_in_content(self):
+        f39_text = " ".join(
+            [
+                STAGE_F_CANDIDATE_LESSONS[4]["summary"],
+                STAGE_F_CANDIDATE_LESSONS[4]["rigor_note"],
+                *STAGE_F_CANDIDATE_LESSONS[4]["mistakes"],
+            ]
+        )
+        f40_text = " ".join(
+            [
+                STAGE_F_CANDIDATE_LESSONS[5]["summary"],
+                STAGE_F_CANDIDATE_LESSONS[5]["rigor_note"],
+                *STAGE_F_CANDIDATE_LESSONS[5]["mistakes"],
+            ]
+        )
+        self.assertIn("bağımlılık", f39_text)
+        self.assertIn("sonuç", f39_text)
+        self.assertIn("seçili", f40_text)
+        self.assertIn("bağlı değişken", f40_text.lower())
