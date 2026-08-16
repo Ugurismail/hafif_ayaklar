@@ -191,13 +191,13 @@ geçilemez.
 
 | Ders | Sözleşme | Aday veri | Otomatik motor/sınır testi | Yetkili önizleme |
 | --- | --- | --- | --- | --- |
-| F35 Yorum, Gönderim ve Doğruluk | Hazır | Hazır | Hazır | Bekliyor |
-| F36 Model ve Karşı Model | Hazır | Hazır | Hazır | Bekliyor |
-| F37 Bağıntı Özellikleri | Hazır | Hazır | Hazır | Bekliyor |
-| F38 Niceleyici Kurallarına Giriş | Hazır | Hazır | Hazır | Bekliyor |
-| F39 Özad Disiplini ve Kanıt Stratejisi | Hazır | Hazır | Hazır | Bekliyor |
-| F40 Kimlik İçeren Kanıtlar | Hazır | Hazır | Hazır | Bekliyor |
-| F41 Çeviri-Model-Kanıt Projesi | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| F35 Yorum, Gönderim ve Doğruluk | Hazır | Hazır | Hazır | Hazır |
+| F36 Model ve Karşı Model | Hazır | Hazır | Hazır | Hazır |
+| F37 Bağıntı Özellikleri | Hazır | Hazır | Hazır | Hazır |
+| F38 Niceleyici Kurallarına Giriş | Hazır | Hazır | Hazır | Hazır |
+| F39 Özad Disiplini ve Kanıt Stratejisi | Hazır | Hazır | Hazır | Hazır |
+| F40 Kimlik İçeren Kanıtlar | Hazır | Hazır | Hazır | Hazır |
+| F41 Çeviri-Model-Kanıt Projesi | Hazır | Hazır | Hazır | Hazır |
 
 ## Aday geliştirme kapıları
 
@@ -209,10 +209,10 @@ geçilemez.
 - [x] Her dersin önkoşulu, yetkinliği ve ustalık kanıtı tanımlandı.
 - [x] Aday semantik motoru ve sınır testleri yazıldı.
 - [x] Aday FOL kanıt motoru ve sınır testleri yazıldı.
-- [ ] F35-F41 aday ders verisi yazıldı.
-- [ ] Aday önkoşul grafiği ve kaynak sözleşmesi otomatik test edildi.
-- [ ] Aday içerik yalıtılmış, salt okunur yetkili önizlemede doğrulandı.
-- [ ] Mevcut öğrenci rotası ve ilerleme verisinin değişmediği regresyonla
+- [x] F35-F41 aday ders verisi yazıldı.
+- [x] Aday önkoşul grafiği ve kaynak sözleşmesi otomatik test edildi.
+- [x] Aday içerik yalıtılmış, salt okunur yetkili önizlemede doğrulandı.
+- [x] Mevcut öğrenci rotası ve ilerleme verisinin değişmediği regresyonla
   kanıtlandı.
 
 ## Canlıya alma kapıları

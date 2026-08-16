@@ -1,7 +1,12 @@
-from django.test import SimpleTestCase
+from html import unescape
+
+from django.contrib.auth import get_user_model
+from django.test import SimpleTestCase, TestCase
+from django.urls import reverse
 
 from .logic_course_data import VISIBLE_LOGIC_LESSONS
 from .logic_fol import signature_from_data
+from .logic_fol_capstone import audit_fol_capstone
 from .logic_fol_semantics import (
     analyze_binary_relation,
     evaluate_fol,
@@ -20,17 +25,18 @@ from .logic_phase3_stage_f import (
     STAGE_F_CANDIDATE_MAP,
     STAGE_F_SOURCE_REFERENCES,
 )
+from .models import LogicLessonProgress
 
 
 class LogicPhase3StageFCandidateTests(SimpleTestCase):
     def test_stage_f_current_candidates_are_contiguous_and_isolated(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_F_CANDIDATE_LESSONS],
-            ["F35", "F36", "F37", "F38", "F39", "F40"],
+            ["F35", "F36", "F37", "F38", "F39", "F40", "F41"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_F_CANDIDATE_LESSONS],
-            [35, 36, 37, 38, 39, 40],
+            [35, 36, 37, 38, 39, 40, 41],
         )
         visible_slugs = {lesson["slug"] for lesson in VISIBLE_LOGIC_LESSONS}
         self.assertTrue(set(STAGE_F_CANDIDATE_MAP).isdisjoint(visible_slugs))
@@ -282,3 +288,128 @@ class LogicPhase3F38ToF40ProofFixtureTests(SimpleTestCase):
         self.assertIn("sonuç", f39_text)
         self.assertIn("seçili", f40_text)
         self.assertIn("bağlı değişken", f40_text.lower())
+
+
+class LogicPhase3F41CapstoneFixtureTests(SimpleTestCase):
+    def setUp(self):
+        self.lesson = STAGE_F_CANDIDATE_LESSONS[6]
+
+    def test_every_capstone_fixture_is_recomputed(self):
+        self.assertEqual(len(self.lesson["capstone_fixtures"]), 2)
+        for fixture in self.lesson["capstone_fixtures"]:
+            with self.subTest(fixture=fixture["id"]):
+                result = audit_fol_capstone(fixture)
+                self.assertEqual(
+                    result["integrity"]["status"],
+                    fixture["expected_status"],
+                )
+                self.assertTrue(result["translation"]["accepted"])
+                self.assertFalse(
+                    result["semantics"]["sample_establishes_validity"]
+                )
+
+    def test_valid_and_invalid_cases_have_distinct_evidence(self):
+        valid = audit_fol_capstone(self.lesson["capstone_fixtures"][0])
+        invalid = audit_fol_capstone(self.lesson["capstone_fixtures"][1])
+
+        self.assertTrue(valid["proof"]["verified"])
+        self.assertEqual(
+            valid["semantics"]["countermodel_search"]["status"],
+            "no_countermodel_in_sample",
+        )
+        self.assertFalse(invalid["proof"]["provided"])
+        self.assertEqual(
+            invalid["semantics"]["countermodel_search"]["status"],
+            "countermodel_found",
+        )
+
+    def test_content_explicitly_preserves_conflict_and_formalization_limits(self):
+        text = " ".join(
+            [
+                self.lesson["summary"],
+                self.lesson["rigor_note"],
+                *self.lesson["mistakes"],
+                *(section["summary"] for section in self.lesson["sections"]),
+            ]
+        ).lower()
+        self.assertIn("yayın engeli", text)
+        self.assertIn("karşı model", text)
+        self.assertIn("doğal dil", text)
+
+
+class LogicPhase3StageFPreviewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        user_model = get_user_model()
+        cls.staff_user = user_model.objects.create_user(
+            username="logic-stage-f-reviewer",
+            password="review-pass",
+            is_staff=True,
+        )
+        cls.regular_user = user_model.objects.create_user(
+            username="logic-stage-f-student",
+            password="student-pass",
+        )
+
+    def test_preview_requires_staff_access(self):
+        url = reverse("logic_stage_f_preview")
+        anonymous_response = self.client.get(url)
+        self.assertEqual(anonymous_response.status_code, 302)
+        self.assertIn(reverse("admin:login"), anonymous_response.url)
+
+        self.client.force_login(self.regular_user)
+        regular_response = self.client.get(url)
+        self.assertEqual(regular_response.status_code, 302)
+        self.assertIn(reverse("admin:login"), regular_response.url)
+
+    def test_staff_preview_contains_every_candidate_and_fixture_family(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_f_preview"))
+        rendered_text = unescape(response.content.decode())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "core/logic_stage_a_preview.html")
+        self.assertIn("Faz 3F: FOL semantiği ve doğal türetimi", rendered_text)
+        for lesson in STAGE_F_CANDIDATE_LESSONS:
+            self.assertIn(lesson["curriculum_id"], rendered_text)
+            self.assertIn(lesson["title"], rendered_text)
+            self.assertIn(lesson["fol_signature"]["domain"], rendered_text)
+            for fixture in lesson["semantic_fixtures"]:
+                self.assertIn(
+                    f'data-fol-semantic-fixture="{fixture["id"]}"',
+                    rendered_text,
+                )
+            for fixture in lesson["countermodel_fixtures"]:
+                self.assertIn(
+                    f'data-fol-countermodel-fixture="{fixture["id"]}"',
+                    rendered_text,
+                )
+            for fixture in lesson["relation_fixtures"]:
+                self.assertIn(
+                    f'data-fol-relation-fixture="{fixture["id"]}"',
+                    rendered_text,
+                )
+            for fixture in lesson["capstone_fixtures"]:
+                self.assertIn(
+                    f'data-fol-capstone-fixture="{fixture["id"]}"',
+                    rendered_text,
+                )
+
+    def test_preview_is_read_only_and_candidates_stay_off_learner_routes(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_f_preview"))
+        self.assertEqual(LogicLessonProgress.objects.count(), 0)
+        self.assertNotContains(response, "data-logic-lesson-page")
+        self.assertNotContains(response, "data-progress-url")
+        self.assertNotContains(response, reverse("logic_lesson_progress"))
+        self.assertNotContains(response, "logic_lesson.js")
+
+        self.client.force_login(self.regular_user)
+        for lesson in STAGE_F_CANDIDATE_LESSONS:
+            response = self.client.get(
+                reverse(
+                    "logic_lesson_detail",
+                    kwargs={"lesson_slug": lesson["slug"]},
+                )
+            )
+            self.assertEqual(response.status_code, 404)

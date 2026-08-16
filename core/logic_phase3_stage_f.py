@@ -130,6 +130,7 @@ def _stage_f_lesson(*args, **kwargs):
             "relation_fixtures": [],
             "proof_fixtures": [],
             "semantic_cross_checks": [],
+            "capstone_fixtures": [],
         }
     )
     return lesson
@@ -1147,6 +1148,305 @@ def _candidate_f40():
     return lesson
 
 
+F41_VALID_ARGUMENT = {
+    "premises": [
+        "∀x(F(x) → ∃y(K(y) ∧ R(x,y)))",
+        "F(a)",
+        "a=b",
+    ],
+    "conclusion": "∃y(K(y) ∧ R(b,y))",
+}
+
+
+F41_INVALID_ARGUMENT = {
+    "premises": [
+        "∀x(F(x) → ∃y(K(y) ∧ R(x,y)))",
+        "F(a)",
+        "a=b",
+    ],
+    "conclusion": "∃y(K(y) ∧ ∀x(F(x) → R(x,y)))",
+}
+
+
+def _f41_translation_tasks(argument):
+    tasks = [
+        {
+            "id": f"p{index + 1}",
+            "label": f"{index + 1}. öncül",
+            "role": "premise",
+            "position": index,
+            "candidate": formula,
+            "accepted_sources": [formula],
+        }
+        for index, formula in enumerate(argument["premises"])
+    ]
+    tasks.append(
+        {
+            "id": "c",
+            "label": "Sonuç",
+            "role": "conclusion",
+            "candidate": argument["conclusion"],
+            "accepted_sources": [argument["conclusion"]],
+        }
+    )
+    return tasks
+
+
+def _candidate_f41():
+    lesson = _stage_f_lesson(
+        "F41",
+        "ders-41-ceviri-model-kanit-asama-projesi",
+        "Çeviri, Model ve Kanıt Aşama Projesi",
+        "Aynı doğal dil argümanını sembolleştirme, sonlu model ve Fitch kanıtı kanallarında bağımsız denetler; karşı model ile doğrulanmış kanıt çatışmasını gizlemek yerine yayın engeli olarak raporlar.",
+        "Üç kanallı mantık denetimi",
+        65,
+        ["ders-40-kimlik-ve-karma-fol-kanitlari"],
+        [
+            "fol_capstone.argument_freeze",
+            "fol_capstone.translation_audit",
+            "fol_capstone.model_audit",
+            "fol_capstone.proof_audit",
+            "fol_capstone.conflict_reconciliation",
+            "fol_capstone.formalization_limits",
+        ],
+        [
+            "Doğal dil argümanı ile FOL anahtarını denetim boyunca sabit tutmak.",
+            "Her öncül ve sonucu kabul edilen çeviri yapısıyla ayrı karşılaştırmak.",
+            "Aynı formülleri en az iki yorumda doğruluk iziyle değerlendirmek.",
+            "Karşı model aramasının olumlu ve olumsuz sonuçlarını epistemik olarak ayırmak.",
+            "Kanıtın gerçekten aynı öncül ve hedefi kullandığını denetlemek.",
+            "Çeviri, semantik ve kanıt sonuçlarını tek etikete ezmeden uzlaştırmak.",
+        ],
+        [
+            ("Argüman dondurma", "Üç denetim kanalının aynı öncül ve sonuç formüllerini kullanmasını sağlayan sözleşme."),
+            ("Bağımsız kanal", "Başka kanalın sonucunu varsaymadan kendi motoru ve hata diliyle çalışan denetim."),
+            ("Çeviri anahtarı", "Doğal dil yapısını koruduğu önceden onaylanmış bir veya daha fazla FOL cümlesi."),
+            ("Model raporu", "Her yorumda öncül ve sonucun değeriyle tanık/karşı örnek izlerini birlikte gösteren kayıt."),
+            ("Kanıt doğrulaması", "Satır, kapsam, atıf, yerine koyma ve özad denetimlerinden hatasız geçen türetim."),
+            ("Güvenirlik çatışması", "Aynı argüman için doğrulanmış kanıt ile gerçek karşı modelin birlikte raporlanması."),
+            ("Belirsiz sonuç", "Örneklemde karşı model bulunmamasına rağmen kanıt da verilmediğinde korunması gereken durum."),
+        ],
+        [
+            _section(
+                "Önce argümanı dondur",
+                "Doğal dildeki üç öncül ve sonuç için alan, adlar, yüklemler ve ariteler bir kez yazılır. Çeviri, model ve kanıt kanalları bundan sonra aynı ayrıştırılmış formülleri kullanır.",
+                "Bir projenin farklı araçlarında farkında olmadan başka argümanlar sınanmasını önlemek için.",
+                "A = ⟨Γ, C, imza⟩",
+                "Aynı görünen metinler bile niceleyici sırası veya bağıntı argüman yönü değişince başka argüman olabilir.",
+                "Kanıtta sonucu kolaylaştırmak için ∀x∃y sırasını ∃y∀x yapmak.",
+                [("Her araştırmacı bir koordinatöre danıştı", "∀x(F(x)→∃y(K(y)∧R(x,y)))"), ("Bir koordinatör bütün araştırmacılara danışıldı", "∃y(K(y)∧∀x(F(x)→R(x,y)))")],
+                ("Her kanala aynı formül kimliğini vermek.", "Metni kanala göre yeniden sembolleştirmek.", "Çapraz denetim ancak nesnesi aynıysa anlamlıdır."),
+            ),
+            _section(
+                "Çeviri kanalı",
+                "Her cümle doğal dil rolü, kabul edilen yapılar ve öğrencinin adayıyla değerlendirilir. Hata, doğruluk değerinden önce niceleyici, kapsam, yön veya kimlik yapısında aranır.",
+                "Model kurmadan önce yanlış formülün kusursuz değerlendirilmesini engellemek için.",
+                "doğal dil → kabul edilen yapı ↔ aday",
+                "Çeviri denetimi genel mantıksal eşdeğerlik değil, istenen dil yapısının korunmasıdır.",
+                "Bir modelde aynı değeri aldı diye yanlış niceleyici sırasını kabul etmek.",
+                [("Ada araştırmacıdır", "F(a)"), ("Ada ile Bora aynı kişidir", "a=b")],
+                ("Her öncül ve sonucu ayrı raporlamak.", "Bütün argümana tek doğru/yanlış etiketi vermek.", "Yerel çeviri hatası hangi formülün düzeltilmesi gerektiğini gösterir."),
+            ),
+            _section(
+                "Model kanalı",
+                "Aynı kanonik formüller açık alan ve uzantılarda değerlendirilir. Her niceleyicinin tanığı veya karşı örneği izde görünür; tüm öncülleri doğru, sonucu yanlış yapan yorum karşı modeldir.",
+                "Argümanın geçersizliğini göstermek veya formüllerin semantik davranışını sınamak için.",
+                "M ⊨ Γ ve M ⊭ C ⇒ karşı model",
+                "Tek karşı model geçersizliği kanıtlar; sınırlı bankada karşı model bulamamak geçerliliği kanıtlamaz.",
+                "İki başarılı örneği bütün yorumların kanıtı saymak.",
+                [("Ortak koordinatör modeli", "Geçerli proje argümanında bütün öncül ve sonuç doğru."), ("Farklı koordinatörler modeli", "∀x∃y doğruyken ∃y∀x yanlış olabilir.")],
+                ("Model bankasının sınırını sonuçta yazmak.", "Arama başarısızlığını 'geçerli' diye sunmak.", "Sonlu örneklem evrensel semantik nicelemenin yerini tutmaz."),
+            ),
+            _section(
+                "Kanıt kanalı",
+                "Kanıt önce öncül ve hedef kümesinin dondurulmuş argümanla eşleşmesi bakımından, sonra Fitch kuralları bakımından denetlenir.",
+                "Geçerliliği doğal türetim yoluyla göstermek ve her geçişi yeniden oynatmak için.",
+                "aynı Γ, aynı C; sonra satır/kapsam/kural denetimi",
+                "Başka hedefe ait kusursuz bir kanıt bu projenin argümanını kanıtlamaz.",
+                "Kanıt öncüllerine gizlice yardımcı bir cümle eklemek.",
+                [("a=b ile danışma bilgisini a'dan b'ye taşı", "=E yalnız ad oluşumunu değiştirir."), ("∀E sonra →E", "Tümel kural ile önerme kuralı ayrı satırlarda kalır.")],
+                ("Argüman eşleşmesini kural denetiminden önce yapmak.", "Son satır hedefe benziyor diye kabul etmek.", "Doğru kanıt yalnız doğru sonuca değil doğru öncüllere de bağlıdır."),
+            ),
+            _section(
+                "Sonuçları uzlaştır",
+                "Üç kanal tek bir puanda eritilmez. Çeviri revizyonu, bulunan karşı model, doğrulanmış kanıt, eksik kanıt ve motor çatışması ayrı durumlar olarak korunur.",
+                "Öğrenciye ne bildiğimizi ve sıradaki işlemi açık söylemek için.",
+                "blocked > countermodel > translation revision > verified proof > undetermined",
+                "Doğrulanmış kanıt ve karşı model birlikteyse pedagojik sonuç değil, veri veya motor hatası vardır; yayın durur.",
+                "Çatışmada güçlü görünen kanalı seçip diğerini saklamak.",
+                [("Kanıt var, karşı model yok", "Kanıt doğrulandı; örneklem ayrıca raporlanır."), ("Kanıt yok, karşı model yok", "Durum belirsiz kalır.")],
+                ("Her kanalın ham raporunu saklamak.", "Tek yeşil/kırmızı durum göstermek.", "İzlenebilirlik hatanın hangi temsil düzeyinde olduğunu korur."),
+            ),
+            _section(
+                "Biçimselleştirme kayıp raporu",
+                "Proje, başarılı biçimselleştirmenin dahi doğal dildeki zaman, kiplik, bağlam, ima veya söylem etkilerini dışarıda bırakabileceğini açıkça kaydeder.",
+                "Formel başarının doğal dilin eksiksiz açıklaması sanılmasını önlemek için.",
+                "formel başarı ≠ anlamsal tüketme",
+                "FOL argümanın seçilmiş yapısını görünür kılar; bütün kullanım bağlamını temsil etmez.",
+                "Kanıt bulunduğu için doğal dil yorumunun tek mümkün okuma olduğunu söylemek.",
+                [("'Danıştı' geçmiş zaman", "Mevcut imza zamanı kodlamıyor."), ("'Bir koordinatör' bağlamsal belirginlik", "Varoluş niceleyicisi bunu tek başına taşımaz.")],
+                ("En az iki kaybı somut cümleye bağlamak.", "Genel 'bağlam kaybolur' sloganıyla yetinmek.", "Kayıp raporu hangi ayrımın dışarıda kaldığını göstermelidir."),
+            ),
+        ],
+        [
+            _worked("∀x(F(x)→∃y(K(y)∧R(x,y)))", "Her araştırmacının tanığı kendine göre değişebilir; niceleyici sırası korunur.", "Çeviri"),
+            _worked("∃y(K(y)∧∀x(F(x)→R(x,y)))", "Tek bir ortak koordinatör ister; önceki cümleyle aynı değildir.", "Sıra farkı", "bad"),
+            _worked("F(a), a=b ⊢ F(b)", "Kimlik bilgiyi eş ada taşır.", "Kimlik"),
+            _worked("İki modelde sonuç doğru; demek argüman geçerli.", "Sonlu başarılı örneklem genel geçerlilik ispatı değildir.", "Aşırı sonuç", "bad"),
+            _worked("Bir modelde bütün öncüller doğru, sonuç yanlış.", "Bu tek yorum karşı model olarak geçersizliği gösterir.", "Karşı model"),
+            _worked("Kanıtın hedefi başka formül.", "Kurallar doğru olsa bile başka argüman denetlenmiştir.", "Argüman uyuşmazlığı", "bad"),
+            _worked("Kanıt doğrulandı, örneklemde karşı model yok.", "Geçerlilik iddiasının dayanağı kanıttır; örneklem yalnız ek kontroldür.", "Kanıt"),
+            _worked("Kanıt yok, örneklemde karşı model yok.", "Ne geçerlilik ne geçersizlik kurulmuştur; sonuç belirsizdir.", "Belirsiz"),
+            _worked("Kanıt doğrulandı ve karşı model bulundu.", "Seslik beklentisi bozulmuştur; yayın engellenip veri/motor incelenir.", "Çatışma", "bad"),
+            _worked("Bir çeviri hatalı ama kanıt doğru.", "Öğrencinin çeviri kanalı yine revizyon ister; kanıt sonucu hatayı silmez.", "Bağımsızlık", "bad"),
+            _worked("'Danıştı' zaman bilgisini R ile kodlamak", "R yüklemi geçmiş zamanı ayrıca temsil etmiyorsa bu bilgi kayıp raporuna yazılır.", "Kayıp"),
+            _worked("Tüm kanal raporlarını saklamak", "Düzeltme ve akademik inceleme hangi adımın değiştiğini yeniden kurabilir.", "İzlenebilirlik"),
+        ],
+        [
+            "Model kurarken çeviri formülünü farkında olmadan değiştirmek.",
+            "Aynı modelde eşit değer alan farklı çevirileri özdeş saymak.",
+            "Karşı model bulunamadı sonucunu geçerlilik etiketi yapmak.",
+            "Kanıta dondurulmuş argümanda olmayan ek öncül koymak.",
+            "Hatalı kanıtı argümanın geçersizliği sanmak.",
+            "Doğrulanmış kanıt ile karşı model çatışmasını sessizce bastırmak.",
+            "Biçimselleştirmenin dışarıda bıraktığı doğal dil özelliklerini raporlamamak.",
+        ],
+        _practice([
+            ("Üç kanalın aynı argümanı sınadığını ne garanti eder?", ["Aynı renk", "Dondurulmuş imza, öncüller ve sonuç", "Aynı model", "Aynı satır sayısı"], "B", "Formül kimliği kanallar arası sözleşmedir.", "Temel"),
+            ("∀x∃y ile ∃y∀x arasındaki temel fark?", ["Yüklem", "Tanığın x'e göre değişebilmesi", "Ad sayısı", "Bağlaç"], "B", "İlk biçimde farklı x'lerin farklı tanıkları olabilir.", "Orta"),
+            ("Tek karşı model ne gösterir?", ["Geçerlilik", "Geçersizlik", "Çeviri doğruluğu", "Kanıt eksikliği"], "B", "Bütün öncüller doğru ve sonuç yanlışsa argüman geçersizdir.", "Temel"),
+            ("On modelde karşı model bulunmaması ne gösterir?", ["Kesin geçerlilik", "Yalnız bu örneklemde bulunmadığını", "Kesin yanlışlık", "Çeviri eşdeğerliği"], "B", "Sonlu arama genel sonucu kapatmaz.", "Temel"),
+            ("Kanıt denetiminden önce ne eşleştirilir?", ["Font", "Öncül kümesi ve hedef", "Model etiketi", "Süre"], "B", "Başka argümanın kanıtı kabul edilmemelidir.", "Temel"),
+            ("Kanıt hatası neyi tek başına göstermez?", ["Bu adım lisanssız", "Argüman geçersiz", "Atıf bozuk", "Kapsam hatası"], "B", "Başka bir kanıt bulunabilir.", "Orta"),
+            ("Doğrulanmış kanıtla karşı model birlikteyse?", ["Kanıtı seç", "Modeli sil", "Yayın engeli ve inceleme", "Ortalama al"], "C", "Seslik çatışması gizlenemez.", "İleri"),
+            ("Çeviri yanlış, kanıt doğruysa genel durum?", ["Tamamlandı", "Çeviri revizyonu", "Karşı model", "Model hatası"], "B", "Kanallar birbirini aklamaz.", "Orta"),
+            ("Kanıt yok ve karşı model bulunmadıysa?", ["Geçerli", "Geçersiz", "Belirsiz", "Çelişik"], "C", "Her iki genel statü de kurulmamıştır.", "Temel"),
+            ("Model izinde niceleyici için ne aranır?", ["Yalnız son değer", "Tanık veya karşı örnek", "Satır numarası", "Kaynak yılı"], "B", "İz semantik gerekçeyi görünür kılar.", "Orta"),
+            ("a=b neden projede önemlidir?", ["İki adın aynı gönderimini kanıt kanalında taşıtır", "Alanı boşaltır", "R'yi simetrik yapar", "Niceleyiciyi siler"], "A", "=E eş adlar arasında seçili yerine koymayı lisanslar.", "İleri"),
+            ("Kayıp raporunun amacı?", ["Kanıtı geçersiz kılmak", "FOL'un temsil etmediği doğal dil ayrımlarını belirtmek", "Modeli büyütmek", "Yeni öncül eklemek"], "B", "Formel başarı doğal dilin tamamını tüketmez.", "İleri"),
+        ]),
+        {
+            "prompt": "Verilen üç öncül ve sonucu değiştirmeden çeviri, iki model ve Fitch kanıtı kanallarında denetle; sonra tek bir çapraz rapor yaz.",
+            "starter": "Önce imza ile dört formülü dondur; her kanalın girdisini bu listeyle eşleştir.",
+            "checks": ["Dört çeviri görevi kapsandı", "İki modelde bütün değerler izlendi", "Kanıt aynı Γ ve C'yi kullanıyor", "Örneklem sınırı yazıldı", "En az iki doğal dil kaybı belirtildi"],
+            "solution": "Geçerli ana örnekte ∀E ile a örneği alınır, →E ile Ada'nın danıştığı koordinatörün varlığı çıkarılır, a=b üzerinden =E ile sonuç Bora adına taşınır. İki model raporu genel geçerlilik iddiası yapmaz; bunu doğrulanmış kanıt sağlar.",
+        },
+        [
+            _production_task(
+                "Ana geçerli argümanın üç kanal raporunu sıfırdan yeniden üret.",
+                ["İmza ve ariteler açık", "Dört çeviri ayrı", "En az iki model izi", "Kanıtın her atfı görünür", "Çatışma alanı raporda var"],
+                "Rapor sonucu tek rozet değil, üç bağımsız bölüm içermeli.",
+                "Ana argüman",
+                ["Her araştırmacı bir koordinatöre danıştı.", "Ada araştırmacıdır.", "Ada ile Bora aynı kişidir.", "Öyleyse Bora bir koordinatöre danıştı."],
+            ),
+            _production_task(
+                "Tanıkların kişiye göre değiştiği karşı modeli kur ve ortak tanık sonucunu çürüt.",
+                ["En az iki araştırmacı", "En az iki koordinatör", "Her araştırmacının bir danıştığı var", "Hiçbir koordinatör herkese ortak değil", "Öncül/sonuç değerleri açık"],
+                "∀x∃y ile ∃y∀x farkı yorum verisinde görünmeli.",
+                "Karşı model hedefi",
+                ["∀x(F(x)→∃y(K(y)∧R(x,y)))", "F(a)", "a=b", "∃y(K(y)∧∀x(F(x)→R(x,y)))"],
+            ),
+        ],
+        [
+            "Dört doğal dil cümlesini aynı imzada yapısal olarak doğru sembolleştirir.",
+            "En az iki modelde öncül ve sonuç izlerini eksiksiz yeniden üretir.",
+            "Geçerli ana argümanın kimlikli Fitch kanıtını sıfır hata ile kurar.",
+            "Geçersiz varyant için açık ve küçük karşı model verir.",
+            "Çatışma ve belirsizlik durumlarını geçerlilikten doğru ayırır.",
+            "Biçimselleştirmenin dışarıda bıraktığı en az iki ayrımı somutlaştırır.",
+        ],
+        [
+            "Üç kanal neden tek bir doğru/yanlış puanına indirgenmemelidir?",
+            "Sonlu model araması ile Fitch kanıtının epistemik rolleri nasıl ayrılır?",
+            "Aynı argüman sözleşmesi hangi gizli değişiklikleri engeller?",
+            "Formel başarının doğal dili tüketmediğini bu örnek üzerinde nasıl gösterirsin?",
+        ],
+        "G42'de bu teknik beceriler Frege'nin işlev-argüman çözümlemesi ve mantıksal biçim fikrine bağlanacak.",
+        ["forallx-proofs-semantics", "forallx-semantic-concepts", "forallx-using-interpretations", "mit-fol-semantics"],
+        "Çapraz denetleyici yeni bir karar yöntemi değildir. Çeviri, model ve kanıt motorlarının aynı argüman üzerindeki sonuçlarını ayrı tutar; kanıt/karşı model çatışmasını güvenilirlik arızası olarak engeller.",
+        ["FOL Aşama Projesi"],
+    )
+    lesson["fol_signature"] = FOL_PROOF_SIGNATURE
+    valid_models = [
+        {
+            "label": "Ortak koordinatör",
+            "domain": ["ada", "deniz", "koor"],
+            "names": {"a": "ada", "b": "ada", "c": "deniz", "d": "koor"},
+            "predicates": {
+                "F": ["ada", "deniz"],
+                "G": [],
+                "H": [],
+                "K": ["koor"],
+                "R": [["ada", "koor"], ["deniz", "koor"]],
+            },
+        },
+        {
+            "label": "Tek araştırmacı",
+            "domain": ["ada", "koor"],
+            "names": {"a": "ada", "b": "ada", "c": "koor", "d": "koor"},
+            "predicates": {
+                "F": ["ada"],
+                "G": [],
+                "H": [],
+                "K": ["koor"],
+                "R": [["ada", "koor"]],
+            },
+        },
+    ]
+    valid_proof = {
+        "premises": F41_VALID_ARGUMENT["premises"],
+        "target": F41_VALID_ARGUMENT["conclusion"],
+        "lines": [
+            _proof_line("l1", F41_VALID_ARGUMENT["premises"][0], "PR"),
+            _proof_line("l2", "F(a)", "PR"),
+            _proof_line("l3", "a=b", "PR"),
+            _proof_line("l4", "F(a) → ∃y(K(y) ∧ R(a,y))", "∀E", [_cite("l1")]),
+            _proof_line("l5", "∃y(K(y) ∧ R(a,y))", "→E", [_cite("l4"), _cite("l2")]),
+            _proof_line("l6", "∃y(K(y) ∧ R(b,y))", "=E", [_cite("l3"), _cite("l5")]),
+        ],
+    }
+    countermodel = {
+        "label": "Farklı koordinatörler",
+        "domain": ["ada", "deniz", "k1", "k2"],
+        "names": {"a": "ada", "b": "ada", "c": "k1", "d": "k2"},
+        "predicates": {
+            "F": ["ada", "deniz"],
+            "G": [],
+            "H": [],
+            "K": ["k1", "k2"],
+            "R": [["ada", "k1"], ["deniz", "k2"]],
+        },
+    }
+    lesson["capstone_fixtures"] = [
+        {
+            "id": "f41-valid-identity-argument",
+            "signature": FOL_PROOF_SIGNATURE,
+            "argument": F41_VALID_ARGUMENT,
+            "translation_tasks": _f41_translation_tasks(F41_VALID_ARGUMENT),
+            "models": valid_models,
+            "proof": valid_proof,
+            "expected_status": "proof_verified",
+        },
+        {
+            "id": "f41-invalid-shared-witness",
+            "signature": FOL_PROOF_SIGNATURE,
+            "argument": F41_INVALID_ARGUMENT,
+            "translation_tasks": _f41_translation_tasks(F41_INVALID_ARGUMENT),
+            "models": [countermodel],
+            "proof": None,
+            "expected_status": "countermodel_found",
+        },
+    ]
+    lesson["semantic_cross_checks"] = [
+        {
+            "fixture_id": fixture["id"],
+            "expected_status": fixture["expected_status"],
+        }
+        for fixture in lesson["capstone_fixtures"]
+    ]
+    return lesson
+
+
 STAGE_F_CANDIDATE_LESSONS = [
     _candidate_f35(),
     _candidate_f36(),
@@ -1154,6 +1454,7 @@ STAGE_F_CANDIDATE_LESSONS = [
     _candidate_f38(),
     _candidate_f39(),
     _candidate_f40(),
+    _candidate_f41(),
 ]
 
 

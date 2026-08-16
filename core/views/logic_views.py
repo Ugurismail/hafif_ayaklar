@@ -309,6 +309,41 @@ def logic_stage_e_preview(request):
     )
 
 
+@staff_member_required
+def logic_stage_f_preview(request):
+    """Render the isolated Stage F candidate for human curriculum review."""
+    from core.logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
+    from core.logic_phase3_stage_b import STAGE_B_CANDIDATE_MAP
+    from core.logic_phase3_stage_c import STAGE_C_CANDIDATE_MAP
+    from core.logic_phase3_stage_d import STAGE_D_CANDIDATE_MAP
+    from core.logic_phase3_stage_e import STAGE_E_CANDIDATE_MAP
+    from core.logic_phase3_stage_f import (
+        STAGE_F_CANDIDATE_LESSONS,
+        STAGE_F_CANDIDATE_MAP,
+        STAGE_F_SOURCE_REFERENCES,
+    )
+
+    return render(
+        request,
+        "core/logic_stage_a_preview.html",
+        _candidate_review_context(
+            STAGE_F_CANDIDATE_LESSONS,
+            STAGE_F_SOURCE_REFERENCES,
+            {
+                **STAGE_A_CANDIDATE_MAP,
+                **STAGE_B_CANDIDATE_MAP,
+                **STAGE_C_CANDIDATE_MAP,
+                **STAGE_D_CANDIDATE_MAP,
+                **STAGE_E_CANDIDATE_MAP,
+                **STAGE_F_CANDIDATE_MAP,
+            },
+            stage_code="Faz 3F",
+            stage_title="FOL semantiği ve doğal türetimi",
+            lesson_range="F35-F41",
+        ),
+    )
+
+
 def logic_lesson_detail(request, lesson_slug):
     lesson, redirect_slug = _logic_course_data().resolve_logic_lesson(lesson_slug)
     if redirect_slug:

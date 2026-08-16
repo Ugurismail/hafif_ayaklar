@@ -49,6 +49,11 @@ def logic_stage_e_preview(request, *args, **kwargs):
     return view(request, *args, **kwargs)
 
 
+def logic_stage_f_preview(request, *args, **kwargs):
+    from core.views.logic_views import logic_stage_f_preview as view
+    return view(request, *args, **kwargs)
+
+
 def logic_lesson_detail(request, *args, **kwargs):
     from core.views.logic_views import logic_lesson_detail as view
     return view(request, *args, **kwargs)
@@ -75,6 +80,7 @@ urlpatterns = [
     path('mantik/inceleme/faz-3c/', logic_stage_c_preview, name='logic_stage_c_preview'),
     path('mantik/inceleme/faz-3d/', logic_stage_d_preview, name='logic_stage_d_preview'),
     path('mantik/inceleme/faz-3e/', logic_stage_e_preview, name='logic_stage_e_preview'),
+    path('mantik/inceleme/faz-3f/', logic_stage_f_preview, name='logic_stage_f_preview'),
     path('mantik/bitirme-testi/', logic_level_test, name='logic_level_test'),
     path('mantik/ilerleme/', logic_lesson_progress, name='logic_lesson_progress'),
     path('mantik/<slug:lesson_slug>/', logic_lesson_detail, name='logic_lesson_detail'),

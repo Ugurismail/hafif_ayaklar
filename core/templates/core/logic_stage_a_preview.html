@@ -374,6 +374,81 @@
                       {% endfor %}
                     </section>
                   {% endif %}
+
+                  {% if lesson.semantic_fixtures %}
+                    <section class="logic-review-semantic-checks" aria-label="FOL doğruluk izi örnekleri">
+                      <span class="logic-review-section-label">Yorumda doğruluk</span>
+                      <h3>Semantik iz örnekleri</h3>
+                      <div class="logic-review-semantic-table" role="table" aria-label="Semantik iz sonuçları">
+                        <div class="is-heading" role="row">
+                          <span role="columnheader">Kimlik</span>
+                          <span role="columnheader">Formül</span>
+                          <span role="columnheader">Model</span>
+                          <span role="columnheader">Beklenen</span>
+                        </div>
+                        {% for fixture in lesson.semantic_fixtures %}
+                          <div role="row" data-fol-semantic-fixture="{{ fixture.id }}">
+                            <code role="cell">{{ fixture.id }}</code>
+                            <code role="cell">{{ fixture.formula }}</code>
+                            <span role="cell">{{ fixture.model }}</span>
+                            <span role="cell">{% if fixture.expected %}doğru{% else %}yanlış{% endif %}</span>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </section>
+                  {% endif %}
+
+                  {% if lesson.countermodel_fixtures %}
+                    <section class="logic-review-worked-list" aria-label="Karşı model arama örnekleri">
+                      <span class="logic-review-section-label">Semantik sonuç</span>
+                      <h3>Karşı model bankası sınırları</h3>
+                      {% for fixture in lesson.countermodel_fixtures %}
+                        <article data-fol-countermodel-fixture="{{ fixture.id }}">
+                          <span class="logic-review-badge">{{ fixture.expected_status }}</span>
+                          <div>
+                            <strong>{{ fixture.id }}</strong>
+                            <p>{{ fixture.premises|join:', ' }} ⊢ {{ fixture.conclusion }}</p>
+                            <p>{{ fixture.models|length }} sonlu yorum yeniden denetlenir.</p>
+                          </div>
+                        </article>
+                      {% endfor %}
+                    </section>
+                  {% endif %}
+
+                  {% if lesson.relation_fixtures %}
+                    <section class="logic-review-worked-list" aria-label="Bağıntı özelliği örnekleri">
+                      <span class="logic-review-section-label">İkili bağıntı</span>
+                      <h3>Özellik profilleri</h3>
+                      {% for fixture in lesson.relation_fixtures %}
+                        <article data-fol-relation-fixture="{{ fixture.id }}">
+                          <span class="logic-review-badge">R</span>
+                          <div><strong>{{ fixture.id }}</strong><p>{{ fixture.model.label }}</p></div>
+                        </article>
+                      {% endfor %}
+                    </section>
+                  {% endif %}
+
+                  {% if lesson.capstone_fixtures %}
+                    <section class="logic-review-question-list" aria-label="FOL aşama projesi çapraz denetimleri">
+                      <span class="logic-review-section-label">Üç bağımsız kanal</span>
+                      <h3>Çeviri, model ve kanıt çapraz raporları</h3>
+                      {% for fixture in lesson.capstone_fixtures %}
+                        <details data-fol-capstone-fixture="{{ fixture.id }}">
+                          <summary>
+                            <span>{{ forloop.counter|stringformat:'02d' }}</span>
+                            <strong>{{ fixture.id }}</strong>
+                            <small>{{ fixture.expected_status }}</small>
+                          </summary>
+                          <div>
+                            <p><strong>Öncüller:</strong> {{ fixture.argument.premises|join:', ' }}</p>
+                            <p><strong>Sonuç:</strong> {{ fixture.argument.conclusion }}</p>
+                            <p><strong>Çeviri görevi:</strong> {{ fixture.translation_tasks|length }} · <strong>Model:</strong> {{ fixture.models|length }}</p>
+                            <p><strong>Kanıt:</strong> {% if fixture.proof %}aynı argüman için yapılandırılmış Fitch kanıtı{% else %}verilmedi; semantik karşı örnek aranır{% endif %}</p>
+                          </div>
+                        </details>
+                      {% endfor %}
+                    </section>
+                  {% endif %}
                 </div>
               </details>
             {% endif %}
