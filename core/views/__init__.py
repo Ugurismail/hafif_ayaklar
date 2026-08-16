@@ -134,6 +134,7 @@ _ATTR_TO_MODULE = {
     'logic_stage_d_preview': 'core.views.logic_views',
     'logic_stage_e_preview': 'core.views.logic_views',
     'logic_stage_f_preview': 'core.views.logic_views',
+    'logic_stage_g_preview': 'core.views.logic_views',
     'logic_lesson_detail': 'core.views.logic_views',
     'logic_lesson_progress': 'core.views.logic_views',
     'logic_level_test': 'core.views.logic_views',

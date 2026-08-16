@@ -1,4 +1,8 @@
-from django.test import SimpleTestCase
+from html import unescape
+
+from django.contrib.auth import get_user_model
+from django.test import SimpleTestCase, TestCase
+from django.urls import reverse
 
 from .logic_course_data import VISIBLE_LOGIC_LESSONS
 from .logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
@@ -12,17 +16,18 @@ from .logic_phase3_stage_g import (
     STAGE_G_CANDIDATE_MAP,
     STAGE_G_SOURCE_REFERENCES,
 )
+from .models import LogicLessonProgress
 
 
 class LogicPhase3StageGCandidateTests(SimpleTestCase):
-    def test_current_frege_russell_candidates_are_contiguous_and_isolated(self):
+    def test_stage_g_candidates_are_contiguous_and_isolated(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_G_CANDIDATE_LESSONS],
-            ["G42", "G43", "G44", "G45"],
+            ["G42", "G43", "G44", "G45", "G46", "G47", "G48", "G49", "G50"],
         )
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_G_CANDIDATE_LESSONS],
-            [42, 43, 44, 45],
+            list(range(42, 51)),
         )
         visible_slugs = {lesson["slug"] for lesson in VISIBLE_LOGIC_LESSONS}
         self.assertTrue(set(STAGE_G_CANDIDATE_MAP).isdisjoint(visible_slugs))
@@ -171,6 +176,71 @@ class LogicPhase3StageGCandidateTests(SimpleTestCase):
         self.assertIn("ortak problem", g45_text.lower())
         self.assertIn("tek kuram", g45_text.lower())
 
+    def test_tractatus_lessons_preserve_argument_architecture_and_limits(self):
+        g46, g47 = STAGE_G_CANDIDATE_LESSONS[4:6]
+        g46_text = self._lesson_text(g46).lower()
+        g47_text = self._lesson_text(g47).lower()
+
+        for term in ("dünya", "olgu", "nesne", "resim", "mantıksal biçim"):
+            self.assertIn(term, g46_text)
+        for term in ("söyleme", "gösterme", "totoloji", "merdiven", "susma"):
+            self.assertIn(term, g47_text)
+        self.assertIn("kelime", g47_text)
+        self.assertIn("önemsiz", g47_text)
+
+    def test_late_method_lesson_blocks_slogan_and_relativist_shortcuts(self):
+        g48_text = self._lesson_text(STAGE_G_CANDIDATE_MAP[
+            "ders-48-gecis-dil-oyunlari-kullanim-gramer"
+        ]).lower()
+
+        for term in ("dil oyunu", "kullanım", "aile benzerliği", "gramer"):
+            self.assertIn(term, g48_text)
+        self.assertIn("çoğunluk", g48_text)
+        self.assertIn("sıklık", g48_text)
+        self.assertIn("tekelleş", g48_text)
+
+    def test_rule_following_and_private_language_keep_normative_boundaries(self):
+        g49_text = self._lesson_text(STAGE_G_CANDIDATE_MAP[
+            "ders-49-kural-izleme-ozel-dil"
+        ]).lower()
+
+        for term in ("yorum gerilemesi", "doğru görünme", "doğru olma", "böcek"):
+            self.assertIn(term, g49_text)
+        for shortcut in ("çoğunlukçuluk", "davranışçılık", "tek başına"):
+            self.assertIn(shortcut, g49_text)
+
+    def test_final_workshop_requires_auditable_independent_close_reading(self):
+        g50 = STAGE_G_CANDIDATE_MAP[
+            "ders-50-kesinlik-uzerine-bitirme-atolyesi"
+        ]
+        g50_text = self._lesson_text(g50).lower()
+
+        for term in ("dünya resmi", "menteşe", "rakip okuma", "sınır notu"):
+            self.assertIn(term, g50_text)
+        self.assertIn("biçimsel mantık", g50_text)
+        self.assertGreaterEqual(len(g50["comparison_fixtures"]), 2)
+        self.assertTrue(
+            any(
+                "çözülmemiş" in task["prompt"].lower()
+                for task in g50["production_tasks"]
+            )
+        )
+
+    def test_primary_text_sources_cover_early_late_and_certainty_readings(self):
+        used_sources = {
+            fixture["source_id"]
+            for lesson in STAGE_G_CANDIDATE_LESSONS
+            for fixture in lesson["reading_fixtures"]
+        }
+        self.assertTrue(
+            {
+                "wittgenstein-tractatus",
+                "wittgenstein-blue-book",
+                "wittgenstein-investigations",
+                "wittgenstein-on-certainty",
+            }.issubset(used_sources)
+        )
+
     def test_live_course_count_and_data_remain_unchanged(self):
         self.assertEqual(len(VISIBLE_LOGIC_LESSONS), 45)
         self.assertFalse(
@@ -180,12 +250,94 @@ class LogicPhase3StageGCandidateTests(SimpleTestCase):
 
     @staticmethod
     def _lesson_text(lesson):
-        parts = [
-            lesson["summary"],
-            lesson["rigor_note"],
-            *lesson["mistakes"],
-            *(section["summary"] for section in lesson["sections"]),
-            *(item["reason"] for item in lesson["worked_examples"]),
-            *(fixture["boundary"] for fixture in lesson["reading_fixtures"]),
-        ]
+        parts = []
+
+        def collect(value):
+            if isinstance(value, str):
+                parts.append(value)
+            elif isinstance(value, dict):
+                for nested in value.values():
+                    collect(nested)
+            elif isinstance(value, (list, tuple)):
+                for nested in value:
+                    collect(nested)
+
+        collect(lesson)
         return " ".join(parts)
+
+
+class LogicPhase3StageGPreviewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        user_model = get_user_model()
+        cls.staff_user = user_model.objects.create_user(
+            username="logic-stage-g-reviewer",
+            password="review-pass",
+            is_staff=True,
+        )
+        cls.regular_user = user_model.objects.create_user(
+            username="logic-stage-g-student",
+            password="student-pass",
+        )
+
+    def test_preview_requires_staff_access(self):
+        url = reverse("logic_stage_g_preview")
+        anonymous_response = self.client.get(url)
+        self.assertEqual(anonymous_response.status_code, 302)
+        self.assertIn(reverse("admin:login"), anonymous_response.url)
+
+        self.client.force_login(self.regular_user)
+        regular_response = self.client.get(url)
+        self.assertEqual(regular_response.status_code, 302)
+        self.assertIn(reverse("admin:login"), regular_response.url)
+
+    def test_staff_preview_renders_lessons_readings_and_comparisons(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_g_preview"))
+        rendered_text = unescape(response.content.decode())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "core/logic_stage_a_preview.html")
+        self.assertIn(
+            "Faz 3G: Frege, Russell ve Wittgenstein okuma köprüsü",
+            rendered_text,
+        )
+        self.assertIn("noindex, nofollow", rendered_text)
+        for lesson in STAGE_G_CANDIDATE_LESSONS:
+            self.assertIn(lesson["curriculum_id"], rendered_text)
+            self.assertIn(lesson["title"], rendered_text)
+            for fixture in lesson["reading_fixtures"]:
+                self.assertIn(
+                    f'data-reading-fixture="{fixture["id"]}"',
+                    rendered_text,
+                )
+                self.assertIn(fixture["locator"], rendered_text)
+                self.assertIn(
+                    STAGE_G_SOURCE_REFERENCES[fixture["source_id"]]["url"],
+                    rendered_text,
+                )
+            for fixture in lesson["comparison_fixtures"]:
+                self.assertIn(
+                    f'data-comparison-fixture="{fixture["id"]}"',
+                    rendered_text,
+                )
+
+    def test_preview_is_read_only_and_candidates_stay_off_learner_routes(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_g_preview"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(LogicLessonProgress.objects.count(), 0)
+        self.assertNotContains(response, "data-logic-lesson-page")
+        self.assertNotContains(response, "data-progress-url")
+        self.assertNotContains(response, reverse("logic_lesson_progress"))
+        self.assertNotContains(response, "logic_lesson.js")
+
+        self.client.force_login(self.regular_user)
+        for lesson in STAGE_G_CANDIDATE_LESSONS:
+            response = self.client.get(
+                reverse(
+                    "logic_lesson_detail",
+                    kwargs={"lesson_slug": lesson["slug"]},
+                )
+            )
+            self.assertEqual(response.status_code, 404)

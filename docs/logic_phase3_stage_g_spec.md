@@ -7,7 +7,7 @@ F41'de tamamlanan birinci derece mantık çalışmasını doğrudan felsefi meti
 okuma becerisine bağlar. Aday dersler canlı öğrenci rotasından, ilerleme
 kaydından ve mevcut 45 derslik müfredattan ayrı tutulur.
 
-Faz G sekiz dersten oluşur. Frege ve Russell yalnız tarihsel isimler olarak
+Faz G dokuz dersten oluşur. Frege ve Russell yalnız tarihsel isimler olarak
 tanıtılmaz; öğrencinin zaten kullandığı fonksiyon, niceleme, kimlik ve kapsam
 araçlarının hangi felsefi problemlere cevap verdiği gösterilir. Erken ve geç
 Wittgenstein iki slogan listesine indirgenmez. Her iki dönemde de savın hangi
@@ -24,6 +24,10 @@ pasajda, hangi sorun karşısında ve hangi yöntemle kurulduğu izlenir.
 | [SEP: Ludwig Wittgenstein](https://plato.stanford.edu/archives/spr2022/entries/wittgenstein/) | Erken/geç dönem ayrımı, süreklilik tartışması ve temel yorum sorunları |
 | [Ludwig Wittgenstein Project: Tractatus](https://www.wittgensteinproject.org/w/index.php?title=Tractatus_Logico-Philosophicus_%28English%29) | Numaralı birincil metnin önerme ağacı üzerinden yakın okunması |
 | [Ludwig Wittgenstein Project: Philosophische Untersuchungen](https://www.wittgensteinproject.org/w/index.php/Philosophische_Untersuchungen) | Dil oyunları, kullanım, kural izleme ve özel dil tartışmalarının birincil metin konumları |
+| [Ludwig Wittgenstein Project: Blue Book](https://www.wittgensteinproject.org/w/index.php/Blue_Book) | İdeal dil, kullanım, açıklama ve felsefi problem anlayışındaki geçişin izlenmesi |
+| [Ludwig Wittgenstein Project: Brown Book](https://www.wittgensteinproject.org/w/index.php/Brown_Book) | Ayrıntılı dil oyunu örnekleri, adlandırma ve kullanım çeşitliliği |
+| [Ludwig Wittgenstein Project: Über Gewißheit](https://www.wittgensteinproject.org/w/index.php/%C3%9Cber_Gewi%C3%9Fheit) | Bilgi, şüphe, dünya resmi ve sınama pratiğinin birincil metin konumları |
+| [SEP: Certainty](https://plato.stanford.edu/archives/fall2019/entries/certainty/) | `Kesinlik Üstüne`de şüpheden muaf dayanaklar ve menteşe yorumlarının sınırları |
 | [SEP: Rule-Following and Intentionality](https://plato.stanford.edu/entries/rule-following/) | `Felsefi Soruşturmalar` §§138-242 için yorum sınırları |
 | [SEP: Private Language](https://plato.stanford.edu/entries/private-language/) | §243 ve devamındaki özel dil tartışmasının basit “özel olan imkânsızdır” sloganından ayrılması |
 | [Oxford: The Philosophy of Logic and Language](https://www.philosophy.ox.ac.uk/node/98441) | Biçimsel mantıktan dil felsefesine geçişin akademik kapsam karşılaştırması |
@@ -85,8 +89,9 @@ Faz G şunları tamamlanmış bir sonuç gibi öğretmez:
 | G45 | Çözümleme ve mantıksal atomculuk | Russell ile erken Wittgenstein arasındaki ortak problem alanı ve ayrılıklar kurulur |
 | G46 | `Tractatus` I: dünya, olgu, resim ve mantıksal biçim | Metnin 1-4 numaralı ana dalları kavramsal harita hâline getirilir |
 | G47 | `Tractatus` II: doğruluk işlemleri, mantığın statüsü ve sınır | 4-7 arasındaki geçişler teknik arka plan ve söyleme/gösterme ayrımıyla okunur |
-| G48 | Geçiş: dil oyunları, kullanım, aile benzerliği ve gramer | Geç dönemin yöntemi erken dönemin basit reddi gibi sunulmadan kurulur |
-| G49 | Kural izleme, özel dil ve karşılaştırmalı bitirme atölyesi | Öğrenci yeni bir pasajı bağımsız, kaynaklı ve rakip okumaya açık biçimde çözümler |
+| G48 | Geçiş: `Mavi/Kahverengi Kitaplar`, dil oyunları, kullanım ve gramer | Geç dönemin yöntemi erken dönemin basit reddi gibi sunulmadan kurulur |
+| G49 | Kural izleme ve özel dil | İki yoğun tartışma davranışçılık, çoğunlukçuluk ve mahremiyet reddinden ayrılır |
+| G50 | `Kesinlik Üstüne` ve karşılaştırmalı bitirme atölyesi | Öğrenci yeni pasajları bağımsız, kaynaklı ve rakip okumaya açık biçimde çözümler |
 
 ## Yakın okuma sözleşmesi
 
@@ -127,7 +132,7 @@ geçilemez.
 
 ## Aday veri sözleşmesi
 
-1. G42-G49, Faz A-F ile aynı ortak ders sözleşmesini korur.
+1. G42-G50, Faz A-F ile aynı ortak ders sözleşmesini korur.
 2. Her ders en az altı anlatım bölümü, on iki çözümlü örnek, on iki kontrollü
    soru, iki bağımsız üretim görevi ve dört ustalık kanıtı taşır.
 3. Her dersin `reading_fixtures` verisi kaynak, konum, gerekli ayrım, yasak
@@ -143,14 +148,15 @@ geçilemez.
 
 | Ders | Sözleşme | Aday veri | Kaynak/konum denetimi | Yetkili önizleme |
 | --- | --- | --- | --- | --- |
-| G42 Frege: Fonksiyon, Argüman, Kavram | Hazır | Hazır | Hazır | Bekliyor |
-| G43 Frege: Anlam, Gönderim, Düşünce | Hazır | Hazır | Hazır | Bekliyor |
-| G44 Russell: Belirli Betimlemeler | Hazır | Hazır | Hazır | Bekliyor |
-| G45 Çözümleme ve Mantıksal Atomculuk | Hazır | Hazır | Hazır | Bekliyor |
-| G46 `Tractatus` I | Hazır | Bekliyor | Bekliyor | Bekliyor |
-| G47 `Tractatus` II | Hazır | Bekliyor | Bekliyor | Bekliyor |
-| G48 Geçiş ve Geç Dönem Yöntemi | Hazır | Bekliyor | Bekliyor | Bekliyor |
-| G49 Yakın Okuma Bitirme Atölyesi | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| G42 Frege: Fonksiyon, Argüman, Kavram | Hazır | Hazır | Hazır | Hazır |
+| G43 Frege: Anlam, Gönderim, Düşünce | Hazır | Hazır | Hazır | Hazır |
+| G44 Russell: Belirli Betimlemeler | Hazır | Hazır | Hazır | Hazır |
+| G45 Çözümleme ve Mantıksal Atomculuk | Hazır | Hazır | Hazır | Hazır |
+| G46 `Tractatus` I | Hazır | Hazır | Hazır | Hazır |
+| G47 `Tractatus` II | Hazır | Hazır | Hazır | Hazır |
+| G48 Geçiş ve Geç Dönem Yöntemi | Hazır | Hazır | Hazır | Hazır |
+| G49 Kural İzleme ve Özel Dil | Hazır | Hazır | Hazır | Hazır |
+| G50 `Kesinlik Üstüne` ve Bitirme Atölyesi | Hazır | Hazır | Hazır | Hazır |
 
 ## Aday geliştirme kapıları
 
@@ -158,12 +164,12 @@ geçilemez.
 - [x] Frege, Russell, erken ve geç Wittgenstein'ın kapsamı ayrı ders eşiklerine
   bölündü.
 - [x] Yakın okuma ve kaynak-konum veri sözleşmesi tanımlandı.
-- [ ] G42-G49 aday ders verisi yazıldı.
-- [ ] Her okuma konumu ve kavramsal ayrım otomatik denetlendi.
-- [ ] Aday önkoşul grafiği ve kaynak sözleşmesi otomatik test edildi.
-- [ ] Aday içerik yalıtılmış, salt okunur yetkili önizlemede doğrulandı.
-- [ ] Klavye, küçük ekran ve uzun metin düzeni incelendi.
-- [ ] Mevcut öğrenci rotası ve ilerleme verisinin değişmediği regresyonla
+- [x] G42-G50 aday ders verisi yazıldı.
+- [x] Her okuma konumu ve kavramsal ayrım otomatik denetlendi.
+- [x] Aday önkoşul grafiği ve kaynak sözleşmesi otomatik test edildi.
+- [x] Aday içerik yalıtılmış, salt okunur yetkili önizlemede doğrulandı.
+- [x] Klavye, küçük ekran ve uzun metin düzeni incelendi.
+- [x] Mevcut öğrenci rotası ve ilerleme verisinin değişmediği regresyonla
   kanıtlandı.
 
 ## Canlıya alma kapıları
@@ -172,10 +178,10 @@ geçilemez.
   doğruluk açısından incelendi.
 - [ ] Birincil Wittgenstein pasaj konumları ve Türkçe terim tercihleri bağımsız
   bir okuyucu tarafından denetlendi.
-- [ ] Gerçek başlangıç öğrencileri G42-G49'u gözetimli pilotta tamamladı.
+- [ ] Gerçek başlangıç öğrencileri G42-G50'yi gözetimli pilotta tamamladı.
 - [ ] Yakın okuma görevlerinin “tek doğru yorum ezberi” üretmediği pilotta
   doğrulandı.
 - [ ] Süre, klavye, ekran okuyucu, küçük ekran ve uzun pasaj düzeni test edildi.
-- [ ] A1-G49 uçtan uca öğrenme yürüyüşü ve gecikmeli geri çağırma testi yapıldı.
+- [ ] A1-G50 uçtan uca öğrenme yürüyüşü ve gecikmeli geri çağırma testi yapıldı.
 - [ ] Eski ilerleme kayıtları için geçiş ve geri alma planı onaylandı.
 - [ ] Canlı görünürlük ayrıca ve bilinçli olarak etkinleştirildi.

@@ -149,6 +149,8 @@ def _candidate_review_context(
             source_references[source_id]
             for source_id in lesson["source_ids"]
         ]
+        for fixture in lesson.get("reading_fixtures", []):
+            fixture["source"] = source_references[fixture["source_id"]]
 
     return {
         "candidate_lessons": candidate_lessons,
@@ -340,6 +342,43 @@ def logic_stage_f_preview(request):
             stage_code="Faz 3F",
             stage_title="FOL semantiği ve doğal türetimi",
             lesson_range="F35-F41",
+        ),
+    )
+
+
+@staff_member_required
+def logic_stage_g_preview(request):
+    """Render the isolated Stage G candidate for human curriculum review."""
+    from core.logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
+    from core.logic_phase3_stage_b import STAGE_B_CANDIDATE_MAP
+    from core.logic_phase3_stage_c import STAGE_C_CANDIDATE_MAP
+    from core.logic_phase3_stage_d import STAGE_D_CANDIDATE_MAP
+    from core.logic_phase3_stage_e import STAGE_E_CANDIDATE_MAP
+    from core.logic_phase3_stage_f import STAGE_F_CANDIDATE_MAP
+    from core.logic_phase3_stage_g import (
+        STAGE_G_CANDIDATE_LESSONS,
+        STAGE_G_CANDIDATE_MAP,
+        STAGE_G_SOURCE_REFERENCES,
+    )
+
+    return render(
+        request,
+        "core/logic_stage_a_preview.html",
+        _candidate_review_context(
+            STAGE_G_CANDIDATE_LESSONS,
+            STAGE_G_SOURCE_REFERENCES,
+            {
+                **STAGE_A_CANDIDATE_MAP,
+                **STAGE_B_CANDIDATE_MAP,
+                **STAGE_C_CANDIDATE_MAP,
+                **STAGE_D_CANDIDATE_MAP,
+                **STAGE_E_CANDIDATE_MAP,
+                **STAGE_F_CANDIDATE_MAP,
+                **STAGE_G_CANDIDATE_MAP,
+            },
+            stage_code="Faz 3G",
+            stage_title="Frege, Russell ve Wittgenstein okuma köprüsü",
+            lesson_range="G42-G50",
         ),
     )
 

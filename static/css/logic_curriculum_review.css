@@ -1030,6 +1030,218 @@
   line-height: 1.4;
 }
 
+.logic-review-reading-list,
+.logic-review-comparison-list {
+  display: grid;
+  gap: 16px;
+}
+
+.logic-review-reading,
+.logic-review-comparison-list > article {
+  overflow: hidden;
+  border: 1px solid var(--review-line);
+  border-radius: 6px;
+  background: var(--review-surface);
+}
+
+.logic-review-reading > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--review-soft-line);
+  background: var(--review-paper);
+}
+
+.logic-review-reading > header > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.logic-review-reading code,
+.logic-review-comparison-list code,
+.logic-review-locator-index code {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.logic-review-reading > header code,
+.logic-review-comparison-list > article > code {
+  color: var(--review-muted);
+  font-size: 11px;
+}
+
+.logic-review-reading h3 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.logic-review-reading > header a {
+  flex: 0 0 auto;
+  color: var(--review-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.logic-review-reading > header a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.logic-review-reading-focus {
+  margin: 0;
+  padding: 16px 18px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.logic-review-reading-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--review-soft-line);
+  border-bottom: 1px solid var(--review-soft-line);
+}
+
+.logic-review-reading-grid section {
+  padding: 15px 18px;
+  background: var(--review-green-soft);
+}
+
+.logic-review-reading-grid section + section {
+  border-left: 1px solid var(--review-line);
+}
+
+.logic-review-reading-grid section.is-caution {
+  background: var(--review-rust-soft);
+}
+
+.logic-review-reading-grid strong,
+.logic-review-reading-task > span,
+.logic-review-reading-boundary > strong,
+.logic-review-comparison-list p > span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--review-green);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.logic-review-reading-grid .is-caution > strong {
+  color: var(--review-rust);
+}
+
+.logic-review-reading-grid ul,
+.logic-review-comparison-list ol {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.logic-review-reading-grid li,
+.logic-review-comparison-list li {
+  line-height: 1.4;
+}
+
+.logic-review-reading-task {
+  padding: 15px 18px;
+}
+
+.logic-review-reading-task p,
+.logic-review-reading-boundary {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.logic-review-reading-boundary {
+  padding: 14px 18px;
+  border-top: 1px solid #ddcba8;
+  background: var(--review-ochre-soft);
+}
+
+.logic-review-reading-boundary > strong {
+  color: #775018;
+}
+
+.logic-review-locator-index {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-left: 3px solid var(--review-ochre);
+  background: var(--review-ochre-soft);
+}
+
+.logic-review-locator-index > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.logic-review-locator-index code {
+  padding: 5px 8px;
+  border: 1px solid #ddcba8;
+  border-radius: 3px;
+  background: #fffaf0;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.logic-review-comparison-list > article {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.logic-review-comparison-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.logic-review-comparison-head strong {
+  padding: 13px 15px;
+  border: 1px solid var(--review-soft-line);
+  background: var(--review-paper);
+  line-height: 1.35;
+}
+
+.logic-review-comparison-head i {
+  color: var(--review-ochre);
+  text-align: center;
+}
+
+.logic-review-comparison-list p,
+.logic-review-comparison-task {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.logic-review-comparison-list ol {
+  padding: 14px 18px 14px 38px;
+  border-top: 1px solid var(--review-soft-line);
+  border-bottom: 1px solid var(--review-soft-line);
+  background: var(--review-paper);
+}
+
+.logic-review-comparison-task {
+  padding-left: 14px;
+  border-left: 3px solid var(--review-green);
+}
+
+.logic-review-comparison-task strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--review-green);
+}
+
 .logic-review-production-list {
   display: grid;
   gap: 14px;
@@ -1324,6 +1536,29 @@
     min-width: 680px;
     padding-right: 14px;
     padding-left: 14px;
+  }
+
+  .logic-review-reading > header,
+  .logic-review-reading-grid,
+  .logic-review-comparison-head {
+    grid-template-columns: 1fr;
+  }
+
+  .logic-review-reading > header {
+    display: grid;
+  }
+
+  .logic-review-reading > header a {
+    justify-self: start;
+  }
+
+  .logic-review-reading-grid section + section {
+    border-top: 1px solid var(--review-line);
+    border-left: 0;
+  }
+
+  .logic-review-comparison-head i {
+    transform: rotate(90deg);
   }
 }
 
