@@ -15,83 +15,226 @@
     }
 
     .attendance-tool {
-        max-width: 1280px;
-        margin: 110px auto 60px;
-        padding: 0 18px;
-        color: var(--attendance-ink);
+        --attendance-ui-surface: var(--content-background-color, #fffaf1);
+        --attendance-ui-background: var(--background-color, #f4efe5);
+        --attendance-ui-border: var(--border-color, #d7cec0);
+        --attendance-ui-text: var(--text-color, #211d18);
+        --attendance-ui-primary: var(--secondary-button-background-color, #234638);
+        --attendance-ui-accent: var(--button-background-color, #b68d4f);
+        --attendance-ui-danger: #8d3d32;
+        max-width: 1440px;
+        margin: 24px auto 64px;
+        padding: 0 22px;
+        color: var(--attendance-ui-text);
+    }
+
+    .attendance-page-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 18px;
+    }
+
+    .attendance-page-heading {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .attendance-page-icon {
+        display: inline-grid;
+        flex: 0 0 42px;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border: 1px solid var(--attendance-ui-border);
+        border-radius: 8px;
+        background: var(--attendance-ui-surface);
+        color: var(--attendance-ui-primary);
+        font-size: 1.2rem;
+    }
+
+    .attendance-page-copy {
+        min-width: 0;
+    }
+
+    .attendance-page-copy h1 {
+        margin: 0;
+        color: var(--attendance-ui-text);
+        font-size: clamp(1.45rem, 2vw, 1.8rem);
+        line-height: 1.1;
+        letter-spacing: 0;
+    }
+
+    .attendance-page-copy p {
+        margin: 4px 0 0;
+        color: color-mix(in srgb, var(--attendance-ui-text) 64%, transparent);
+        font-size: 0.9rem;
+        line-height: 1.35;
+    }
+
+    .attendance-page-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .attendance-save-status {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        padding: 0 10px;
+        color: color-mix(in srgb, var(--attendance-ui-text) 68%, transparent);
+        font-size: 0.8rem;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    .attendance-save-status::before {
+        width: 7px;
+        height: 7px;
+        margin-right: 7px;
+        border-radius: 50%;
+        background: var(--attendance-ui-primary);
+        content: "";
+    }
+
+    .attendance-save-status:empty::after {
+        content: "Hazır";
+    }
+
+    .attendance-print-btn,
+    .attendance-controls-toggle,
+    .attendance-panel-trigger,
+    .attendance-add-row-btn,
+    .attendance-person-add-btn,
+    .attendance-leave-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 40px;
+        padding: 7px 12px;
+        border: 1px solid var(--attendance-ui-border);
+        border-radius: 6px;
+        background: var(--attendance-ui-surface);
+        color: var(--attendance-ui-text);
+        font: inherit;
+        font-weight: 700;
+        letter-spacing: 0;
+        cursor: pointer;
+    }
+
+    .attendance-print-btn {
+        min-width: 100px;
+        border-color: var(--attendance-ui-primary);
+        background: var(--attendance-ui-primary);
+        color: #fff;
+        white-space: nowrap;
+    }
+
+    .attendance-print-btn:hover,
+    .attendance-person-add-btn:hover,
+    .attendance-leave-btn[data-leave-action="apply"]:hover {
+        filter: brightness(0.94);
     }
 
     .attendance-controls {
         position: sticky;
-        top: 82px;
+        top: 76px;
         z-index: 50;
-        display: grid;
-        grid-template-columns: minmax(140px, 0.75fr) minmax(270px, 1.1fr) minmax(430px, 1.5fr) auto;
-        gap: 12px;
-        align-items: end;
-        padding: 14px;
-        margin-bottom: 22px;
-        background: rgba(255, 250, 241, 0.96);
-        border: 1px solid rgba(182, 141, 79, 0.35);
-        border-radius: 16px;
-        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.08);
-        backdrop-filter: blur(8px);
+        margin-bottom: 24px;
+        overflow: hidden;
+        border: 1px solid var(--attendance-ui-border);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--attendance-ui-surface) 96%, transparent);
+        box-shadow: 0 10px 26px rgba(25, 28, 25, 0.08);
+        backdrop-filter: blur(10px);
     }
 
     .attendance-controls-header {
-        grid-column: 1 / -1;
         display: flex;
+        min-height: 44px;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        margin-bottom: -3px;
+        padding: 7px 12px 7px 14px;
+        border-bottom: 1px solid var(--attendance-ui-border);
     }
 
     .attendance-controls-title {
-        color: #6c5d47;
-        font-size: 0.82rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        color: var(--attendance-ui-text);
+        font-size: 0.9rem;
         font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        letter-spacing: 0;
+    }
+
+    .attendance-controls-title i {
+        color: var(--attendance-ui-primary);
+        font-size: 1rem;
     }
 
     .attendance-controls-toggle {
-        min-height: 32px;
-        padding: 5px 11px;
-        border: 1px solid rgba(182, 141, 79, 0.65);
-        border-radius: 999px;
-        background: #fffaf1;
-        color: #583d18;
-        font-weight: 700;
-        cursor: pointer;
+        min-height: 30px;
+        padding: 4px 8px;
+        border-color: transparent;
+        background: transparent;
+        color: color-mix(in srgb, var(--attendance-ui-text) 72%, transparent);
+        font-size: 0.8rem;
     }
 
-    .attendance-controls.is-collapsed {
-        grid-template-columns: 1fr;
-        padding: 9px 14px;
-    }
-
-    .attendance-controls.is-collapsed .attendance-control-group,
-    .attendance-controls.is-collapsed .attendance-print-actions {
-        display: none;
+    .attendance-controls-toggle:hover,
+    .attendance-panel-trigger:hover,
+    .attendance-add-row-btn:hover {
+        border-color: var(--attendance-ui-border);
+        background: color-mix(in srgb, var(--attendance-ui-background) 70%, var(--attendance-ui-surface));
     }
 
     .attendance-controls.is-collapsed .attendance-controls-header {
-        margin-bottom: 0;
+        border-bottom-color: transparent;
     }
 
-    .attendance-control-group label {
+    .attendance-controls.is-collapsed .attendance-controls-body {
+        display: none;
+    }
+
+    .attendance-controls-body {
+        display: block;
+    }
+
+    .attendance-controls-primary {
+        display: grid;
+        grid-template-columns: minmax(165px, 0.75fr) minmax(420px, 1.8fr) auto;
+        gap: 18px;
+        align-items: end;
+        padding: 14px;
+    }
+
+    .attendance-control-group {
+        min-width: 0;
+    }
+
+    .attendance-control-group > label,
+    .attendance-field-label {
         display: block;
         margin-bottom: 6px;
-        font-size: 0.8rem;
+        color: color-mix(in srgb, var(--attendance-ui-text) 68%, transparent);
+        font-size: 0.76rem;
         font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #6c5d47;
+        line-height: 1.2;
+        letter-spacing: 0;
     }
 
     .attendance-control-row {
         display: flex;
+        min-width: 0;
         flex-wrap: wrap;
         gap: 7px;
     }
@@ -101,153 +244,216 @@
     .attendance-control-row select,
     .attendance-leave-row input[type="date"],
     .attendance-leave-row select {
-        min-height: 38px;
-        padding: 6px 10px;
-        border: 1px solid rgba(21, 21, 21, 0.25);
-        border-radius: 9px;
-        background: #fff;
+        box-sizing: border-box;
+        min-height: 40px;
+        min-width: 0;
+        padding: 7px 10px;
+        border: 1px solid var(--attendance-ui-border);
+        border-radius: 6px;
+        outline: none;
+        background: var(--attendance-ui-surface);
+        color: var(--attendance-ui-text);
         font: inherit;
+        letter-spacing: 0;
     }
 
-    .attendance-mode-btn,
-    .attendance-add-row-btn,
-    .attendance-person-add-btn,
-    .attendance-leave-btn,
-    .attendance-print-btn {
-        min-height: 38px;
-        padding: 7px 12px;
-        border: 1px solid var(--attendance-accent);
-        border-radius: 999px;
-        background: #fffaf1;
-        color: #583d18;
+    .attendance-control-row input:focus,
+    .attendance-control-row select:focus,
+    .attendance-leave-row input:focus,
+    .attendance-leave-row select:focus {
+        border-color: var(--attendance-ui-primary);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--attendance-ui-primary) 16%, transparent);
+    }
+
+    .attendance-marker-group {
+        display: inline-flex;
+        min-height: 40px;
+        max-width: 100%;
+        overflow: hidden;
+        border: 1px solid var(--attendance-ui-border);
+        border-radius: 6px;
+        background: var(--attendance-ui-surface);
+    }
+
+    .attendance-mode-btn {
+        display: inline-flex;
+        min-width: 82px;
+        min-height: 40px;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 6px 10px;
+        border: 0;
+        border-right: 1px solid var(--attendance-ui-border);
+        background: transparent;
+        color: var(--attendance-ui-text);
+        font: inherit;
+        font-size: 0.82rem;
         font-weight: 700;
+        letter-spacing: 0;
         cursor: pointer;
+    }
+
+    .attendance-mode-btn:last-child {
+        min-width: 94px;
+        border-right: 0;
+    }
+
+    .attendance-mode-code {
+        display: inline-grid;
+        width: 23px;
+        height: 23px;
+        place-items: center;
+        border-radius: 4px;
+        background: color-mix(in srgb, var(--attendance-ui-background) 75%, var(--attendance-ui-surface));
+        font-weight: 800;
+    }
+
+    .attendance-mode-btn:hover {
+        background: color-mix(in srgb, var(--attendance-ui-background) 65%, var(--attendance-ui-surface));
+    }
+
+    .attendance-mode-btn.is-active {
+        background: var(--attendance-ui-primary);
+        color: #fff;
+    }
+
+    .attendance-mode-btn.is-active .attendance-mode-code {
+        background: rgba(255, 255, 255, 0.16);
+    }
+
+    .attendance-panel-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .attendance-panel-trigger {
+        white-space: nowrap;
+    }
+
+    .attendance-panel-trigger.is-active {
+        border-color: var(--attendance-ui-primary);
+        background: color-mix(in srgb, var(--attendance-ui-primary) 12%, var(--attendance-ui-surface));
+        color: var(--attendance-ui-primary);
+    }
+
+    .attendance-subpanel {
+        display: grid;
+        grid-template-columns: minmax(150px, 0.42fr) minmax(0, 1.58fr);
+        gap: 18px;
+        align-items: center;
+        padding: 14px;
+        border-top: 1px solid var(--attendance-ui-border);
+        background: color-mix(in srgb, var(--attendance-ui-background) 42%, var(--attendance-ui-surface));
+    }
+
+    .attendance-subpanel[hidden] {
+        display: none;
+    }
+
+    .attendance-subpanel-heading {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+    }
+
+    .attendance-subpanel-heading i {
+        margin-top: 1px;
+        color: var(--attendance-ui-primary);
+        font-size: 1.05rem;
+    }
+
+    .attendance-subpanel-heading strong,
+    .attendance-subpanel-heading span {
+        display: block;
+        letter-spacing: 0;
+    }
+
+    .attendance-subpanel-heading strong {
+        font-size: 0.9rem;
+        line-height: 1.2;
+    }
+
+    .attendance-subpanel-heading span {
+        margin-top: 3px;
+        color: color-mix(in srgb, var(--attendance-ui-text) 60%, transparent);
+        font-size: 0.76rem;
+        line-height: 1.3;
     }
 
     .attendance-person-edit {
         display: grid;
-        grid-template-columns: minmax(130px, 0.8fr) minmax(180px, 1fr) auto auto;
-        gap: 7px;
+        grid-template-columns: minmax(180px, 0.8fr) minmax(220px, 1.2fr) auto auto;
+        gap: 8px;
         width: 100%;
     }
 
-    .attendance-add-row-btn,
     .attendance-person-add-btn,
-    .attendance-leave-btn {
-        border-radius: 10px;
-        background: #fffaf1;
-    }
-
-    .attendance-leave-group {
-        grid-column: 1 / -1;
-        padding-top: 11px;
-        border-top: 1px solid rgba(182, 141, 79, 0.25);
+    .attendance-leave-btn[data-leave-action="apply"] {
+        border-color: var(--attendance-ui-primary);
+        background: var(--attendance-ui-primary);
+        color: #fff;
     }
 
     .attendance-leave-row {
         display: grid;
-        grid-template-columns: minmax(210px, 1.4fr) minmax(145px, 0.7fr) minmax(145px, 0.7fr) auto auto;
-        gap: 7px;
+        grid-template-columns: minmax(210px, 1.25fr) minmax(145px, 0.65fr) minmax(145px, 0.65fr) auto auto;
+        gap: 8px;
         align-items: center;
     }
 
-    .attendance-leave-btn[data-leave-action="apply"] {
-        background: #315e48;
-        border-color: #315e48;
-        color: #fff;
-    }
-
     .attendance-leave-btn[data-leave-action="remove"] {
-        color: #8e341c;
-        border-color: rgba(142, 52, 28, 0.45);
+        border-color: color-mix(in srgb, var(--attendance-ui-danger) 45%, var(--attendance-ui-border));
+        color: var(--attendance-ui-danger);
     }
 
-    .attendance-leave-help {
-        display: block;
-        margin-top: 6px;
-        color: #756b5d;
-        font-size: 0.78rem;
+    .attendance-leave-btn:disabled {
+        cursor: wait;
+        opacity: 0.56;
     }
 
-    .attendance-person-name {
-        display: block;
-        max-width: 100%;
-        overflow: visible;
-        text-overflow: clip;
-        white-space: nowrap;
+    .attendance-preview-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 4px 0 10px;
+        color: color-mix(in srgb, var(--attendance-ui-text) 72%, transparent);
+        font-size: 0.84rem;
+        font-weight: 700;
+        letter-spacing: 0;
     }
 
-    .attendance-edit-person,
-    .attendance-row-move,
-    .attendance-remove-person {
-        position: absolute;
-        top: 50%;
-        z-index: 3;
-        float: none;
-        transform: translateY(-50%);
-        width: 18px;
-        height: 18px;
-        margin: 0;
-        padding: 0;
-        border: 1px solid rgba(142, 52, 28, 0.45);
-        border-radius: 999px;
-        background: #fff8f2;
-        color: #8e341c;
-        font: 700 11px/1 Arial, sans-serif;
-        cursor: pointer;
+    .attendance-preview-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .attendance-row-move[data-move-row="up"] {
-        left: -86px;
+    .attendance-preview-count {
+        padding: 4px 8px;
+        border: 1px solid var(--attendance-ui-border);
+        border-radius: 5px;
+        background: var(--attendance-ui-surface);
+        font-size: 0.76rem;
     }
 
-    .attendance-row-move[data-move-row="down"] {
-        left: -64px;
-    }
-
-    .attendance-edit-person {
-        left: -42px;
-    }
-
-    .attendance-remove-person {
-        left: -20px;
-    }
-
-    .attendance-row-move,
-    .attendance-edit-person {
-        border-color: rgba(49, 94, 72, 0.45);
-        background: #f3fbf5;
-        color: #315e48;
-    }
-
-    .attendance-row-move:hover,
-    .attendance-edit-person:hover {
-        background: #315e48;
-        color: #fff;
-    }
-
-    .attendance-remove-person:hover {
-        background: #8e341c;
-        color: #fff;
-    }
-
-    .attendance-mode-btn.is-active {
-        background: var(--attendance-accent);
-        color: #fff;
-    }
-
-    .attendance-print-btn {
-        border-radius: 10px;
-        background: #183327;
-        color: #fff;
-        border-color: #183327;
-        min-width: 92px;
-        white-space: nowrap;
+    .attendance-document-scroll {
+        margin-right: calc(50% - 50vw);
+        margin-left: calc(50% - 50vw);
+        padding: 28px max(22px, calc((100vw - 1440px) / 2 + 22px)) 36px;
+        overflow-x: auto;
+        border-top: 1px solid var(--attendance-ui-border);
+        border-bottom: 1px solid var(--attendance-ui-border);
+        background: color-mix(in srgb, var(--attendance-ui-background) 72%, #dfe2df);
     }
 
     .attendance-pages {
         display: grid;
         gap: 26px;
+        width: max-content;
+        min-width: 100%;
     }
 
     .attendance-sheet {
@@ -331,12 +537,76 @@
 
     .attendance-name-cell {
         position: relative;
-        overflow: visible !important;
+        padding-right: 30mm !important;
+        overflow: hidden !important;
         line-height: 1.05;
         font-weight: 700;
         white-space: nowrap;
         cursor: pointer;
         user-select: none;
+    }
+
+    .attendance-person-name {
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .attendance-row-actions {
+        position: absolute;
+        top: 50%;
+        right: 1.2mm;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        padding: 2px;
+        border: 1px solid rgba(34, 34, 34, 0.2);
+        border-radius: 5px;
+        background: rgba(255, 253, 248, 0.96);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        opacity: 0;
+        transform: translateY(-50%);
+        transition: opacity 140ms ease;
+    }
+
+    .attendance-name-cell:hover .attendance-row-actions,
+    .attendance-name-cell:focus-within .attendance-row-actions {
+        opacity: 1;
+    }
+
+    .attendance-edit-person,
+    .attendance-row-move,
+    .attendance-remove-person {
+        display: inline-grid;
+        width: 23px;
+        height: 23px;
+        margin: 0;
+        padding: 0;
+        place-items: center;
+        border: 0;
+        border-radius: 4px;
+        background: transparent;
+        color: #315e48;
+        font: 700 11px/1 Arial, sans-serif;
+        cursor: pointer;
+    }
+
+    .attendance-edit-person:hover,
+    .attendance-row-move:hover {
+        background: #315e48;
+        color: #fff;
+    }
+
+    .attendance-remove-person {
+        color: #8e341c;
+    }
+
+    .attendance-remove-person:hover {
+        background: #8e341c;
+        color: #fff;
     }
 
     .attendance-mark-cell {
@@ -351,13 +621,6 @@
 
     .attendance-person-row {
         height: 8.2mm;
-    }
-
-    .attendance-save-status {
-        min-height: 1.2em;
-        margin-top: 8px;
-        color: #6c5d47;
-        font-size: 0.78rem;
     }
 
     .attendance-name-cell:hover,
@@ -400,13 +663,27 @@
     }
 
     @media (max-width: 980px) {
-        .attendance-controls {
-            position: static;
-            grid-template-columns: 1fr;
+        .attendance-tool {
+            margin-top: 18px;
+            padding: 0 16px;
         }
 
-        .attendance-controls-header {
-            margin-bottom: 0;
+        .attendance-controls {
+            position: static;
+        }
+
+        .attendance-controls-primary {
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        .attendance-panel-actions {
+            justify-content: flex-start;
+        }
+
+        .attendance-subpanel {
+            grid-template-columns: 1fr;
+            gap: 12px;
         }
 
         .attendance-person-edit {
@@ -417,9 +694,9 @@
             grid-template-columns: 1fr;
         }
 
-        .attendance-pages {
-            overflow-x: auto;
-            padding-bottom: 14px;
+        .attendance-document-scroll {
+            padding-right: 16px;
+            padding-left: 16px;
         }
 
         .attendance-sheet {
@@ -427,6 +704,61 @@
             min-width: 210mm;
             min-height: 297mm;
             padding: 14mm 10mm;
+        }
+    }
+
+    @media (max-width: 680px) {
+        .attendance-page-header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .attendance-page-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .attendance-marker-group {
+            width: 100%;
+            flex-wrap: wrap;
+            overflow: visible;
+            border: 0;
+            gap: 6px;
+            background: transparent;
+        }
+
+        .attendance-mode-btn,
+        .attendance-mode-btn:last-child {
+            min-width: calc(50% - 3px);
+            flex: 1 1 calc(50% - 3px);
+            border: 1px solid var(--attendance-ui-border);
+            border-radius: 6px;
+            background: var(--attendance-ui-surface);
+        }
+
+        .attendance-mode-btn.is-active {
+            border-color: var(--attendance-ui-primary);
+            background: var(--attendance-ui-primary);
+        }
+
+        .attendance-panel-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .attendance-panel-trigger {
+            min-width: 0;
+        }
+
+        .attendance-controls-toggle [data-controls-toggle-label] {
+            display: none;
+        }
+    }
+
+    @media (hover: none) {
+        .attendance-row-actions {
+            opacity: 0.88;
         }
     }
 
@@ -476,8 +808,19 @@
             width: 100%;
         }
 
+        .attendance-document-scroll {
+            display: block;
+            margin: 0;
+            padding: 0;
+            overflow: visible;
+            border: 0;
+            background: #fff;
+        }
+
         .attendance-pages {
             display: block;
+            width: auto;
+            min-width: 0;
             overflow: visible;
             padding: 0;
         }
@@ -546,6 +889,11 @@
             white-space: nowrap;
         }
 
+        .attendance-name-cell {
+            padding-right: 1mm !important;
+            overflow: hidden !important;
+        }
+
         .attendance-table th {
             line-height: 1;
         }
@@ -596,71 +944,161 @@
     data-leave-range-url="{% url 'attendance_sheet_leave_range' %}"
 >
     {% csrf_token %}
+    <header class="attendance-page-header attendance-edit-only">
+        <div class="attendance-page-heading">
+            <span class="attendance-page-icon" aria-hidden="true"><i class="bi bi-calendar2-check"></i></span>
+            <div class="attendance-page-copy">
+                <h1>Devam cetveli</h1>
+            </div>
+        </div>
+        <div class="attendance-page-actions">
+            <div class="attendance-save-status" data-save-status aria-live="polite"></div>
+            <button type="button" class="attendance-print-btn" data-print-attendance>
+                <i class="bi bi-printer" aria-hidden="true"></i>
+                <span>Yazdır</span>
+            </button>
+        </div>
+    </header>
+
     <section class="attendance-controls" data-attendance-controls aria-label="Devam cetveli kontrolleri">
         <div class="attendance-controls-header attendance-edit-only">
-            <span class="attendance-controls-title">Devam cetveli kontrolleri</span>
+            <span class="attendance-controls-title">
+                <i class="bi bi-sliders2" aria-hidden="true"></i>
+                <span>Günlük işlemler</span>
+            </span>
             <button
                 type="button"
                 class="attendance-controls-toggle"
                 data-toggle-attendance-controls
                 aria-expanded="true"
-            >Paneli gizle</button>
+                title="Araç çubuğunu daralt"
+            >
+                <i class="bi bi-chevron-up" data-controls-toggle-icon aria-hidden="true"></i>
+                <span data-controls-toggle-label>Daralt</span>
+            </button>
         </div>
-        <div class="attendance-control-group">
-            <label for="attendanceDate">Tarih</label>
-            <div class="attendance-control-row">
-                <input type="date" id="attendanceDate" data-attendance-date value="{{ initial_date }}">
+        <div class="attendance-controls-body">
+            <div class="attendance-controls-primary">
+                <div class="attendance-control-group">
+                    <label for="attendanceDate">Çalışma tarihi</label>
+                    <div class="attendance-control-row">
+                        <input type="date" id="attendanceDate" data-attendance-date value="{{ initial_date }}">
+                    </div>
+                </div>
+                <div class="attendance-control-group">
+                    <span class="attendance-field-label">İşaret türü</span>
+                    <div class="attendance-marker-group" role="group" aria-label="İşaret seçimi">
+                        <button type="button" class="attendance-mode-btn is-active" data-marker="İ">
+                            <span class="attendance-mode-code">İ</span><span>İzinli</span>
+                        </button>
+                        <button type="button" class="attendance-mode-btn" data-marker="G">
+                            <span class="attendance-mode-code">G</span><span>Görevli</span>
+                        </button>
+                        <button type="button" class="attendance-mode-btn" data-marker="R">
+                            <span class="attendance-mode-code">R</span><span>Raporlu</span>
+                        </button>
+                        <button type="button" class="attendance-mode-btn" data-marker="H">
+                            <span class="attendance-mode-code">H</span><span>Hastalık</span>
+                        </button>
+                        <button type="button" class="attendance-mode-btn" data-marker="">
+                            <i class="bi bi-eraser" aria-hidden="true"></i><span>Temizle</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="attendance-control-group attendance-edit-only">
+                    <span class="attendance-field-label">Diğer işlemler</span>
+                    <div class="attendance-panel-actions">
+                        <button
+                            type="button"
+                            class="attendance-panel-trigger"
+                            data-attendance-panel-toggle="person"
+                            aria-controls="attendancePersonPanel"
+                            aria-expanded="false"
+                        >
+                            <i class="bi bi-people" aria-hidden="true"></i><span>Personel</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="attendance-panel-trigger"
+                            data-attendance-panel-toggle="leave"
+                            aria-controls="attendanceLeavePanel"
+                            aria-expanded="false"
+                        >
+                            <i class="bi bi-calendar-range" aria-hidden="true"></i><span>İzin planı</span>
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="attendance-control-group">
-            <label>İşaret</label>
-            <div class="attendance-control-row" role="group" aria-label="İşaret seçimi">
-                <button type="button" class="attendance-mode-btn is-active" data-marker="İ">İzinli: İ</button>
-                <button type="button" class="attendance-mode-btn" data-marker="G">Görevli: G</button>
-                <button type="button" class="attendance-mode-btn" data-marker="R">Raporlu: R</button>
-                <button type="button" class="attendance-mode-btn" data-marker="H">H: H</button>
-                <button type="button" class="attendance-mode-btn" data-marker="">Temizle</button>
-            </div>
-        </div>
-        <div class="attendance-control-group attendance-edit-only">
-            <label for="attendancePersonName">Satır ekle / düzenle</label>
-            <div class="attendance-control-row attendance-person-edit">
-                <select id="attendancePersonSection" data-person-section aria-label="Eklenecek bölüm">
-                    {% for sheet in sheets %}
-                        {% for section in sheet.sections %}
-                            <option value="{{ sheet.page }}-{{ section.code }}">Sayfa {{ sheet.page }} - {{ section.code }}</option>
+
+            <div
+                id="attendancePersonPanel"
+                class="attendance-subpanel attendance-edit-only"
+                data-attendance-panel="person"
+                hidden
+            >
+                <div class="attendance-subpanel-heading">
+                    <i class="bi bi-person-gear" aria-hidden="true"></i>
+                    <div>
+                        <strong>Personel düzeni</strong>
+                    </div>
+                </div>
+                <div class="attendance-person-edit">
+                    <select id="attendancePersonSection" data-person-section aria-label="Eklenecek bölüm">
+                        {% for sheet in sheets %}
+                            {% for section in sheet.sections %}
+                                <option value="{{ sheet.page }}-{{ section.code }}">Sayfa {{ sheet.page }} · {{ section.code }}</option>
+                            {% endfor %}
                         {% endfor %}
-                    {% endfor %}
-                </select>
-                <input type="text" id="attendancePersonName" data-person-name placeholder="Ad soyad">
-                <button type="button" class="attendance-person-add-btn" data-add-person>Ekle</button>
-                <button type="button" class="attendance-add-row-btn" data-add-empty-row>Boş satır</button>
+                    </select>
+                    <input type="text" id="attendancePersonName" data-person-name placeholder="Ad soyad" aria-label="Personel adı">
+                    <button type="button" class="attendance-person-add-btn" data-add-person>
+                        <i class="bi bi-person-plus" aria-hidden="true"></i><span>Ekle</span>
+                    </button>
+                    <button type="button" class="attendance-add-row-btn" data-add-empty-row>
+                        <i class="bi bi-plus-square" aria-hidden="true"></i><span>Boş satır</span>
+                    </button>
+                </div>
             </div>
-        </div>
-        <div class="attendance-print-actions">
-            <button type="button" class="attendance-print-btn" data-print-attendance>Yazdır</button>
-            <div class="attendance-save-status attendance-edit-only" data-save-status aria-live="polite"></div>
-        </div>
-        <div class="attendance-control-group attendance-leave-group attendance-edit-only">
-            <label for="attendanceLeavePerson">İzin tarihleri</label>
-            <div class="attendance-leave-row">
-                <select id="attendanceLeavePerson" data-leave-person aria-label="İzinli personel">
-                    <option value="">Personel seçin</option>
-                    {% for person in attendance_people %}
-                        <option value="{{ person.id }}">{{ person.name }} · {{ person.section }}</option>
-                    {% endfor %}
-                </select>
-                <input type="date" data-leave-start value="{{ initial_date }}" aria-label="İzin başlangıç tarihi">
-                <input type="date" data-leave-end value="{{ initial_date }}" aria-label="İzin bitiş tarihi">
-                <button type="button" class="attendance-leave-btn" data-leave-action="apply">İzinli işaretle</button>
-                <button type="button" class="attendance-leave-btn" data-leave-action="remove">Aralıktan kaldır</button>
+
+            <div
+                id="attendanceLeavePanel"
+                class="attendance-subpanel attendance-edit-only"
+                data-attendance-panel="leave"
+                hidden
+            >
+                <div class="attendance-subpanel-heading">
+                    <i class="bi bi-calendar2-week" aria-hidden="true"></i>
+                    <div>
+                        <strong>İzin planı</strong>
+                    </div>
+                </div>
+                <div class="attendance-leave-row">
+                    <select id="attendanceLeavePerson" data-leave-person aria-label="İzinli personel">
+                        <option value="">Personel seçin</option>
+                        {% for person in attendance_people %}
+                            <option value="{{ person.id }}">{{ person.name }} · {{ person.section }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="date" data-leave-start value="{{ initial_date }}" aria-label="İzin başlangıç tarihi">
+                    <input type="date" data-leave-end value="{{ initial_date }}" aria-label="İzin bitiş tarihi">
+                    <button type="button" class="attendance-leave-btn" data-leave-action="apply">
+                        <i class="bi bi-check2" aria-hidden="true"></i><span>İzinli işaretle</span>
+                    </button>
+                    <button type="button" class="attendance-leave-btn" data-leave-action="remove">
+                        <i class="bi bi-x-lg" aria-hidden="true"></i><span>Aralıktan kaldır</span>
+                    </button>
+                </div>
             </div>
-            <small class="attendance-leave-help">Seçilen günlerin dört imza hanesine İ işlenir. Tek bir günü ayrıca “Temizle” ile değiştirebilirsiniz.</small>
         </div>
     </section>
 
     {{ initial_marks|json_script:"attendance-initial-marks" }}
 
+    <div class="attendance-preview-header attendance-edit-only">
+        <span class="attendance-preview-title"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Baskı önizlemesi</span>
+        <span class="attendance-preview-count">{{ sheets|length }} sayfa</span>
+    </div>
+    <div class="attendance-document-scroll">
     <section class="attendance-pages">
         {% for sheet in sheets %}
             <article class="attendance-sheet" data-sheet-page="{{ sheet.page }}" aria-label="Personel günlük devam cetveli sayfa {{ sheet.page }}">
@@ -704,10 +1142,12 @@
                                 <tr class="attendance-person-row" data-person-row data-person-id="{{ person.id }}" data-blank-row="{{ person.is_blank|yesno:'1,0' }}">
                                     <td class="attendance-name-cell" data-fill-row>
                                         <span class="attendance-person-name" data-person-display>{{ person.name }}</span>
-                                        <button type="button" class="attendance-remove-person attendance-edit-only" data-remove-person aria-label="{{ person.name }} kişisini çıkar">×</button>
-                                        <button type="button" class="attendance-edit-person attendance-edit-only" data-edit-person aria-label="{{ person.name }} adını düzenle">✎</button>
-                                        <button type="button" class="attendance-row-move attendance-edit-only" data-move-row="down" aria-label="{{ person.name }} satırını aşağı taşı">↓</button>
-                                        <button type="button" class="attendance-row-move attendance-edit-only" data-move-row="up" aria-label="{{ person.name }} satırını yukarı taşı">↑</button>
+                                        <span class="attendance-row-actions attendance-edit-only">
+                                            <button type="button" class="attendance-row-move" data-move-row="up" aria-label="{{ person.name }} satırını yukarı taşı" title="Yukarı taşı"><i class="bi bi-arrow-up" aria-hidden="true"></i></button>
+                                            <button type="button" class="attendance-row-move" data-move-row="down" aria-label="{{ person.name }} satırını aşağı taşı" title="Aşağı taşı"><i class="bi bi-arrow-down" aria-hidden="true"></i></button>
+                                            <button type="button" class="attendance-edit-person" data-edit-person aria-label="{{ person.name }} adını düzenle" title="Adı düzenle"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+                                            <button type="button" class="attendance-remove-person" data-remove-person aria-label="{{ person.name }} kişisini çıkar" title="Satırı sil"><i class="bi bi-trash3" aria-hidden="true"></i></button>
+                                        </span>
                                     </td>
                                     <td class="attendance-mark-cell" data-slot="morning-in"></td>
                                     <td class="attendance-mark-cell" data-slot="morning-out"></td>
@@ -738,6 +1178,7 @@
             </article>
         {% endfor %}
     </section>
+    </div>
 </main>
 
 <script>
@@ -772,6 +1213,27 @@
             }
         }
         return '';
+    }
+
+    function getCsrfToken() {
+        const tokenInput = root.querySelector('input[name="csrfmiddlewaretoken"]');
+        return tokenInput ? tokenInput.value : getCookie('csrftoken');
+    }
+
+    async function readJsonResponse(response) {
+        const contentType = response.headers.get('content-type') || '';
+        if (response.redirected || !contentType.includes('application/json')) {
+            if (response.status === 401 || response.status === 403 || response.redirected) {
+                throw new Error('Oturum doğrulanamadı. Sayfayı yenileyip tekrar deneyin.');
+            }
+            throw new Error(`Sunucu beklenmeyen bir yanıt verdi (HTTP ${response.status}).`);
+        }
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || `İşlem tamamlanamadı (HTTP ${response.status}).`);
+        }
+        return data;
     }
 
     function generatePersonId(sectionKey) {
@@ -880,14 +1342,14 @@
     }
 
     async function saveState(dateValue) {
-        if (!saveUrl || !dateInput) return;
+        if (!saveUrl || !dateInput) return false;
         setStatus('Kaydediliyor...');
         try {
             const response = await fetch(saveUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-CSRFToken': getCsrfToken(),
                 },
                 body: JSON.stringify({
                     date: dateValue || dateInput.value,
@@ -895,11 +1357,13 @@
                     marks: collectMarks(),
                 }),
             });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            await readJsonResponse(response);
             setStatus('Kaydedildi');
+            return true;
         } catch (error) {
-            setStatus('Kaydedilemedi');
+            setStatus(error.message || 'Kaydedilemedi');
             console.warn('Devam cetveli kaydedilemedi:', error);
+            return false;
         }
     }
 
@@ -939,7 +1403,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-CSRFToken': getCsrfToken(),
                 },
                 body: JSON.stringify({
                     action,
@@ -948,8 +1412,7 @@
                     end_date: endInput.value,
                 }),
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+            const data = await readJsonResponse(response);
 
             const actionText = action === 'apply' ? 'izinli işaretlendi' : 'izin işaretlerinden kaldırıldı';
             await fetchDateMarks();
@@ -972,10 +1435,40 @@
     if (controlsPanel && controlsToggle) {
         controlsToggle.addEventListener('click', () => {
             const collapsed = controlsPanel.classList.toggle('is-collapsed');
-            controlsToggle.textContent = collapsed ? 'Paneli göster' : 'Paneli gizle';
+            const label = controlsToggle.querySelector('[data-controls-toggle-label]');
+            const icon = controlsToggle.querySelector('[data-controls-toggle-icon]');
+            if (label) label.textContent = collapsed ? 'Genişlet' : 'Daralt';
+            if (icon) {
+                icon.classList.toggle('bi-chevron-up', !collapsed);
+                icon.classList.toggle('bi-chevron-down', collapsed);
+            }
             controlsToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            controlsToggle.title = collapsed ? 'Araç çubuğunu genişlet' : 'Araç çubuğunu daralt';
         });
     }
+
+    const panelToggles = Array.from(root.querySelectorAll('[data-attendance-panel-toggle]'));
+    const secondaryPanels = Array.from(root.querySelectorAll('[data-attendance-panel]'));
+    panelToggles.forEach((toggle) => {
+        toggle.addEventListener('click', () => {
+            const panelName = toggle.dataset.attendancePanelToggle;
+            const targetPanel = secondaryPanels.find((panel) => panel.dataset.attendancePanel === panelName);
+            if (!targetPanel) return;
+            const shouldOpen = targetPanel.hidden;
+
+            secondaryPanels.forEach((panel) => { panel.hidden = true; });
+            panelToggles.forEach((button) => {
+                button.classList.remove('is-active');
+                button.setAttribute('aria-expanded', 'false');
+            });
+
+            if (shouldOpen) {
+                targetPanel.hidden = false;
+                toggle.classList.add('is-active');
+                toggle.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
 
     root.querySelectorAll('[data-marker]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -1063,34 +1556,28 @@
     }
 
     function appendRowButtons(nameCell) {
-        const removeButton = document.createElement('button');
-        removeButton.type = 'button';
-        removeButton.className = 'attendance-remove-person attendance-edit-only';
-        removeButton.setAttribute('data-remove-person', '');
-        removeButton.textContent = '×';
+        const actions = document.createElement('span');
+        actions.className = 'attendance-row-actions attendance-edit-only';
 
-        const editButton = document.createElement('button');
-        editButton.type = 'button';
-        editButton.className = 'attendance-edit-person attendance-edit-only';
-        editButton.setAttribute('data-edit-person', '');
-        editButton.textContent = '✎';
+        function createAction(className, iconName, title, dataName, dataValue = '') {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = className;
+            button.title = title;
+            button.setAttribute(dataName, dataValue);
 
-        const downButton = document.createElement('button');
-        downButton.type = 'button';
-        downButton.className = 'attendance-row-move attendance-edit-only';
-        downButton.setAttribute('data-move-row', 'down');
-        downButton.textContent = '↓';
+            const icon = document.createElement('i');
+            icon.className = `bi ${iconName}`;
+            icon.setAttribute('aria-hidden', 'true');
+            button.appendChild(icon);
+            return button;
+        }
 
-        const upButton = document.createElement('button');
-        upButton.type = 'button';
-        upButton.className = 'attendance-row-move attendance-edit-only';
-        upButton.setAttribute('data-move-row', 'up');
-        upButton.textContent = '↑';
-
-        nameCell.appendChild(removeButton);
-        nameCell.appendChild(editButton);
-        nameCell.appendChild(downButton);
-        nameCell.appendChild(upButton);
+        actions.appendChild(createAction('attendance-row-move', 'bi-arrow-up', 'Yukarı taşı', 'data-move-row', 'up'));
+        actions.appendChild(createAction('attendance-row-move', 'bi-arrow-down', 'Aşağı taşı', 'data-move-row', 'down'));
+        actions.appendChild(createAction('attendance-edit-person', 'bi-pencil', 'Adı düzenle', 'data-edit-person'));
+        actions.appendChild(createAction('attendance-remove-person', 'bi-trash3', 'Satırı sil', 'data-remove-person'));
+        nameCell.appendChild(actions);
     }
 
     function createPersonRow(id, name, isBlank = false) {
@@ -1219,11 +1706,11 @@
             const url = new URL(dayStateUrl, window.location.origin);
             url.searchParams.set('date', dateInput.value);
             const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const data = await response.json();
+            const data = await readJsonResponse(response);
             applyMarks(data.marks || {});
             setStatus('');
         } catch (error) {
+            setStatus(error.message || 'Tarih işaretleri alınamadı');
             console.warn('Devam cetveli tarih işaretleri alınamadı:', error);
         }
     }
@@ -1262,7 +1749,14 @@
 
     const printButton = root.querySelector('[data-print-attendance]');
     if (printButton) {
-        printButton.addEventListener('click', () => window.print());
+        printButton.addEventListener('click', async () => {
+            if (saveTimer) {
+                window.clearTimeout(saveTimer);
+                saveTimer = null;
+            }
+            await saveState(activeDate || (dateInput && dateInput.value));
+            window.print();
+        });
     }
 })();
 </script>

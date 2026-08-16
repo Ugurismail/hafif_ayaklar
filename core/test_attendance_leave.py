@@ -1,7 +1,8 @@
 import json
+import re
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from core.models import AttendanceDayState
@@ -91,3 +92,31 @@ class AttendanceLeaveRangeTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("Bitiş tarihi", response.json()["error"])
         self.assertFalse(AttendanceDayState.objects.exists())
+
+    @override_settings(CSRF_COOKIE_HTTPONLY=True)
+    def test_hidden_csrf_token_authorizes_ajax_when_cookie_is_httponly(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.user)
+        page = client.get(reverse("attendance_sheet_tool"))
+
+        self.assertEqual(page.status_code, 200)
+        token_match = re.search(
+            rb'name="csrfmiddlewaretoken" value="([^"]+)"',
+            page.content,
+        )
+        self.assertIsNotNone(token_match)
+        self.assertTrue(page.cookies["csrftoken"]["httponly"])
+
+        response = client.post(
+            reverse("attendance_sheet_save"),
+            data=json.dumps({
+                "date": "2026-08-12",
+                "sheets": self.config.sheets,
+                "marks": {},
+            }),
+            content_type="application/json",
+            HTTP_X_CSRFTOKEN=token_match.group(1).decode("ascii"),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["ok"])
