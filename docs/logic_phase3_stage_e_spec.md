@@ -559,7 +559,7 @@ anlamına gelmez.
 | E27 Alan, Adlar, Yüklemler ve Açık Cümleler | Hazır | Hazır | Hazır | Bekliyor |
 | E28 Tek Niceleyicili Cümleler | Hazır | Hazır | Hazır | Bekliyor |
 | E29 Çok Yerli Yüklemler ve Bağıntı Yönü | Hazır | Hazır | Hazır | Bekliyor |
-| E30 Çoklu Genellik, Niceleyici Sırası ve Bağımlılık | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| E30 Çoklu Genellik, Niceleyici Sırası ve Bağımlılık | Hazır | Hazır | Hazır | Bekliyor |
 | E31 Kapsam ve Niceleyici Olumsuzlaması | Hazır | Bekliyor | Bekliyor | Bekliyor |
 | E32 Kimlik ve Sayısal İfadeler | Hazır | Bekliyor | Bekliyor | Bekliyor |
 | E33 Serbest/Bağlı Değişken, Yerine Koyma ve WFF | Hazır | Bekliyor | Bekliyor | Bekliyor |

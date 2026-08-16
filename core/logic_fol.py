@@ -676,6 +676,103 @@ def _nodes_match_with_binders(
     raise ValueError(f"Bilinmeyen FOL düğüm türü: {candidate.kind!r}.")
 
 
+def _strip_leading_quantifiers(
+    formula: FOLFormula,
+) -> tuple[list[tuple[str, str]], FOLFormula]:
+    prefix = []
+    node = formula
+    while node.kind == "quantifier":
+        prefix.append((node.operator, node.variable))
+        node = node.body
+    return prefix, node
+
+
+def _matrix_variable_mapping(
+    candidate: FOLFormula,
+    expected: FOLFormula,
+) -> dict[str, str] | None:
+    """Map candidate variables to expected variables by matrix role."""
+
+    mapping = {}
+    reverse = {}
+
+    def term_matches(left: FOLTerm, right: FOLTerm) -> bool:
+        if left.kind != right.kind:
+            return False
+        if left.kind == "name":
+            return left.symbol == right.symbol
+        mapped = mapping.get(left.symbol)
+        reversed_symbol = reverse.get(right.symbol)
+        if mapped is not None:
+            return mapped == right.symbol
+        if reversed_symbol is not None:
+            return reversed_symbol == left.symbol
+        mapping[left.symbol] = right.symbol
+        reverse[right.symbol] = left.symbol
+        return True
+
+    def visit(left: FOLFormula, right: FOLFormula) -> bool:
+        if left.kind != right.kind:
+            return False
+        if left.kind == "predicate":
+            return (
+                left.predicate == right.predicate
+                and len(left.terms) == len(right.terms)
+                and all(
+                    term_matches(left_term, right_term)
+                    for left_term, right_term in zip(left.terms, right.terms)
+                )
+            )
+        if left.kind == "identity":
+            return all(
+                term_matches(left_term, right_term)
+                for left_term, right_term in zip(left.terms, right.terms)
+            )
+        if left.kind == "negation":
+            return visit(left.body, right.body)
+        if left.kind == "binary":
+            return (
+                left.operator == right.operator
+                and visit(left.left, right.left)
+                and visit(left.right, right.right)
+            )
+        # This helper only compares matrices after the leading prefix.
+        return False
+
+    return mapping if visit(candidate, expected) else None
+
+
+def _has_quantifier_order_mismatch(
+    candidate: FOLFormula,
+    expected: FOLFormula,
+) -> bool:
+    candidate_prefix, candidate_matrix = _strip_leading_quantifiers(candidate)
+    expected_prefix, expected_matrix = _strip_leading_quantifiers(expected)
+    if len(candidate_prefix) < 2 or len(candidate_prefix) != len(expected_prefix):
+        return False
+
+    mapping = _matrix_variable_mapping(candidate_matrix, expected_matrix)
+    if mapping is None:
+        return False
+
+    candidate_by_expected = {}
+    candidate_mapped_order = []
+    for operator, variable in candidate_prefix:
+        expected_variable = mapping.get(variable)
+        if expected_variable is None or expected_variable in candidate_by_expected:
+            return False
+        candidate_by_expected[expected_variable] = operator
+        candidate_mapped_order.append(expected_variable)
+
+    expected_by_variable = {
+        variable: operator for operator, variable in expected_prefix
+    }
+    if candidate_by_expected != expected_by_variable:
+        return False
+    expected_order = [variable for _operator, variable in expected_prefix]
+    return candidate_mapped_order != expected_order
+
+
 def _translation_mismatch_code(
     candidate: FOLFormula,
     expected: FOLFormula,
@@ -686,6 +783,8 @@ def _translation_mismatch_code(
 
     candidate_binders = candidate_binders if candidate_binders is not None else {}
     expected_binders = expected_binders if expected_binders is not None else {}
+    if _has_quantifier_order_mismatch(candidate, expected):
+        return "translation.quantifier_order"
     if candidate.kind != expected.kind:
         if "negation" in {candidate.kind, expected.kind}:
             return "translation.negation_scope"
@@ -850,6 +949,7 @@ def assess_fol_symbolization(
     ]
     priority = (
         "translation.condition_direction",
+        "translation.quantifier_order",
         "translation.quantifier_kind",
         "translation.quantifier_scope",
         "translation.connective",

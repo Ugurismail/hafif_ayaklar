@@ -124,6 +124,45 @@ E29_SIGNATURE = {
 }
 
 
+E30_SIGNATURE = {
+    "domain": "atölyedeki insanlar",
+    "names": {
+        "a": "Ada",
+        "b": "Bora",
+        "c": "Cem",
+        "d": "Deniz",
+    },
+    "variables": ["x", "y", "z"],
+    "predicates": {
+        "F": {
+            "arity": 1,
+            "reading": "x mentor",
+            "roles": ["mentor olan"],
+        },
+        "G": {
+            "arity": 1,
+            "reading": "x katılımcı",
+            "roles": ["katılımcı olan"],
+        },
+        "T": {
+            "arity": 2,
+            "reading": "x, y'yi tanıyor",
+            "roles": ["tanıyan", "tanınan"],
+        },
+        "D": {
+            "arity": 2,
+            "reading": "x, y'ye danışıyor",
+            "roles": ["danışan", "danışılan"],
+        },
+        "I": {
+            "arity": 3,
+            "reading": "x, y'yi z ile tanıştırıyor",
+            "roles": ["tanıştıran", "tanıştırılan", "kendisiyle tanıştırılan"],
+        },
+    },
+}
+
+
 def _syntax_fixture(
     fixture_id,
     source,
@@ -1690,10 +1729,402 @@ def _candidate_e29():
     return lesson
 
 
+def _candidate_e30():
+    lesson = _lesson(
+        "E30",
+        "ders-fol-coklu-niceleyici-bagimlilik",
+        "Çoklu Niceleyici, Sıra ve Bağımlılık",
+        "Bir bağıntının yerlerini birden fazla niceleyiciyle bağlar; ∀∃ ile ∃∀ arasındaki farkı ayrı tanık ve ortak tanık okumaları üzerinden görünür kılar.",
+        "Niceleyici sırası, tanık bağımlılığı ve değişken planı",
+        45,
+        ["ders-fol-baginti-arite-yon"],
+        [
+            "fol.quantifier_order",
+            "fol.dependency_read",
+            "fol.multiple_generalize",
+            "fol.variable_plan",
+        ],
+        [
+            "İki niceleyicinin hangi değişken oluşumlarını ve bağıntı yerlerini bağladığını göstermek.",
+            "∀x∃y ile ∃y∀x yapılarını ayrı tanık ve ortak tanık okumalarıyla ayırmak.",
+            "Aynı tür ve farklı tür niceleyicilerin yer değiştirmesini birbirine karıştırmamak.",
+            "Doğal dil sözcük sırası yerine bağımlılık ve bağıntı rollerinden hareketle formül kurmak.",
+            "Değişken gölgelemesini önleyen açık bir değişken planı kullanmak.",
+            "Üç niceleyicili bir cümleyi rol tablosu ve ara yeniden ifadelerle sembolleştirmek.",
+        ],
+        [
+            ("Çoklu niceleme", "Tek formül içinde iki veya daha fazla niceleyicinin farklı değişken oluşumlarını bağlaması."),
+            ("Niceleyici sırası", "Bir niceleyicinin diğerinin kapsamında bulunmasını belirleyen dıştan içe düzen."),
+            ("Bağımlı tanık", "Seçimi dıştaki tümel değişkenin değerine göre değişebilen varoluşsal örnek."),
+            ("Ortak tanık", "Dıştaki varoluşsal niceleyici tarafından bir kez seçilip içteki bütün durumlar için kullanılan örnek."),
+            ("Bağımlılık", "İçteki bir seçimin dıştaki değişkenin değerine göre değişebilmesi ilişkisi."),
+            ("Niceleyici kaydırma", "Gerekçe olmadan niceleyicilerin sırasını veya kapsamını değiştirerek daha güçlü ya da farklı bir iddiaya geçme."),
+            ("Değişken planı", "Her doğal dil rolüne ayrı değişken ayıran ve niceleyici sırasını formülden önce belirleyen taslak."),
+            ("Gölgeleme", "İçteki bir niceleyicinin aynı değişken harfini yeniden bağlayıp dış bağlayıcının görünürlüğünü kapatması."),
+        ],
+        [
+            _section(
+                "Her niceleyici bir rolü bağlar",
+                "T(x,y): x, y'yi tanıyor anahtarında x tanıyan, y tanınandır. ∀x∃yT(x,y) formülünde iki niceleyici aynı bağıntının farklı yerlerini bağlar.",
+                "Bir doğal dil cümlesinde birden fazla kişi veya nesne rolü genellendiğinde.",
+                "rol 1: x = tanıyan · rol 2: y = tanınan",
+                "Önce bağıntının yerlerini doldur, sonra her değişkenin nicelik türünü ve hangi sırada seçildiğini belirle.",
+                "Niceleyicileri yazıp değişkenlerin hangi role gittiğini sonradan tahmin etme.",
+                [
+                    ("∀x∃yT(x,y)", "Her x için en az bir y vardır ve x, y'yi tanır."),
+                    ("∀x∃yT(y,x)", "Her x için en az bir y vardır ve y, x'i tanır."),
+                    ("∃x∀yT(x,y)", "Bir x vardır ve x herkesi tanır."),
+                ],
+                (
+                    "Bağıntı rol tablosunu, değişkenleri ve bağlayıcıları ayrı satırlarda planlamak.",
+                    "Aynı x ve y harfleri geçtiği için formülleri aynı saymak.",
+                    "Niceleyici türü, sıra ve bağıntı yeri birlikte okunur.",
+                ),
+            ),
+            _section(
+                "∀∃ ayrı tanıklara izin verir",
+                "∀x∃yT(x,y), her kişi için tanıdığı en az bir kişi bulunduğunu söyler. y'nin seçimi x değiştikçe değişebilir; tek ortak kişi ileri sürülmez.",
+                "'Herkes birini ...' ve 'her ... için bir ...' yapılarını okurken.",
+                "her x → ona uygun en az bir y",
+                "Dıştaki ∀ önce hangi durumun ele alındığını belirler; içteki ∃ o duruma göre bir tanık seçebilir.",
+                "y'yi bütün x'ler için aynı kişiymiş gibi sabitleme.",
+                [
+                    ("∀x∃yT(x,y)", "Ada Bora'yı, Bora Cem'i, Cem Ada'yı tanıyor olabilir."),
+                    ("∀x∃yD(x,y)", "Her katılımcının danıştığı kişi farklı olabilir."),
+                    ("∀x∃y∃zI(x,y,z)", "Her tanıştıran için y ve z ayrı ayrı seçilebilir."),
+                ],
+                (
+                    "Her dıştaki durum için içteki tanığın yeniden seçilebileceğini sormak.",
+                    "Varoluşsal tanığı formülün tamamı için tek kişi yapmak.",
+                    "İçteki varoluşsal seçim dıştaki tümel seçime bağımlı olabilir.",
+                ),
+            ),
+            _section(
+                "∃∀ ortak bir tanık ileri sürer",
+                "∃y∀xT(x,y), önce tek bir y seçer; sonra bütün x'lerin o aynı y'yi tanıdığını söyler. Bu, ∀x∃yT(x,y)'den daha güçlü bir ortaklık iddiasıdır.",
+                "'Birisi var ki herkes onu ...' veya 'herkesin aynı ...' ifadelerinde.",
+                "tek y → bütün x'ler için korunur",
+                "Dıştaki ∃ tanığı içteki ∀ başlamadan sabitler. x değişse de y aynı kalır.",
+                "Cümlede 'birisi' sözcüğü geçti diye onu otomatik dışa alma; ortaklık anlamını bağlamdan doğrula.",
+                [
+                    ("∃y∀xT(x,y)", "Herkesin tanıdığı en az bir ortak kişi vardır."),
+                    ("∃y∀xD(x,y)", "Herkesin danıştığı aynı kişi vardır."),
+                    ("∃x∀yT(x,y)", "Bir kişi herkesi tanır; roller farklıdır."),
+                ],
+                (
+                    "Tanığın bütün tümel örneklerde aynı kalıp kalmadığını sınamak.",
+                    "∃∀ ile ∀∃ arasındaki farkı yalnız sembol sırası diye ezberlemek.",
+                    "Dıştaki varoluşsal niceleyici ortak tanığı sabitler.",
+                ),
+            ),
+            _section(
+                "Aynı tür niceleyiciler ile karışık türleri ayır",
+                "Klasik FOL'de ardışık iki tümel ya da iki varoluşsal niceleyici yer değiştirebilir; ∀∃ ile ∃∀ ise genel olarak aynı şeyi söylemez.",
+                "Niceleyici sırasının anlamı değiştirip değiştirmediğini değerlendirirken.",
+                "∀x∀y𝒜 ≡ ∀y∀x𝒜 · ∃x∃y𝒜 ≡ ∃y∃x𝒜 · ∀x∃y𝒜 ≢ ∃y∀x𝒜",
+                "Aynı tür niceleyiciler aynı alan üzerinde aynı birleşik taramayı yapar. Karışık türlerde tanığın ne zaman seçildiği değişir.",
+                "İlk iki eşdeğerlikten bütün niceleyicilerin serbestçe kaydırılabileceği sonucunu çıkarma.",
+                [
+                    ("∀x∀yT(x,y)", "Herkes herkesi tanıyor."),
+                    ("∀y∀xT(x,y)", "Aynı tümel çift, aynı matrisi tarar."),
+                    ("∃x∃yT(x,y)", "Bir tanıyan ve bir tanınan vardır; seçim sırası ortak varoluş iddiasını değiştirmez."),
+                ],
+                (
+                    "Niceleyici türlerini ve içteki matrisin rollerini birlikte karşılaştırmak.",
+                    "Her yer değişimini ya da hiçbir yer değişimini otomatik geçerli saymak.",
+                    "Aynı türler yer değiştirebilir; karışık türler ayrıca sınanır.",
+                ),
+            ),
+            _section(
+                "Değişken planı gölgelemeyi önler",
+                "Her bağımsız rol için ayrı değişken seçmek, ∀x∃xT(x,x) gibi içteki niceleyicinin dıştaki x'i gölgelemesini önler.",
+                "İki veya daha fazla nicelik sözcüğünü tek formülde birleştirirken.",
+                "tanıyan: x · tanınan: y · üçüncü rol: z",
+                "Önce rol-değişken tablosu kurulur; her niceleyici yalnız kendi rolünün değişkenini bağlar. Harfler anlam taşımaz, fakat aynı kapsamda görevleri karıştırmamalıdır.",
+                "Yeni bir nicelik gördükçe aynı x harfini yeniden kullanma.",
+                [
+                    ("∀x∃yT(x,y)", "İki rol iki ayrı değişkenle görünürdür."),
+                    ("∀x∃xT(x,x)", "Sözdizimce cümledir; içteki ∃x dıştaki ∀x'i gölgeler ve hedef okumayı kaybeder."),
+                    ("∀x∃y∃zI(x,y,z)", "Üç rol üç değişkenle izlenir."),
+                ],
+                (
+                    "Her rol için ayrı harf ayırıp bağlayıcıyı dıştan içe yazmak.",
+                    "Değişken harfini doğal dildeki kişinin kalıcı adı sanmak.",
+                    "Değişkenler yer tutucudur; plan, bağlanma ilişkisini okunur tutar.",
+                ),
+            ),
+            _section(
+                "Üç niceleyicide katman katman ilerle",
+                "Üç yerli I(x,y,z) bağıntısında her niceleyici yeni bir seçim katmanı açar. ∀x∃y∃zI(x,y,z), her x için uygun bir y ve z çifti bulunmasını ister.",
+                "Vermek, tanıştırmak veya göndermek gibi üç rolün birden genellendiği cümlelerde.",
+                "1. rol tablosu · 2. niceleme sırası · 3. matris · 4. geri okuma",
+                "Cümle önce rolü açık ara ifadeye çevrilir; sonra dıştan içe seçim sırası yazılır ve en son atom eklenir.",
+                "Üç niceleyiciyi doğal dilde göründükleri sırayla yığıp bağıntı yerlerini kontrol etmeden bırakma.",
+                [
+                    ("∀x∃y∃zI(x,y,z)", "Her kişi birini başka biriyle tanıştırır; y ve z, x'e göre değişebilir."),
+                    ("∃z∀x∃yI(x,y,z)", "Tek bir z vardır; herkes bir y'yi o z ile tanıştırır."),
+                    ("∃y∃z∀xI(x,y,z)", "Aynı y ve z çifti bütün x'ler için sabittir."),
+                ],
+                (
+                    "Her niceleyiciden sonra hangi seçimlerin sabit, hangilerinin değişebilir olduğunu not etmek.",
+                    "Üç niceliği tek adımda çevirip bağımlılıkları görünmez kılmak.",
+                    "Dıştan içe her katman sonraki seçimlerin bağımlılık alanını belirler.",
+                ),
+            ),
+            _section(
+                "Niceleyici kaydırmayı karşı senaryoyla sın",
+                "∀x∃yT(x,y)'den ∃y∀xT(x,y)'ye geçmek geçerli değildir. Herkes farklı birini tanıyor olabilir; ortak tanınan kişi bulunmayabilir.",
+                "Bir çıkarımda niceleyicilerin yalnızca sırası değiştirilmiş görünüyorsa.",
+                "ayrı tanıklar ortak tanığı garanti etmez",
+                "Küçük bir senaryoda her x için bir y verilir; sonra bütün x'lere uyan tek y bulunup bulunmadığı sorulur. Bulunamıyorsa kaydırma bozuk görünür.",
+                "Karşı senaryoyu resmi model semantiğinin tamamı sanma; burada yalnız anlam farkını görünür kılan hazırlık aracıdır.",
+                [
+                    ("Ada Bora'yı, Bora Cem'i, Cem Ada'yı tanıyor.", "Herkes birini tanır; herkesin tanıdığı ortak biri olmak zorunda değildir."),
+                    ("Herkes Deniz'i tanıyor.", "Hem ∃y∀xT(x,y) hem ∀x∃yT(x,y) sağlanabilir."),
+                    ("Kimse kimseyi tanımıyor.", "İki yapı da başarısız olur; bu durum aralarındaki farkı göstermez."),
+                ],
+                (
+                    "Öncülü sağlayıp sonucu bozan küçük bir karşı senaryo aramak.",
+                    "Daha güçlü ortak tanık iddiasını sırf semboller aynı diye çıkarmak.",
+                    "Ayrı tanıkların varlığı tek ortak tanığın varlığını gerektirmez.",
+                ),
+            ),
+        ],
+        [
+            _worked("∀x∃yT(x,y)", "Her x için y yeniden seçilebilir.", "Herkes birini tanıyor"),
+            _worked("∃y∀xT(x,y)", "Önce tek y seçilir ve bütün x'ler onu tanır.", "Herkesin tanıdığı biri var"),
+            _worked("∀x∃yT(y,x)", "Her x için onu tanıyan bir y bulunur.", "Herkes birisi tarafından tanınıyor"),
+            _worked("∃x∀yT(x,y)", "Tek x bütün y'leri tanır.", "Herkesi tanıyan biri var"),
+            _worked("∀x∀yT(x,y)", "İki tümel değişken bütün sıralı çiftleri tarar.", "Herkes herkesi tanıyor"),
+            _worked("∃x∃yT(x,y)", "En az bir tanıyan-tanınan çifti vardır.", "Birisi birini tanıyor"),
+            _worked("∀x(F(x) → ∃y(G(y) ∧ T(x,y)))", "Her mentor için katılımcı tanık ayrı seçilebilir.", "Her mentor bir katılımcıyı tanıyor"),
+            _worked("∃y(G(y) ∧ ∀x(F(x) → T(x,y)))", "Aynı katılımcı bütün mentorlar tarafından tanınır.", "Bütün mentorların tanıdığı bir katılımcı var"),
+            _worked("∀x∃y∃zI(x,y,z)", "y ve z, dıştaki x'e göre değişebilir.", "Herkes birini başka biriyle tanıştırıyor"),
+            _worked("∃z∀x∃yI(x,y,z)", "z bütün x'ler için ortak, y ise x'e göre değişebilir.", "Biri var; herkes birini onunla tanıştırıyor"),
+            _worked("∃y∀xT(x,y)", "Hedef ∀x∃y ise ortak tanık iddiası gereksizce güçlendirilmiştir.", "Niceleyici sırası hatası", "bad"),
+            _worked("∀x∃xT(x,x)", "İçteki ∃x dıştaki ∀x'i gölgeler; iki rolün bağımlılığı kaybolur.", "Değişken gölgelemesi", "bad"),
+        ],
+        [
+            "∀∃ içindeki varoluşsal tanığı bütün tümel örneklerde aynı kişi sanmak.",
+            "∃∀ ortak tanık iddiasını ∀∃ ile eşdeğer saymak.",
+            "Doğal dilde ilk görünen nicelik sözcüğünü düşünmeden en dış niceleyici yapmak.",
+            "Bağıntı yönünü korumadan yalnız niceleyici sırasına odaklanmak.",
+            "Aynı tür niceleyicilerin yer değiştirebilmesinden karışık türlerin de değişebileceğini çıkarmak.",
+            "İki farklı rol için aynı değişkeni iç içe yeniden bağlayarak gölgeleme üretmek.",
+            "Üç niceleyicili cümleyi rol ve bağımlılık tablosu olmadan tek adımda yazmak.",
+            "Ayrı tanıklardan tek ortak tanığa gerekçesiz niceleyici kaydırmak.",
+            "Küçük doğal dil senaryosunu resmi FOL model semantiğinin tamamı sanmak.",
+        ],
+        _practice(
+            [
+                ("∀x∃yT(x,y) en iyi nasıl okunur?", ["Herkes birini tanıyor", "Birini herkes tanıyor", "Herkes herkesi tanıyor", "Kimse kimseyi tanımıyor"], "Herkes birini tanıyor", "y her x için yeniden seçilebilir.", "Temel"),
+                ("∃y∀xT(x,y) neyi ekler?", ["Ortak bir tanınan kişi", "Her x için farklı y", "Kimsenin tanınmaması", "Yalnız iki kişi"], "Ortak bir tanınan kişi", "Dıştaki ∃ tek y'yi sabitler.", "Temel"),
+                ("Herkes birisi tarafından tanınıyor hangisidir?", ["∀x∃yT(y,x)", "∀x∃yT(x,y)", "∃y∀xT(x,y)", "∀x∀yT(x,y)"], "∀x∃yT(y,x)", "x tanınan, y tanıyandır.", "Temel"),
+                ("Herkesi tanıyan biri var hangisidir?", ["∃x∀yT(x,y)", "∀x∃yT(x,y)", "∃y∀xT(x,y)", "∀x∀yT(y,x)"], "∃x∀yT(x,y)", "Tek x bütün y'leri tanır.", "Temel"),
+                ("∀x∃y yapısında y için hangisi doğrudur?", ["x'e göre değişebilir", "Her zaman aynı kalır", "Serbesttir", "Bir addır"], "x'e göre değişebilir", "İçteki tanık dıştaki seçime bağımlı olabilir.", "Orta"),
+                ("Hangi çift genel olarak eşdeğer değildir?", ["∀x∃y𝒜 ve ∃y∀x𝒜", "∀x∀y𝒜 ve ∀y∀x𝒜", "∃x∃y𝒜 ve ∃y∃x𝒜", "∀x∀y𝒜 ve ∀x∀y𝒜"], "∀x∃y𝒜 ve ∃y∀x𝒜", "Karışık niceleyici sırası tanık bağımlılığını değiştirir.", "Orta"),
+                ("∀x∃xT(x,x) için öğretimsel sorun nedir?", ["Gölgeleme", "Arite eksikliği", "Bilinmeyen yüklem", "Eksik parantez"], "Gölgeleme", "İçteki ∃x dıştaki ∀x bağını kapatır.", "Orta"),
+                ("∀x∃y∃zI(x,y,z) içinde hangileri x'e göre değişebilir?", ["y ve z", "Yalnız x", "Hiçbiri", "Yalnız z sabittir"], "y ve z", "İki varoluşsal seçim dıştaki x'in kapsamındadır.", "Orta"),
+                ("∃z∀x∃yI(x,y,z) içinde hangi değişken ortaktır?", ["z", "x", "y", "Hiçbiri"], "z", "z bütün x seçimlerinden önce sabitlenir.", "Orta"),
+                ("∀x∃yT(x,y)'den ∃y∀xT(x,y) neden çıkmaz?", ["Ayrı tanıklar ortak tanığı garanti etmez", "T iki yerli değildir", "x ve y addır", "İki formül sözdizimce hatalıdır"], "Ayrı tanıklar ortak tanığı garanti etmez", "Her x farklı bir y tanıyor olabilir.", "İleri"),
+                ("Çoklu niceleyicide ilk güvenli adım nedir?", ["Rol-değişken tablosu kurmak", "Bütün niceleyicileri ∀ yapmak", "Sözcükleri soldan sağa kopyalamak", "Parantezleri kaldırmak"], "Rol-değişken tablosu kurmak", "Bağıntı yerleri ve seçim sırası önce görünür kılınır.", "İleri"),
+                ("Herkesin danıştığı aynı kişi var hangisidir?", ["∃y∀xD(x,y)", "∀x∃yD(x,y)", "∃x∀yD(y,x)", "∀x∀yD(x,y)"], "∃y∀xD(x,y)", "Danışılan y dışta seçilip bütün x'ler için sabit kalır.", "İleri"),
+            ]
+        ),
+        {
+            "prompt": "Altı doğal dil cümlesini önce rol-değişken tablosuna, sonra FOL'e çevir; her ∀∃/∃∀ çiftini küçük bir senaryoyla geri oku ve bir niceleyici kaydırma hatasını onar.",
+            "starter": "Her cümlede bağıntı yerlerini yaz, ortak kalması gereken rolü işaretle ve niceleyicileri ancak bundan sonra dıştan içe sırala.",
+            "checks": [
+                "Her değişken ayrı bir bağıntı rolüne bağlandı",
+                "∀∃ ayrı tanık, ∃∀ ortak tanık olarak geri okundu",
+                "Bağıntı yönü niceleyici sırası değişirken korundu",
+                "Aynı tür ve karışık tür niceleyici değişimleri ayrıldı",
+                "Değişken gölgelemesi üretilmedi",
+                "Üç niceleyicili örnek katman katman kuruldu",
+                "Niceleyici kaydırmasına karşı senaryo verildi",
+            ],
+            "solution": "Kontrol çifti: ∀x∃yT(x,y) herkes birini tanıyor; ∃y∀xT(x,y) herkesin tanıdığı ortak biri var. Ada Bora'yı, Bora Cem'i, Cem Ada'yı tanıyorsa ilk cümle sağlanabilirken ikinci sağlanmayabilir.",
+        },
+        [
+            _production_task(
+                "Kendi bağlamında iki ayrı-tanık, iki ortak-tanık ve bir üç-niceleyicili cümle kur; her formülü rol tablosu, bağımlılık notu, geri okuma ve karşı senaryoyla gerekçelendir.",
+                [
+                    "Alan ile aritesi ve rolleri açık bağıntı anahtarı yazıldı.",
+                    "Her rol için ayrı değişken kullanıldı.",
+                    "İki ∀∃ formunda iç tanığın neye bağlı olduğu açıklandı.",
+                    "İki ∃∀ formunda ortak tanığın neden sabit kaldığı açıklandı.",
+                    "En az bir bağıntı ters yönü ayrıca geri okundu.",
+                    "Üç niceleyicili form katmanlara ayrıldı.",
+                    "Bir geçersiz niceleyici kaydırmasına karşı senaryo kuruldu.",
+                    "Formüllerde kimlik, model doğruluğu veya kanıt kuralı kullanılmadı.",
+                ],
+                "Değerlendirme yalnız sembol dizisine değil, seçim sırasının ve bağıntı rollerinin doğal dilde doğru gerekçelendirilmesine bakar.",
+                "Bağlam",
+                ["Mentorluk ağı", "Sağlık ekibi", "Kütüphane danışmanlığı", "Araştırma ortaklığı", "Rolleri açık başka bir ağ"],
+                "En az bir örnekte herkesin farklı bir tanığı olabildiği, bir örnekte ise tek ortak tanığın gerektiği açık olsun.",
+            ),
+        ],
+        [
+            "∀∃ ile ∃∀ yapılarını ayrı ve ortak tanık okumalarıyla ayırma.",
+            "Her değişkeni doğru bağıntı yerine ve bağlayıcıya eşleme.",
+            "Bağıntı yönünü niceleyici sırasından bağımsız olarak koruma.",
+            "Üç niceleyicili cümleyi ara basamaklarla sembolleştirme.",
+            "Değişken gölgelemesini teşhis edip ayrı harflerle onarma.",
+            "Niceleyici kaydırmasına somut karşı senaryo üretme.",
+        ],
+        [
+            "∀x∃y içinde y neden bütün x'ler için aynı olmak zorunda değildir?",
+            "∃y∀x yapısında hangi seçim önce sabitlenir?",
+            "Aynı tür niceleyiciler ile karışık türlerin yer değiştirmesi neden ayrılmalıdır?",
+            "Bağıntı yönü doğru, niceleyici sırası yanlış bir örnek nasıl görünür?",
+            "Üç niceleyicili bir cümlede bağımlılık tablosu neyi görünür kılar?",
+        ],
+        "E31'de bu çoklu yapılara olumsuzlama ekleyecek; 'hepsi değil', 'hiçbiri' ve geniş/dar kapsam okumalarını niceleyici türünü doğru değiştirerek ayıracağız.",
+        ["forallx-multiple-generality", "forallx-fol-sentences", "mit-logic-sequence"],
+        "Ders çoklu niceleyicinin dilsel seçim sırasını öğretir. Küçük senaryolar anlam farkını görünür kılar; resmi yorum, atama ve model doğruluğu Faz F'ye, niceleyici olumsuzlamaları E31'e ertelenir.",
+        ["ders-28-coklu-niceleyici-ve-kapsam", "ders-31-dogal-dilden-yuklem-mantigina-ii"],
+    )
+    lesson["fol_signature"] = E30_SIGNATURE
+    lesson["syntax_scope"] = {
+        "introduced": [
+            "multiple_quantifier",
+            "quantifier_order",
+            "witness_dependency",
+            "variable_plan",
+            "quantifier_shadowing_warning",
+        ],
+        "review_only": [
+            "universal_quantifier",
+            "existential_quantifier",
+            "predicate_arity",
+            "argument_order",
+            "sentence",
+            "open_formula",
+        ],
+        "locked_until_later": [
+            "quantifier_negation",
+            "formal_model_truth",
+            "variable_assignment",
+            "=",
+            "distinctness",
+            "substitution",
+        ],
+    }
+    lesson["syntax_fixtures"] = [
+        _syntax_fixture("e30-forall-exists", "∀x∃yT(x,y)", accepted=True, category="sentence", explanation="Her iki değişken de ayrı niceleyicilerce bağlanır."),
+        _syntax_fixture("e30-exists-forall", "∃y∀xT(x,y)", accepted=True, category="sentence", explanation="Ortak y dışta, bütün x'ler içte bağlanır."),
+        _syntax_fixture("e30-all-pairs", "∀x∀yT(x,y)", accepted=True, category="sentence", explanation="İki tümel niceleyici bütün sıralı çiftleri kapsar."),
+        _syntax_fixture("e30-some-pair", "∃x∃yT(x,y)", accepted=True, category="sentence", explanation="Bir tanıyan-tanınan çifti ileri sürülür."),
+        _syntax_fixture("e30-reverse-role", "∀x∃yT(y,x)", accepted=True, category="sentence", explanation="Bağıntı yönü ters olsa da düzenli bir FOL cümlesidir."),
+        _syntax_fixture("e30-three-quantifiers", "∀x∃y∃zI(x,y,z)", accepted=True, category="sentence", explanation="Üç rol üç niceleyiciyle bağlanmıştır."),
+        _syntax_fixture("e30-shared-third", "∃z∀x∃yI(x,y,z)", accepted=True, category="sentence", explanation="z ortak, y ise x'e göre seçilebilir."),
+        _syntax_fixture("e30-shadowing", "∀x∃xT(x,x)", accepted=True, category="sentence", explanation="Sözdizimce cümledir; gölgeleme ayrıca öğretimsel uyarıdır."),
+        _syntax_fixture("e30-free-third", "∀x∃yT(y,z)", accepted=True, category="open_formula", explanation="z hiçbir niceleyici tarafından bağlanmamıştır."),
+        _syntax_fixture("e30-too-few", "∀x∃yT(x)", accepted=False, issue_code="predicate.arity_mismatch", explanation="T iki terim ister."),
+        _syntax_fixture("e30-unknown-predicate", "∀x∃yR(x,y)", accepted=False, issue_code="predicate.unknown", explanation="R sembol anahtarında yoktur."),
+        _syntax_fixture("e30-unknown-variable", "∀q∃yT(q,y)", accepted=False, issue_code="quantifier.variable_expected", explanation="q aday değişken kümesinde değildir."),
+    ]
+    lesson["symbolization_fixtures"] = [
+        _symbolization_fixture(
+            "e30-everyone-knows-someone",
+            "Herkes birini tanıyor.",
+            [("∀x∃yT(x,y)", "Tanınılan kişi, tanıyan kişiye göre değişebilir.", "Herkes en az bir kişiyi tanıyor.")],
+            [
+                ("∀x∃yT(x,y)", True, None, "Ayrı tanıklara izin veren sıra doğrudur."),
+                ("∃y∀xT(x,y)", False, "translation.quantifier_order", "Tek ortak tanınan kişi gereksizce ileri sürülmüştür."),
+                ("∀x∃yT(y,x)", False, "translation.argument_order", "Tanıyan ve tanınan rolleri ters yazılmıştır."),
+            ],
+            teaching_point="Önce her kişi, sonra ona göre seçilebilen bir tanınan kişi gelir.",
+        ),
+        _symbolization_fixture(
+            "e30-someone-everyone-knows",
+            "Herkesin tanıdığı biri var.",
+            [("∃y∀xT(x,y)", "Aynı y bütün x'ler için tanınandır.", "Bir kişi vardır ve herkes onu tanır.")],
+            [
+                ("∃y∀xT(x,y)", True, None, "Ortak tanık dışta seçilmiştir."),
+                ("∀x∃yT(x,y)", False, "translation.quantifier_order", "Her kişi için ayrı tanık ortak kişiyi garanti etmez."),
+                ("∃y∀xT(y,x)", False, "translation.argument_order", "Ortak kişinin rolü tanıyana çevrilmiştir."),
+            ],
+            teaching_point="Ortak kişi bütün tümel örneklerden önce sabitlenir.",
+        ),
+        _symbolization_fixture(
+            "e30-everyone-known",
+            "Herkes birisi tarafından tanınıyor.",
+            [("∀x∃yT(y,x)", "Tanıyan y, tanınan x'e göre değişebilir.", "Her kişi için onu tanıyan en az bir kişi vardır.")],
+            [
+                ("∀x∃yT(y,x)", True, None, "Roller ve ayrı tanık sırası korunmuştur."),
+                ("∀x∃yT(x,y)", False, "translation.argument_order", "Tanıyan ve tanınan yerleri ters çevrilmiştir."),
+                ("∃y∀xT(y,x)", False, "translation.quantifier_order", "Herkesi tanıyan tek kişi gereksizce eklenmiştir."),
+            ],
+            teaching_point="Niceleyici sırası kadar bağıntı yönü de denetlenir.",
+        ),
+        _symbolization_fixture(
+            "e30-someone-knows-everyone",
+            "Herkesi tanıyan biri var.",
+            [("∃x∀yT(x,y)", "Aynı x bütün y'leri tanır.", "Bir kişi vardır ve o kişi herkesi tanır.")],
+            [
+                ("∃x∀yT(x,y)", True, None, "Tanıyan ortak kişi dışta seçilmiştir."),
+                ("∀y∃xT(x,y)", False, "translation.quantifier_order", "Her tanınan için farklı tanıyan yeterli sayılmıştır."),
+                ("∃x∀yT(y,x)", False, "translation.argument_order", "Ortak kişi tanınan rolüne konmuştur."),
+            ],
+            teaching_point="Ortak tanığın hangi bağıntı yerinde olduğu ayrıca korunur.",
+        ),
+        _symbolization_fixture(
+            "e30-every-mentor-knows-participant",
+            "Her mentor bir katılımcıyı tanıyor.",
+            [("∀x(F(x) → ∃y(G(y) ∧ T(x,y)))", "Katılımcı her mentora göre ayrı seçilebilir.", "Her mentorun tanıdığı en az bir katılımcı vardır.")],
+            [
+                ("∀x(F(x) → ∃y(G(y) ∧ T(x,y)))", True, None, "Tümel kısıtlama ve içteki varoluşsal tanık doğrudur."),
+                ("∀x(F(x) ∧ ∃y(G(y) ∧ T(x,y)))", False, "translation.connective", "Alan içindeki herkesi mentor yapan birleşim kullanılmıştır."),
+                ("∀x(F(x) → ∃y(G(y) ∧ T(y,x)))", False, "translation.argument_order", "Mentor tanınan role geçirilmiştir."),
+            ],
+            teaching_point="Kısıtlı tümel dışta koşul, ona bağlı tanık sonuç tarafında kurulur.",
+        ),
+        _symbolization_fixture(
+            "e30-shared-participant",
+            "Bütün mentorların tanıdığı bir katılımcı var.",
+            [("∃y(G(y) ∧ ∀x(F(x) → T(x,y)))", "Aynı katılımcı bütün mentorlar için sabittir.", "Bir katılımcı vardır ve bütün mentorlar onu tanır.")],
+            [
+                ("∃y(G(y) ∧ ∀x(F(x) → T(x,y)))", True, None, "Katılımcı dışta ortak tanık olarak seçilmiştir."),
+                ("∃y(G(y) ∧ ∀x(F(x) ∧ T(x,y)))", False, "translation.connective", "Tümel mentor kısıtlaması birleşime çevrilmiştir."),
+                ("∃y(G(y) ∧ ∀x(F(x) → T(y,x)))", False, "translation.argument_order", "Ortak katılımcı tanıyan role geçirilmiştir."),
+            ],
+            teaching_point="Ortak tanık varoluşsal koşulla birlikte dışta tutulur.",
+        ),
+        _symbolization_fixture(
+            "e30-everyone-introduces-pair",
+            "Herkes birini başka biriyle tanıştırıyor.",
+            [("∀x∃y∃zI(x,y,z)", "y ve z, tanıştıran x'e göre değişebilir.", "Her kişi için tanıştırdığı bir kişi ve onunla tanıştırdığı başka bir rol vardır.")],
+            [
+                ("∀x∃y∃zI(x,y,z)", True, None, "Üç rolün seçim sırası korunmuştur."),
+                ("∃y∃z∀xI(x,y,z)", False, "translation.quantifier_order", "Aynı y-z çifti herkes için ortaklaştırılmıştır."),
+                ("∀x∃y∃zI(y,x,z)", False, "translation.argument_order", "Tanıştıran ve tanıştırılan rolleri ters yazılmıştır."),
+            ],
+            teaching_point="Üç rol önce değişken tablosunda, sonra dıştan içe niceleyicilerde izlenir.",
+        ),
+        _symbolization_fixture(
+            "e30-everyone-knows-everyone",
+            "Herkes herkesi tanıyor.",
+            [
+                ("∀x∀yT(x,y)", "İki tümel niceleyici aynı alanın bütün sıralı çiftlerini tarar.", "Her kişi her kişiyi tanır."),
+                ("∀y∀xT(x,y)", "Aynı tür niceleyiciler yer değiştirmiştir; bağıntı rolleri korunur.", "Her kişi her kişiyi tanır."),
+            ],
+            [
+                ("∀x∀yT(x,y)", True, None, "Bütün sıralı çiftler kapsanır."),
+                ("∀y∀xT(x,y)", True, None, "Aynı tür niceleyicilerin sırası bu okumayı değiştirmez."),
+                ("∀x∃yT(x,y)", False, "translation.quantifier_kind", "İkinci tümel niceleyici varoluşsala çevrilmiştir."),
+            ],
+            teaching_point="Aynı tür niceleyicilerin değişimi ile karışık türlerin değişimini ayır.",
+        ),
+    ]
+    return lesson
+
+
 STAGE_E_CANDIDATE_LESSONS = [
     _candidate_e27(),
     _candidate_e28(),
     _candidate_e29(),
+    _candidate_e30(),
 ]
 
 STAGE_E_CANDIDATE_MAP = {
