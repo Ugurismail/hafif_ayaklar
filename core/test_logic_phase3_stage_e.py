@@ -25,6 +25,7 @@ from .logic_phase3_stage_e import (
     E31_SIGNATURE,
     E32_SIGNATURE,
     E33_SIGNATURE,
+    E34_SIGNATURE,
     STAGE_E_CANDIDATE_LESSONS,
     STAGE_E_CANDIDATE_MAP,
     STAGE_E_SOURCE_REFERENCES,
@@ -258,15 +259,15 @@ class LogicPhase3StageECandidateTests(SimpleTestCase):
         "symbolization_fixtures",
     }
 
-    def test_stage_e_contains_contiguous_e27_through_e33_candidates(self):
+    def test_stage_e_contains_contiguous_e27_through_e34_candidates(self):
         self.assertEqual(
             [lesson["curriculum_id"] for lesson in STAGE_E_CANDIDATE_LESSONS],
-            ["E27", "E28", "E29", "E30", "E31", "E32", "E33"],
+            ["E27", "E28", "E29", "E30", "E31", "E32", "E33", "E34"],
         )
-        self.assertEqual(len(STAGE_E_CANDIDATE_MAP), 7)
+        self.assertEqual(len(STAGE_E_CANDIDATE_MAP), 8)
         self.assertEqual(
             [lesson["order"] for lesson in STAGE_E_CANDIDATE_LESSONS],
-            [27, 28, 29, 30, 31, 32, 33],
+            [27, 28, 29, 30, 31, 32, 33, 34],
         )
         for lesson in STAGE_E_CANDIDATE_LESSONS:
             with self.subTest(lesson=lesson["curriculum_id"]):
@@ -283,6 +284,7 @@ class LogicPhase3StageECandidateTests(SimpleTestCase):
         self.assertEqual(STAGE_E_CANDIDATE_LESSONS[4]["estimated_minutes"], 40)
         self.assertEqual(STAGE_E_CANDIDATE_LESSONS[5]["estimated_minutes"], 45)
         self.assertEqual(STAGE_E_CANDIDATE_LESSONS[6]["estimated_minutes"], 50)
+        self.assertEqual(STAGE_E_CANDIDATE_LESSONS[7]["estimated_minutes"], 55)
 
     def test_e27_prerequisites_bridge_completed_b_and_d_candidates(self):
         lesson = STAGE_E_CANDIDATE_LESSONS[0]
@@ -1138,6 +1140,161 @@ class LogicPhase3StageECandidateTests(SimpleTestCase):
 
     def test_e33_competencies_are_stable_and_unique(self):
         competencies = STAGE_E_CANDIDATE_LESSONS[6]["competencies"]
+
+        self.assertEqual(len(competencies), len(set(competencies)))
+        self.assertTrue(
+            all(
+                competency.startswith("fol.")
+                and competency.count(".") == 1
+                and competency.replace(".", "").replace("_", "").isalnum()
+                for competency in competencies
+            )
+        )
+
+    def test_e34_prerequisites_bridge_formal_syntax_and_tfl_workshop(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[7]
+        all_candidates = {
+            **STAGE_B_CANDIDATE_MAP,
+            **STAGE_E_CANDIDATE_MAP,
+        }
+
+        self.assertEqual(
+            lesson["prerequisites"],
+            [
+                "ders-fol-resmi-sozdizim-baglanma-yerine-koyma",
+                "ders-belirsizlik-bulaniklik-savunulabilir-okumalar",
+                "ders-kademeli-sembollestirme-atolyesi",
+            ],
+        )
+        for prerequisite in lesson["prerequisites"]:
+            self.assertIn(prerequisite, all_candidates)
+            self.assertLess(all_candidates[prerequisite]["order"], 34)
+
+    def test_e34_has_sufficient_stage_project_depth(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[7]
+
+        self.assertGreaterEqual(len(lesson["sections"]), 8)
+        self.assertGreaterEqual(len(lesson["worked_examples"]), 12)
+        self.assertGreaterEqual(len(lesson["practice"]), 12)
+        self.assertGreaterEqual(len(lesson["production_tasks"]), 1)
+        self.assertGreaterEqual(len(lesson["mastery_evidence"]), 7)
+        self.assertGreaterEqual(len(lesson["syntax_fixtures"]), 14)
+        self.assertGreaterEqual(len(lesson["workshop_cases"]), 3)
+        self.assertGreaterEqual(len(lesson["symbolization_fixtures"]), 8)
+        self.assertIn(
+            "ambiguity_branching",
+            lesson["syntax_scope"]["introduced"],
+        )
+        self.assertIn(
+            "formal_model_truth",
+            lesson["syntax_scope"]["locked_until_later"],
+        )
+
+    def test_e34_signature_supports_workshop_roles(self):
+        signature = signature_from_data(E34_SIGNATURE)
+
+        self.assertEqual(signature.predicates["K"], 1)
+        self.assertEqual(signature.predicates["T"], 2)
+        self.assertEqual(signature.predicates["D"], 2)
+        self.assertEqual(signature.names, frozenset({"a", "b", "c"}))
+
+    def test_e34_sources_are_known_and_relevant(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[7]
+
+        self.assertEqual(
+            lesson["source_ids"],
+            [
+                "forallx-fol-ambiguity",
+                "forallx-multiple-generality",
+                "forallx-fol-sentences",
+                "mit-logic-sequence",
+            ],
+        )
+        self.assertTrue(
+            set(lesson["source_ids"]).issubset(STAGE_E_SOURCE_REFERENCES)
+        )
+
+    def test_every_e34_syntax_fixture_matches_the_independent_parser(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[7]
+        signature = signature_from_data(lesson["fol_signature"])
+
+        for fixture in lesson["syntax_fixtures"]:
+            with self.subTest(fixture=fixture["id"]):
+                result = audit_fol_expression(fixture["source"], signature)
+                self.assertEqual(result["accepted"], fixture["accepted"])
+                if fixture["accepted"]:
+                    self.assertEqual(
+                        result["category"],
+                        fixture["expected_category"],
+                    )
+                else:
+                    self.assertEqual(
+                        result["issue_code"],
+                        fixture["expected_issue_code"],
+                    )
+
+    def test_e34_workshop_cases_have_nine_auditable_parts(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[7]
+        signature = signature_from_data(lesson["fol_signature"])
+        required = {
+            "id",
+            "source",
+            "domain",
+            "key",
+            "assumptions",
+            "controlled_paraphrase",
+            "readings",
+            "loss_report",
+            "peer_review_prompt",
+        }
+
+        self.assertEqual(
+            len({case["id"] for case in lesson["workshop_cases"]}),
+            len(lesson["workshop_cases"]),
+        )
+        for case in lesson["workshop_cases"]:
+            with self.subTest(case=case["id"]):
+                self.assertEqual(set(case), required)
+                self.assertTrue(case["key"])
+                self.assertTrue(case["assumptions"])
+                self.assertTrue(case["loss_report"])
+                for reading in case["readings"]:
+                    self.assertTrue(reading["context_condition"])
+                    self.assertTrue(reading["back_translation"])
+                    self.assertTrue(
+                        parse_fol(reading["formula"], signature).is_sentence
+                    )
+
+    def test_every_e34_translation_check_has_the_declared_result(self):
+        lesson = STAGE_E_CANDIDATE_LESSONS[7]
+        signature = signature_from_data(lesson["fol_signature"])
+
+        for fixture in lesson["symbolization_fixtures"]:
+            accepted_sources = [
+                reading["source"]
+                for reading in fixture["accepted_readings"]
+            ]
+            for reading in fixture["accepted_readings"]:
+                self.assertTrue(reading["context_condition"])
+                self.assertTrue(reading["back_translation"])
+            for check in fixture["checks"]:
+                with self.subTest(
+                    fixture=fixture["id"],
+                    source=check["source"],
+                ):
+                    result = assess_fol_symbolization(
+                        check["source"],
+                        accepted_sources,
+                        signature,
+                    )
+                    self.assertEqual(result["accepted"], check["accepted"])
+                    self.assertEqual(
+                        result["issue_code"],
+                        check["expected_issue_code"],
+                    )
+
+    def test_e34_competencies_are_stable_and_unique(self):
+        competencies = STAGE_E_CANDIDATE_LESSONS[7]["competencies"]
 
         self.assertEqual(len(competencies), len(set(competencies)))
         self.assertTrue(

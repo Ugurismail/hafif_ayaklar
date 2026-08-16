@@ -563,7 +563,7 @@ anlamına gelmez.
 | E31 Kapsam ve Niceleyici Olumsuzlaması | Hazır | Hazır | Hazır | Bekliyor |
 | E32 Kimlik ve Sayısal İfadeler | Hazır | Hazır | Hazır | Bekliyor |
 | E33 Serbest/Bağlı Değişken, Yerine Koyma ve WFF | Hazır | Hazır | Hazır | Bekliyor |
-| E34 Belirsizlik ve Sembolleştirme Atölyesi | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| E34 Belirsizlik ve Sembolleştirme Atölyesi | Hazır | Hazır | Hazır | Bekliyor |
 
 ## Aday geliştirme kapıları
 
@@ -573,11 +573,11 @@ anlamına gelmez.
 - [x] Alan, ad, değişken, yüklem aritesi, kimlik ve cümle gösterimi sabitlendi.
 - [x] Her dersin önkoşulu, ölçülebilir yetkinliği ve ustalık kanıtı tanımlandı.
 - [x] FOL ayrıştırıcı ve çeviri denetleyicisinin hata sözleşmesi yazıldı.
-- [ ] Aday ders verisi yazıldı.
-- [ ] Aday FOL denetleyicisi ve sınır testleri yazıldı.
-- [ ] Aday veri ve önkoşul grafiği otomatik test edildi.
+- [x] Aday ders verisi yazıldı.
+- [x] Aday FOL denetleyicisi ve sınır testleri yazıldı.
+- [x] Aday veri ve önkoşul grafiği otomatik test edildi.
 - [ ] Aday içerik yalıtılmış, salt okunur yetkili önizlemede doğrulandı.
-- [ ] Mevcut öğrenci rotasının ve ilerleme verisinin değişmediği regresyonla
+- [x] Mevcut öğrenci rotasının ve ilerleme verisinin değişmediği regresyonla
   kanıtlandı.
 
 ## Canlıya alma kapıları

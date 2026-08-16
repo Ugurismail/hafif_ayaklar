@@ -896,6 +896,23 @@ def _identity_usage(formula: FOLFormula) -> tuple[bool, bool]:
     return False, False
 
 
+def _quantifier_operator_counts(formula: FOLFormula) -> Counter:
+    counts = Counter()
+
+    def visit(node: FOLFormula) -> None:
+        if node.kind == "quantifier":
+            counts[node.operator] += 1
+            visit(node.body)
+        elif node.kind == "negation":
+            visit(node.body)
+        elif node.kind == "binary":
+            visit(node.left)
+            visit(node.right)
+
+    visit(formula)
+    return counts
+
+
 def _translation_mismatch_code(
     candidate: FOLFormula,
     expected: FOLFormula,
@@ -927,6 +944,10 @@ def _translation_mismatch_code(
 
     if candidate.kind == "quantifier":
         if candidate.operator != expected.operator:
+            if _quantifier_operator_counts(candidate) == _quantifier_operator_counts(
+                expected
+            ):
+                return "translation.quantifier_order"
             return "translation.quantifier_kind"
         marker = object()
         candidate_stack = candidate_binders.setdefault(candidate.variable, [])
@@ -1082,6 +1103,7 @@ def assess_fol_symbolization(
     ]
     priority = (
         "translation.condition_direction",
+        "translation.argument_order",
         "translation.identity_missing",
         "translation.distinctness_missing",
         "translation.distinctness_extra",
@@ -1092,7 +1114,6 @@ def assess_fol_symbolization(
         "translation.quantifier_scope",
         "translation.connective",
         "translation.free_variable",
-        "translation.argument_order",
         "translation.predicate",
         "translation.arity",
         "translation.term",
