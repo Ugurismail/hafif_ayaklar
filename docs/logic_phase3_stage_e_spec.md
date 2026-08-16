@@ -556,14 +556,14 @@ anlamına gelmez.
 
 | Ders | Sözleşme | Aday veri | Otomatik sözdizim/sınır testi | Yetkili aşama önizlemesi |
 | --- | --- | --- | --- | --- |
-| E27 Alan, Adlar, Yüklemler ve Açık Cümleler | Hazır | Hazır | Hazır | Bekliyor |
-| E28 Tek Niceleyicili Cümleler | Hazır | Hazır | Hazır | Bekliyor |
-| E29 Çok Yerli Yüklemler ve Bağıntı Yönü | Hazır | Hazır | Hazır | Bekliyor |
-| E30 Çoklu Genellik, Niceleyici Sırası ve Bağımlılık | Hazır | Hazır | Hazır | Bekliyor |
-| E31 Kapsam ve Niceleyici Olumsuzlaması | Hazır | Hazır | Hazır | Bekliyor |
-| E32 Kimlik ve Sayısal İfadeler | Hazır | Hazır | Hazır | Bekliyor |
-| E33 Serbest/Bağlı Değişken, Yerine Koyma ve WFF | Hazır | Hazır | Hazır | Bekliyor |
-| E34 Belirsizlik ve Sembolleştirme Atölyesi | Hazır | Hazır | Hazır | Bekliyor |
+| E27 Alan, Adlar, Yüklemler ve Açık Cümleler | Hazır | Hazır | Hazır | Hazır |
+| E28 Tek Niceleyicili Cümleler | Hazır | Hazır | Hazır | Hazır |
+| E29 Çok Yerli Yüklemler ve Bağıntı Yönü | Hazır | Hazır | Hazır | Hazır |
+| E30 Çoklu Genellik, Niceleyici Sırası ve Bağımlılık | Hazır | Hazır | Hazır | Hazır |
+| E31 Kapsam ve Niceleyici Olumsuzlaması | Hazır | Hazır | Hazır | Hazır |
+| E32 Kimlik ve Sayısal İfadeler | Hazır | Hazır | Hazır | Hazır |
+| E33 Serbest/Bağlı Değişken, Yerine Koyma ve WFF | Hazır | Hazır | Hazır | Hazır |
+| E34 Belirsizlik ve Sembolleştirme Atölyesi | Hazır | Hazır | Hazır | Hazır |
 
 ## Aday geliştirme kapıları
 
@@ -576,7 +576,7 @@ anlamına gelmez.
 - [x] Aday ders verisi yazıldı.
 - [x] Aday FOL denetleyicisi ve sınır testleri yazıldı.
 - [x] Aday veri ve önkoşul grafiği otomatik test edildi.
-- [ ] Aday içerik yalıtılmış, salt okunur yetkili önizlemede doğrulandı.
+- [x] Aday içerik yalıtılmış, salt okunur yetkili önizlemede doğrulandı.
 - [x] Mevcut öğrenci rotasının ve ilerleme verisinin değişmediği regresyonla
   kanıtlandı.
 

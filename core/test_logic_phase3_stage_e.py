@@ -1,4 +1,8 @@
-from django.test import SimpleTestCase
+from html import unescape
+
+from django.contrib.auth import get_user_model
+from django.test import SimpleTestCase, TestCase
+from django.urls import reverse
 
 from .logic_course_data import VISIBLE_LOGIC_LESSONS
 from .logic_fol import (
@@ -17,6 +21,7 @@ from .logic_phase3_stage_a import STAGE_A_CANDIDATE_MAP
 from .logic_phase3_stage_b import STAGE_B_CANDIDATE_MAP
 from .logic_phase3_stage_c import STAGE_C_CANDIDATE_MAP
 from .logic_phase3_stage_d import STAGE_D_CANDIDATE_MAP
+from .models import LogicLessonProgress
 from .logic_phase3_stage_e import (
     E27_SIGNATURE,
     E28_SIGNATURE,
@@ -1305,6 +1310,84 @@ class LogicPhase3StageECandidateTests(SimpleTestCase):
                 for competency in competencies
             )
         )
+
+
+class LogicPhase3StageEPreviewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        user_model = get_user_model()
+        cls.staff_user = user_model.objects.create_user(
+            username="logic-stage-e-reviewer",
+            password="review-pass",
+            is_staff=True,
+        )
+        cls.regular_user = user_model.objects.create_user(
+            username="logic-stage-e-student",
+            password="student-pass",
+        )
+
+    def test_preview_requires_staff_access(self):
+        url = reverse("logic_stage_e_preview")
+
+        anonymous_response = self.client.get(url)
+        self.assertEqual(anonymous_response.status_code, 302)
+        self.assertIn(reverse("admin:login"), anonymous_response.url)
+
+        self.client.force_login(self.regular_user)
+        regular_response = self.client.get(url)
+        self.assertEqual(regular_response.status_code, 302)
+        self.assertIn(reverse("admin:login"), regular_response.url)
+
+    def test_staff_preview_contains_every_candidate_and_fol_fixture(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_e_preview"))
+        rendered_text = unescape(response.content.decode())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "core/logic_stage_a_preview.html")
+        self.assertIn("Faz 3E: Birinci derece mantığın dili", rendered_text)
+        for lesson in STAGE_E_CANDIDATE_LESSONS:
+            with self.subTest(lesson=lesson["curriculum_id"]):
+                self.assertIn(lesson["curriculum_id"], rendered_text)
+                self.assertIn(lesson["title"], rendered_text)
+                self.assertIn(lesson["fol_signature"]["domain"], rendered_text)
+                for fixture in lesson["syntax_fixtures"]:
+                    self.assertIn(
+                        f'data-fol-syntax-fixture="{fixture["id"]}"',
+                        rendered_text,
+                    )
+                for fixture in lesson["symbolization_fixtures"]:
+                    self.assertIn(
+                        f'data-fol-symbolization-fixture="{fixture["id"]}"',
+                        rendered_text,
+                    )
+
+        for case in STAGE_E_CANDIDATE_LESSONS[-1]["workshop_cases"]:
+            self.assertIn(
+                f'data-fol-workshop-case="{case["id"]}"',
+                rendered_text,
+            )
+
+    def test_preview_is_read_only_and_candidates_stay_off_learner_routes(self):
+        self.client.force_login(self.staff_user)
+        response = self.client.get(reverse("logic_stage_e_preview"))
+
+        self.assertEqual(LogicLessonProgress.objects.count(), 0)
+        self.assertNotContains(response, "data-logic-lesson-page")
+        self.assertNotContains(response, "data-progress-url")
+        self.assertNotContains(response, reverse("logic_lesson_progress"))
+        self.assertNotContains(response, "logic_lesson.js")
+
+        self.client.force_login(self.regular_user)
+        for lesson in STAGE_E_CANDIDATE_LESSONS:
+            with self.subTest(lesson=lesson["curriculum_id"]):
+                lesson_response = self.client.get(
+                    reverse(
+                        "logic_lesson_detail",
+                        kwargs={"lesson_slug": lesson["slug"]},
+                    )
+                )
+                self.assertEqual(lesson_response.status_code, 404)
 
 
 class FOLSymbolizationAssessmentTests(SimpleTestCase):

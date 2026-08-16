@@ -286,6 +286,98 @@
               </details>
             {% endif %}
 
+            {% if lesson.fol_signature %}
+              <details class="logic-review-disclosure logic-review-fol-disclosure">
+                <summary><span>FOL denetim sözleşmesi</span><small>Sembol anahtarı ve hata örnekleri</small><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+                <div class="logic-review-disclosure-body">
+                  <section class="logic-review-terms" aria-label="FOL sembol anahtarı">
+                    <span class="logic-review-section-label">Söylem alanı</span>
+                    <h3>{{ lesson.fol_signature.domain }}</h3>
+                    <dl>
+                      {% for symbol, reading in lesson.fol_signature.names.items %}
+                        <div><dt><code>{{ symbol }}</code></dt><dd>{{ reading }}</dd></div>
+                      {% endfor %}
+                      {% for symbol, predicate in lesson.fol_signature.predicates.items %}
+                        <div><dt><code>{{ symbol }}/{{ predicate.arity }}</code></dt><dd>{{ predicate.reading }}</dd></div>
+                      {% endfor %}
+                    </dl>
+                    <p><strong>Değişkenler:</strong> {{ lesson.fol_signature.variables|join:', ' }}</p>
+                  </section>
+
+                  {% if lesson.syntax_fixtures %}
+                    <section class="logic-review-semantic-checks" aria-label="Sözdizim denetim örnekleri">
+                      <header>
+                        <span class="logic-review-section-label">Ayrıştırıcı sınırları</span>
+                        <h3>Sözdizim kabul ve ret örnekleri</h3>
+                      </header>
+                      <div class="logic-review-semantic-table" role="table" aria-label="Sözdizim denetim sonuçları">
+                        <div class="is-heading" role="row">
+                          <span role="columnheader">Kimlik</span>
+                          <span role="columnheader">İfade</span>
+                          <span role="columnheader">Sonuç</span>
+                          <span role="columnheader">Kategori / hata</span>
+                        </div>
+                        {% for fixture in lesson.syntax_fixtures %}
+                          <div role="row" data-fol-syntax-fixture="{{ fixture.id }}">
+                            <code role="cell">{{ fixture.id }}</code>
+                            <code role="cell">{{ fixture.source }}</code>
+                            <span role="cell">{% if fixture.accepted %}kabul{% else %}ret{% endif %}</span>
+                            <code role="cell">{% if fixture.accepted %}{{ fixture.expected_category }}{% else %}{{ fixture.expected_issue_code }}{% endif %}</code>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </section>
+                  {% endif %}
+
+                  {% if lesson.symbolization_fixtures %}
+                    <section class="logic-review-question-list" aria-label="Sembolleştirme denetim örnekleri">
+                      <span class="logic-review-section-label">Doğal dilden FOL'e</span>
+                      <h3>Kabul edilen okumalar ve hata kodları</h3>
+                      {% for fixture in lesson.symbolization_fixtures %}
+                        <details data-fol-symbolization-fixture="{{ fixture.id }}">
+                          <summary>
+                            <span>{{ forloop.counter|stringformat:'02d' }}</span>
+                            <strong>{{ fixture.prompt }}</strong>
+                            <small>{{ fixture.id }}</small>
+                          </summary>
+                          <div>
+                            {% for reading in fixture.accepted_readings %}
+                              <p><code>{{ reading.source }}</code><br>{{ reading.context_condition }}<br><strong>Geri okuma:</strong> {{ reading.back_translation }}</p>
+                            {% endfor %}
+                            <ul>
+                              {% for check in fixture.checks %}
+                                <li><code>{{ check.source }}</code> · {% if check.accepted %}kabul{% else %}<code>{{ check.expected_issue_code }}</code>{% endif %} · {{ check.explanation }}</li>
+                              {% endfor %}
+                            </ul>
+                          </div>
+                        </details>
+                      {% endfor %}
+                    </section>
+                  {% endif %}
+
+                  {% if lesson.workshop_cases %}
+                    <section class="logic-review-worked-list" aria-label="Sembolleştirme atölyesi vakaları">
+                      <span class="logic-review-section-label">Bütünleştirici atölye</span>
+                      <h3>Bağlam ve kayıp raporu</h3>
+                      {% for case in lesson.workshop_cases %}
+                        <article data-fol-workshop-case="{{ case.id }}">
+                          <span class="logic-review-badge">{{ case.id }}</span>
+                          <div>
+                            <strong>{{ case.source }}</strong>
+                            <p>{{ case.controlled_paraphrase }}</p>
+                            {% for reading in case.readings %}
+                              <p><code>{{ reading.formula }}</code> · {{ reading.context_condition }} · {{ reading.back_translation }}</p>
+                            {% endfor %}
+                            <p><strong>Kayıp:</strong> {{ case.loss_report|join:' ' }}</p>
+                          </div>
+                        </article>
+                      {% endfor %}
+                    </section>
+                  {% endif %}
+                </div>
+              </details>
+            {% endif %}
+
             <details class="logic-review-disclosure">
               <summary><span>Bağımsız üretim ve geri çağırma</span><small>{{ lesson.production_tasks|length }} görev</small><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
               <div class="logic-review-disclosure-body">
