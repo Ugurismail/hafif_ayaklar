@@ -562,7 +562,7 @@ anlamına gelmez.
 | E30 Çoklu Genellik, Niceleyici Sırası ve Bağımlılık | Hazır | Hazır | Hazır | Bekliyor |
 | E31 Kapsam ve Niceleyici Olumsuzlaması | Hazır | Hazır | Hazır | Bekliyor |
 | E32 Kimlik ve Sayısal İfadeler | Hazır | Hazır | Hazır | Bekliyor |
-| E33 Serbest/Bağlı Değişken, Yerine Koyma ve WFF | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| E33 Serbest/Bağlı Değişken, Yerine Koyma ve WFF | Hazır | Hazır | Hazır | Bekliyor |
 | E34 Belirsizlik ve Sembolleştirme Atölyesi | Hazır | Bekliyor | Bekliyor | Bekliyor |
 
 ## Aday geliştirme kapıları

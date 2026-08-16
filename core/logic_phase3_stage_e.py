@@ -224,6 +224,33 @@ E32_SIGNATURE = {
 }
 
 
+E33_SIGNATURE = {
+    "domain": "seminer katılımcıları",
+    "names": {
+        "a": "Ada",
+        "b": "Bora",
+    },
+    "variables": ["w", "x", "y", "z"],
+    "predicates": {
+        "F": {
+            "arity": 1,
+            "reading": "x araştırmacı",
+            "roles": ["araştırmacı olan"],
+        },
+        "G": {
+            "arity": 1,
+            "reading": "x meraklı",
+            "roles": ["meraklı olan"],
+        },
+        "R": {
+            "arity": 2,
+            "reading": "x, y'ye danışıyor",
+            "roles": ["danışan", "danışılan"],
+        },
+    },
+}
+
+
 def _syntax_fixture(
     fixture_id,
     source,
@@ -2985,6 +3012,284 @@ def _candidate_e32():
     return lesson
 
 
+def _candidate_e33():
+    lesson = _lesson(
+        "E33",
+        "ders-fol-resmi-sozdizim-baglanma-yerine-koyma",
+        "Resmi Sözdizim, Bağlanma ve Yerine Koyma",
+        "FOL ifadelerini kurucu kurallarla sınıflandırır; her değişken oluşumunu en yakın bağlayıcısına izler ve serbest değişken yakalanmadan yerine koyma yapar.",
+        "İfade kategorileri, serbest/bağlı oluşum ve yakalamasız yerine koyma",
+        50,
+        ["ders-fol-kimlik-sayisal-ifadeler", "ders-tfl-cumlesi-ana-baglac-ve-kapsam"],
+        [
+            "fol.term_classify",
+            "fol.formula_parse",
+            "fol.occurrence_bind",
+            "fol.sentence_classify",
+            "fol.substitute_safe",
+            "fol.alpha_rename",
+        ],
+        [
+            "Sembol, terim, yüklem, atomik formül, formül ve cümle kategorilerini ayırmak.",
+            "FOL formüllerini tümevarımsal kurucu kurallarla ayrıştırmak.",
+            "Her değişken oluşumunun serbest mi bağlı mı olduğunu oluşum düzeyinde belirlemek.",
+            "En yakın niceleyicinin bağlayıcı olduğunu gölgeleme örneklerinde göstermek.",
+            "Boş niceleme ve gölgelemeyi sözdizim hatasından ayrı öğretim uyarısı olarak okumak.",
+            "Serbest oluşumlara güvenli terim yerleştirmek ve değişken yakalamasını önlemek.",
+            "Bağlı değişkenleri alfa-yeniden-adlandırma ile anlam yapısını koruyarak değiştirmek.",
+        ],
+        [
+            ("Terim", "Bir alan nesnesini gösterebilen ad veya değişken; tek başına formül değildir."),
+            ("Atomik formül", "Bir yüklemin doğru sayıda terime uygulanması veya iki terim arasındaki kimlik."),
+            ("İyi kurulmuş formül", "Atomik formüllerden kurucu bağlaç, olumsuzluk ve niceleyici kurallarıyla üretilen ifade."),
+            ("Cümle", "Hiç serbest değişken oluşumu içermeyen formül."),
+            ("Değişken oluşumu", "Bir değişken harfinin formüldeki belirli konumu; aynı harfin farklı oluşumları farklı bağlanabilir."),
+            ("Bağlayıcı", "Bir oluşumu kapsamı içinde bağlayan en yakın uygun niceleyici."),
+            ("Gölgeleme", "Aynı değişkenin iç kapsamda yeniden niceleyicilenmesi; iç oluşumların yeni bağlayıcıya geçmesi."),
+            ("Boş niceleme", "Niceleyicinin kapsamında kendisinin bağladığı hiçbir değişken oluşumu bulunmaması."),
+            ("Yakalamasız yerine koyma", "Serbest oluşumları, yeni bir niceleyicinin kapsamına istemeden sokmadan bir terimle değiştirme."),
+            ("Alfa-yeniden-adlandırma", "Bir bağlayıcı ile yalnız onun bağladığı oluşumların taze bir değişkenle birlikte yeniden adlandırılması."),
+        ],
+        [
+            _section(
+                "İfade kategorilerini katman katman ayır",
+                "a bir ad, x bir değişken, F bir yüklem sembolüdür. F(a) atomik bir formül ve cümle; F(x) atomik ama açık bir formüldür. Kategori, sembolün görünüşünden değil anahtar ve kurucu rolünden gelir.",
+                "Bir dizinin formül olup olmadığını veya doğru/yanlış değerine aday olup olmadığını sormadan önce.",
+                "sözcük dağarcığı → terim/yüklem → atomik formül → formül → cümle",
+                "İfadeyi en küçük kurucu parçalarına ayır; her parçanın anahtardaki kategorisini ve bütün içindeki görevini yaz.",
+                "Adı tek başına cümle veya yüklem sembolünü tek başına atomik formül saymak.",
+                [("a", "Ad ve terimdir; formül değildir."), ("F", "Bir yerli yüklem sembolüdür."), ("F(a)", "Atomik formül ve kapalı cümledir."), ("F(x)", "Atomik açık formüldür.")],
+                ("Önce kategori, sonra doğruluk sorusu sormak.", "Her anlamlı sembol dizisini cümle saymak.", "Yalnız kapalı formüller yorum altında doğrudan doğru/yanlış olur."),
+            ),
+            _section(
+                "Formülleri tümevarımsal kurucu kurallarla üret",
+                "Yüklem uygulaması ve kimlik atomiktir. Bir formülün olumsuzluğu; iki formülün parantezli bağlanması ve bir formülün değişkenle niceleyicilenmesi yine formüldür. Başka hiçbir dizi bu yolla formül olmaz.",
+                "Uzun bir dizinin iyi kurulmuşluğunu kesin olarak denetlerken.",
+                "atom → ¬𝒜 · (𝒜 ◦ ℬ) · ∀x𝒜 · ∃x𝒜",
+                "En dış kurucuyu bul; ifadeyi onun doğrudan alt formüllerine ayır; atomlara ulaşana kadar aynı işlemi yinele.",
+                "Semboller tanıdık olduğu için parantezsiz veya eksik argümanlı diziyi kabul etmek.",
+                [("(F(a) → G(b))", "En dış kurucu →; iki atomik alt formül vardır."), ("∀x(F(x) → G(x))", "En dış kurucu ∀x; gövde koşuldur."), ("F(a) ∧ G(a) ∨ F(b)", "Bir kapsamda iki ikili bağlaç parantezsizdir.")],
+                ("Kurucu ağacı dıştan içe çizmek.", "Doğal dilde anlaşılır olmayı sözdizim kanıtı saymak.", "WFF olma, sonlu bir kurucu geçmişe sahip olmaktır."),
+            ),
+            _section(
+                "Serbest ve bağlı olmayı harfe değil oluşuma yükle",
+                "(F(x)→∃xG(x)) formülünde soldaki x serbest, sağdaki x ise ∃x tarafından bağlıdır. Aynı değişken harfi formülün farklı yerlerinde farklı statü taşıyabilir.",
+                "Bir formülün cümle olup olmadığı veya yerine koymanın nereyi etkileyeceği belirlenirken.",
+                "oluşum konumu + en yakın kapsayan niceleyici",
+                "Her değişken oluşumundan dışarı doğru ilerle; aynı harfli ilk niceleyiciyi bulursan bağlı, bulamazsan serbest diye işaretle.",
+                "x harfini bütün formülde tek seferde serbest veya bağlı ilan etmek.",
+                [("F(x)", "x serbesttir."), ("∀xF(x)", "F içindeki x, ∀x'e bağlıdır."), ("(F(x) → ∃xG(x))", "İlk x serbest, ikinci x bağlıdır.")],
+                ("Her oluşuma ayrı bağ çizgisi çekmek.", "Bir niceleyicinin formüldeki aynı harflerin hepsini bağladığını sanmak.", "Bağlanma kapsam ve konuma duyarlıdır."),
+            ),
+            _section(
+                "En yakın bağlayıcı, gölgeleme ve boş niceleme",
+                "∀x∃xR(x,x) iyi kurulmuş bir cümledir; içteki iki x oluşumunu ∃x bağlar, dış ∀x boş kalır. Bu sözdizimsel olarak kabul edilir ama okunabilirlik için uyarılır.",
+                "Aynı değişken yeniden kullanıldığında veya niceleyici gövdesinde ilgili oluşum görünmediğinde.",
+                "en yakın aynı-harfli niceleyici kazanır",
+                "Bağlayıcı çizgilerini içten dışa kur; kullanılmayan niceleyici ve yeniden kullanılan değişken için ayrı uyarı yaz.",
+                "Gölgelemeyi doğrudan sözdizim hatası saymak ya da bütün oluşumları dış niceleyiciye bağlamak.",
+                [("∀x∃xR(x,x)", "İç x'leri ∃x bağlar; ∀x boştur."), ("∃xF(a)", "∃x hiçbir oluşumu bağlamaz."), ("∀x∃yR(x,y)", "Her niceleyici kendi değişkenini bağlar.")],
+                ("Kabul/ret ile öğretim uyarısını ayrı sütunda tutmak.", "Uyarı bulunan her formülü geçersiz saymak.", "İyi kurulmuşluk ile iyi yazım aynı ölçüt değildir."),
+            ),
+            _section(
+                "Açık formül ile cümleyi ayır",
+                "F(x) bir nesne ataması verilmeden doğrudan doğru veya yanlış değildir. ∀xF(x) ise x'i bağladığı için yorum altında doğruluk değeri alabilen bir cümledir.",
+                "Semantik aşamaya geçmeden önce formülün kapalı olup olmadığı denetlenirken.",
+                "cümle ⇔ serbest değişken kümesi boş",
+                "Bütün değişken oluşumlarını denetle; en az bir serbest oluşum varsa açık formül, hiç yoksa cümle diye sınıflandır.",
+                "İyi kurulmuş her formülü otomatik olarak cümle saymak.",
+                [("R(x,a)", "x serbest; açık formül."), ("∃xR(x,a)", "x bağlı; cümle."), ("∀xR(x,y)", "y serbest; açık formül.")],
+                ("Serbest değişken kümesini açıkça listelemek.", "Niceleyici bulunduğu için bütün değişkenlerin bağlandığını varsaymak.", "Cümlelik, formülün tamamındaki serbest oluşumlara bağlıdır."),
+            ),
+            _section(
+                "Yerine koyma yalnız serbest oluşumları değiştirir",
+                "[a/x]R(x,y), R(a,y) verir. Fakat [a/x]∀xR(x,y) hiçbir şeyi değiştirmez; gövdedeki x oluşumu zaten ∀x tarafından bağlıdır.",
+                "Açık formülü bir ad veya başka değişken için örneklerken.",
+                "𝒜[t/x]: 𝒜'daki serbest x oluşumlarına t koy",
+                "Hedef değişkenin her oluşumunu bağlayıcısına göre denetle; yalnız serbest olanları aynı terimle değiştir.",
+                "Bağlı x oluşumlarını da metinsel bul-değiştir ile değiştirmek.",
+                [("R(x,y)[a/x]", "R(a,y)"), ("∀xR(x,y)[a/x]", "∀xR(x,y); x bağlıdır."), ("∀xR(x,y)[a/y]", "∀xR(x,a); y serbesttir.")],
+                ("Önce değişecek oluşumları işaretlemek.", "Karakter dizisi düzeyinde toplu değiştirme yapmak.", "Mantıksal yerine koyma bağlanma yapısına duyarlıdır."),
+            ),
+            _section(
+                "Değişken yakalamasını alfa-yeniden-adlandırmayla önle",
+                "∀yR(x,y) formülünde serbest x yerine y koymak, yeni y'yi ∀y kapsamına sokarak anlamı değiştirir. Önce bağlı y, taze z ile alfa-yeniden-adlandırılır: ∀zR(x,z); sonra [y/x] uygulanır.",
+                "Yerine konacak terim, hedef oluşumu kapsayan bir niceleyiciyle aynı değişkeni içerdiğinde.",
+                "∀yR(x,y) →α ∀zR(x,z) →[y/x] ∀zR(y,z)",
+                "Yakalama riskini denetle; risk varsa bağlayıcıyı ve yalnız onun bağladığı oluşumları kullanılmayan bir değişkenle birlikte değiştir.",
+                "Yalnız niceleyici harfini veya yalnız gövdedeki oluşumları yeniden adlandırmak.",
+                [("∀xF(x) ≡α ∀yF(y)", "Bağlayıcı ve bağlı oluşum birlikte değişir."), ("∀yR(x,y)[y/x]", "Doğrudan uygulanırsa yakalama olur."), ("∀zR(y,z)", "Güvenli alfa-düzeltme sonrası sonuç.")],
+                ("Taze değişkenin hem serbest hem iç bağlayıcı olarak kullanılmadığını denetlemek.", "Bağlı değişken adını tek bir konumda değiştirmek.", "Alfa-yeniden-adlandırma bağlanma ağacını korur."),
+            ),
+        ],
+        [
+            _worked("a", "Anahtarda ad ve terimdir; tek başına formül değildir.", "Ad / terim"),
+            _worked("x", "Anahtarda değişkendir; tek başına formül değildir.", "Değişken / terim"),
+            _worked("F", "Bir yerli yüklem sembolüdür; argümansız atom değildir.", "Yüklem"),
+            _worked("F(a)", "Bir adla tamamlanmış atom ve serbest değişkensiz cümledir.", "Atomik cümle"),
+            _worked("F(x)", "İyi kurulmuş atomdur; x serbest olduğu için açık formüldür.", "Açık formül"),
+            _worked("x=y", "İki terimden oluşan atomik kimliktir; x ve y serbesttir.", "Atomik açık formül"),
+            _worked("∀xF(x)", "∀x, F içindeki x oluşumunu bağlar.", "Cümle"),
+            _worked("(F(x) → ∃xG(x))", "Soldaki x serbest, sağdaki x iç ∃x'e bağlıdır.", "Karma bağlanma"),
+            _worked("∀x∃xR(x,x)", "İç x'leri ∃x bağlar; gölgeleme ve boş dış niceleyici uyarısı vardır.", "Geçerli, uyarılı"),
+            _worked("∃xF(a)", "x oluşumu bulunmadığı için niceleme boştur ama formül geçerlidir.", "Boş niceleme"),
+            _worked("∀yR(a,y)", "∀yR(x,y) içinde serbest x yerine a güvenle konmuştur.", "Güvenli yerine koyma"),
+            _worked("∀yR(y,y)", "∀yR(x,y) içinde x yerine y koymak serbest y'yi yakalar; bu sonuç kabul edilmez.", "Değişken yakalama", "bad"),
+        ],
+        [
+            "Bir harfi formül boyunca tek statüde serbest veya bağlı saymak.",
+            "Terimi tek başına formül veya cümle saymak.",
+            "Yüklemi gerekli sayıda terim olmadan atomik formül saymak.",
+            "Parantezsiz çoklu bağlaç dizisini iyi kurulmuş kabul etmek.",
+            "Bir formülde niceleyici gördüğü için bütün değişkenleri bağlı saymak.",
+            "Gölgelemede iç oluşumları dış niceleyiciye bağlamak.",
+            "Boş nicelemeyi sözdizim hatasıyla karıştırmak.",
+            "Açık formülü doğrudan doğru/yanlış cümle gibi değerlendirmek.",
+            "Yerine koymayı metinsel bul-değiştir gibi bağlı oluşumlara da uygulamak.",
+            "Serbest değişkenin iç niceleyici tarafından yakalanmasına izin vermek.",
+            "Alfa-yeniden-adlandırmada bağlayıcı ile bağlı oluşumları birlikte değiştirmemek.",
+        ],
+        _practice(
+            [
+                ("a hangi kategoridedir?", ["Ad ve terim", "Atomik formül", "Yüklem", "Cümle"], "Ad ve terim", "Ad nesne gösterebilir ama tek başına formül değildir.", "Temel"),
+                ("F(x) hangi kategoridedir?", ["Atomik açık formül", "Cümle", "Terim", "Yüklem anahtarı"], "Atomik açık formül", "x serbesttir.", "Temel"),
+                ("Bir formül ne zaman cümledir?", ["Serbest değişkeni yoksa", "Niceleyici içeriyorsa", "Parantezi varsa", "Ad içeriyorsa"], "Serbest değişkeni yoksa", "Cümlelik bağlanma durumuna bağlıdır.", "Temel"),
+                ("(F(x)→∃xG(x)) içinde soldaki x nasıldır?", ["Serbest", "∃x'e bağlı", "∀x'e bağlı", "Ad"], "Serbest", "İç niceleyicinin kapsamı sola uzanmaz.", "Orta"),
+                ("∀x∃xR(x,x) içindeki R oluşumlarını hangi niceleyici bağlar?", ["İç ∃x", "Dış ∀x", "İkisi birden", "Hiçbiri"], "İç ∃x", "En yakın uygun bağlayıcı kazanır.", "Orta"),
+                ("∃xF(a) için doğru tanı nedir?", ["Geçerli, boş niceleme uyarılı", "Geçersiz", "Açık formül", "Kimlik"], "Geçerli, boş niceleme uyarılı", "Niceleyici x oluşumu bağlamaz.", "Orta"),
+                ("∀xR(x,y) hangi değişkeni serbest bırakır?", ["y", "x", "İkisini", "Hiçbirini"], "y", "∀x yalnız x oluşumlarını bağlar.", "Orta"),
+                ("[a/x]∀xR(x,y) sonucu nedir?", ["∀xR(x,y)", "∀xR(a,y)", "R(a,y)", "∀aR(a,y)"], "∀xR(x,y)", "x oluşumu bağlı olduğu için değişmez.", "Orta"),
+                ("[a/y]∀xR(x,y) sonucu nedir?", ["∀xR(x,a)", "∀aR(x,a)", "R(x,a)", "∀xR(a,y)"], "∀xR(x,a)", "Serbest y güvenle adla değiştirilir.", "İleri"),
+                ("[y/x]∀yR(x,y) neden güvenli değildir?", ["Serbest y, ∀y tarafından yakalanır", "R iki terim istemez", "x bağlıdır", "y addır"], "Serbest y, ∀y tarafından yakalanır", "Yerine koyma bağlanma yapısını değiştirir.", "İleri"),
+                ("∀xF(x) ile ∀yF(y) arasındaki ilişki nedir?", ["Alfa-eşdeğer", "Çelişik", "Biri açık", "Biri kimlik"], "Alfa-eşdeğer", "Bağlayıcı ve bağlı oluşumlar birlikte yeniden adlandırılmıştır.", "İleri"),
+                ("Güvenli alfa-yeniden-adlandırmada yeni değişken nasıl olmalıdır?", ["Yakalama üretmeyen taze değişken", "Aynı harf", "Bir ad", "Yüklem sembolü"], "Yakalama üretmeyen taze değişken", "Bağlanma ağı korunmalıdır.", "İleri"),
+            ]
+        ),
+        {
+            "prompt": "On iki FOL ifadesini kategori ağacında sınıflandır; bütün değişken oluşumlarını bağlayıcılarına çiz; iki güvenli ve bir yakalama üreten yerine koymayı çalıştırıp hatalı olanı alfa-yeniden-adlandırmayla onar.",
+            "starter": "Önce ifadeyi formül olarak ayrıştırma; anahtar düzeyindeki tek sembolleri terim veya yüklem diye ayır.",
+            "checks": [
+                "Terim, yüklem ve formül kategorileri karıştırılmadı",
+                "Her formül en dış kurucusuna göre ayrıştırıldı",
+                "Serbest/bağlı etiketi her oluşuma ayrı verildi",
+                "Gölgelemede en yakın bağlayıcı seçildi",
+                "Boş niceleme kabul edilip uyarılandı",
+                "Yerine koyma yalnız serbest oluşumları değiştirdi",
+                "Yakalama reddedildi ve taze değişkenle onarıldı",
+            ],
+            "solution": "Örnek onarım: ∀yR(x,y)[y/x] önce ∀zR(x,z), sonra ∀zR(y,z) biçiminde yapılır.",
+        },
+        [
+            _production_task(
+                "Kendi FOL anahtarınla kategori, bağlanma, gölgeleme, boş niceleme, güvenli yerine koyma, yakalama ve alfa-onarım örneklerinden oluşan küçük bir sözdizim laboratuvarı hazırla.",
+                [
+                    "En az bir ad, değişken, yüklem, açık formül ve cümle sınıflandırıldı.",
+                    "Bir karma formülde aynı harfin serbest ve bağlı oluşumları gösterildi.",
+                    "Bir gölgeleme ve bir boş niceleme örneği uyarı olarak ayrıldı.",
+                    "İki güvenli yerine koyma sonucu doğru üretildi.",
+                    "Bir değişken yakalama girişimi açıkça reddedildi.",
+                    "Yakalama taze değişkenle alfa-yeniden-adlandırılarak onarıldı.",
+                    "Alfa-eşdeğerlik ile serbest değişken değiştirme ayrıldı.",
+                    "Bütün sonuçlar bağımsız sözdizim denetiminden geçti.",
+                ],
+                "Değerlendirme sonuç dizisinden önce hangi oluşumların neden değiştiğine ve bağlanma ağının korunmasına bakar.",
+                "Laboratuvar bağlamı",
+                ["Seminer", "Kütüphane", "Danışmanlık ağı", "Araştırma ekibi", "Kendi bağlamın"],
+                "Yakalama örneğinde hem hatalı doğrudan sonucu hem güvenli onarımı göster.",
+            ),
+        ],
+        [
+            "İfadeleri terim/atom/formül/cümle/hatalı dizi olarak gerekçeli sınıflama.",
+            "Karma formülde her değişken oluşumunu doğru bağlayıcıya bağlama.",
+            "Gölgeleme ve boş nicelemeyi geçersizlikten ayırma.",
+            "Serbest değişken kümesiyle açık formül ve cümleyi ayırma.",
+            "Güvenli yerine koymayı yalnız serbest oluşumlara uygulama.",
+            "Değişken yakalamasını teşhis edip alfa-yeniden-adlandırmayla onarma.",
+        ],
+        [
+            "Terim ile atomik formül arasındaki kurucu fark nedir?",
+            "Aynı x harfi bir formülde nasıl hem serbest hem bağlı olabilir?",
+            "Gölgelemede hangi niceleyici bağlayıcıdır?",
+            "Boş niceleme neden geçerli ama uyarılıdır?",
+            "Yerine koyma neden yalnız serbest oluşumlara uygulanır?",
+            "Değişken yakalama nasıl alfa-yeniden-adlandırmayla önlenir?",
+        ],
+        "E34'te bu kesin sözdizim araçlarını gerçek doğal dil metinlerine uygulayacak; belirsizliği dallandırıp kayıp anlam raporuyla Faz E çıkış projesini tamamlayacağız.",
+        ["forallx-fol-building-blocks", "forallx-fol-sentences", "forallx-identity", "mit-logic-sequence"],
+        "Ders standart birinci-derece dilin tümevarımsal sözdizimini öğretir. Boş niceleme ve gölgeleme geçerli fakat uyarılıdır; yerine koyma yalnız serbest oluşumlara ve yakalama olmadan uygulanır.",
+        ["ders-30-formel-sozdizim-ve-serbest-bagli-degisken"],
+    )
+    lesson["fol_signature"] = E33_SIGNATURE
+    lesson["syntax_scope"] = {
+        "introduced": [
+            "term_formula_distinction",
+            "inductive_formula_formation",
+            "occurrence_binding",
+            "open_formula_sentence",
+            "vacuous_quantification",
+            "variable_shadowing",
+            "capture_avoiding_substitution",
+            "alpha_renaming",
+        ],
+        "review_only": ["identity", "multiple_quantifier", "scope", "argument_order"],
+        "locked_until_later": [
+            "semantic_assignment",
+            "formal_model_truth",
+            "substitution_lemma",
+            "proof_quantifier_rules",
+        ],
+    }
+    lesson["syntax_fixtures"] = [
+        _syntax_fixture("e33-name", "a", accepted=True, category="name", explanation="a bir addır."),
+        _syntax_fixture("e33-variable", "x", accepted=True, category="variable", explanation="x bir değişkendir."),
+        _syntax_fixture("e33-predicate", "F", accepted=True, category="predicate", explanation="F bir yüklem sembolüdür."),
+        _syntax_fixture("e33-atomic-sentence", "F(a)", accepted=True, category="sentence", explanation="Ad içeren atom kapalıdır."),
+        _syntax_fixture("e33-open-atom", "F(x)", accepted=True, category="open_formula", explanation="x serbesttir."),
+        _syntax_fixture("e33-open-identity", "x=y", accepted=True, category="open_formula", explanation="x ve y serbesttir."),
+        _syntax_fixture("e33-closed-universal", "∀xF(x)", accepted=True, category="sentence", explanation="x bağlanmıştır."),
+        _syntax_fixture("e33-mixed-binding", "(F(x) → ∃xG(x))", accepted=True, category="open_formula", explanation="Soldaki x serbest kalır."),
+        _syntax_fixture("e33-shadowing", "∀x∃xR(x,x)", accepted=True, category="sentence", explanation="İç ∃x en yakın bağlayıcıdır."),
+        _syntax_fixture("e33-vacuous", "∃xF(a)", accepted=True, category="sentence", explanation="Boş niceleme geçerli ama uyarılıdır."),
+        _syntax_fixture("e33-open-after-quantifier", "∀xR(x,y)", accepted=True, category="open_formula", explanation="y serbest kalır."),
+        _syntax_fixture("e33-unclosed-predicate", "F(a", accepted=False, issue_code="predicate.arguments_unclosed", explanation="Argüman parantezi kapanmamıştır."),
+        _syntax_fixture("e33-name-after-quantifier", "∀aF(a)", accepted=False, issue_code="quantifier.variable_expected", explanation="Niceleyiciden sonra ad değil değişken gerekir."),
+        _syntax_fixture("e33-multiple-connective", "F(a) ∧ G(a) ∨ F(b)", accepted=False, issue_code="connective.multiple_unparenthesized", explanation="İki bağlaç aynı kapsamda parantezsizdir."),
+        _syntax_fixture("e33-arity", "R(a)", accepted=False, issue_code="predicate.arity_mismatch", explanation="R iki terim ister."),
+        _syntax_fixture("e33-incomplete-quantifier", "∀x", accepted=False, issue_code="formula.incomplete", explanation="Niceleyicinin gövdesi eksiktir."),
+    ]
+    lesson["binding_fixtures"] = [
+        {"id": "e33-bind-open", "source": "F(x)", "free_variables": ["x"], "warning_codes": []},
+        {"id": "e33-bind-closed", "source": "∀xF(x)", "free_variables": [], "warning_codes": []},
+        {"id": "e33-bind-mixed", "source": "(F(x) → ∃xG(x))", "free_variables": ["x"], "warning_codes": []},
+        {"id": "e33-bind-shadow", "source": "∀x∃xR(x,x)", "free_variables": [], "warning_codes": ["quantifier.shadowing", "quantifier.vacuous"]},
+        {"id": "e33-bind-vacuous", "source": "∃xF(a)", "free_variables": [], "warning_codes": ["quantifier.vacuous"]},
+        {"id": "e33-bind-two-free", "source": "(R(x,a) ∧ G(y))", "free_variables": ["x", "y"], "warning_codes": []},
+    ]
+    lesson["substitution_fixtures"] = [
+        {"id": "e33-sub-name", "source": "R(x,y)", "variable": "x", "replacement": "a", "accepted": True, "rendered": "R(a,y)", "issue_code": None},
+        {"id": "e33-sub-free-only", "source": "(R(x,a) ∧ ∀xR(x,y))", "variable": "x", "replacement": "b", "accepted": True, "rendered": "(R(b,a) ∧ ∀xR(x,y))", "issue_code": None},
+        {"id": "e33-sub-bound-unchanged", "source": "∀xR(x,y)", "variable": "x", "replacement": "a", "accepted": True, "rendered": "∀xR(x,y)", "issue_code": None},
+        {"id": "e33-sub-safe-under-binder", "source": "∀yR(x,y)", "variable": "x", "replacement": "a", "accepted": True, "rendered": "∀yR(a,y)", "issue_code": None},
+        {"id": "e33-sub-capture", "source": "∀yR(x,y)", "variable": "x", "replacement": "y", "accepted": False, "rendered": None, "issue_code": "substitution.capture"},
+        {"id": "e33-sub-free-y", "source": "∀xR(x,y)", "variable": "y", "replacement": "a", "accepted": True, "rendered": "∀xR(x,a)", "issue_code": None},
+    ]
+    lesson["alpha_fixtures"] = [
+        {"id": "e33-alpha-simple", "left": "∀xF(x)", "right": "∀yF(y)", "equivalent": True},
+        {"id": "e33-alpha-nested", "left": "∀x∃yR(x,y)", "right": "∀y∃zR(y,z)", "equivalent": True},
+        {"id": "e33-alpha-free-fixed", "left": "∀xR(x,y)", "right": "∀zR(z,y)", "equivalent": True},
+        {"id": "e33-alpha-free-changed", "left": "∀xR(x,y)", "right": "∀yR(y,x)", "equivalent": False},
+        {"id": "e33-alpha-role-swapped", "left": "∀x∃yR(x,y)", "right": "∀y∃zR(z,y)", "equivalent": False},
+    ]
+    lesson["symbolization_fixtures"] = [
+        _symbolization_fixture("e33-every-researcher", "Her araştırmacı meraklıdır.", [("∀x(F(x) → G(x))", "Kısıtlı tümel kapalı formüldür.", "Her araştırmacı meraklıdır.")], [("∀x(F(x) → G(x))", True, None, "Formül kapalı ve iyi kurulmuştur."), ("(F(x) → G(x))", False, "translation.free_variable", "x serbest kalmıştır.")], teaching_point="Nihai çeviri cümle olmalıdır."),
+        _symbolization_fixture("e33-ada-consults", "Ada, Bora'ya danışır.", [("R(a,b)", "İki ad doğru argüman yerlerine konur.", "Ada Bora'ya danışır.")], [("R(a,b)", True, None, "Atomik cümledir."), ("R(b,a)", False, "translation.argument_order", "Roller ters çevrilmiştir.")], teaching_point="Sözdizim ile bağıntı yönü birlikte denetlenir."),
+        _symbolization_fixture("e33-someone-consults-ada", "Birisi Ada'ya danışır.", [("∃xR(x,a)", "Danışan değişken bağlanır.", "Ada'ya danışan en az bir kişi vardır.")], [("∃xR(x,a)", True, None, "x bağlıdır."), ("R(x,a)", False, "translation.free_variable", "Tanık niceleyicisiz bırakılmıştır.")], teaching_point="Açık formül ile cümle ayrılır."),
+        _symbolization_fixture("e33-everyone-consults-someone", "Herkes birine danışır.", [("∀x∃yR(x,y)", "Her danışan için tanık bağlanır.", "Her kişi için danıştığı biri vardır.")], [("∀x∃yR(x,y)", True, None, "İki değişken de bağlanır."), ("∀xR(x,y)", False, "translation.free_variable", "y serbest kalmıştır.")], teaching_point="Bütün tanık değişkenleri bağlanmalıdır."),
+        _symbolization_fixture("e33-no-researcher-curious", "Hiçbir araştırmacı meraklı değildir.", [("∀x(F(x) → ¬G(x))", "x bütün kapsamda bağlıdır.", "Hiçbir araştırmacı meraklı değildir.")], [("∀x(F(x) → ¬G(x))", True, None, "Kapalı kapsam doğrudur."), ("∀xF(x) → ¬G(x)", False, "translation.free_variable", "Koşul niceleyici kapsamının dışında kalınca sağdaki x serbesttir.")], teaching_point="Kurucu parantez kapsamı görünür kılar."),
+    ]
+    return lesson
+
+
 STAGE_E_CANDIDATE_LESSONS = [
     _candidate_e27(),
     _candidate_e28(),
@@ -2992,6 +3297,7 @@ STAGE_E_CANDIDATE_LESSONS = [
     _candidate_e30(),
     _candidate_e31(),
     _candidate_e32(),
+    _candidate_e33(),
 ]
 
 STAGE_E_CANDIDATE_MAP = {

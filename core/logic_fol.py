@@ -7,7 +7,7 @@ deliberately outside this module's responsibility.
 """
 
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Mapping
 
 
@@ -609,6 +609,83 @@ def formulas_alpha_equivalent(left: FOLFormula, right: FOLFormula) -> bool:
     """Return whether two formulas differ only in bound-variable names."""
 
     return fol_structure_key(left) == fol_structure_key(right)
+
+
+def substitute_free_term(
+    formula: FOLFormula,
+    variable: str,
+    replacement_symbol: str,
+    signature: FOLSignature,
+) -> FOLFormula:
+    """Replace free occurrences of ``variable`` without variable capture.
+
+    Bound occurrences remain untouched. A variable replacement that would
+    fall under a same-named quantifier is rejected instead of silently
+    changing the formula's binding structure.
+    """
+
+    if variable not in signature.variables:
+        raise FOLParseError(
+            "substitution.target_variable",
+            f"{variable!r} anahtarda bir değişken değildir.",
+        )
+    if replacement_symbol in signature.names:
+        replacement_kind = "name"
+    elif replacement_symbol in signature.variables:
+        replacement_kind = "variable"
+    else:
+        raise FOLParseError(
+            "substitution.replacement_term",
+            f"{replacement_symbol!r} anahtarda bir ad veya değişken değildir.",
+        )
+
+    active_binders = []
+
+    def replace_term(term: FOLTerm) -> FOLTerm:
+        if (
+            term.kind != "variable"
+            or term.symbol != variable
+            or variable in active_binders
+        ):
+            return term
+        if (
+            replacement_kind == "variable"
+            and replacement_symbol != variable
+            and replacement_symbol in active_binders
+        ):
+            raise FOLParseError(
+                "substitution.capture",
+                f"{replacement_symbol} değişkeni içteki niceleyici tarafından yakalanır.",
+                term.start,
+            )
+        return FOLTerm(
+            symbol=replacement_symbol,
+            kind=replacement_kind,
+            start=term.start,
+            end=term.end,
+        )
+
+    def visit(node: FOLFormula) -> FOLFormula:
+        if node.kind in {"predicate", "identity"}:
+            terms = tuple(replace_term(term) for term in node.terms)
+            return node if terms == node.terms else replace(node, terms=terms)
+        if node.kind == "negation":
+            body = visit(node.body)
+            return node if body is node.body else replace(node, body=body)
+        if node.kind == "binary":
+            left = visit(node.left)
+            right = visit(node.right)
+            if left is node.left and right is node.right:
+                return node
+            return replace(node, left=left, right=right)
+        if node.kind == "quantifier":
+            active_binders.append(node.variable)
+            body = visit(node.body)
+            active_binders.pop()
+            return node if body is node.body else replace(node, body=body)
+        raise ValueError(f"Bilinmeyen FOL düğüm türü: {node.kind!r}.")
+
+    return visit(formula)
 
 
 def _term_binding_key(
