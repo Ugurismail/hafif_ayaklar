@@ -191,9 +191,9 @@ geçilemez.
 
 | Ders | Sözleşme | Aday veri | Otomatik motor/sınır testi | Yetkili önizleme |
 | --- | --- | --- | --- | --- |
-| F35 Yorum, Gönderim ve Doğruluk | Hazır | Bekliyor | Bekliyor | Bekliyor |
-| F36 Model ve Karşı Model | Hazır | Bekliyor | Bekliyor | Bekliyor |
-| F37 Bağıntı Özellikleri | Hazır | Bekliyor | Bekliyor | Bekliyor |
+| F35 Yorum, Gönderim ve Doğruluk | Hazır | Hazır | Hazır | Bekliyor |
+| F36 Model ve Karşı Model | Hazır | Hazır | Hazır | Bekliyor |
+| F37 Bağıntı Özellikleri | Hazır | Hazır | Hazır | Bekliyor |
 | F38 Niceleyici Kurallarına Giriş | Hazır | Bekliyor | Bekliyor | Bekliyor |
 | F39 Özad Disiplini ve Kanıt Stratejisi | Hazır | Bekliyor | Bekliyor | Bekliyor |
 | F40 Kimlik İçeren Kanıtlar | Hazır | Bekliyor | Bekliyor | Bekliyor |
