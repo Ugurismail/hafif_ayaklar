@@ -19,7 +19,7 @@ from core.models import (
     QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage, OnlineChatMessage,
     LibraryFile, DailyVisitor, VisitSession, AttendanceSheetConfig, AttendanceDayState,
     SavedCollection, SavedCollectionItem, ContentReport, EntryBook, EntryBookItem,
-    LogicLessonProgress
+    LogicLessonProgress, Habit, HabitEntry, MoneyCategory, MoneyTransaction
 )
 
 # =============================================================================
@@ -60,6 +60,49 @@ class LogicLessonProgressAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'lesson_slug')
     ordering = ('-last_opened_at',)
     readonly_fields = ('started_at', 'last_opened_at', 'completed_at')
+
+
+class HabitEntryInline(admin.TabularInline):
+    model = HabitEntry
+    extra = 0
+    ordering = ('-date',)
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(Habit)
+class HabitAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user', 'frequency', 'target', 'unit', 'is_archived', 'updated_at')
+    list_filter = ('frequency', 'is_archived', 'updated_at')
+    search_fields = ('name', 'description', 'user__username')
+    ordering = ('user__username', 'position', 'created_at')
+    readonly_fields = ('created_at', 'updated_at', 'archived_at')
+    inlines = [HabitEntryInline]
+
+
+@admin.register(HabitEntry)
+class HabitEntryAdmin(admin.ModelAdmin):
+    list_display = ('habit', 'date', 'value', 'target', 'updated_at')
+    list_filter = ('date', 'updated_at')
+    search_fields = ('habit__name', 'habit__user__username', 'note')
+    ordering = ('-date', '-updated_at')
+    readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(MoneyCategory)
+class MoneyCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user', 'kind', 'position', 'is_default')
+    list_filter = ('kind', 'is_default')
+    search_fields = ('name', 'user__username')
+    ordering = ('user__username', 'kind', 'position')
+
+
+@admin.register(MoneyTransaction)
+class MoneyTransactionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'date', 'kind', 'amount', 'category', 'updated_at')
+    list_filter = ('kind', 'date', 'updated_at')
+    search_fields = ('user__username', 'category__name', 'note')
+    ordering = ('-date', '-created_at')
+    readonly_fields = ('created_at', 'updated_at')
 
 
 class EntryBookItemInline(admin.TabularInline):

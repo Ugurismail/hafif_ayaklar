@@ -1,0 +1,487 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Kişisel takip{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/habit_tracker.css' %}?v=habit4">
+{% endblock %}
+
+{% block content %}
+<main
+    class="habit-app"
+    id="habitTrackerApp"
+    data-list-url="{% url 'habit_tracker_data' %}"
+    data-create-url="{% url 'habit_create' %}"
+    data-update-url-template="{% url 'habit_update' 0 %}"
+    data-log-url-template="{% url 'habit_log' 0 %}"
+    data-archive-url-template="{% url 'habit_archive' 0 %}"
+    data-delete-url-template="{% url 'habit_delete' 0 %}"
+    data-money-list-url="{% url 'money_tracker_data' %}"
+    data-money-create-url="{% url 'money_transaction_create' %}"
+    data-money-update-url-template="{% url 'money_transaction_update' 0 %}"
+    data-money-delete-url-template="{% url 'money_transaction_delete' 0 %}"
+    data-money-category-url="{% url 'money_category_create' %}"
+>
+    <header class="habit-page-header">
+        <div class="habit-heading-group">
+            <span class="habit-heading-icon" aria-hidden="true"><i class="bi bi-calendar2-check"></i></span>
+            <div>
+                <p class="habit-eyebrow">Ritim ve bütçe</p>
+                <h1>Kişisel takip</h1>
+            </div>
+        </div>
+        <div class="habit-header-actions" id="habitHeaderActions">
+            <button class="habit-icon-button" id="habitArchiveOpen" type="button" title="Arşiv" aria-label="Arşivi aç">
+                <i class="bi bi-archive" aria-hidden="true"></i>
+                <span class="habit-archive-count" id="habitArchiveCount">0</span>
+            </button>
+            <button class="habit-primary-button" id="habitCreateOpen" type="button">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                <span>Yeni alışkanlık</span>
+            </button>
+        </div>
+        <div class="habit-header-actions" id="moneyHeaderActions" hidden>
+            <button class="habit-primary-button money-add-button" id="moneyCreateOpen" type="button">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                <span>Hareket ekle</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="tracker-view-tabs" role="tablist" aria-label="Kişisel takip görünümü">
+        <button type="button" id="habitTab" role="tab" aria-selected="true" aria-controls="habitView" class="is-active" data-tracker-view="habits">
+            <i class="bi bi-calendar2-check" aria-hidden="true"></i>
+            Alışkanlıklar
+        </button>
+        <button type="button" id="moneyTab" role="tab" aria-selected="false" aria-controls="moneyView" data-tracker-view="money">
+            <i class="bi bi-wallet2" aria-hidden="true"></i>
+            Para
+        </button>
+    </nav>
+
+    <section id="habitView" class="tracker-view" role="tabpanel" aria-labelledby="habitTab">
+
+    <section class="habit-date-toolbar" aria-label="Takip tarihi">
+        <button class="habit-icon-button" id="habitPreviousDate" type="button" title="Önceki gün" aria-label="Önceki gün">
+            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        </button>
+        <button class="habit-date-display" id="habitDateDisplay" type="button" title="Bugüne dön">
+            <span id="habitDateLabel">Bugün</span>
+            <small id="habitDateContext">Bugün</small>
+        </button>
+        <button class="habit-icon-button" id="habitNextDate" type="button" title="Sonraki gün" aria-label="Sonraki gün">
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </button>
+        <label class="habit-date-picker" title="Tarih seç">
+            <i class="bi bi-calendar3" aria-hidden="true"></i>
+            <input id="habitDateInput" type="date" aria-label="Takip tarihi seç">
+        </label>
+    </section>
+
+    <section class="habit-summary-band" aria-label="Gün özeti">
+        <div class="habit-summary-ring" id="habitSummaryRing" style="--habit-rate: 0">
+            <div>
+                <strong id="habitSummaryRate">%0</strong>
+                <span>tamamlandı</span>
+            </div>
+        </div>
+        <dl class="habit-summary-metrics">
+            <div>
+                <dt>Tamamlanan</dt>
+                <dd><span id="habitCompletedCount">0</span><small id="habitScheduledCount"> / 0</small></dd>
+            </div>
+            <div>
+                <dt>Tam gün serisi</dt>
+                <dd><span id="habitStreakCount">0</span><small> gün</small></dd>
+            </div>
+            <div>
+                <dt>7 günlük ritim</dt>
+                <dd id="habitWeekRate">%0</dd>
+            </div>
+            <div>
+                <dt>Aktif alışkanlık</dt>
+                <dd id="habitActiveCount">0</dd>
+            </div>
+        </dl>
+    </section>
+
+    <div class="habit-main-grid">
+        <section class="habit-list-section" aria-labelledby="habit-list-title">
+            <header class="habit-section-header">
+                <div>
+                    <p class="habit-section-kicker">Günün planı</p>
+                    <h2 id="habit-list-title">Takip listesi</h2>
+                </div>
+                <span class="habit-section-count" id="habitListCount">0 alışkanlık</span>
+            </header>
+            <div class="habit-list" id="habitList" aria-live="polite"></div>
+        </section>
+
+        <aside class="habit-insight-rail" aria-labelledby="habit-weekday-title">
+            <header class="habit-section-header habit-section-header--compact">
+                <div>
+                    <p class="habit-section-kicker">Ritim</p>
+                    <h2 id="habit-weekday-title">Haftanın dengesi</h2>
+                </div>
+            </header>
+            <div class="habit-weekday-chart" id="habitWeekdayChart"></div>
+        </aside>
+    </div>
+
+    <section class="habit-analytics-section" aria-labelledby="habit-analytics-title">
+        <header class="habit-section-header habit-analytics-header">
+            <div>
+                <p class="habit-section-kicker">Eğilim</p>
+                <h2 id="habit-analytics-title">İlerleme görünümü</h2>
+            </div>
+            <div class="habit-range-control" role="group" aria-label="Grafik aralığı">
+                <button type="button" data-range="7">7 gün</button>
+                <button type="button" data-range="30" class="is-active">30 gün</button>
+                <button type="button" data-range="90">90 gün</button>
+            </div>
+        </header>
+        <div class="habit-analytics-grid">
+            <div class="habit-trend-panel">
+                <div class="habit-chart-heading">
+                    <strong>Tamamlama eğilimi</strong>
+                    <span>Günlük hedef oranı</span>
+                </div>
+                <div class="habit-trend-chart" id="habitTrendChart" aria-label="Tamamlama eğilimi grafiği"></div>
+            </div>
+            <div class="habit-heatmap-panel">
+                <div class="habit-chart-heading">
+                    <strong>Son 12 hafta</strong>
+                    <span>Yoğunluk haritası</span>
+                </div>
+                <div class="habit-heatmap-wrap">
+                    <div class="habit-heatmap-weekdays" aria-hidden="true">
+                        <span>Pzt</span><span>Çar</span><span>Cum</span><span>Paz</span>
+                    </div>
+                    <div class="habit-heatmap" id="habitHeatmap"></div>
+                </div>
+                <div class="habit-heatmap-legend" aria-hidden="true">
+                    <span>Az</span><i data-level="0"></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i><i data-level="4"></i><span>Çok</span>
+                </div>
+            </div>
+        </div>
+    </section>
+    </section>
+
+    <section id="moneyView" class="tracker-view money-view" role="tabpanel" aria-labelledby="moneyTab" hidden>
+        <div class="money-toolbar">
+            <button class="habit-icon-button" id="moneyPreviousMonth" type="button" title="Önceki ay" aria-label="Önceki ay">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button class="money-month-display" id="moneyMonthDisplay" type="button" title="Bu aya dön">
+                <strong id="moneyMonthLabel">Bu ay</strong>
+                <small>Aylık görünüm</small>
+            </button>
+            <button class="habit-icon-button" id="moneyNextMonth" type="button" title="Sonraki ay" aria-label="Sonraki ay">
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </button>
+            <label class="money-month-picker" title="Ay seç">
+                <i class="bi bi-calendar3" aria-hidden="true"></i>
+                <input id="moneyMonthInput" type="month" aria-label="Takip ayı seç">
+            </label>
+        </div>
+
+        <section class="money-summary" aria-label="Aylık para özeti">
+            <div class="money-balance-block">
+                <span>Net durum</span>
+                <strong id="moneyBalance">₺0,00</strong>
+                <small id="moneyBalanceContext">Bu ayın dengesi</small>
+            </div>
+            <dl class="money-summary-metrics">
+                <div class="is-income">
+                    <dt><i class="bi bi-arrow-down-left" aria-hidden="true"></i> Gelir</dt>
+                    <dd id="moneyIncome">₺0,00</dd>
+                </div>
+                <div class="is-expense">
+                    <dt><i class="bi bi-arrow-up-right" aria-hidden="true"></i> Gider</dt>
+                    <dd id="moneyExpense">₺0,00</dd>
+                </div>
+                <div>
+                    <dt>Kayıt</dt>
+                    <dd id="moneyTransactionCount">0</dd>
+                </div>
+            </dl>
+        </section>
+
+        <div class="money-insights-grid">
+            <section class="money-chart-panel" aria-labelledby="money-trend-title">
+                <header class="habit-section-header habit-section-header--compact">
+                    <div>
+                        <p class="habit-section-kicker">Akış</p>
+                        <h2 id="money-trend-title">Günlük hareket</h2>
+                    </div>
+                    <span class="money-chart-key"><i></i> Gider <i></i> Gelir</span>
+                </header>
+                <div class="money-trend-chart" id="moneyTrendChart" aria-label="Günlük gelir ve gider grafiği"></div>
+            </section>
+            <aside class="money-category-panel" aria-labelledby="money-category-title">
+                <header class="habit-section-header habit-section-header--compact">
+                    <div>
+                        <p class="habit-section-kicker">Dağılım</p>
+                        <h2 id="money-category-title">Giderler nereye gitti?</h2>
+                    </div>
+                </header>
+                <div class="money-category-list" id="moneyCategoryBreakdown"></div>
+            </aside>
+        </div>
+
+        <section class="money-ledger" aria-labelledby="money-ledger-title">
+            <header class="habit-section-header money-ledger-header">
+                <div>
+                    <p class="habit-section-kicker">Kayıtlar</p>
+                    <h2 id="money-ledger-title">Ayın hareketleri</h2>
+                </div>
+                <div class="money-ledger-tools">
+                    <label>
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                        <input id="moneySearchInput" type="search" placeholder="Not veya kategori ara" aria-label="Para hareketlerinde ara">
+                    </label>
+                    <select id="moneyKindFilter" aria-label="Hareket türünü süz">
+                        <option value="all">Tümü</option>
+                        <option value="expense">Giderler</option>
+                        <option value="income">Gelirler</option>
+                    </select>
+                </div>
+            </header>
+            <div class="money-transaction-list" id="moneyTransactionList" aria-live="polite"></div>
+        </section>
+    </section>
+
+    <p class="habit-status" id="habitStatus" role="status" aria-live="polite"></p>
+</main>
+
+<div class="modal fade habit-modal" id="habitEditorModal" tabindex="-1" aria-labelledby="habitEditorTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <header class="habit-modal-header">
+                <div>
+                    <p class="habit-section-kicker" id="habitEditorKicker">Yeni kayıt</p>
+                    <h2 id="habitEditorTitle">Alışkanlık ekle</h2>
+                </div>
+                <button type="button" class="habit-icon-button" data-bs-dismiss="modal" title="Kapat" aria-label="Kapat">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+            </header>
+            <form id="habitEditorForm">
+                <input type="hidden" id="habitEditorId">
+                <div class="habit-form-body">
+                    <label class="habit-field habit-field--full">
+                        <span>Alışkanlık adı</span>
+                        <input id="habitNameInput" type="text" maxlength="80" required placeholder="Örn. 20 sayfa oku" autocomplete="off">
+                    </label>
+                    <label class="habit-field habit-field--full">
+                        <span>Kısa not <small>isteğe bağlı</small></span>
+                        <textarea id="habitDescriptionInput" maxlength="240" rows="2" placeholder="Bu alışkanlığın odağı"></textarea>
+                    </label>
+
+                    <fieldset class="habit-choice-field habit-field--full">
+                        <legend>Simge</legend>
+                        <div class="habit-icon-choices" id="habitIconChoices">
+                            {% for value, label in habit_icons %}
+                            <button type="button" data-icon="{{ value }}" title="{{ label }}" aria-label="{{ label }}">
+                                <i class="bi bi-{{ value }}" aria-hidden="true"></i>
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="habit-choice-field habit-field--full">
+                        <legend>Renk</legend>
+                        <div class="habit-color-choices" id="habitColorChoices">
+                            {% for color in habit_colors %}
+                            <button type="button" data-color="{{ color }}" style="--choice-color: {{ color }}" title="{{ color }}" aria-label="{{ color }}"></button>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+
+                    <label class="habit-field">
+                        <span>Günlük hedef</span>
+                        <input id="habitTargetInput" type="number" min="1" max="999" value="1" required inputmode="numeric">
+                    </label>
+                    <label class="habit-field">
+                        <span>Birim</span>
+                        <input id="habitUnitInput" type="text" maxlength="18" value="kez" required placeholder="kez, dk, sayfa">
+                    </label>
+                    <label class="habit-field habit-field--full">
+                        <span>Başlangıç tarihi</span>
+                        <input id="habitStartDateInput" type="date" required>
+                    </label>
+
+                    <fieldset class="habit-choice-field habit-field--full">
+                        <legend>Tekrar</legend>
+                        <div class="habit-frequency-control" id="habitFrequencyControl">
+                            <button type="button" data-frequency="daily" class="is-active">Her gün</button>
+                            <button type="button" data-frequency="custom">Belirli günler</button>
+                        </div>
+                        <div class="habit-weekday-choices" id="habitWeekdayChoices" hidden>
+                            {% for day in '0123456' %}
+                            <button type="button" data-day="{{ day }}">{% cycle 'Pzt' 'Sal' 'Çar' 'Per' 'Cum' 'Cmt' 'Paz' %}</button>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                </div>
+                <footer class="habit-modal-footer">
+                    <button class="habit-secondary-button" id="habitArchiveButton" type="button" hidden>
+                        <i class="bi bi-archive" aria-hidden="true"></i> Arşivle
+                    </button>
+                    <button class="habit-danger-link" id="habitDeleteButton" type="button" hidden>
+                        <i class="bi bi-trash3" aria-hidden="true"></i> Sil
+                    </button>
+                    <span class="habit-modal-spacer"></span>
+                    <button class="habit-secondary-button" type="button" data-bs-dismiss="modal">Vazgeç</button>
+                    <button class="habit-primary-button" type="submit" id="habitEditorSubmit">
+                        <i class="bi bi-check2" aria-hidden="true"></i> Kaydet
+                    </button>
+                </footer>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade habit-modal habit-modal--compact" id="habitDayModal" tabindex="-1" aria-labelledby="habitDayTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <header class="habit-modal-header">
+                <div>
+                    <p class="habit-section-kicker" id="habitDayDate">Günlük kayıt</p>
+                    <h2 id="habitDayTitle">İlerlemeyi düzenle</h2>
+                </div>
+                <button type="button" class="habit-icon-button" data-bs-dismiss="modal" title="Kapat" aria-label="Kapat">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+            </header>
+            <form id="habitDayForm">
+                <input type="hidden" id="habitDayId">
+                <div class="habit-day-form">
+                    <label class="habit-field">
+                        <span>Bugünkü hedef</span>
+                        <div class="habit-input-suffix">
+                            <input id="habitDayTargetInput" type="number" min="1" max="9999" required inputmode="numeric">
+                            <span id="habitDayTargetUnit">kez</span>
+                        </div>
+                        <small id="habitDayDefaultHint">Varsayılan hedef: 1</small>
+                    </label>
+                    <label class="habit-field">
+                        <span>Bugün yapılan</span>
+                        <div class="habit-input-suffix">
+                            <input id="habitDayValueInput" type="number" min="0" max="9999" required inputmode="numeric">
+                            <span id="habitDayValueUnit">kez</span>
+                        </div>
+                    </label>
+                    <label class="habit-field habit-field--full">
+                        <span>Günün notu <small>isteğe bağlı</small></span>
+                        <textarea id="habitDayNoteInput" maxlength="240" rows="2" placeholder="Bugün ne farklıydı?"></textarea>
+                    </label>
+                </div>
+                <footer class="habit-modal-footer">
+                    <button class="habit-secondary-button" id="habitDayUseDefault" type="button">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Varsayılan hedef
+                    </button>
+                    <span class="habit-modal-spacer"></span>
+                    <button class="habit-secondary-button" type="button" data-bs-dismiss="modal">Vazgeç</button>
+                    <button class="habit-primary-button" type="submit">
+                        <i class="bi bi-check2" aria-hidden="true"></i> Günü kaydet
+                    </button>
+                </footer>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade habit-modal money-modal" id="moneyEditorModal" tabindex="-1" aria-labelledby="moneyEditorTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <header class="habit-modal-header">
+                <div>
+                    <p class="habit-section-kicker" id="moneyEditorKicker">Yeni hareket</p>
+                    <h2 id="moneyEditorTitle">Para hareketi ekle</h2>
+                </div>
+                <button type="button" class="habit-icon-button" data-bs-dismiss="modal" title="Kapat" aria-label="Kapat">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+            </header>
+            <form id="moneyEditorForm">
+                <input type="hidden" id="moneyEditorId">
+                <div class="money-form-body">
+                    <div class="money-kind-control habit-field--full" id="moneyKindControl" role="group" aria-label="Hareket türü">
+                        <button type="button" data-money-kind="expense" class="is-active">
+                            <i class="bi bi-arrow-up-right" aria-hidden="true"></i> Gider
+                        </button>
+                        <button type="button" data-money-kind="income">
+                            <i class="bi bi-arrow-down-left" aria-hidden="true"></i> Gelir
+                        </button>
+                    </div>
+                    <label class="habit-field money-amount-field">
+                        <span>Tutar</span>
+                        <div class="money-amount-input">
+                            <span>₺</span>
+                            <input id="moneyAmountInput" type="number" min="0.01" max="9999999999.99" step="0.01" required inputmode="decimal" placeholder="0,00">
+                        </div>
+                    </label>
+                    <label class="habit-field">
+                        <span>Tarih</span>
+                        <input id="moneyDateInput" type="date" required>
+                    </label>
+                    <label class="habit-field habit-field--full">
+                        <span>Kategori</span>
+                        <select id="moneyCategoryInput" required></select>
+                    </label>
+                    <div class="money-category-create habit-field--full">
+                        <button type="button" id="moneyCategoryCreateToggle">
+                            <i class="bi bi-plus-lg" aria-hidden="true"></i> Yeni kategori
+                        </button>
+                        <div id="moneyCategoryCreateFields" hidden>
+                            <input id="moneyCategoryNameInput" type="text" maxlength="40" placeholder="Kategori adı" autocomplete="off">
+                            <button class="habit-secondary-button" id="moneyCategoryCreateSubmit" type="button">Ekle</button>
+                        </div>
+                    </div>
+                    <label class="habit-field habit-field--full">
+                        <span>Not <small>isteğe bağlı</small></span>
+                        <input id="moneyNoteInput" type="text" maxlength="160" placeholder="Kısa açıklama" autocomplete="off">
+                    </label>
+                </div>
+                <footer class="habit-modal-footer">
+                    <button class="habit-danger-link" id="moneyDeleteButton" type="button" hidden>
+                        <i class="bi bi-trash3" aria-hidden="true"></i> Sil
+                    </button>
+                    <span class="habit-modal-spacer"></span>
+                    <button class="habit-secondary-button" type="button" data-bs-dismiss="modal">Vazgeç</button>
+                    <button class="habit-primary-button" type="submit">
+                        <i class="bi bi-check2" aria-hidden="true"></i> Kaydet
+                    </button>
+                </footer>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade habit-modal" id="habitArchiveModal" tabindex="-1" aria-labelledby="habitArchiveTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <header class="habit-modal-header">
+                <div>
+                    <p class="habit-section-kicker">Saklananlar</p>
+                    <h2 id="habitArchiveTitle">Arşiv</h2>
+                </div>
+                <button type="button" class="habit-icon-button" data-bs-dismiss="modal" title="Kapat" aria-label="Kapat">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+            </header>
+            <div class="habit-archive-list" id="habitArchiveList"></div>
+        </div>
+    </div>
+</div>
+
+{{ habit_tracker_data|json_script:'habitTrackerInitialData' }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/habit_tracker.js' %}?v=habit3"></script>
+<script src="{% static 'js/money_tracker.js' %}?v=money2"></script>
+{% endblock %}

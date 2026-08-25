@@ -1492,6 +1492,197 @@ class LogicLessonProgress(models.Model):
         return f'{self.user.username} · {self.lesson_slug} · {self.status}'
 
 
+# ==================== ALIŞKANLIK TAKİBİ ====================
+
+class Habit(models.Model):
+    FREQUENCY_DAILY = 'daily'
+    FREQUENCY_CUSTOM = 'custom'
+    FREQUENCY_CHOICES = [
+        (FREQUENCY_DAILY, 'Her gün'),
+        (FREQUENCY_CUSTOM, 'Belirli günler'),
+    ]
+
+    ICON_CHOICES = [
+        ('check2-circle', 'Genel'),
+        ('book', 'Okuma'),
+        ('droplet', 'Su'),
+        ('activity', 'Hareket'),
+        ('sun', 'Sabah'),
+        ('moon-stars', 'Uyku'),
+        ('heart-pulse', 'Sağlık'),
+        ('pencil', 'Yazma'),
+        ('briefcase', 'İş'),
+        ('leaf', 'Denge'),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='habits',
+    )
+    name = models.CharField(max_length=80)
+    description = models.CharField(max_length=240, blank=True)
+    color = models.CharField(max_length=7, default='#2F6B4F')
+    icon = models.CharField(max_length=24, choices=ICON_CHOICES, default='check2-circle')
+    frequency = models.CharField(
+        max_length=12,
+        choices=FREQUENCY_CHOICES,
+        default=FREQUENCY_DAILY,
+    )
+    schedule_days = models.JSONField(default=list, blank=True)
+    target = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(999)],
+    )
+    unit = models.CharField(max_length=18, default='kez')
+    start_date = models.DateField(default=timezone.localdate)
+    position = models.PositiveSmallIntegerField(default=0)
+    is_archived = models.BooleanField(default=False)
+    archived_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['position', 'created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_archived', 'position']),
+            models.Index(fields=['user', 'start_date']),
+        ]
+        verbose_name = 'Alışkanlık'
+        verbose_name_plural = 'Alışkanlıklar'
+
+    def __str__(self):
+        return f'{self.user.username} · {self.name}'
+
+    def is_scheduled_for(self, selected_date):
+        if selected_date < self.start_date:
+            return False
+        if self.frequency == self.FREQUENCY_DAILY:
+            return True
+        return selected_date.weekday() in {
+            day for day in self.schedule_days if isinstance(day, int) and 0 <= day <= 6
+        }
+
+
+class HabitEntry(models.Model):
+    habit = models.ForeignKey(
+        Habit,
+        on_delete=models.CASCADE,
+        related_name='entries',
+    )
+    date = models.DateField()
+    value = models.PositiveIntegerField(default=0)
+    target = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(9999)],
+    )
+    note = models.CharField(max_length=240, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['habit', 'date'],
+                name='unique_habit_entry_per_day',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['habit', '-date']),
+        ]
+        verbose_name = 'Alışkanlık kaydı'
+        verbose_name_plural = 'Alışkanlık kayıtları'
+
+    def __str__(self):
+        return f'{self.habit.name} · {self.date} · {self.value}'
+
+    @property
+    def effective_target(self):
+        return self.target or self.habit.target
+
+
+class MoneyCategory(models.Model):
+    KIND_EXPENSE = 'expense'
+    KIND_INCOME = 'income'
+    KIND_CHOICES = [
+        (KIND_EXPENSE, 'Gider'),
+        (KIND_INCOME, 'Gelir'),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='money_categories',
+    )
+    name = models.CharField(max_length=40)
+    kind = models.CharField(max_length=10, choices=KIND_CHOICES)
+    color = models.CharField(max_length=7, default='#B85C4A')
+    icon = models.CharField(max_length=24, default='tag')
+    position = models.PositiveSmallIntegerField(default=0)
+    is_default = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['kind', 'position', 'name']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'kind', 'name'],
+                name='unique_money_category_per_user_kind',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['user', 'kind', 'position']),
+        ]
+        verbose_name = 'Para kategorisi'
+        verbose_name_plural = 'Para kategorileri'
+
+    def __str__(self):
+        return f'{self.user.username} · {self.get_kind_display()} · {self.name}'
+
+
+class MoneyTransaction(models.Model):
+    KIND_EXPENSE = MoneyCategory.KIND_EXPENSE
+    KIND_INCOME = MoneyCategory.KIND_INCOME
+    KIND_CHOICES = MoneyCategory.KIND_CHOICES
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='money_transactions',
+    )
+    kind = models.CharField(max_length=10, choices=KIND_CHOICES)
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(0.01)],
+    )
+    category = models.ForeignKey(
+        MoneyCategory,
+        on_delete=models.SET_NULL,
+        related_name='transactions',
+        null=True,
+        blank=True,
+    )
+    date = models.DateField(default=timezone.localdate)
+    note = models.CharField(max_length=160, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+        indexes = [
+            models.Index(fields=['user', '-date']),
+            models.Index(fields=['user', 'kind', '-date']),
+        ]
+        verbose_name = 'Para hareketi'
+        verbose_name_plural = 'Para hareketleri'
+
+    def __str__(self):
+        return f'{self.user.username} · {self.get_kind_display()} · {self.amount}'
+
+
 # ==================== RADYO SİSTEMİ ====================
 
 class RadioProgram(models.Model):

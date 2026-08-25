@@ -16,10 +16,12 @@ from .views.entry_book_views import entry_book_add_entry, entry_book_detail, ent
 from .views.export_views import download_entries_docx, download_entries_json, download_entries_paper, download_entries_pdf, download_entries_xlsx, filter_answers
 from .views.german_views import german_course_home, german_lesson_detail, german_level_test
 from .views.hashtag_views import all_hashtags, hashtag_view, search_hashtags, trending_hashtags
+from .views.habit_views import habit_archive, habit_create, habit_delete, habit_log, habit_tracker, habit_tracker_data, habit_update
 from .views.iat_views import game_of_life, iat_result, iat_result_page, iat_start, iat_test
 from .views.kenarda_views import kenarda_gonder, kenarda_list, kenarda_preview, kenarda_save, kenarda_sil
 from .views.library_views import file_library, file_library_delete, file_library_list, file_library_search, upload_editor_image
 from .views.message_views import check_new_messages, message_detail, message_list, send_message_from_answer, send_message_from_user
+from .views.money_views import money_category_create, money_tracker_data, money_transaction_create, money_transaction_delete, money_transaction_update
 from .views.navbar_views import navbar_status
 from .views.notification_views import follow_answer, follow_question, get_unread_notification_count, mark_all_notifications_read, mark_notification_read, notification_list, unfollow_answer, unfollow_question
 from .views.online_chat_views import online_chat_messages, online_chat_unread_count
@@ -122,6 +124,18 @@ urlpatterns = [
     path('files/<int:file_id>/delete/', file_library_delete, name='file_library_delete'),
     path('upload-editor-image/', upload_editor_image, name='upload_editor_image'),
     path('statistics/', site_statistics, name='site_statistics'),
+    path('aliskanliklar/', habit_tracker, name='habit_tracker'),
+    path('aliskanliklar/data/', habit_tracker_data, name='habit_tracker_data'),
+    path('aliskanliklar/create/', habit_create, name='habit_create'),
+    path('aliskanliklar/<int:habit_id>/update/', habit_update, name='habit_update'),
+    path('aliskanliklar/<int:habit_id>/log/', habit_log, name='habit_log'),
+    path('aliskanliklar/<int:habit_id>/archive/', habit_archive, name='habit_archive'),
+    path('aliskanliklar/<int:habit_id>/delete/', habit_delete, name='habit_delete'),
+    path('aliskanliklar/para/data/', money_tracker_data, name='money_tracker_data'),
+    path('aliskanliklar/para/transactions/create/', money_transaction_create, name='money_transaction_create'),
+    path('aliskanliklar/para/transactions/<int:transaction_id>/update/', money_transaction_update, name='money_transaction_update'),
+    path('aliskanliklar/para/transactions/<int:transaction_id>/delete/', money_transaction_delete, name='money_transaction_delete'),
+    path('aliskanliklar/para/categories/create/', money_category_create, name='money_category_create'),
     path('almanca/', german_course_home, name='german_course_home'),
     path('almanca/<slug:level_slug>/seviye-bitirme-testi/', german_level_test, name='german_level_test'),
     path('almanca/<slug:level_slug>/<slug:lesson_slug>/', german_lesson_detail, name='german_lesson_detail'),
