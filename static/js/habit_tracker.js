@@ -18,6 +18,9 @@
         activeCount: document.getElementById('habitActiveCount'),
         weekdayChart: document.getElementById('habitWeekdayChart'),
         trendChart: document.getElementById('habitTrendChart'),
+        trendTitle: document.getElementById('habitTrendTitle'),
+        trendSubtitle: document.getElementById('habitTrendSubtitle'),
+        trendScope: document.getElementById('habitTrendScope'),
         heatmap: document.getElementById('habitHeatmap'),
         status: document.getElementById('habitStatus'),
         dateLabel: document.getElementById('habitDateLabel'),
@@ -42,9 +45,18 @@
         unitInput: document.getElementById('habitUnitInput'),
         startDateInput: document.getElementById('habitStartDateInput'),
         iconChoices: document.getElementById('habitIconChoices'),
+        iconCurrent: document.getElementById('habitIconCurrent'),
+        iconSearch: document.getElementById('habitIconSearch'),
+        iconNoResults: document.getElementById('habitIconNoResults'),
         colorChoices: document.getElementById('habitColorChoices'),
+        customColorInput: document.getElementById('habitCustomColorInput'),
+        customColorLabel: document.getElementById('habitCustomColorLabel'),
+        colorValue: document.getElementById('habitColorValue'),
         frequencyControl: document.getElementById('habitFrequencyControl'),
         weekdayChoices: document.getElementById('habitWeekdayChoices'),
+        reminderEnabledInput: document.getElementById('habitReminderEnabledInput'),
+        reminderTimeField: document.getElementById('habitReminderTimeField'),
+        reminderTimeInput: document.getElementById('habitReminderTimeInput'),
         archiveButton: document.getElementById('habitArchiveButton'),
         deleteButton: document.getElementById('habitDeleteButton'),
         archiveList: document.getElementById('habitArchiveList'),
@@ -76,6 +88,7 @@
     let selectedColor = '#2F6B4F';
     let selectedFrequency = 'daily';
     let selectedDays = new Set();
+    let selectedTrendHabitId = 'all';
     let editorModal = null;
     let dayModal = null;
     let archiveModal = null;
@@ -263,6 +276,12 @@
         const meta = element('div', 'habit-row-meta');
         meta.append(element('strong', '', habit.scheduleLabel));
         meta.append(element('span', '', `${habit.targetOverridden ? 'Bugün' : 'Hedef'}: ${habit.target} ${habit.unit}`));
+        if (habit.reminderEnabled && habit.reminderTime) {
+            const reminder = element('span', 'habit-row-reminder');
+            reminder.append(icon('alarm'), document.createTextNode(` ${habit.reminderTime}`));
+            reminder.title = `Site içi hatırlatma: ${habit.reminderTime}`;
+            meta.append(reminder);
+        }
 
         const progress = element('div', 'habit-row-progress');
         progress.dataset.action = 'day';
@@ -340,9 +359,63 @@
         });
     }
 
+    function selectedTrendHabit() {
+        if (selectedTrendHabitId === 'all') return null;
+        return (state.habits || []).find(
+            (habit) => String(habit.id) === selectedTrendHabitId,
+        ) || null;
+    }
+
+    function renderTrendScope() {
+        const habits = state.habits || [];
+        if (
+            selectedTrendHabitId !== 'all'
+            && !habits.some((habit) => String(habit.id) === selectedTrendHabitId)
+        ) {
+            selectedTrendHabitId = 'all';
+        }
+
+        refs.trendScope.replaceChildren();
+        const generalOption = document.createElement('option');
+        generalOption.value = 'all';
+        generalOption.textContent = 'Genel görünüm';
+        refs.trendScope.append(generalOption);
+        habits.forEach((habit) => {
+            const option = document.createElement('option');
+            option.value = String(habit.id);
+            option.textContent = habit.name;
+            refs.trendScope.append(option);
+        });
+        refs.trendScope.value = selectedTrendHabitId;
+    }
+
     function renderTrend() {
         refs.trendChart.replaceChildren();
-        const trend = state.trend || [];
+        const baseTrend = state.trend || [];
+        const habit = selectedTrendHabit();
+        const habitRates = habit
+            ? ((state.habitTrends || {})[String(habit.id)] || [])
+            : [];
+        const trend = habit
+            ? baseTrend.map((item, index) => {
+                const rate = Number.isFinite(habitRates[index]) ? habitRates[index] : null;
+                return {
+                    ...item,
+                    rate,
+                    scheduled: rate === null ? 0 : 1,
+                    completed: rate !== null && rate >= 100 ? 1 : 0,
+                };
+            })
+            : baseTrend;
+        const chartName = habit ? habit.name : 'Genel tamamlanma';
+        refs.trendTitle.textContent = chartName;
+        refs.trendSubtitle.textContent = habit
+            ? `Planlanan günlük hedefe ilerleme · ${habit.defaultTarget} ${habit.unit}`
+            : 'Tüm görevlerin günlük ortalaması';
+        refs.trendChart.style.setProperty(
+            '--habit-chart-series',
+            habit ? habit.color : 'var(--habit-primary)',
+        );
         const width = 760;
         const height = 245;
         const margin = { top: 14, right: 16, bottom: 32, left: 34 };
@@ -351,7 +424,7 @@
         const svg = svgElement('svg', {
             viewBox: `0 0 ${width} ${height}`,
             role: 'img',
-            'aria-label': `${state.range} günlük tamamlama eğilimi`,
+            'aria-label': `${chartName}: ${state.range} günlük hedef oranı`,
             preserveAspectRatio: 'none',
         });
 
@@ -381,21 +454,26 @@
 
         trend.forEach((item, index) => {
             const x = margin.left + (index * step) + (step / 2);
-            const barHeight = (item.rate / 100) * plotHeight;
-            const y = margin.top + plotHeight - barHeight;
-            const bar = svgElement('rect', {
-                x: x - (barWidth / 2),
-                y,
-                width: barWidth,
-                height: Math.max(1, barHeight),
-                rx: Math.min(3, barWidth / 2),
-                class: `habit-chart-bar${item.rate >= 100 ? ' is-complete' : ''}`,
-            });
-            const title = svgElement('title');
-            title.textContent = `${item.date}: %${item.rate} · ${item.completed}/${item.scheduled}`;
-            bar.append(title);
-            svg.append(bar);
-            points.push(`${x},${y}`);
+            const hasPlannedTask = Number(item.scheduled) > 0 && item.rate !== null;
+            if (hasPlannedTask) {
+                const barHeight = (item.rate / 100) * plotHeight;
+                const y = margin.top + plotHeight - barHeight;
+                const bar = svgElement('rect', {
+                    x: x - (barWidth / 2),
+                    y,
+                    width: barWidth,
+                    height: Math.max(1, barHeight),
+                    rx: Math.min(3, barWidth / 2),
+                    class: `habit-chart-bar${habit ? ' is-task' : ''}${item.rate >= 100 ? ' is-complete' : ''}`,
+                });
+                const title = svgElement('title');
+                title.textContent = habit
+                    ? `${item.date}: %${item.rate}`
+                    : `${item.date}: %${item.rate} · ${item.completed}/${item.scheduled}`;
+                bar.append(title);
+                svg.append(bar);
+                points.push({ x, y });
+            }
 
             if (index === 0 || index === trend.length - 1 || index % labelEvery === 0) {
                 const label = svgElement('text', {
@@ -411,20 +489,37 @@
 
         if (points.length > 1) {
             svg.append(svgElement('polyline', {
-                points: points.join(' '),
+                points: points.map((point) => `${point.x},${point.y}`).join(' '),
                 class: 'habit-chart-line',
             }));
             if (trend.length <= 30) {
                 points.forEach((point) => {
-                    const [x, y] = point.split(',');
                     svg.append(svgElement('circle', {
-                        cx: x,
-                        cy: y,
+                        cx: point.x,
+                        cy: point.y,
                         r: 3,
                         class: 'habit-chart-point',
                     }));
                 });
             }
+        } else if (points.length === 1 && trend.length <= 30) {
+            svg.append(svgElement('circle', {
+                cx: points[0].x,
+                cy: points[0].y,
+                r: 3,
+                class: 'habit-chart-point',
+            }));
+        } else if (points.length === 0) {
+            const emptyLabel = svgElement('text', {
+                x: margin.left + (plotWidth / 2),
+                y: margin.top + (plotHeight / 2),
+                class: 'habit-chart-empty',
+                'text-anchor': 'middle',
+            });
+            emptyLabel.textContent = habit
+                ? 'Bu aralıkta planlanan gün yok.'
+                : 'Bu aralıkta planlanan görev yok.';
+            svg.append(emptyLabel);
         }
         refs.trendChart.append(svg);
     }
@@ -491,6 +586,7 @@
         renderSummary();
         renderHabits();
         renderWeekdays();
+        renderTrendScope();
         renderTrend();
         renderHeatmap();
         renderArchive();
@@ -529,6 +625,49 @@
         });
     }
 
+    function syncIconPreview() {
+        const selectedButton = refs.iconChoices.querySelector(`[data-icon="${selectedIcon}"]`);
+        const previewIcon = refs.iconCurrent.querySelector('i');
+        const previewLabel = refs.iconCurrent.querySelector('span');
+        previewIcon.className = `bi bi-${selectedIcon}`;
+        previewLabel.textContent = selectedButton ? selectedButton.getAttribute('aria-label') : 'Genel';
+    }
+
+    function filterIcons(query) {
+        const normalized = String(query || '').trim().toLocaleLowerCase('tr-TR');
+        let visibleCount = 0;
+        refs.iconChoices.querySelectorAll('[data-icon]').forEach((button) => {
+            const haystack = `${button.dataset.label || ''} ${button.dataset.icon || ''}`.toLocaleLowerCase('tr-TR');
+            const visible = !normalized || haystack.includes(normalized);
+            button.hidden = !visible;
+            if (visible) visibleCount += 1;
+        });
+        refs.iconNoResults.hidden = visibleCount > 0;
+    }
+
+    function syncColorPicker(preferCustom) {
+        const paletteButton = refs.colorChoices.querySelector(`[data-color="${selectedColor}"]`);
+        setEditorChoice(refs.colorChoices, 'color', selectedColor);
+        refs.customColorInput.value = selectedColor;
+        refs.colorValue.textContent = selectedColor;
+        refs.customColorLabel.classList.toggle('is-active', Boolean(preferCustom || !paletteButton));
+    }
+
+    function syncReminderFields(reveal = false) {
+        const enabled = refs.reminderEnabledInput.checked;
+        refs.reminderTimeField.hidden = !enabled;
+        refs.reminderTimeInput.required = enabled;
+        if (enabled && !refs.reminderTimeInput.value) refs.reminderTimeInput.value = '09:00';
+        if (enabled && reveal) {
+            window.requestAnimationFrame(() => {
+                refs.reminderTimeField.scrollIntoView({
+                    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+                    block: 'nearest',
+                });
+            });
+        }
+    }
+
     function setFrequency(frequency) {
         selectedFrequency = frequency === 'custom' ? 'custom' : 'daily';
         setEditorChoice(refs.frequencyControl, 'frequency', selectedFrequency);
@@ -563,9 +702,15 @@
         selectedColor = '#2F6B4F';
         selectedDays = new Set();
         setEditorChoice(refs.iconChoices, 'icon', selectedIcon);
-        setEditorChoice(refs.colorChoices, 'color', selectedColor);
+        syncIconPreview();
+        refs.iconSearch.value = '';
+        filterIcons('');
+        syncColorPicker(false);
         setFrequency('daily');
         syncWeekdayChoices();
+        refs.reminderEnabledInput.checked = false;
+        refs.reminderTimeInput.value = '09:00';
+        syncReminderFields();
         refs.archiveButton.hidden = true;
         refs.deleteButton.hidden = true;
         showEditor();
@@ -586,9 +731,15 @@
         selectedColor = habit.color;
         selectedDays = new Set(habit.scheduleDays || []);
         setEditorChoice(refs.iconChoices, 'icon', selectedIcon);
-        setEditorChoice(refs.colorChoices, 'color', selectedColor);
+        syncIconPreview();
+        refs.iconSearch.value = '';
+        filterIcons('');
+        syncColorPicker(!refs.colorChoices.querySelector(`[data-color="${selectedColor}"]`));
         setFrequency(habit.frequency);
         syncWeekdayChoices();
+        refs.reminderEnabledInput.checked = Boolean(habit.reminderEnabled);
+        refs.reminderTimeInput.value = habit.reminderTime || '09:00';
+        syncReminderFields();
         refs.archiveButton.hidden = false;
         refs.deleteButton.hidden = false;
         showEditor();
@@ -605,6 +756,8 @@
             startDate: refs.startDateInput.value,
             frequency: selectedFrequency,
             scheduleDays: Array.from(selectedDays).sort((a, b) => a - b),
+            reminderEnabled: refs.reminderEnabledInput.checked,
+            reminderTime: refs.reminderEnabledInput.checked ? refs.reminderTimeInput.value : '',
         };
     }
 
@@ -675,18 +828,31 @@
         button.addEventListener('click', () => loadDashboard(state.selectedDate, Number(button.dataset.range)));
     });
 
+    refs.trendScope.addEventListener('change', () => {
+        selectedTrendHabitId = refs.trendScope.value;
+        renderTrend();
+    });
+
     refs.iconChoices.addEventListener('click', (event) => {
         const button = event.target.closest('[data-icon]');
         if (!button) return;
         selectedIcon = button.dataset.icon;
         setEditorChoice(refs.iconChoices, 'icon', selectedIcon);
+        syncIconPreview();
     });
+
+    refs.iconSearch.addEventListener('input', () => filterIcons(refs.iconSearch.value));
 
     refs.colorChoices.addEventListener('click', (event) => {
         const button = event.target.closest('[data-color]');
         if (!button) return;
         selectedColor = button.dataset.color;
-        setEditorChoice(refs.colorChoices, 'color', selectedColor);
+        syncColorPicker(false);
+    });
+
+    refs.customColorInput.addEventListener('input', () => {
+        selectedColor = refs.customColorInput.value.toUpperCase();
+        syncColorPicker(true);
     });
 
     refs.frequencyControl.addEventListener('click', (event) => {
@@ -702,6 +868,8 @@
         else selectedDays.add(day);
         syncWeekdayChoices();
     });
+
+    refs.reminderEnabledInput.addEventListener('change', () => syncReminderFields(true));
 
     refs.editorForm.addEventListener('submit', async (event) => {
         event.preventDefault();

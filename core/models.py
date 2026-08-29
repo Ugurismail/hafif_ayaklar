@@ -1115,6 +1115,7 @@ class Notification(models.Model):
         ('answer_suggestion', 'Answer Suggestion'),# Someone suggested an edit to your answer
         ('suggestion_result', 'Suggestion Result'),# Your suggestion was accepted/rejected
         ('revision_review', 'Revision Review'),    # Contributor review request for a new revision
+        ('habit_reminder', 'Habit Reminder'),      # Due habit reminder
         ('system', 'System'),                      # System notifications
     )
 
@@ -1129,6 +1130,13 @@ class Notification(models.Model):
     related_answer = models.ForeignKey(Answer, on_delete=models.CASCADE, null=True, blank=True)
     related_suggestion = models.ForeignKey(
         AnswerSuggestion,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='notifications',
+    )
+    related_habit = models.ForeignKey(
+        'Habit',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -1349,6 +1357,8 @@ class Notification(models.Model):
             return f"{reverse('correction_inbox')}?view=outgoing"
         if self.notification_type == 'revision_review' and self.related_answer_id:
             return reverse('answer_git_history', args=[self.related_answer_id])
+        if self.notification_type == 'habit_reminder':
+            return reverse('habit_tracker')
         if self.related_question_id:
             target = reverse('question_detail', args=[self.related_question.slug])
             if self.related_answer_id:
@@ -1504,15 +1514,41 @@ class Habit(models.Model):
 
     ICON_CHOICES = [
         ('check2-circle', 'Genel'),
+        ('bullseye', 'Hedef'),
+        ('star', 'Yıldız'),
+        ('trophy', 'Başarı'),
+        ('lightning-charge', 'Enerji'),
         ('book', 'Okuma'),
+        ('journal-check', 'Çalışma'),
+        ('mortarboard', 'Eğitim'),
+        ('lightbulb', 'Öğrenme'),
+        ('code-slash', 'Kodlama'),
+        ('translate', 'Dil'),
         ('droplet', 'Su'),
         ('activity', 'Hareket'),
+        ('bicycle', 'Bisiklet'),
         ('sun', 'Sabah'),
         ('moon-stars', 'Uyku'),
+        ('alarm', 'Saat'),
+        ('calendar-check', 'Plan'),
         ('heart-pulse', 'Sağlık'),
         ('pencil', 'Yazma'),
         ('briefcase', 'İş'),
-        ('leaf', 'Denge'),
+        ('palette', 'Sanat'),
+        ('music-note-beamed', 'Müzik'),
+        ('camera', 'Fotoğraf'),
+        ('brush', 'Üretim'),
+        ('controller', 'Oyun'),
+        ('cup-hot', 'Mola'),
+        ('people', 'Sosyal'),
+        ('house-heart', 'Ev'),
+        ('wallet2', 'Bütçe'),
+        ('piggy-bank', 'Birikim'),
+        ('basket', 'Alışveriş'),
+        ('egg-fried', 'Beslenme'),
+        ('emoji-smile', 'İyi oluş'),
+        ('flower1', 'Bakım'),
+        ('tree', 'Denge'),
     ]
 
     user = models.ForeignKey(
@@ -1536,6 +1572,8 @@ class Habit(models.Model):
     )
     unit = models.CharField(max_length=18, default='kez')
     start_date = models.DateField(default=timezone.localdate)
+    reminder_enabled = models.BooleanField(default=False)
+    reminder_time = models.TimeField(null=True, blank=True)
     position = models.PositiveSmallIntegerField(default=0)
     is_archived = models.BooleanField(default=False)
     archived_at = models.DateTimeField(null=True, blank=True)
@@ -1601,6 +1639,33 @@ class HabitEntry(models.Model):
     @property
     def effective_target(self):
         return self.target or self.habit.target
+
+
+class HabitReminderDelivery(models.Model):
+    habit = models.ForeignKey(
+        Habit,
+        on_delete=models.CASCADE,
+        related_name='reminder_deliveries',
+    )
+    date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['habit', 'date'],
+                name='unique_habit_reminder_delivery_per_day',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['habit', '-date']),
+        ]
+        verbose_name = 'Alışkanlık hatırlatma teslimi'
+        verbose_name_plural = 'Alışkanlık hatırlatma teslimleri'
+
+    def __str__(self):
+        return f'{self.habit.name} · {self.date}'
 
 
 class MoneyCategory(models.Model):

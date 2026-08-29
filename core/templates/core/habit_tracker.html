@@ -5,7 +5,7 @@
 {% block robots %}noindex, nofollow{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/habit_tracker.css' %}?v=habit4">
+<link rel="stylesheet" href="{% static 'css/habit_tracker.css' %}?v=habit9">
 {% endblock %}
 
 {% block content %}
@@ -37,7 +37,7 @@
                 <i class="bi bi-archive" aria-hidden="true"></i>
                 <span class="habit-archive-count" id="habitArchiveCount">0</span>
             </button>
-            <button class="habit-primary-button" id="habitCreateOpen" type="button">
+            <button class="habit-primary-button" id="habitCreateOpen" type="button" aria-label="Yeni alışkanlık">
                 <i class="bi bi-plus-lg" aria-hidden="true"></i>
                 <span>Yeni alışkanlık</span>
             </button>
@@ -145,8 +145,17 @@
         <div class="habit-analytics-grid">
             <div class="habit-trend-panel">
                 <div class="habit-chart-heading">
-                    <strong>Tamamlama eğilimi</strong>
-                    <span>Günlük hedef oranı</span>
+                    <div class="habit-chart-heading-copy">
+                        <strong id="habitTrendTitle">Genel tamamlanma</strong>
+                        <span id="habitTrendSubtitle">Tüm görevlerin günlük ortalaması</span>
+                    </div>
+                    <label class="habit-trend-scope">
+                        <span class="visually-hidden">Grafikte gösterilen görev</span>
+                        <select id="habitTrendScope" aria-label="Grafikte gösterilen görev">
+                            <option value="all">Genel görünüm</option>
+                        </select>
+                        <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                    </label>
                 </div>
                 <div class="habit-trend-chart" id="habitTrendChart" aria-label="Tamamlama eğilimi grafiği"></div>
             </div>
@@ -280,23 +289,49 @@
                         <textarea id="habitDescriptionInput" maxlength="240" rows="2" placeholder="Bu alışkanlığın odağı"></textarea>
                     </label>
 
-                    <fieldset class="habit-choice-field habit-field--full">
-                        <legend>Simge</legend>
+                    <fieldset class="habit-choice-field habit-picker-section habit-field--full">
+                        <legend>
+                            <span>Simge</span>
+                            <small>Alışkanlığını hızlı ayırt etmek için seç</small>
+                        </legend>
+                        <div class="habit-picker-toolbar">
+                            <div class="habit-picker-current" id="habitIconCurrent" aria-live="polite">
+                                <i class="bi bi-check2-circle" aria-hidden="true"></i>
+                                <span>Genel</span>
+                            </div>
+                            <label class="habit-picker-search">
+                                <i class="bi bi-search" aria-hidden="true"></i>
+                                <input id="habitIconSearch" type="search" placeholder="Simge ara" autocomplete="off" aria-label="Simge ara">
+                            </label>
+                        </div>
                         <div class="habit-icon-choices" id="habitIconChoices">
                             {% for value, label in habit_icons %}
-                            <button type="button" data-icon="{{ value }}" title="{{ label }}" aria-label="{{ label }}">
+                            <button type="button" data-icon="{{ value }}" data-label="{{ label|lower }}" title="{{ label }}" aria-label="{{ label }}">
                                 <i class="bi bi-{{ value }}" aria-hidden="true"></i>
                             </button>
                             {% endfor %}
                         </div>
+                        <p class="habit-picker-empty" id="habitIconNoResults" hidden>Bu adla eşleşen simge yok.</p>
                     </fieldset>
 
-                    <fieldset class="habit-choice-field habit-field--full">
-                        <legend>Renk</legend>
-                        <div class="habit-color-choices" id="habitColorChoices">
-                            {% for color in habit_colors %}
-                            <button type="button" data-color="{{ color }}" style="--choice-color: {{ color }}" title="{{ color }}" aria-label="{{ color }}"></button>
+                    <fieldset class="habit-choice-field habit-picker-section habit-field--full">
+                        <legend>
+                            <span>Renk</span>
+                            <small>Hazır paletten seç veya kendi rengini oluştur</small>
+                        </legend>
+                        <div class="habit-color-picker">
+                            <div class="habit-color-choices" id="habitColorChoices">
+                            {% for color, label in habit_colors %}
+                            <button type="button" data-color="{{ color }}" style="--choice-color: {{ color }}" title="{{ label }} · {{ color }}" aria-label="{{ label }}"></button>
                             {% endfor %}
+                            </div>
+                            <label class="habit-custom-color" id="habitCustomColorLabel">
+                                <input id="habitCustomColorInput" type="color" value="#2F6B4F" aria-label="Özel renk seç">
+                                <span>
+                                    <strong>Özel</strong>
+                                    <small id="habitColorValue">#2F6B4F</small>
+                                </span>
+                            </label>
                         </div>
                     </fieldset>
 
@@ -313,8 +348,11 @@
                         <input id="habitStartDateInput" type="date" required>
                     </label>
 
-                    <fieldset class="habit-choice-field habit-field--full">
-                        <legend>Tekrar</legend>
+                    <fieldset class="habit-choice-field habit-schedule-field habit-field--full">
+                        <legend>
+                            <span>Tekrar</span>
+                            <small>Bu alışkanlığın takvimde görüneceği günler</small>
+                        </legend>
                         <div class="habit-frequency-control" id="habitFrequencyControl">
                             <button type="button" data-frequency="daily" class="is-active">Her gün</button>
                             <button type="button" data-frequency="custom">Belirli günler</button>
@@ -324,6 +362,32 @@
                             <button type="button" data-day="{{ day }}">{% cycle 'Pzt' 'Sal' 'Çar' 'Per' 'Cum' 'Cmt' 'Paz' %}</button>
                             {% endfor %}
                         </div>
+                    </fieldset>
+
+                    <fieldset class="habit-choice-field habit-reminder-field habit-field--full">
+                        <legend>
+                            <span>Hatırlatma</span>
+                            <small>Site içi bildirim</small>
+                        </legend>
+                        <div class="habit-reminder-panel">
+                            <label class="habit-reminder-toggle" for="habitReminderEnabledInput">
+                                <span class="habit-reminder-icon" aria-hidden="true"><i class="bi bi-alarm"></i></span>
+                                <span class="habit-reminder-copy">
+                                    <strong>Bu alışkanlığı hatırlat</strong>
+                                    <small>Hedef tamamlanmadıysa seçtiğin saatte bildir.</small>
+                                </span>
+                                <input id="habitReminderEnabledInput" type="checkbox">
+                                <span class="habit-switch" aria-hidden="true"><i></i></span>
+                            </label>
+                            <label class="habit-field habit-reminder-time" id="habitReminderTimeField" hidden>
+                                <span>Hatırlatma saati</span>
+                                <input id="habitReminderTimeInput" type="time" value="09:00">
+                            </label>
+                        </div>
+                        <p class="habit-reminder-note">
+                            <i class="bi bi-info-circle" aria-hidden="true"></i>
+                            Site açıksa kısa süre içinde, kapalıysa sonraki ziyaretinde bildirim oluşur.
+                        </p>
                     </fieldset>
                 </div>
                 <footer class="habit-modal-footer">
@@ -482,6 +546,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/habit_tracker.js' %}?v=habit3"></script>
+<script src="{% static 'js/habit_tracker.js' %}?v=habit6"></script>
 <script src="{% static 'js/money_tracker.js' %}?v=money2"></script>
 {% endblock %}

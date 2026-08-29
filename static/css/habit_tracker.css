@@ -187,7 +187,9 @@
 .habit-action-button:focus-visible,
 .habit-edit-button:focus-visible,
 .habit-field input:focus-visible,
-.habit-field textarea:focus-visible {
+.habit-field textarea:focus-visible,
+.habit-picker-search input:focus-visible,
+.habit-custom-color input:focus-visible {
     outline: 3px solid color-mix(in srgb, var(--habit-primary) 24%, transparent);
     outline-offset: 2px;
 }
@@ -540,6 +542,15 @@
     white-space: nowrap;
 }
 
+.habit-row-meta .habit-row-reminder {
+    color: color-mix(in srgb, var(--row-color) 86%, var(--habit-ink));
+    font-weight: 700;
+}
+
+.habit-row-reminder i {
+    margin-right: 2px;
+}
+
 .habit-mini-chart {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -792,16 +803,74 @@
     margin-bottom: 14px;
 }
 
-.habit-chart-heading strong {
+.habit-chart-heading-copy {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+}
+
+.habit-chart-heading-copy strong {
+    overflow: hidden;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.habit-chart-heading-copy span {
+    overflow: hidden;
+    color: var(--habit-muted);
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.habit-chart-heading > strong {
     font-size: 14px;
 }
 
-.habit-chart-heading span {
+.habit-chart-heading > span {
     color: var(--habit-muted);
     font-size: 11px;
 }
 
+.habit-trend-scope {
+    position: relative;
+    flex: 0 1 210px;
+    min-width: 145px;
+}
+
+.habit-trend-scope select {
+    width: 100%;
+    min-height: 36px;
+    appearance: none;
+    padding: 7px 34px 7px 11px;
+    border: 1px solid var(--habit-border);
+    border-radius: 6px;
+    background: var(--habit-soft);
+    color: var(--habit-ink);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+}
+
+.habit-trend-scope i {
+    position: absolute;
+    top: 50%;
+    right: 11px;
+    color: var(--habit-muted);
+    font-size: 11px;
+    pointer-events: none;
+    transform: translateY(-50%);
+}
+
+.habit-trend-scope select:focus-visible {
+    border-color: var(--habit-primary);
+    outline: 3px solid color-mix(in srgb, var(--habit-primary) 18%, transparent);
+}
+
 .habit-trend-chart {
+    --habit-chart-series: var(--habit-primary);
     min-height: 245px;
 }
 
@@ -828,12 +897,16 @@
 }
 
 .habit-chart-bar.is-complete {
-    fill: var(--habit-primary);
+    fill: var(--habit-chart-series);
+}
+
+.habit-chart-bar.is-task {
+    fill: color-mix(in srgb, var(--habit-chart-series) 58%, var(--habit-surface));
 }
 
 .habit-chart-line {
     fill: none;
-    stroke: var(--habit-primary);
+    stroke: var(--habit-chart-series);
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 2.5;
@@ -841,8 +914,14 @@
 
 .habit-chart-point {
     fill: var(--habit-surface);
-    stroke: var(--habit-primary);
+    stroke: var(--habit-chart-series);
     stroke-width: 2;
+}
+
+.habit-chart-empty {
+    fill: var(--habit-muted);
+    font-family: Arial, sans-serif;
+    font-size: 12px;
 }
 
 .habit-heatmap-wrap {
@@ -932,16 +1011,23 @@
 }
 
 .habit-modal .modal-dialog {
-    max-width: 620px;
+    max-width: 700px;
     margin-top: 16px;
     margin-bottom: 16px;
+}
+
+body.modal-open .floating-tools {
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
 }
 
 .habit-modal .modal-content {
     display: flex;
     max-height: calc(100dvh - 32px);
     flex-direction: column;
-    overflow: hidden;
+    overflow: clip;
+    overscroll-behavior: contain;
     border: 1px solid var(--habit-border);
     border-radius: 8px;
     background: var(--habit-surface);
@@ -980,11 +1066,15 @@
     min-height: 0;
     flex: 1;
     overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 22px;
 }
 
 .habit-field,
 .habit-choice-field {
+    display: block;
+    padding: 0;
+    border: 0;
     min-width: 0;
     margin: 0;
 }
@@ -1001,6 +1091,25 @@
     color: var(--habit-ink);
     font-size: 12px;
     font-weight: 800;
+}
+
+.habit-choice-field legend {
+    float: none;
+    clear: both;
+    padding: 0;
+}
+
+.habit-choice-field legend span,
+.habit-choice-field legend small {
+    display: block;
+}
+
+.habit-choice-field legend small {
+    margin-top: 3px;
+    color: var(--habit-muted);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.35;
 }
 
 .habit-field > span small {
@@ -1084,7 +1193,6 @@
     font-weight: 700;
 }
 
-.habit-icon-choices,
 .habit-color-choices,
 .habit-weekday-choices {
     display: flex;
@@ -1092,16 +1200,104 @@
     gap: 7px;
 }
 
+.habit-picker-section,
+.habit-schedule-field,
+.habit-reminder-field {
+    padding: 14px;
+    border: 1px solid var(--habit-border);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--habit-soft) 58%, var(--habit-surface));
+}
+
+.habit-picker-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.habit-picker-current {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+    color: var(--habit-primary);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.habit-picker-current i {
+    display: inline-grid;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--habit-primary) 36%, var(--habit-border));
+    border-radius: 6px;
+    background: var(--habit-surface);
+    font-size: 16px;
+}
+
+.habit-picker-current span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.habit-picker-search {
+    position: relative;
+    display: block;
+    width: min(210px, 48%);
+}
+
+.habit-picker-search i {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    color: var(--habit-muted);
+    font-size: 12px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.habit-picker-search input {
+    width: 100%;
+    height: 34px;
+    padding: 7px 10px 7px 30px;
+    border: 1px solid var(--habit-border);
+    border-radius: 6px;
+    background: var(--habit-surface);
+    color: var(--habit-ink);
+    font: inherit;
+    font-size: 12px;
+}
+
+.habit-icon-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 7px;
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 2px 4px 3px 2px;
+    scrollbar-width: thin;
+}
+
 .habit-icon-choices button {
     display: grid;
-    width: 39px;
-    height: 39px;
+    width: 100%;
+    min-width: 42px;
+    height: 42px;
     place-items: center;
     border: 1px solid var(--habit-border);
     border-radius: 6px;
     background: var(--habit-surface);
     color: var(--habit-muted);
     font-size: 17px;
+}
+
+.habit-icon-choices button[hidden] {
+    display: none;
 }
 
 .habit-icon-choices button.is-active {
@@ -1133,6 +1329,74 @@
     text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
 }
 
+.habit-picker-empty {
+    margin: 10px 0 0;
+    color: var(--habit-muted);
+    font-size: 11px;
+}
+
+.habit-color-picker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.habit-color-choices {
+    flex: 1;
+}
+
+.habit-custom-color {
+    display: inline-flex;
+    min-width: 108px;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 9px;
+    border: 1px solid var(--habit-border);
+    border-radius: 7px;
+    background: var(--habit-surface);
+    cursor: pointer;
+}
+
+.habit-custom-color.is-active {
+    border-color: var(--habit-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--habit-primary) 12%, transparent);
+}
+
+.habit-custom-color input {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    padding: 2px;
+    overflow: hidden;
+    border: 1px solid var(--habit-border);
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+}
+
+.habit-custom-color span,
+.habit-custom-color strong,
+.habit-custom-color small {
+    display: block;
+}
+
+.habit-custom-color strong {
+    color: var(--habit-ink);
+    font-size: 11px;
+}
+
+.habit-custom-color small {
+    margin-top: 1px;
+    color: var(--habit-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 9px;
+}
+
+.habit-schedule-field .habit-frequency-control {
+    margin-top: 2px;
+}
+
 .habit-weekday-choices {
     margin-top: 11px;
 }
@@ -1157,6 +1421,119 @@
     border-color: var(--habit-accent);
     background: color-mix(in srgb, var(--habit-accent) 16%, var(--habit-surface));
     color: var(--habit-ink);
+}
+
+.habit-reminder-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 180px;
+    align-items: center;
+    gap: 14px;
+}
+
+.habit-reminder-toggle {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.habit-reminder-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--habit-primary) 10%, var(--habit-surface));
+    color: var(--habit-primary);
+    font-size: 16px;
+}
+
+.habit-reminder-copy,
+.habit-reminder-copy strong,
+.habit-reminder-copy small {
+    display: block;
+    min-width: 0;
+}
+
+.habit-reminder-copy strong {
+    color: var(--habit-ink);
+    font-size: 12px;
+}
+
+.habit-reminder-copy small {
+    margin-top: 2px;
+    color: var(--habit-muted);
+    font-size: 10px;
+    line-height: 1.35;
+}
+
+.habit-reminder-toggle > input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.habit-switch {
+    position: relative;
+    display: block;
+    width: 40px;
+    height: 23px;
+    border: 1px solid var(--habit-border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--habit-ink) 12%, var(--habit-surface));
+    transition: background 160ms ease, border-color 160ms ease;
+}
+
+.habit-switch i {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--habit-surface);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+    transition: transform 160ms ease;
+}
+
+.habit-reminder-toggle > input:checked + .habit-switch {
+    border-color: var(--habit-primary);
+    background: var(--habit-primary);
+}
+
+.habit-reminder-toggle > input:checked + .habit-switch i {
+    transform: translateX(17px);
+}
+
+.habit-reminder-toggle > input:focus-visible + .habit-switch {
+    outline: 3px solid color-mix(in srgb, var(--habit-primary) 24%, transparent);
+    outline-offset: 2px;
+}
+
+.habit-reminder-time[hidden] {
+    display: none;
+}
+
+.habit-reminder-time input {
+    min-height: 40px;
+}
+
+.habit-reminder-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 10px 0 0 46px;
+    color: var(--habit-muted);
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.habit-reminder-note i {
+    margin-top: 1px;
 }
 
 .habit-modal-footer {
@@ -2047,9 +2424,66 @@
         padding: 14px;
     }
 
+    .habit-chart-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .habit-trend-scope {
+        width: 100%;
+        min-width: 0;
+        flex-basis: auto;
+    }
+
     .habit-form-body {
         grid-template-columns: 1fr;
         padding: 18px;
+    }
+
+    .habit-modal-footer {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .habit-modal-footer .habit-modal-spacer {
+        display: none;
+    }
+
+    .habit-modal-footer button {
+        width: 100%;
+        min-width: 0;
+        justify-content: center;
+    }
+
+    .habit-picker-toolbar,
+    .habit-color-picker {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .habit-picker-search {
+        width: 100%;
+    }
+
+    .habit-icon-choices {
+        grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+        max-height: 142px;
+    }
+
+    .habit-custom-color {
+        width: 100%;
+    }
+
+    .habit-reminder-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .habit-reminder-time {
+        margin-left: 46px;
+    }
+
+    .habit-reminder-note {
+        margin-left: 0;
     }
 
     .habit-day-form,

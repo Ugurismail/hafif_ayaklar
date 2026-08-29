@@ -1,30 +1,40 @@
 """Private habit tracking dashboard and JSON actions."""
 
 import json
+import re
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Max
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
-from django.utils.dateparse import parse_date
+from django.utils.dateparse import parse_date, parse_time
 from django.views.decorators.http import require_GET, require_POST
 
 from ..models import Habit, HabitEntry
 
 
-HABIT_COLORS = {
-    '#2F6B4F',
-    '#B08D57',
-    '#B85C4A',
-    '#3D6F8E',
-    '#765A86',
-    '#65743A',
-    '#A16A3A',
-    '#4E5968',
-}
+HABIT_COLOR_PALETTE = [
+    ('#2F6B4F', 'Orman'),
+    ('#2F7F78', 'Çamurcun'),
+    ('#3D6F8E', 'Okyanus'),
+    ('#476A9C', 'Gece mavisi'),
+    ('#4E5968', 'Grafit'),
+    ('#65743A', 'Zeytin'),
+    ('#5B7F3B', 'Yaprak'),
+    ('#765A86', 'Erik'),
+    ('#6A5FA8', 'İndigo'),
+    ('#8B5E83', 'Mürdüm'),
+    ('#A16A3A', 'Bakır'),
+    ('#B08D57', 'Altın'),
+    ('#C07A32', 'Kehribar'),
+    ('#B85C4A', 'Kiremit'),
+    ('#C45D75', 'Gül'),
+    ('#8A6F5A', 'Toprak'),
+]
 HABIT_ICONS = {choice[0] for choice in Habit.ICON_CHOICES}
 HABIT_RANGES = {7, 30, 90}
 MAX_ACTIVE_HABITS = 40
@@ -191,6 +201,8 @@ def _dashboard_payload(user, selected_date=None, range_days=30):
             'targetOverridden': selected_values['target_overridden'],
             'unit': habit.unit,
             'startDate': habit.start_date.isoformat(),
+            'reminderEnabled': habit.reminder_enabled,
+            'reminderTime': habit.reminder_time.strftime('%H:%M') if habit.reminder_time else '',
             'scheduled': is_scheduled,
             'value': value,
             'note': selected_values['note'],
@@ -201,10 +213,25 @@ def _dashboard_payload(user, selected_date=None, range_days=30):
 
     selected_metric = day_metric(selected_date)
     trend_start = selected_date - timedelta(days=range_days - 1)
-    trend = [
-        day_metric(trend_start + timedelta(days=offset))
+    trend_dates = [
+        trend_start + timedelta(days=offset)
         for offset in range(range_days)
     ]
+    trend = [day_metric(day) for day in trend_dates]
+    habit_trends = {}
+    for habit in visible_habits:
+        rates = []
+        for day in trend_dates:
+            is_scheduled = (
+                _habit_available_on(habit, day)
+                and habit.is_scheduled_for(day)
+            )
+            if not is_scheduled:
+                rates.append(None)
+                continue
+            values = values_for(habit, day)
+            rates.append(_progress(values['value'], values['target']))
+        habit_trends[str(habit.id)] = rates
     current_week_start = selected_date - timedelta(days=selected_date.weekday())
     heatmap_start = current_week_start - timedelta(weeks=11)
     heatmap = []
@@ -282,6 +309,7 @@ def _dashboard_payload(user, selected_date=None, range_days=30):
             'active': len(visible_habits),
         },
         'trend': trend,
+        'habitTrends': habit_trends,
         'heatmap': heatmap,
         'weekdays': weekdays,
     }
@@ -293,8 +321,8 @@ def _clean_habit_payload(payload):
         return None, 'Alışkanlık adı boş olamaz.'
 
     description = str(payload.get('description', '')).strip()[:240]
-    color = str(payload.get('color', '')).upper()
-    if color not in HABIT_COLORS:
+    color = str(payload.get('color', '')).strip().upper()
+    if not re.fullmatch(r'#[0-9A-F]{6}', color):
         color = '#2F6B4F'
 
     icon = str(payload.get('icon', '')).strip()
@@ -328,6 +356,14 @@ def _clean_habit_payload(payload):
     if start_date > timezone.localdate():
         return None, 'Başlangıç tarihi gelecekte olamaz.'
 
+    reminder_enabled = payload.get('reminderEnabled') is True
+    reminder_time = None
+    if reminder_enabled:
+        reminder_time = parse_time(str(payload.get('reminderTime', '')).strip())
+        if reminder_time is None:
+            return None, 'Hatırlatma için geçerli bir saat seçin.'
+        reminder_time = reminder_time.replace(second=0, microsecond=0)
+
     return {
         'name': name,
         'description': description,
@@ -338,6 +374,8 @@ def _clean_habit_payload(payload):
         'target': target,
         'unit': unit,
         'start_date': start_date,
+        'reminder_enabled': reminder_enabled,
+        'reminder_time': reminder_time,
     }, None
 
 
@@ -360,7 +398,7 @@ def habit_tracker(request):
     range_days = _selected_range(request.GET.get('range'))
     return render(request, 'core/habit_tracker.html', {
         'habit_tracker_data': _dashboard_payload(request.user, selected_date, range_days),
-        'habit_colors': sorted(HABIT_COLORS),
+        'habit_colors': HABIT_COLOR_PALETTE,
         'habit_icons': Habit.ICON_CHOICES,
     })
 
@@ -393,6 +431,10 @@ def habit_create(request):
 
     max_position = Habit.objects.filter(user=request.user).aggregate(Max('position'))['position__max'] or 0
     Habit.objects.create(user=request.user, position=max_position + 1, **cleaned)
+    cache.delete_many([
+        f'navbar-status:{request.user.id}',
+        f'habit-reminder-check:{request.user.id}',
+    ])
     return _response_with_dashboard(request, 'Alışkanlık eklendi.', status=201)
 
 
@@ -412,6 +454,10 @@ def habit_update(request, habit_id):
     for field, value in cleaned.items():
         setattr(habit, field, value)
     habit.save(update_fields=[*cleaned.keys(), 'updated_at'])
+    cache.delete_many([
+        f'navbar-status:{request.user.id}',
+        f'habit-reminder-check:{request.user.id}',
+    ])
     return _response_with_dashboard(request, 'Alışkanlık güncellendi.')
 
 

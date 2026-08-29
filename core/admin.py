@@ -19,7 +19,8 @@ from core.models import (
     QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage, OnlineChatMessage,
     LibraryFile, DailyVisitor, VisitSession, AttendanceSheetConfig, AttendanceDayState,
     SavedCollection, SavedCollectionItem, ContentReport, EntryBook, EntryBookItem,
-    LogicLessonProgress, Habit, HabitEntry, MoneyCategory, MoneyTransaction
+    LogicLessonProgress, Habit, HabitEntry, HabitReminderDelivery,
+    MoneyCategory, MoneyTransaction
 )
 
 # =============================================================================
@@ -86,6 +87,15 @@ class HabitEntryAdmin(admin.ModelAdmin):
     search_fields = ('habit__name', 'habit__user__username', 'note')
     ordering = ('-date', '-updated_at')
     readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(HabitReminderDelivery)
+class HabitReminderDeliveryAdmin(admin.ModelAdmin):
+    list_display = ('habit', 'date', 'created_at')
+    list_filter = ('date', 'created_at')
+    search_fields = ('habit__name', 'habit__user__username')
+    ordering = ('-date', '-created_at')
+    readonly_fields = ('created_at',)
 
 
 @admin.register(MoneyCategory)

@@ -1,14 +1,24 @@
 import json
 from datetime import timedelta
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Habit, HabitEntry, MoneyCategory, MoneyTransaction
+from .habit_reminders import materialize_due_habit_reminders
+from .models import (
+    Habit,
+    HabitEntry,
+    HabitReminderDelivery,
+    MoneyCategory,
+    MoneyTransaction,
+    Notification,
+)
 
 
 class HabitTrackerTests(TestCase):
@@ -35,6 +45,11 @@ class HabitTrackerTests(TestCase):
         values.update(overrides)
         return Habit.objects.create(**values)
 
+    def due_reminder_time(self):
+        return (
+            timezone.localtime(timezone.now()) - timedelta(minutes=1)
+        ).time().replace(second=0, microsecond=0, tzinfo=None)
+
     def test_dashboard_requires_login(self):
         response = self.client.get(reverse('habit_tracker'))
         self.assertEqual(response.status_code, 302)
@@ -54,10 +69,12 @@ class HabitTrackerTests(TestCase):
             'description': 'Günlük su hedefi',
             'target': 8,
             'unit': 'bardak',
-            'icon': 'droplet',
-            'color': '#3D6F8E',
+            'icon': 'cup-hot',
+            'color': '#1A2B3C',
             'frequency': 'custom',
             'scheduleDays': [0, 2, 4, 4, 12],
+            'reminderEnabled': True,
+            'reminderTime': '08:30',
             'startDate': self.today.isoformat(),
             'date': self.today.isoformat(),
         })
@@ -66,7 +83,23 @@ class HabitTrackerTests(TestCase):
         self.assertEqual(habit.name, 'Su iç')
         self.assertEqual(habit.schedule_days, [0, 2, 4])
         self.assertEqual(habit.target, 8)
+        self.assertEqual(habit.icon, 'cup-hot')
+        self.assertEqual(habit.color, '#1A2B3C')
+        self.assertTrue(habit.reminder_enabled)
+        self.assertEqual(habit.reminder_time.strftime('%H:%M'), '08:30')
         self.assertEqual(response.json()['data']['habits'][0]['id'], habit.id)
+
+    def test_enabled_reminder_requires_a_valid_time(self):
+        self.client.force_login(self.user)
+        response = self.post_json('habit_create', {
+            'name': 'Hatırla',
+            'target': 1,
+            'reminderEnabled': True,
+            'reminderTime': '',
+            'startDate': self.today.isoformat(),
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(Habit.objects.filter(user=self.user).exists())
 
     def test_custom_frequency_requires_at_least_one_day(self):
         self.client.force_login(self.user)
@@ -95,6 +128,52 @@ class HabitTrackerTests(TestCase):
         names = [habit['name'] for habit in response.json()['data']['habits']]
         self.assertEqual(names, ['Benim alışkanlığım'])
         self.assertEqual(response.json()['data']['summary']['rate'], 100)
+
+    def test_dashboard_returns_a_compact_trend_for_each_habit(self):
+        daily = self.create_habit(
+            name='Her gün oku',
+            target=20,
+            start_date=self.today - timedelta(days=6),
+        )
+        weekly = self.create_habit(
+            name='Haftalık değerlendirme',
+            frequency=Habit.FREQUENCY_CUSTOM,
+            schedule_days=[self.today.weekday()],
+            start_date=self.today - timedelta(days=6),
+        )
+        foreign = Habit.objects.create(
+            user=self.other_user,
+            name='Başkasının görevi',
+            start_date=self.today - timedelta(days=6),
+        )
+        HabitEntry.objects.create(
+            habit=daily,
+            date=self.today - timedelta(days=1),
+            value=10,
+        )
+        HabitEntry.objects.create(
+            habit=daily,
+            date=self.today,
+            value=25,
+            target=25,
+        )
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('habit_tracker_data'), {
+            'date': self.today.isoformat(),
+            'range': 7,
+        })
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()['data']
+        self.assertEqual(len(data['trend']), 7)
+        self.assertEqual(data['habitTrends'][str(daily.id)][-2:], [50, 100])
+        self.assertEqual(data['habitTrends'][str(weekly.id)][-1], 0)
+        self.assertEqual(
+            sum(rate is not None for rate in data['habitTrends'][str(weekly.id)]),
+            1,
+        )
+        self.assertNotIn(str(foreign.id), data['habitTrends'])
 
     def test_log_increment_toggle_and_decrement(self):
         habit = self.create_habit(target=2)
@@ -213,6 +292,81 @@ class HabitTrackerTests(TestCase):
         entry = HabitEntry.objects.get(habit=habit, date=self.today)
         self.assertIsNone(entry.target)
         self.assertFalse(response.json()['data']['habits'][0]['targetOverridden'])
+
+    def test_due_reminder_creates_one_private_site_notification(self):
+        habit = self.create_habit(
+            reminder_enabled=True,
+            reminder_time=self.due_reminder_time(),
+        )
+
+        self.assertEqual(materialize_due_habit_reminders(self.user), 1)
+        self.assertEqual(materialize_due_habit_reminders(self.user), 0)
+
+        notification = Notification.objects.get(
+            recipient=self.user,
+            notification_type='habit_reminder',
+        )
+        self.assertEqual(notification.related_habit, habit)
+        self.assertEqual(notification.get_target_url(), reverse('habit_tracker'))
+        self.assertEqual(
+            HabitReminderDelivery.objects.filter(habit=habit, date=self.today).count(),
+            1,
+        )
+        self.assertFalse(Notification.objects.filter(recipient=self.other_user).exists())
+
+    def test_completed_or_unscheduled_habit_is_not_reminded(self):
+        completed = self.create_habit(
+            name='Tamamlandı',
+            reminder_enabled=True,
+            reminder_time=self.due_reminder_time(),
+        )
+        HabitEntry.objects.create(
+            habit=completed,
+            date=self.today,
+            value=completed.target,
+        )
+        unscheduled = self.create_habit(
+            name='Bugün yok',
+            frequency=Habit.FREQUENCY_CUSTOM,
+            schedule_days=[(self.today.weekday() + 1) % 7],
+            reminder_enabled=True,
+            reminder_time=self.due_reminder_time(),
+        )
+
+        self.assertEqual(materialize_due_habit_reminders(self.user), 0)
+        self.assertFalse(
+            HabitReminderDelivery.objects.filter(habit__in=[completed, unscheduled]).exists()
+        )
+
+    def test_navbar_status_materializes_due_reminder(self):
+        self.create_habit(
+            reminder_enabled=True,
+            reminder_time=self.due_reminder_time(),
+        )
+        cache.clear()
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse('navbar_status'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['notification_count'], 1)
+        self.assertTrue(
+            Notification.objects.filter(
+                recipient=self.user,
+                notification_type='habit_reminder',
+            ).exists()
+        )
+
+    def test_navbar_throttles_repeated_reminder_checks(self):
+        cache.clear()
+        self.client.force_login(self.user)
+
+        with patch('core.views.navbar_views.materialize_due_habit_reminders') as materialize:
+            self.client.get(reverse('navbar_status'))
+            cache.delete(f'navbar-status:{self.user.id}')
+            self.client.get(reverse('navbar_status'))
+
+        materialize.assert_called_once()
 
 
 class MoneyTrackerTests(TestCase):

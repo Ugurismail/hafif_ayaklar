@@ -6,10 +6,12 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 
+from ..habit_reminders import materialize_due_habit_reminders
 from ..models import Message, Notification, UserProfile
 from .online_chat_views import online_chat_unread_count_for_user
 
 NAVBAR_STATUS_CACHE_SECONDS = 10
+HABIT_REMINDER_CHECK_SECONDS = 45
 
 
 @login_required
@@ -22,6 +24,9 @@ def navbar_status(request):
 
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     now = timezone.now()
+    reminder_check_key = f'habit-reminder-check:{request.user.id}'
+    if cache.add(reminder_check_key, True, HABIT_REMINDER_CHECK_SECONDS):
+        materialize_due_habit_reminders(request.user, now)
 
     status = {
         'notification_count': Notification.objects.filter(
