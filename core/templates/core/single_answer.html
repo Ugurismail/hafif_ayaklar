@@ -3,6 +3,19 @@
 {% load custom_tags %}
 {% load markdownify %}
 
+{% block title %}{{ focused_answer.user.username }} — {{ question.question_text }} | Hafif Ayaklar{% endblock %}
+{% block meta_description %}{{ focused_answer.user.username }} tarafından {{ question.question_text }} üzerine yazılan entry: {{ focused_answer.answer_text|striptags|truncatewords:25 }}{% endblock %}
+{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{% url 'single_answer' question.slug focused_answer.pk %}{% endblock %}
+{% block og_url %}{{ request.scheme }}://{{ request.get_host }}{% url 'single_answer' question.slug focused_answer.pk %}{% endblock %}
+{% block twitter_url %}{{ request.scheme }}://{{ request.get_host }}{% url 'single_answer' question.slug focused_answer.pk %}{% endblock %}
+{% block og_title %}{{ focused_answer.user.username }} — {{ question.question_text }} | Hafif Ayaklar{% endblock %}
+{% block twitter_title %}{{ focused_answer.user.username }} — {{ question.question_text }} | Hafif Ayaklar{% endblock %}
+{% block ai_structured_data %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"DiscussionForumPosting","headline":"{{ question.question_text|escapejs }}","text":"{{ focused_answer.answer_text|striptags|escapejs }}","datePublished":"{{ focused_answer.created_at|date:'c' }}","author":{"@type":"Person","name":"{{ focused_answer.user.username|escapejs }}","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'public_author' focused_answer.user_id %}","@id":"{{ request.scheme }}://{{ request.get_host }}{% url 'public_author' focused_answer.user_id %}#person"}}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-5 question-layout-container" id="naber">
 	    <div class="row three-panel-row">
@@ -142,7 +155,7 @@
                 <!-- Sağ Kısım: Kullanıcı Bilgisi ve Tarih -->
                 <div class="text-end">
                     <small class="text-muted">
-                        <a href="{% url 'user_profile' question.user.username %}">{{ question.user.username }}</a>
+                        <a href="{% if user.is_authenticated %}{% url 'user_profile' question.user.username %}{% else %}{% url 'public_author' question.user_id %}{% endif %}">{{ question.user.username }}</a>
                         | {{ question.created_at|date:"Y-m-d H:i" }}
                     </small>
                 </div>
@@ -262,7 +275,7 @@
                         <div class="text-end">
                             <small class="text-muted me-2 d-inline-flex align-items-center justify-content-end gap-2 flex-wrap">
                                 <span class="answer-revision-badge">v.{{ focused_current_revision.revision_no }}</span>
-                                <a href="{% url 'user_profile' focused_answer.user.username %}">{{ focused_answer.user.username }}</a>
+                                <a href="{% if user.is_authenticated %}{% url 'user_profile' focused_answer.user.username %}{% else %}{% url 'public_author' focused_answer.user_id %}{% endif %}">{{ focused_answer.user.username }}</a>
                                 | {{ focused_answer.created_at|date:"Y-m-d H:i" }}
                                 {% if focused_answer.updated_at|date:"Y-m-d H:i:s" > focused_answer.created_at|date:"Y-m-d H:i:s" %}
                                     {% if focused_answer.updated_at|date:"Y-m-d" == focused_answer.created_at|date:"Y-m-d" %}
@@ -400,7 +413,7 @@
                                 
                                 <div class="text-end">
                                     <small class="text-muted me-2">
-                                        <a href="{% url 'user_profile' answer.user.username %}">{{ answer.user.username }}</a>
+                                        <a href="{% if user.is_authenticated %}{% url 'user_profile' answer.user.username %}{% else %}{% url 'public_author' answer.user_id %}{% endif %}">{{ answer.user.username }}</a>
                                         | {{ answer.created_at|date:"Y-m-d H:i" }}
                                         {% if answer.updated_at|date:"Y-m-d H:i:s" > answer.created_at|date:"Y-m-d H:i:s" %}
                                             {% if answer.updated_at|date:"Y-m-d" == answer.created_at|date:"Y-m-d" %}

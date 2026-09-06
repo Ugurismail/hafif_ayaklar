@@ -37,7 +37,9 @@
       "dateCreated": "{{ question.created_at|date:'c' }}",
       "author": {
         "@type": "Person",
-        "name": "{{ question.author.username|default:'Anonymous'|escapejs }}"
+        "name": "{{ question.user.username|escapejs }}",
+          "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'public_author' question.user_id %}",
+          "@id": "{{ request.scheme }}://{{ request.get_host }}{% url 'public_author' question.user_id %}#person"
       }{% if answers_page and answers_page|length > 0 %},
       "acceptedAnswer": {
         "@type": "Answer",
@@ -46,7 +48,9 @@
         "upvoteCount": {{ answers_page.0.upvote_count|default:0 }},
         "author": {
           "@type": "Person",
-          "name": "{{ answers_page.0.author.username|escapejs }}"
+          "name": "{{ answers_page.0.user.username|escapejs }}",
+          "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'public_author' answers_page.0.user_id %}",
+          "@id": "{{ request.scheme }}://{{ request.get_host }}{% url 'public_author' answers_page.0.user_id %}#person"
         }
       },
       "suggestedAnswer": [
@@ -58,7 +62,9 @@
           "upvoteCount": {{ answer.upvote_count|default:0 }},
           "author": {
             "@type": "Person",
-            "name": "{{ answer.author.username|escapejs }}"
+            "name": "{{ answer.user.username|escapejs }}",
+          "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'public_author' answer.user_id %}",
+          "@id": "{{ request.scheme }}://{{ request.get_host }}{% url 'public_author' answer.user_id %}#person"
           }
         }{% if not forloop.last %},{% endif %}
         {% endfor %}
@@ -287,7 +293,7 @@
               </div>
               <div class="text-end">
                 <small class="">
-                  <a href="{% url 'user_profile' question.user.username %}">
+                  <a href="{% if user.is_authenticated %}{% url 'user_profile' question.user.username %}{% else %}{% url 'public_author' question.user_id %}{% endif %}">
                     {{ question.user.username }}
                   </a> |
                   {{ question.created_at|date:"Y-m-d H:i" }}
@@ -408,7 +414,7 @@
                       </div>
                       <div class="text-end">
                         <small class="me-2">
-                          <a href="{% url 'user_profile' answer.user.username %}">{{ answer.user.username }}</a>
+                          <a href="{% if user.is_authenticated %}{% url 'user_profile' answer.user.username %}{% else %}{% url 'public_author' answer.user_id %}{% endif %}">{{ answer.user.username }}</a>
                           | {{ answer.created_at|date:"Y-m-d H:i" }}
                           {% if answer.updated_at|date:"Y-m-d H:i:s" > answer.created_at|date:"Y-m-d H:i:s" %}
                             {% if answer.updated_at|date:"Y-m-d" == answer.created_at|date:"Y-m-d" %}

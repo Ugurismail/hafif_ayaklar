@@ -34,7 +34,7 @@ from .views.random_sentence_views import add_random_sentence, get_random_sentenc
 from .views.report_views import report_content, report_content_ajax
 from .views.search_views import load_more_questions, load_more_search_results, reference_search, search, search_suggestions, user_search
 from .views.site_views import about, random_question_id, shuffle_questions, site_statistics, user_homepage
-from .views.user_views import follow_user, get_user_questions, profile, unfollow_user, update_profile_photo, user_list, user_profile, user_settings
+from .views.user_views import public_author, follow_user, get_user_questions, profile, unfollow_user, update_profile_photo, user_list, user_profile, user_settings
 from .views.vote_save_views import get_saved_items, pin_entry, save_item, unpin_entry, vote
 
 urlpatterns = [
@@ -68,6 +68,7 @@ urlpatterns = [
     path('profile/', profile, name='profile'),
     path('profile/<str:username>/follow/', follow_user, name='follow_user'),
     path('profile/<str:username>/unfollow/', unfollow_user, name='unfollow_user'),
+    path('yazar/<int:user_id>/', public_author, name='public_author'),
     path('profile/<str:username>/', user_profile, name='user_profile'),
 
     # Soru İşlemleri

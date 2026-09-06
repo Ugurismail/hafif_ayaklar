@@ -26,7 +26,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, Count, Sum
 from django.db.models.functions import Lower
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
@@ -81,14 +81,33 @@ def profile(request):
     return redirect('user_profile', username=request.user.username)
 
 
-def user_profile(request, username):
-    if not request.user.is_authenticated:
-        return _redirect_profile_login(request)
+def public_author(request, user_id):
+    """Public author identity and already-public contributions only."""
+    author = get_object_or_404(User, pk=user_id, is_active=True)
+    entries = author.answers.select_related('question').order_by('-created_at', '-pk')
+    page = Paginator(entries, 20).get_page(request.GET.get('page'))
+    author_url = request.build_absolute_uri(reverse('public_author', args=[author.pk]))
+    canonical_url = author_url
+    if page.number > 1:
+        canonical_url += f'?page={page.number}'
+    return render(request, 'core/public_author.html', {
+        'author': author,
+        'entries_page': page,
+        'author_questions': author.questions.order_by('-created_at', '-pk')[:20],
+        'author_url': author_url,
+        'canonical_url': canonical_url,
+    })
 
-    profile_user = get_object_or_404(User, username=username)
+
+def user_profile(request, username):
+    profile_user = get_object_or_404(User, username=username, is_active=True)
     user_profile = profile_user.userprofile
     active_tab = request.GET.get('tab', 'girdiler')
     is_own_profile = (request.user == profile_user)
+    if request.method == 'POST' and not is_own_profile:
+        return HttpResponseForbidden()
+    if active_tab in {'kaydedilenler', 'davetler', 'davet_aagac'} and not is_own_profile:
+        return HttpResponseForbidden()
 
     # Handle invitation creation POST request
     if request.method == 'POST' and is_own_profile and active_tab == 'davetler':
@@ -120,6 +139,8 @@ def user_profile(request, username):
         'user_profile': user_profile,
         'is_own_profile': is_own_profile,
         'active_tab': active_tab,
+        'profile_canonical_url': request.build_absolute_uri(reverse('user_profile', args=[profile_user.username])),
+        'author_identity_url': request.build_absolute_uri(reverse('public_author', args=[profile_user.pk])),
         'answers': None,
         'definitions_page': None,
         'references_page': None,

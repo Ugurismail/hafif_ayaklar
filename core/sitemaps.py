@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User
+from django.db.models import Q
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
@@ -45,3 +47,21 @@ class LogicLessonSitemap(Sitemap):
 
     def location(self, lesson_slug):
         return reverse('logic_lesson_detail', args=[lesson_slug])
+
+
+class AuthorSitemap(Sitemap):
+    changefreq = 'weekly'
+    priority = 0.6
+
+    def items(self):
+        return User.objects.filter(is_active=True).filter(
+            Q(answers__isnull=False) | Q(questions__isnull=False)
+        ).distinct().order_by('pk')
+
+    def location(self, obj):
+        return reverse('public_author', args=[obj.pk])
+
+
+class ProfileSitemap(AuthorSitemap):
+    def location(self, obj):
+        return reverse('user_profile', args=[obj.username])

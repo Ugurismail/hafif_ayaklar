@@ -8,14 +8,16 @@
 
 {% block meta_description %}{{ profile_user.username }} kullanıcısının Hafif Ayaklar profili. {{ follower_count }} takipçi, {{ following_count }} takip. {% if user_profile.bio %}{{ user_profile.bio|striptags|truncatewords:30 }}{% endif %}{% endblock %}
 
+{% block robots %}{% if active_tab == 'girdiler' %}index, follow{% else %}noindex, follow{% endif %}{% endblock %}
+
 {% block meta_keywords %}{{ profile_user.username }}, kullanıcı profili, takipçiler, soru cevap{% endblock %}
 
-{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}/profile/{{ profile_user.username }}/{% endblock %}
+{% block canonical_url %}{{ profile_canonical_url }}{% endblock %}
 
 {% block og_type %}profile{% endblock %}
 {% block og_title %}{{ profile_user.username }} - Hafif Ayaklar{% endblock %}
 {% block og_description %}{{ profile_user.username }} kullanıcısının profili. {{ follower_count }} takipçi, {{ following_count }} takip.{% endblock %}
-{% block og_url %}{{ request.scheme }}://{{ request.get_host }}/profile/{{ profile_user.username }}/{% endblock %}
+{% block og_url %}{{ profile_canonical_url }}{% endblock %}
 {% if has_profile_photo %}
 {% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ profile_photo_url }}{% endblock %}
 {% endif %}
@@ -31,8 +33,10 @@
   "@type": "ProfilePage",
   "mainEntity": {
     "@type": "Person",
+    "@id": "{{ author_identity_url|escapejs }}#person",
+    "identifier": "{{ profile_user.pk }}",
     "name": "{{ profile_user.username|escapejs }}",
-    "url": "{{ request.scheme }}://{{ request.get_host }}/profile/{{ profile_user.username }}/",
+    "url": "{{ profile_canonical_url|escapejs }}",
     {% if has_profile_photo %}"image": "{{ request.scheme }}://{{ request.get_host }}{{ profile_photo_url }}",{% endif %}
     {% if user_profile.bio %}"description": "{{ user_profile.bio|striptags|escapejs }}",{% endif %}
     "interactionStatistic": [
@@ -52,6 +56,7 @@
 {% endblock %}
 
 {% block content %}
+<div class="container mt-3"><a href="{% url 'public_author' profile_user.pk %}">{{ profile_user.username }} — Herkese açık yazar sayfası</a></div>
 <div class="container mt-5">
   <div class="row">
     <!-- Sol Panel: Profil Kartı -->
@@ -65,7 +70,8 @@
               <img src="{% static 'imgs/default_profile.jpg' %}" alt="Profil Fotoğrafı" class="rounded-circle img-fluid" style="max-width:150px;">
             {% endif %}
           </div>
-          <h4 class="card-title mb-3">{{ profile_user.username }}</h4>
+          <h1 class="h4 card-title mb-3">{{ profile_user.username }}</h1>
+          {% if user_profile.bio %}<p>{{ user_profile.bio }}</p>{% endif %}
           <div class="follower-stats mb-3">
             <span class="stat-badge"><strong>{{ follower_count }}</strong> Takipçi</span>
             <span class="stat-badge"><strong>{{ following_count }}</strong> Takip</span>
@@ -193,12 +199,14 @@
             Kaynaklarım
           </a>
         </li>
+        {% if is_own_profile %}
         <li class="nav-item">
           <a class="nav-link {% if active_tab == 'kaydedilenler' %}active{% endif %}" 
              href="?tab=kaydedilenler">
             Kaydedilenler
           </a>
         </li>
+        {% endif %}
       </ul>
       
       

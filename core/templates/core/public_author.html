@@ -1,0 +1,43 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ author.username }} — Yazıları ve Entryleri | Hafif Ayaklar{% endblock %}
+{% block meta_description %}{{ author.username }} adlı yazarın Hafif Ayaklar'daki yazıları, entryleri ve açtığı başlıklar.{% endblock %}
+{% block canonical_url %}{{ canonical_url }}{% endblock %}
+{% block og_title %}{{ author.username }} | Hafif Ayaklar{% endblock %}
+{% block og_description %}{{ author.username }} adlı yazarın yazıları ve entryleri.{% endblock %}
+{% block og_url %}{{ canonical_url }}{% endblock %}
+{% block og_type %}profile{% endblock %}
+{% block twitter_title %}{{ author.username }} | Hafif Ayaklar{% endblock %}
+{% block twitter_description %}{{ author.username }} adlı yazarın yazıları ve entryleri.{% endblock %}
+{% block twitter_url %}{{ canonical_url }}{% endblock %}
+{% block ai_structured_data %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"ProfilePage","url":"{{ canonical_url|escapejs }}","mainEntity":{"@type":"Person","@id":"{{ author_url|escapejs }}#person","identifier":"{{ author.pk }}","name":"{{ author.username|escapejs }}","url":"{{ author_url|escapejs }}"}}
+</script>
+{% endblock %}
+{% block content %}
+<main class="container py-5" style="max-width: 900px;">
+    <h1>{{ author.username }}</h1>
+    <p class="text-muted">Hafif Ayaklar yazarı · {{ entries_page.paginator.count }} entry</p>
+    {% if user.is_authenticated %}<p><a href="{% url 'user_profile' author.username %}">Kullanıcı profili</a></p>{% endif %}
+    <h2 class="h4 mt-4">Yazıları ve entryleri</h2>
+    {% for entry in entries_page %}
+    <article class="card mb-3"><div class="card-body">
+        <h3 class="h5"><a href="{% url 'single_answer' entry.question.slug entry.pk %}">{{ entry.question.question_text }}</a></h3>
+        <p class="small text-muted">{{ author.username }} · <time datetime="{{ entry.created_at|date:'c' }}">{{ entry.created_at|date:'d.m.Y' }}</time></p>
+        <p>{{ entry.answer_text|striptags|truncatewords:60 }}</p>
+        <a href="{% url 'single_answer' entry.question.slug entry.pk %}">Entrynin tamamını oku</a>
+    </div></article>
+    {% empty %}<p>Henüz entry yok.</p>{% endfor %}
+    {% if entries_page.has_other_pages %}
+    <nav aria-label="Yazı sayfaları" class="d-flex gap-3 my-4">
+        {% if entries_page.has_previous %}<a href="?page={{ entries_page.previous_page_number }}" rel="prev">Önceki</a>{% endif %}
+        <span>{{ entries_page.number }} / {{ entries_page.paginator.num_pages }}</span>
+        {% if entries_page.has_next %}<a href="?page={{ entries_page.next_page_number }}" rel="next">Sonraki</a>{% endif %}
+    </nav>
+    {% endif %}
+    {% if author_questions %}
+    <h2 class="h4 mt-4">Açtığı son başlıklar</h2>
+    <ul>{% for question in author_questions %}<li><a href="{% url 'question_detail' question.slug %}">{{ question.question_text }}</a></li>{% endfor %}</ul>
+    {% endif %}
+</main>
+{% endblock %}
