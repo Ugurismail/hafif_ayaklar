@@ -215,7 +215,7 @@ def user_profile(request, username):
             context['revision_activity'] = revision_paginator.page(1)
 
     elif active_tab == 'tanimlar':
-        definitions_qs = Definition.objects.filter(user=profile_user).select_related('question')
+        definitions_qs = Definition.objects.filter(user=profile_user).select_related('question').order_by('-created_at', '-pk')
         search_query = request.GET.get('q', '').strip()
         if search_query:
             definitions_qs = definitions_qs.filter(

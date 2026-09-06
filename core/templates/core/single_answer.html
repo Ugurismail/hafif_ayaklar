@@ -10,9 +10,12 @@
 {% block twitter_url %}{{ request.scheme }}://{{ request.get_host }}{% url 'single_answer' question.slug focused_answer.pk %}{% endblock %}
 {% block og_title %}{{ focused_answer.user.username }} — {{ question.question_text }} | Hafif Ayaklar{% endblock %}
 {% block twitter_title %}{{ focused_answer.user.username }} — {{ question.question_text }} | Hafif Ayaklar{% endblock %}
+{% block og_description %}{{ focused_answer.user.username }} tarafından yazılan entry: {{ focused_answer.answer_text|striptags|truncatewords:25 }}{% endblock %}
+{% block twitter_description %}{{ focused_answer.user.username }} tarafından yazılan entry: {{ focused_answer.answer_text|striptags|truncatewords:25 }}{% endblock %}
 {% block ai_structured_data %}
+{% url 'single_answer' question.slug focused_answer.pk as entry_path %}
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"DiscussionForumPosting","headline":"{{ question.question_text|escapejs }}","text":"{{ focused_answer.answer_text|striptags|escapejs }}","datePublished":"{{ focused_answer.created_at|date:'c' }}","author":{"@type":"Person","name":"{{ focused_answer.user.username|escapejs }}","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'public_author' focused_answer.user_id %}","@id":"{{ request.scheme }}://{{ request.get_host }}{% url 'public_author' focused_answer.user_id %}#person"}}
+{"@context":"https://schema.org","@type":"DiscussionForumPosting","@id":"{{ request.scheme }}://{{ request.get_host }}{{ entry_path|escapejs }}#entry","url":"{{ request.scheme }}://{{ request.get_host }}{{ entry_path|escapejs }}","mainEntityOfPage":"{{ request.scheme }}://{{ request.get_host }}{{ entry_path|escapejs }}","headline":"{{ question.question_text|escapejs }}","text":"{{ focused_answer.answer_text|striptags|escapejs }}","datePublished":"{{ focused_answer.created_at|date:'c' }}","dateModified":"{{ focused_answer.updated_at|date:'c' }}","author":{"@type":"Person","name":"{{ focused_answer.user.username|escapejs }}","url":"{{ request.scheme }}://{{ request.get_host }}{% url 'public_author' focused_answer.user_id %}","@id":"{{ request.scheme }}://{{ request.get_host }}{% url 'public_author' focused_answer.user_id %}#person"}}
 </script>
 {% endblock %}
 

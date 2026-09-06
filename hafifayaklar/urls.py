@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib.sitemaps.views import sitemap
-from core.sitemaps import ProfileSitemap, AuthorSitemap, LogicLessonSitemap, QuestionSitemap, StaticViewSitemap
+from django.contrib.sitemaps.views import index, sitemap
+from core.sitemaps import EntrySitemap, ProfileSitemap, AuthorSitemap, LogicLessonSitemap, QuestionSitemap, StaticViewSitemap
 from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 from django.templatetags.static import static as static_url
@@ -78,6 +78,12 @@ def logic_lesson_progress(request, *args, **kwargs):
 urlpatterns = [
     path(f'{ADMIN_URL_PATH}/', admin.site.urls),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('sitemap-entries.xml', index, {
+        'sitemaps': {'entries': EntrySitemap}, 'sitemap_url_name': 'entry_sitemap',
+    }, name='entry_sitemap_index'),
+    path('sitemap-entries-<section>.xml', sitemap, {
+        'sitemaps': {'entries': EntrySitemap},
+    }, name='entry_sitemap'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots_txt'),
     # Google requires at least 48x48 for the Search results icon; serve a 48x48 PNG via /favicon.ico.
     path('favicon.ico', RedirectView.as_view(url=static_url('imgs/favicon-48.png'), permanent=True), name='favicon'),

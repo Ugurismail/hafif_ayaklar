@@ -2,6 +2,9 @@ import json
 import os
 import subprocess
 import sys
+import re
+from unittest.mock import patch
+from xml.etree import ElementTree
 
 from django.contrib.auth.models import User
 from django.test import SimpleTestCase, TestCase, override_settings
@@ -28,6 +31,59 @@ class SitemapVisibilityTests(TestCase):
         self.assertContains(response, f"https://hafifayaklar.com/{question.slug}/")
         self.assertContains(response, f"https://hafifayaklar.com{reverse('about')}")
         self.assertContains(response, reverse("user_profile", args=[user.username]))
+
+
+class EntrySitemapTests(TestCase):
+    def setUp(self):
+        from .models import Answer
+        self.author = User.objects.create_user(username='entry-author')
+        self.question = Question.objects.create(question_text='Entry sitemap', user=self.author)
+        self.entries = [Answer.objects.create(
+            user=self.author, question=self.question, answer_text=f'Public entry {i}',
+        ) for i in range(3)]
+
+    @patch('core.sitemaps.EntrySitemap.limit', 2)
+    def test_index_discovers_every_page_without_duplicate_entries(self):
+        index = self.client.get('/sitemap-entries.xml', secure=True)
+        self.assertEqual(index.status_code, 200)
+        namespace = {'s': 'http://www.sitemaps.org/schemas/sitemap/0.9'}
+        locations = [node.text for node in ElementTree.fromstring(index.content).findall('.//s:loc', namespace)]
+        self.assertEqual(len(locations), 2)
+        self.assertTrue(locations[1].endswith('?p=2'))
+        entry_locations = []
+        for location in locations:
+            response = self.client.get(location, secure=True)
+            self.assertEqual(response.status_code, 200)
+            entry_locations.extend(node.text for node in ElementTree.fromstring(response.content).findall('.//s:loc', namespace))
+        self.assertEqual(entry_locations, [
+            'https://testserver' + reverse('single_answer', args=[self.question.slug, entry.pk])
+            for entry in self.entries
+        ])
+        self.assertContains(self.client.get('/robots.txt'), '/sitemap-entries.xml')
+
+    def test_sitemap_excludes_inactive_authors_and_drafts(self):
+        from .models import Kenarda
+        Kenarda.objects.create(user=self.author, question=self.question, content='PRIVATE-DRAFT')
+        response = self.client.get('/sitemap-entries-entries.xml')
+        self.assertNotContains(response, 'PRIVATE-DRAFT')
+        self.assertNotContains(response, '/kenarda/')
+        self.author.is_active = False
+        self.author.save()
+        response = self.client.get('/sitemap-entries-entries.xml')
+        for entry in self.entries:
+            self.assertNotContains(response, reverse('single_answer', args=[self.question.slug, entry.pk]))
+
+    def test_sitemap_metadata_has_no_per_entry_queries_or_body_fetch(self):
+        from .sitemaps import EntrySitemap
+        sitemap = EntrySitemap()
+        with self.assertNumQueries(1):
+            entries = list(sitemap.items())
+            for entry in entries:
+                self.assertIn('answer_text', entry.get_deferred_fields())
+                sitemap.location(entry)
+                sitemap.lastmod(entry)
+        with self.assertNumQueries(1):
+            self.assertEqual(sitemap.get_latest_lastmod(), self.entries[-1].updated_at)
 
 
 class HttpsRedirectTests(SimpleTestCase):
@@ -66,6 +122,7 @@ class HostedSecuritySettingsTests(SimpleTestCase):
             "HOME": "/home/test-user",
             "DJANGO_DEBUG": "True",
             "DEBUG": "True",
+            "DJANGO_SECRET_KEY": "test-only-security-key-0123456789-abcdefghijklmnopqrstuvwxyz",
         })
         code = """
 import json
@@ -128,6 +185,34 @@ class PublicAuthorSeoTests(TestCase):
         self.assertTrue(data['mainEntity']['url'].endswith(self.url))
         self.assertEqual(self.client.get(reverse('user_profile', args=[self.author.username])).status_code, 200)
 
+    def test_public_profile_definitions_have_stable_pagination(self):
+        from django.utils import timezone
+        from .models import Definition
+
+        definitions = [Definition.objects.create(
+            user=self.author, question=self.question, definition_text=f'Definition {i}',
+        ) for i in range(7)]
+        Definition.objects.filter(pk__in=[item.pk for item in definitions]).update(
+            created_at=timezone.now(),
+        )
+        url = reverse('user_profile', args=[self.author.username])
+        first = self.client.get(url, {'tab': 'tanimlar', 'd_page': 1})
+        second = self.client.get(url, {'tab': 'tanimlar', 'd_page': 2})
+        expected = [item.pk for item in reversed(definitions)]
+        self.assertEqual(
+            [item.pk for item in first.context['definitions_page']], expected[:5],
+        )
+        self.assertEqual(
+            [item.pk for item in second.context['definitions_page']], expected[5:],
+        )
+
+    def test_profile_does_not_show_extra_public_author_banner(self):
+        url = reverse('user_profile', args=[self.author.username])
+        self.assertNotContains(self.client.get(url), 'Herkese açık yazar sayfası')
+        self.client.force_login(self.author)
+        self.assertNotContains(self.client.get(url), 'Herkese açık yazar sayfası')
+        self.assertEqual(self.client.get(self.url).status_code, 200)
+
     def test_author_sitemap_and_stable_url_after_rename(self):
         response = self.client.get('/sitemap.xml')
         self.assertContains(response, self.url)
@@ -151,6 +236,44 @@ class PublicAuthorSeoTests(TestCase):
         ).group(1))
         self.assertEqual(data['author']['name'], self.author.username)
         self.assertTrue(data['author']['url'].endswith(self.url))
+        entry_url = 'http://testserver' + reverse('single_answer', args=[self.question.slug, self.answer.pk])
+        self.assertEqual(data['url'], entry_url)
+        self.assertEqual(data['mainEntityOfPage'], entry_url)
+        self.assertEqual(data['@id'], entry_url + '#entry')
+        self.assertTrue(data['dateModified'])
+
+    def test_author_schema_references_only_visible_entries_with_matching_identity(self):
+        from .models import Answer
+        for i in range(20):
+            Answer.objects.create(user=self.author, question=self.question, answer_text=f'Entry {i}')
+        for page, expected_count in [(1, 20), (2, 1)]:
+            response = self.client.get(self.url, {'page': page})
+            data = json.loads(re.search(
+                r'<script type="application/ld\+json">(.*?)</script>', response.content.decode(), re.S,
+            ).group(1))
+            self.assertEqual(len(data['hasPart']), expected_count)
+            for posting, entry in zip(data['hasPart'], response.context['entries_page']):
+                self.assertEqual(posting['author']['@id'], data['mainEntity']['@id'])
+                self.assertEqual(posting['url'], 'http://testserver' + reverse(
+                    'single_answer', args=[entry.question.slug, entry.pk],
+                ))
+
+    def test_author_schema_empty_list_and_untrusted_title_are_valid_json(self):
+        from .models import Answer
+        self.question.question_text = '</script><script>alert("x")</script>'
+        self.question.save()
+        response = self.client.get(self.url)
+        self.assertNotContains(response, '<script>alert("x")</script>')
+        data = json.loads(re.search(
+            r'<script type="application/ld\+json">(.*?)</script>', response.content.decode(), re.S,
+        ).group(1))
+        self.assertEqual(data['hasPart'][0]['headline'], self.question.question_text)
+        Answer.objects.filter(user=self.author).delete()
+        response = self.client.get(self.url)
+        data = json.loads(re.search(
+            r'<script type="application/ld\+json">(.*?)</script>', response.content.decode(), re.S,
+        ).group(1))
+        self.assertEqual(data['hasPart'], [])
 
     def test_question_schema_uses_real_author_and_public_url(self):
         import re

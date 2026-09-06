@@ -4,7 +4,27 @@ from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
 from .logic_course_data import get_logic_course
-from .models import Question
+from .models import Answer, Question
+
+
+class EntrySitemap(Sitemap):
+    changefreq = 'weekly'
+    limit = 1000
+
+    def items(self):
+        return Answer.objects.filter(user__is_active=True).select_related('question').only(
+            'pk', 'question_id', 'question__slug', 'created_at', 'updated_at',
+        ).order_by('pk')
+
+    def lastmod(self, obj):
+        return obj.updated_at or obj.created_at
+
+    def location(self, obj):
+        return reverse('single_answer', args=[obj.question.slug, obj.pk])
+
+    def get_latest_lastmod(self):
+        # The index needs one timestamp, not every entry and its related question.
+        return self.items().order_by('-updated_at').values_list('updated_at', flat=True).first()
 
 
 class QuestionSitemap(Sitemap):

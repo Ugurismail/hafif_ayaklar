@@ -37,3 +37,4 @@ User-agent: CCBot
 Allow: /
 
 Sitemap: {{ request.scheme }}://{{ request.get_host }}/sitemap.xml
+Sitemap: {{ request.scheme }}://{{ request.get_host }}/sitemap-entries.xml

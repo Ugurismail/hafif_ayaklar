@@ -11,7 +11,8 @@
 {% block twitter_url %}{{ canonical_url }}{% endblock %}
 {% block ai_structured_data %}
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"ProfilePage","url":"{{ canonical_url|escapejs }}","mainEntity":{"@type":"Person","@id":"{{ author_url|escapejs }}#person","identifier":"{{ author.pk }}","name":"{{ author.username|escapejs }}","url":"{{ author_url|escapejs }}"}}
+{"@context":"https://schema.org","@type":"ProfilePage","url":"{{ canonical_url|escapejs }}","mainEntity":{"@type":"Person","@id":"{{ author_url|escapejs }}#person","identifier":"{{ author.pk }}","name":"{{ author.username|escapejs }}","url":"{{ author_url|escapejs }}"},"hasPart":[{% for entry in entries_page %}{% url 'single_answer' entry.question.slug entry.pk as entry_path %}
+{"@type":"DiscussionForumPosting","@id":"{{ request.scheme }}://{{ request.get_host }}{{ entry_path|escapejs }}#entry","url":"{{ request.scheme }}://{{ request.get_host }}{{ entry_path|escapejs }}","headline":"{{ entry.question.question_text|escapejs }}","datePublished":"{{ entry.created_at|date:'c' }}","author":{"@id":"{{ author_url|escapejs }}#person"}}{% if not forloop.last %},{% endif %}{% endfor %}]}
 </script>
 {% endblock %}
 {% block content %}
