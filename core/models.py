@@ -43,8 +43,10 @@ class UserProfile(models.Model):
     last_seen = models.DateTimeField(null=True, blank=True)
     online_chat_last_read_at = models.DateTimeField(null=True, blank=True)
 
-    # Radyo DJ yetkisi
-    is_dj = models.BooleanField(default=False, verbose_name='DJ Yetkisi')
+    # Keep the existing column so deployed permissions survive feature retirement.
+    can_manage_attendance = models.BooleanField(
+        default=False, db_column='is_dj', verbose_name='Devam Cetveli Yetkisi',
+    )
     can_upload_files = models.BooleanField(default=False, verbose_name='Dosya Yukleme Yetkisi')
 
     # Renk ayarları alanları

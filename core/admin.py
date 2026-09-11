@@ -14,9 +14,9 @@ from django.contrib import admin
 from core.models import (
     Invitation, UserProfile, Question, Answer,
     Poll, PollOption, PollVote, SavedItem, Vote, PinnedEntry,
-    Entry, RandomSentence, Message, Definition, Reference,CikisTesti,
-    CikisTestiSoru, CikisTestiSik, CikisTestiResult,DelphoiProphecy,
-    QuestionFollow, AnswerFollow, Notification, RadioProgram, RadioChatMessage, OnlineChatMessage,
+    Entry, RandomSentence, Message, Definition, Reference,
+    DelphoiProphecy,
+    QuestionFollow, AnswerFollow, Notification, OnlineChatMessage,
     LibraryFile, DailyVisitor, VisitSession, AttendanceSheetConfig, AttendanceDayState,
     SavedCollection, SavedCollectionItem, ContentReport, EntryBook, EntryBookItem,
     LogicLessonProgress, Habit, HabitEntry, HabitReminderDelivery,
@@ -29,7 +29,7 @@ from core.models import (
 admin.site.register(Invitation)
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "last_seen", "invitation_quota", "is_dj", "can_upload_files")
+    list_display = ("user", "last_seen", "invitation_quota", "can_manage_attendance", "can_upload_files")
     ordering = ("-last_seen",)
     search_fields = ("user__username", "user__email")
 admin.site.register(SavedItem)
@@ -444,24 +444,6 @@ class IATResultAdmin(admin.ModelAdmin):
     search_fields = ["user__username"]
 
 
-@admin.register(CikisTesti)
-class CikisTestiAdmin(admin.ModelAdmin):
-    list_display = ['title', 'owner', 'created_at', 'cikis_dogrusu']
-    search_fields = ['title', 'owner__username']
-
-@admin.register(CikisTestiSoru)
-class CikisTestiSoruAdmin(admin.ModelAdmin):
-    list_display = ['question_text', 'test', 'order']
-    search_fields = ['question_text', 'test__title']
-
-@admin.register(CikisTestiSik)
-class CikisTestiSikAdmin(admin.ModelAdmin):
-    list_display = ['text', 'soru']
-
-@admin.register(CikisTestiResult)
-class CikisTestiResultAdmin(admin.ModelAdmin):
-    list_display = ['test', 'user', 'dogru_sayisi', 'toplam_soru', 'completed_at']
-
 @admin.register(DelphoiProphecy)
 class DelphoiProphecyAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'question', 'type', 'short_text', 'created_at']
@@ -514,66 +496,3 @@ class NotificationAdmin(admin.ModelAdmin):
         updated = queryset.update(is_read=False)
         self.message_user(request, f"{updated} bildirim okunmadı olarak işaretlendi.")
     mark_as_unread.short_description = "Seçili bildirimleri okunmadı olarak işaretle"
-
-
-# =============================================================================
-# 6) Radyo Programları Admin
-# =============================================================================
-@admin.register(RadioProgram)
-class RadioProgramAdmin(admin.ModelAdmin):
-    list_display = ['title', 'dj', 'start_time', 'end_time', 'status_display', 'is_live', 'listener_count', 'max_listeners']
-    list_filter = ['is_live', 'is_finished', 'start_time', 'dj']
-    search_fields = ['title', 'description', 'dj__username']
-    readonly_fields = ['agora_channel_name', 'created_at', 'updated_at', 'listener_count', 'max_listeners']
-    date_hierarchy = 'start_time'
-    ordering = ['-start_time']
-
-    fieldsets = (
-        ('Program Bilgileri', {
-            'fields': ('dj', 'title', 'description')
-        }),
-        ('Zaman', {
-            'fields': ('start_time', 'end_time')
-        }),
-        ('Yayın Durumu', {
-            'fields': ('is_live', 'is_finished')
-        }),
-        ('Teknik', {
-            'fields': ('agora_channel_name',),
-            'classes': ('collapse',)
-        }),
-        ('İstatistikler', {
-            'fields': ('listener_count', 'max_listeners', 'created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
-    )
-
-    def status_display(self, obj):
-        return obj.status
-    status_display.short_description = 'Durum'
-
-    actions = ['mark_as_finished', 'cancel_programs']
-
-    def mark_as_finished(self, request, queryset):
-        updated = queryset.update(is_finished=True, is_live=False)
-        self.message_user(request, f"{updated} program tamamlandı olarak işaretlendi.")
-    mark_as_finished.short_description = "Seçili programları tamamlandı olarak işaretle"
-
-    def cancel_programs(self, request, queryset):
-        count = queryset.count()
-        queryset.delete()
-        self.message_user(request, f"{count} program iptal edildi.")
-    cancel_programs.short_description = "Seçili programları iptal et"
-
-
-@admin.register(RadioChatMessage)
-class RadioChatMessageAdmin(admin.ModelAdmin):
-    list_display = ['program', 'user', 'short_body', 'created_at']
-    list_filter = ['program', 'created_at']
-    search_fields = ['program__title', 'user__username', 'body']
-    date_hierarchy = 'created_at'
-    ordering = ['-created_at']
-
-    def short_body(self, obj):
-        return obj.body[:60] + ('...' if len(obj.body) > 60 else '')
-    short_body.short_description = 'Mesaj'

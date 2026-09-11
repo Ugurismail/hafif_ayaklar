@@ -452,32 +452,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const extraMenu = document.getElementById('extraMenu');
-    const radioIcon = document.getElementById('radioMenuIcon');
-    if (!extraMenu || !radioIcon) {
-        return;
-    }
-
-    const dropdown = extraMenu.closest('.dropdown');
-    const defaultIcon = radioIcon.dataset.iconDefault || 'bi-broadcast-pin';
-    const activeIcon = radioIcon.dataset.iconActive || 'bi-broadcast';
-
-    function swapIcon(nextIcon) {
-        radioIcon.classList.remove(defaultIcon, activeIcon);
-        radioIcon.classList.add(nextIcon);
-    }
-
-    if (dropdown) {
-        dropdown.addEventListener('show.bs.dropdown', function() {
-            swapIcon(activeIcon);
-        });
-        dropdown.addEventListener('hide.bs.dropdown', function() {
-            swapIcon(defaultIcon);
-        });
-    }
-});
-
 // Mobile side panels (questions list / subquestions) for 3-panel pages
 document.addEventListener('DOMContentLoaded', function() {
     const body = document.body;

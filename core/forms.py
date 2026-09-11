@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
-from .models import Invitation, UserProfile, Question, Answer, Message, RandomSentence, Definition, Reference, LibraryFile, CikisTesti, CikisTestiSoru, CikisTestiSik, DelphoiProphecy
+from .models import Invitation, UserProfile, Question, Answer, Message, RandomSentence, Definition, Reference, LibraryFile, DelphoiProphecy
 from django.core.validators import RegexValidator
 from .models import Poll, PollOption
 from django.utils import timezone
@@ -329,21 +329,6 @@ class AnswerEditForm(forms.ModelForm):
             'answer_text': ''
         }
 
-
-class CikisTestiForm(forms.ModelForm):
-    class Meta:
-        model = CikisTesti
-        fields = ['title']
-
-class CikisTestiSoruForm(forms.ModelForm):
-    class Meta:
-        model = CikisTestiSoru
-        fields = ['question_text']
-
-class CikisTestiSikForm(forms.ModelForm):
-    class Meta:
-        model = CikisTestiSik
-        fields = ['text']
 
 class DelphoiProphecyForm(forms.Form):
     positive = forms.CharField(

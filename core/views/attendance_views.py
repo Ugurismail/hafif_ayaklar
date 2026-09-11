@@ -1,4 +1,4 @@
-"""DJ-only printable personnel attendance sheet tool."""
+"""Permission-protected printable personnel attendance sheet tool."""
 
 import json
 import re
@@ -84,7 +84,7 @@ DEFAULT_ATTENDANCE_SHEETS = [
 
 def _user_can_use_attendance_tool(user):
     profile = getattr(user, "userprofile", None)
-    return user.is_staff or getattr(profile, "is_dj", False)
+    return user.is_staff or getattr(profile, "can_manage_attendance", False)
 
 
 def _require_attendance_permission(request):

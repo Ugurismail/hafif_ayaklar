@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from .views.answer_page_views import add_answer, delete_answer, edit_answer, expanded_answer_content, single_answer
@@ -6,7 +6,6 @@ from .views.answer_profile_views import get_root_questions, get_user_answers
 from .views.answer_revision_views import answer_git_history, answer_live_preview, answer_revision_approve, answer_revision_reject, answer_suggest_edit, answer_suggestion_accept, answer_suggestion_detail, answer_suggestion_reject, correction_inbox
 from .views.attendance_views import attendance_day_state, attendance_leave_range, attendance_save_state, attendance_sheet_tool
 from .views.auth_views import create_invitation, send_invitation, signup, user_login, user_logout
-from .views.cikis_test_views import cikis_dogru_sik_sec, cikis_dogrusu_ayarla, cikis_sik_edit, cikis_sik_ekle, cikis_sonuc_sil, cikis_soru_edit, cikis_soru_ekle, cikis_soru_sil, cikis_test_coz, cikis_test_list, cikis_testi_coz, cikis_testi_create, cikis_testi_detail, cikis_testi_sil, cikis_testi_sonuc_list, cikis_testleri_list
 from .views.collection_views import create_saved_collection, delete_saved_collection, saved_collections_home, saved_item_collection_options, update_saved_item_collections
 from .views.definition_reference_views import create_definition, create_reference, delete_definition, delete_reference, edit_definition, edit_reference, get_all_definitions, get_references, get_user_definitions, reference_usage_data
 from .views.delphoi_views import delphoi_home, delphoi_result
@@ -29,7 +28,6 @@ from .views.poll_views import create_poll, delete_poll, edit_poll, poll_detail, 
 from .views.question_map_views import map_data_view, question_map, question_schema, question_schema_children, question_schema_content, question_schema_search
 from .views.question_link_views import add_existing_subquestion, admin_merge_question, search_questions_for_linking, search_questions_for_merging, unlink_from_parent
 from .views.question_page_views import add_question, add_question_from_search, add_starting_question, add_subquestion, bkz_view, delete_question, question_detail
-from .views.radio_views import create_program, delete_program, dj_dashboard, edit_program, get_agora_token, program_detail, radio_chat_messages, radio_home, start_broadcast, stop_broadcast, update_listener_count
 from .views.random_sentence_views import add_random_sentence, get_random_sentence, ignore_random_sentence, vote_random_sentence
 from .views.report_views import report_content, report_content_ajax
 from .views.search_views import load_more_questions, load_more_search_results, reference_search, search, search_suggestions, user_search
@@ -37,7 +35,10 @@ from .views.site_views import about, random_question_id, shuffle_questions, site
 from .views.user_views import public_author, follow_user, get_user_questions, profile, unfollow_user, update_profile_photo, user_list, user_profile, user_settings
 from .views.vote_save_views import get_saved_items, pin_entry, save_item, unpin_entry, vote
 
+from .views.retired_views import retired_feature
+
 urlpatterns = [
+    re_path(r'^(?:radio|cikis_testleri|cikis_testi|cikis-testleri|cikis-test)(?:/.*)?$', retired_feature),
     # Ana Sayfa
     path('', user_homepage, name='user_homepage'),
 
@@ -226,22 +227,6 @@ urlpatterns = [
     path('kenarda/sil/<int:pk>/', kenarda_sil, name='kenarda_sil'),
     path('kenarda/gonder/<int:pk>/', kenarda_gonder, name='kenarda_gonder'),
 
-    path('cikis_testleri/', cikis_testleri_list, name='cikis_testleri_list'),
-    path('cikis_testleri/olustur/', cikis_testi_create, name='cikis_testi_create'),
-    path('cikis_testleri/<int:test_id>/', cikis_testi_detail, name='cikis_testi_detail'),
-    path('cikis_testleri/<int:test_id>/soru_ekle/', cikis_soru_ekle, name='cikis_soru_ekle'),
-    path('cikis_testleri/soru/<int:soru_id>/sik_ekle/', cikis_sik_ekle, name='cikis_sik_ekle'),
-    path('cikis_testleri/soru/<int:soru_id>/dogru_sik/', cikis_dogru_sik_sec, name='cikis_dogru_sik_sec'),
-    path('cikis_testleri/<int:test_id>/coz/', cikis_testi_coz, name='cikis_testi_coz'),
-    path('cikis_testleri/<int:test_id>/sonuclar/', cikis_testi_sonuc_list, name='cikis_testi_sonuc_list'),
-    path('cikis_testleri/<int:test_id>/dogru_ayarla/', cikis_dogrusu_ayarla, name='cikis_dogrusu_ayarla'),
-    path('cikis-testleri/', cikis_test_list, name='cikis_test_list'),
-    path('cikis-test/<int:test_id>/coz/', cikis_test_coz, name='cikis_test_coz'),
-    path('cikis_testleri/sonuc/<int:sonuc_id>/sil/', cikis_sonuc_sil, name='cikis_sonuc_sil'),
-    path('cikis_testleri/soru/<int:soru_id>/edit/', cikis_soru_edit, name='cikis_soru_edit'),
-    path('cikis_testleri/soru/<int:soru_id>/sil/', cikis_soru_sil, name='cikis_soru_sil'),
-    path('cikis_testi/<int:test_id>/sil/', cikis_testi_sil, name='cikis_testi_sil'),
-    path('cikis_testleri/sik/<int:sik_id>/edit/', cikis_sik_edit, name='cikis_sik_edit'),
 
     path('random_question_id/', random_question_id, name='random_question_id'),#bunu sonra kullanacağız.
     path('shuffle_questions/', shuffle_questions, name='shuffle_questions'),
@@ -267,18 +252,6 @@ urlpatterns = [
     path('answer/<int:answer_id>/follow/', follow_answer, name='follow_answer'),
     path('answer/<int:answer_id>/unfollow/', unfollow_answer, name='unfollow_answer'),
 
-    # Radio URLs
-    path('radio/', radio_home, name='radio_home'),
-    path('radio/program/<int:program_id>/', program_detail, name='program_detail'),
-    path('radio/dj/', dj_dashboard, name='dj_dashboard'),
-    path('radio/dj/create/', create_program, name='create_program'),
-    path('radio/dj/edit/<int:program_id>/', edit_program, name='edit_program'),
-    path('radio/dj/delete/<int:program_id>/', delete_program, name='delete_program'),
-    path('radio/dj/start/<int:program_id>/', start_broadcast, name='start_broadcast'),
-    path('radio/dj/stop/<int:program_id>/', stop_broadcast, name='stop_broadcast'),
-    path('radio/token/<int:program_id>/', get_agora_token, name='get_agora_token'),
-    path('radio/listener-count/<int:program_id>/', update_listener_count, name='update_listener_count'),
-    path('radio/chat/<int:program_id>/', radio_chat_messages, name='radio_chat_messages'),
 
     # SLUG-BASED QUESTION URLS (EN SONDA OLMALI - catch-all)
     # Örnek: /ozgurluk-nedir/ veya /yapılacaklar/ -> question detail

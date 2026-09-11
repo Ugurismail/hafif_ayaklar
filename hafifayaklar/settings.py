@@ -124,7 +124,6 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             'core.context_processors.static_asset_version',
             'core.context_processors.google_analytics',
-            'core.context_processors.radio_live_indicator',
             ],
         },
     },
