@@ -361,108 +361,7 @@ def add_question_tree_to_docx(doc, question, target_user, level=1, visited=None)
         add_question_tree_to_docx(doc, rel.child, target_user, level=min(level + 1, 9), visited=visited)
 
 
-@login_required
-def download_entries_docx(request, username):
-    from docx import Document
-    from docx.shared import Pt, RGBColor
-
-    target_user = get_object_or_404(User, username=username)
-    if request.user != target_user and not request.user.is_superuser:
-        return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
-
-    user_answers = get_filtered_user_answers(request, target_user)
-    custom_order = is_custom_order_request(request)
-
-    document = Document()
-    document.add_heading(f'{target_user.username} Entries', 0)
-
-    if custom_order:
-        last_question_id = None
-        for ans in user_answers:
-            if ans.question_id != last_question_id:
-                document.add_heading(ans.question.question_text, level=1)
-                last_question_id = ans.question_id
-
-            date_str = ans.created_at.strftime('%Y-%m-%d %H:%M')
-            p = document.add_paragraph()
-            run = p.add_run(date_str + '  ')
-            run.font.size = Pt(9)
-            run.font.color.rgb = RGBColor(140, 140, 140)
-            run.italic = True
-            add_answer_text_to_docx(document, ans.answer_text)
-            document.add_paragraph('')
-    else:
-        questions_dict = {}
-        for ans in user_answers:
-            q = ans.question
-            if q.id not in questions_dict:
-                questions_dict[q.id] = {'question': q, 'answers': []}
-            questions_dict[q.id]['answers'].append(ans)
-
-        toc_paragraph = document.add_paragraph()
-        insert_toc(toc_paragraph)
-
-        instruction_text = (
-            "Belgeyi açtıktan sonra içindekiler bölümünü görmek için, Word içerisinde "
-            "alanı (veya tüm belgeyi) güncellemeniz gerekir (sağ tıklayıp 'Update Field' veya Ctrl+A ardından F9'a basabilirsiniz)."
-        )
-        document.add_paragraph(instruction_text)
-        document.add_page_break()
-
-        for _, q_data in questions_dict.items():
-            question = q_data['question']
-            q_answers = q_data['answers']
-
-            document.add_heading(question.question_text, level=1)
-
-            for answer in q_answers:
-                date_str = answer.created_at.strftime('%Y-%m-%d %H:%M')
-                p = document.add_paragraph()
-                run = p.add_run(date_str + '  ')
-                run.font.size = Pt(9)
-                run.font.color.rgb = RGBColor(140, 140, 140)
-                run.italic = True
-                add_answer_text_to_docx(document, answer.answer_text)
-                document.add_paragraph('')
-
-    bibliography = collect_user_bibliography(target_user, user_answers)
-    if bibliography:
-        document.add_page_break()
-        document.add_heading('Kaynakça', level=1)
-
-        for bib_item in bibliography:
-            if bib_item.get('reference'):
-                ref = bib_item['reference']
-                ref_text = f"[{bib_item['number']}] {bib_item['formatted_authors']} ({ref.year})"
-                if ref.metin_ismi:
-                    ref_text += f", {ref.metin_ismi}"
-                ref_text += f", {ref.rest}"
-
-                if bib_item['pages']:
-                    ref_text += f" (Kullanılan sayfalar: {', '.join(bib_item['pages'])})"
-
-                p = document.add_paragraph(ref_text)
-                p.paragraph_format.left_indent = Pt(18)
-                p.paragraph_format.space_after = Pt(6)
-            else:
-                ref_text = f"[{bib_item['number']}] Kaynak bulunamadı (ID: {bib_item.get('ref_id')})"
-                p = document.add_paragraph(ref_text)
-                p.paragraph_format.left_indent = Pt(18)
-
-    f = BytesIO()
-    document.save(f)
-    f.seek(0)
-
-    response = HttpResponse(
-        f.read(),
-        content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    )
-    response['Content-Disposition'] = f'attachment; filename="{target_user.username}_entries.docx"'
-    return response
-
-
-@login_required
-def download_entries_paper(request, username):
+def _download_document(request, username, output_format):
     from ..paper_export import build_paper_docx
 
     target_user = get_object_or_404(User, username=username)
@@ -476,196 +375,38 @@ def download_entries_paper(request, username):
     except (TypeError, ValueError):
         root_question_id = None
 
-    document_bytes = build_paper_docx(
-        user_answers,
-        target_user,
-        root_question_id=root_question_id,
-    )
-    response = HttpResponse(
-        document_bytes,
-        content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    )
-    response['Content-Disposition'] = (
-        f'attachment; filename="{target_user.username}_paper.docx"'
-    )
+    document_bytes = build_paper_docx(user_answers, target_user, root_question_id=root_question_id)
+    content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    if output_format == 'pdf':
+        from ..paper_pdf import PDFExportError, paper_docx_to_pdf
+        try:
+            document_bytes = paper_docx_to_pdf(document_bytes)
+        except PDFExportError as exc:
+            response = HttpResponse(str(exc), status=503, content_type='text/plain; charset=utf-8')
+            response['Cache-Control'] = 'private, no-store'
+            return response
+        content_type = 'application/pdf'
+
+    response = HttpResponse(document_bytes, content_type=content_type)
+    response['Content-Disposition'] = f'attachment; filename="{target_user.username}_entries.{output_format}"'
+    response['Cache-Control'] = 'private, no-store'
     return response
 
 
 @login_required
+def download_entries_docx(request, username):
+    return _download_document(request, username, 'docx')
+
+
+@login_required
+def download_entries_paper(request, username):
+    # Keep old bookmarked/export form URLs working without a separate format.
+    return _download_document(request, username, 'docx')
+
+
+@login_required
 def download_entries_pdf(request, username):
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.units import inch
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
-    from reportlab.lib.enums import TA_LEFT, TA_CENTER
-    from reportlab.pdfbase import pdfmetrics
-    from reportlab.pdfbase.ttfonts import TTFont
-
-    target_user = get_object_or_404(User, username=username)
-    if request.user != target_user and not request.user.is_superuser:
-        return JsonResponse({'error': 'Bu işlemi yapmaya yetkiniz yok.'}, status=403)
-
-    user_answers = get_filtered_user_answers(request, target_user)
-    custom_order = is_custom_order_request(request)
-
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
-    elements = []
-
-    try:
-        import os
-        from django.conf import settings
-        import logging
-        logger = logging.getLogger(__name__)
-
-        font_dir = os.path.join(settings.BASE_DIR, 'static', 'fonts')
-        dejavu_regular = os.path.join(font_dir, 'DejaVuSans.ttf')
-        dejavu_bold = os.path.join(font_dir, 'DejaVuSans-Bold.ttf')
-
-        logger.info(f'Font paths - Regular: {dejavu_regular}, Bold: {dejavu_bold}')
-        logger.info(f'Regular exists: {os.path.exists(dejavu_regular)}, Bold exists: {os.path.exists(dejavu_bold)}')
-
-        if os.path.exists(dejavu_regular) and os.path.exists(dejavu_bold):
-            pdfmetrics.registerFont(TTFont('TurkishFont', dejavu_regular))
-            pdfmetrics.registerFont(TTFont('TurkishFont-Bold', dejavu_bold))
-            font_name = 'TurkishFont'
-            font_name_bold = 'TurkishFont-Bold'
-            logger.info('DejaVu Sans fonts successfully registered!')
-        else:
-            logger.warning('DejaVu fonts not found! Falling back to Helvetica (no Turkish support)')
-            font_name = 'Helvetica'
-            font_name_bold = 'Helvetica-Bold'
-    except Exception as e:
-        logger.error(f'Font registration failed: {e}')
-        font_name = 'Helvetica'
-        font_name_bold = 'Helvetica-Bold'
-
-    styles = getSampleStyleSheet()
-
-    title_style = ParagraphStyle(
-        'CustomTitle', parent=styles['Heading1'], fontName=font_name, fontSize=24,
-        textColor='#2c3e50', spaceAfter=30, alignment=TA_CENTER
-    )
-    h1_style = ParagraphStyle(
-        'CustomH1', parent=styles['Heading1'], fontName=font_name, fontSize=16,
-        textColor='#2c3e50', spaceAfter=12, spaceBefore=12
-    )
-    answer_style = ParagraphStyle(
-        'AnswerText', parent=styles['BodyText'], fontName=font_name, fontSize=10,
-        textColor='#2c3e50', spaceAfter=12, leftIndent=20
-    )
-    date_style = ParagraphStyle(
-        'DateStyle', parent=styles['Normal'], fontName=font_name, fontSize=8,
-        textColor='#95a5a6', spaceAfter=6, leftIndent=20
-    )
-
-    title = Paragraph(f"{target_user.username} - Entry'ler", title_style)
-    elements.append(title)
-    elements.append(Spacer(1, 0.3 * inch))
-
-    def clean_text(text):
-        if not text:
-            return ''
-        text = text.replace('&', '&amp;')
-        text = text.replace('<', '&lt;')
-        text = text.replace('>', '&gt;')
-        text = text.replace('\n', '<br/>')
-        return text
-
-    if custom_order:
-        last_question_id = None
-        for answer in user_answers:
-            if answer.question_id != last_question_id:
-                elements.append(Paragraph(clean_text(answer.question.question_text), h1_style))
-                elements.append(Spacer(1, 0.1 * inch))
-                last_question_id = answer.question_id
-
-            date_str = answer.created_at.strftime('%Y-%m-%d %H:%M')
-            elements.append(Paragraph(f'<i>{date_str}</i>', date_style))
-            elements.append(Paragraph(clean_text(answer.answer_text), answer_style))
-            elements.append(Spacer(1, 0.15 * inch))
-    else:
-        questions_dict = {}
-        for ans in user_answers:
-            q = ans.question
-            if q.id not in questions_dict:
-                questions_dict[q.id] = {'question': q, 'answers': []}
-            questions_dict[q.id]['answers'].append(ans)
-
-        toc_style = ParagraphStyle(
-            'TOCHeading', parent=styles['Heading1'], fontName=font_name_bold, fontSize=18,
-            textColor='#2c3e50', spaceAfter=12
-        )
-        toc_item_style = ParagraphStyle(
-            'TOCItem', parent=styles['Normal'], fontName=font_name, fontSize=11,
-            textColor='#34495e', spaceAfter=6, leftIndent=20
-        )
-
-        elements.append(Paragraph('İçindekiler', toc_style))
-        elements.append(Spacer(1, 0.2 * inch))
-
-        for idx, (_, q_data) in enumerate(questions_dict.items(), 1):
-            question = q_data['question']
-            toc_text = f"{idx}. {clean_text(question.question_text[:100])}"
-            if len(question.question_text) > 100:
-                toc_text += '...'
-            elements.append(Paragraph(toc_text, toc_item_style))
-
-        elements.append(PageBreak())
-
-        for _, q_data in questions_dict.items():
-            question = q_data['question']
-            q_answers = q_data['answers']
-
-            elements.append(Paragraph(clean_text(question.question_text), h1_style))
-            elements.append(Spacer(1, 0.1 * inch))
-
-            for answer in q_answers:
-                date_str = answer.created_at.strftime('%Y-%m-%d %H:%M')
-                elements.append(Paragraph(f'<i>{date_str}</i>', date_style))
-                elements.append(Paragraph(clean_text(answer.answer_text), answer_style))
-                elements.append(Spacer(1, 0.15 * inch))
-
-            elements.append(PageBreak())
-
-    bibliography = collect_user_bibliography(target_user, user_answers)
-    if bibliography:
-        elements.append(PageBreak())
-
-        bib_heading_style = ParagraphStyle(
-            'BibliographyHeading', parent=styles['Heading1'], fontName=font_name_bold,
-            fontSize=18, textColor='#2c3e50', spaceAfter=20, spaceBefore=12
-        )
-        bib_item_style = ParagraphStyle(
-            'BibliographyItem', parent=styles['BodyText'], fontName=font_name, fontSize=10,
-            textColor='#2c3e50', spaceAfter=10, leftIndent=20, firstLineIndent=-20
-        )
-
-        elements.append(Paragraph('Kaynakça', bib_heading_style))
-        elements.append(Spacer(1, 0.2 * inch))
-
-        for bib_item in bibliography:
-            if bib_item.get('reference'):
-                ref = bib_item['reference']
-                ref_text = f"[{bib_item['number']}] {clean_text(bib_item['formatted_authors'])} ({ref.year})"
-                if ref.metin_ismi:
-                    ref_text += f", {clean_text(ref.metin_ismi)}"
-                ref_text += f", {clean_text(ref.rest)}"
-                if bib_item['pages']:
-                    pages_str = ', '.join(bib_item['pages'])
-                    ref_text += f" (Kullanılan sayfalar: {pages_str})"
-                elements.append(Paragraph(ref_text, bib_item_style))
-            else:
-                ref_text = f"[{bib_item['number']}] Kaynak bulunamadı (ID: {bib_item.get('ref_id')})"
-                elements.append(Paragraph(ref_text, bib_item_style))
-
-    doc.build(elements)
-    buffer.seek(0)
-    pdf_content = buffer.read()
-
-    response = HttpResponse(pdf_content, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{target_user.username}_entries.pdf"'
-    return response
+    return _download_document(request, username, 'pdf')
 
 
 @login_required

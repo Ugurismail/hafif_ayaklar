@@ -1,0 +1,31 @@
+text { fill: #202624; font-family: 'DejaVu Sans'; font-size: 15px; text-anchor: middle; }
+.answer-diagram-edge { fill: none; stroke: #28634e; stroke-width: 2.5; }
+.answer-diagram-edge-dashed { stroke-dasharray: 8 6; }
+.answer-diagram-arrow { fill: #28634e; }
+.answer-diagram-edge-label-bg { fill: #fff; stroke: #ccd2cf; stroke-width: 1; }
+.answer-diagram-edge-label { font-size: 13px; font-weight: bold; }
+.answer-diagram-node > rect, .answer-diagram-node > polygon,
+.answer-diagram-node > path, .answer-diagram-node > ellipse { fill: #f6f7f6; stroke: #7a8580; stroke-width: 2; }
+.answer-diagram-tone-green > rect, .answer-diagram-tone-green > polygon,
+.answer-diagram-tone-green > path, .answer-diagram-tone-green > ellipse { fill: #d9eadf; stroke: #28634e; }
+.answer-diagram-tone-blue > rect, .answer-diagram-tone-blue > polygon,
+.answer-diagram-tone-blue > path, .answer-diagram-tone-blue > ellipse { fill: #dce7f7; stroke: #326cbb; }
+.answer-diagram-tone-gold > rect, .answer-diagram-tone-gold > polygon,
+.answer-diagram-tone-gold > path, .answer-diagram-tone-gold > ellipse { fill: #f5e8c9; stroke: #a67626; }
+.answer-diagram-tone-red > rect, .answer-diagram-tone-red > polygon,
+.answer-diagram-tone-red > path, .answer-diagram-tone-red > ellipse { fill: #f4dede; stroke: #af3f3f; }
+.answer-diagram-node-set > ellipse { fill-opacity: .6; }
+.answer-diagram-node-label > rect { fill: none; stroke: none; }
+.answer-diagram-group rect { fill: #f4f7f5; fill-opacity: .4; stroke: #99a49e; stroke-dasharray: 8 6; }
+.answer-diagram-group text { font-size: 12px; text-anchor: start; }
+.answer-diagram-region-hatch { stroke: #596860; stroke-width: 3.5; opacity: .5; }
+.answer-diagram-region-hatch-green { stroke: #24724d; }
+.answer-diagram-region-hatch-blue { stroke: #2d6bc4; }
+.answer-diagram-region-hatch-gold { stroke: #a67626; }
+.answer-diagram-region-hatch-red { stroke: #af3f3f; }
+.answer-diagram-region-label text { font-size: 15px; font-weight: bold; }
+.answer-diagram-stroke { fill: none; stroke: #596860; stroke-linecap: round; stroke-linejoin: round; }
+.answer-diagram-stroke-green { stroke: #24724d; }
+.answer-diagram-stroke-blue { stroke: #2d6bc4; }
+.answer-diagram-stroke-gold { stroke: #a67626; }
+.answer-diagram-stroke-red { stroke: #af3f3f; }

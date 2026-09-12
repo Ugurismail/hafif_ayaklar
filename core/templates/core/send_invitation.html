@@ -1,12 +1,13 @@
 <!-- templates/core/send_invitation.html -->
 {% extends 'core/base.html' %}
+{% load static %}
 
 {% block content %}
 <h2>Davet Et</h2>
 <p>Mevcut Davet Hakkı: {{ invitation_quota }}</p>
 
 {% if invitation_code %}
-    <p><strong>Davet kodunuz:</strong> {{ invitation_code }}</p>
+    <p><strong>Davet kodunuz:</strong> {% include 'core/_invitation_code.html' with code=invitation_code %}</p>
     <p>Bu kodu kullanarak yeni bir kullanıcı {{ quota_granted }} davet hakkı alacak.</p>
     <a href="{% url 'send_invitation' %}">Yeni Davet Oluştur</a>
 {% else %}
@@ -16,4 +17,5 @@
         <button type="submit">Davet Kodu Oluştur</button>
     </form>
 {% endif %}
+<script src="{% static 'js/invitation_copy.js' %}?v={{ STATIC_ASSET_VERSION }}-copy2" defer></script>
 {% endblock %}

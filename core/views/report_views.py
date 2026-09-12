@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.http import urlencode, url_has_allowed_host_and_scheme
 
 from ..models import Answer, ContentReport, Question
 
@@ -13,6 +14,10 @@ def report_content(request):
     content_type = request.GET.get('content_type') or request.POST.get('content_type')
     object_id = request.GET.get('object_id') or request.POST.get('object_id')
     next_url = request.GET.get('next') or request.POST.get('next') or reverse('user_homepage')
+    if not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
+    ):
+        next_url = reverse('user_homepage')
 
     if content_type not in {'question', 'answer'}:
         messages.error(request, 'Raporlanacak içerik bulunamadı.')
@@ -30,7 +35,9 @@ def report_content(request):
         details = request.POST.get('details', '').strip()
         if reason not in dict(ContentReport.REASON_CHOICES):
             messages.error(request, 'Geçerli bir rapor nedeni seç.')
-            return redirect(request.path + f'?content_type={content_type}&object_id={object_id}&next={next_url}')
+            return redirect(request.path + '?' + urlencode({
+                'content_type': content_type, 'object_id': object_id, 'next': next_url,
+            }))
 
         content_type_obj = ContentType.objects.get_for_model(model)
         report, created = ContentReport.objects.get_or_create(

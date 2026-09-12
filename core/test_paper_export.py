@@ -11,6 +11,7 @@ from lxml import etree
 from PIL import Image
 
 from core.models import Answer, Definition, Question, QuestionRelationship, Reference
+from core.diagram_markup import encode_diagram_payload
 
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -139,6 +140,39 @@ class PaperExportTests(TestCase):
             },
         )
 
+    def test_diagram_is_embedded_with_description_and_link(self):
+        payload = {
+            'title': 'Karar döngüsü',
+            'nodes': [
+                {'id': 'a', 'label': 'Başlangıç', 'shape': 'terminal', 'x': 150, 'y': 220, 'href': 'https://example.com'},
+                {'id': 'b', 'label': 'Kontrol', 'shape': 'decision', 'x': 500, 'y': 220},
+            ],
+            'edges': [{'from': 'a', 'to': 'b', 'label': 'Evet', 'description': f'Ok açıklaması (k:{self.aksoy.id}).'}],
+        }
+        self.root_answer.answer_text = 'Önce [[diyagram:' + encode_diagram_payload(payload) + ']] sonra.'
+        self.root_answer.save()
+        response = self.download()
+        self.assertEqual(response.status_code, 200)
+        document = Document(BytesIO(response.content))
+        text = '\n'.join(p.text for p in document.paragraphs)
+        self.assertEqual(len(document.inline_shapes), 1)
+        self.assertIn('Diyagram 1. Karar döngüsü', text)
+        self.assertIn('[1] Başlangıç → Kontrol: Evet', text)
+        self.assertIn('Ok açıklaması (Aksoy, 2018)', text)
+        self.assertIn('https://example.com', text)
+        self.assertNotIn('[[diyagram:', text)
+        self.assertIn('Önce', text)
+        self.assertIn('sonra.', text)
+
+    def test_deep_outline_is_not_folded_into_previous_item(self):
+        self.root_answer.answer_text = '\n'.join(f'{"1." * level} Katman {level}' for level in range(1, 25))
+        self.root_answer.save()
+        document = Document(BytesIO(self.download().content))
+        items = [p for p in document.paragraphs if p.style.name == 'Paper Numbered Item']
+        self.assertEqual(len(items), 24)
+        self.assertTrue(items[-1].text.endswith('Katman 24'))
+        self.assertLessEqual(items[-1].paragraph_format.left_indent.cm, 9.01)
+
     def test_paper_export_formats_headings_citations_and_bibliography(self):
         response = self.download()
 
@@ -147,7 +181,7 @@ class PaperExportTests(TestCase):
             response["Content-Type"],
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
-        self.assertIn("paper-user_paper.docx", response["Content-Disposition"])
+        self.assertIn("paper-user_entries.docx", response["Content-Disposition"])
 
         document = Document(BytesIO(response.content))
         paragraphs = document.paragraphs
@@ -529,9 +563,11 @@ class PaperExportTests(TestCase):
 
         self.assertEqual(response.status_code, 403)
 
-    def test_download_modal_offers_paper_format(self):
+    def test_download_modal_offers_word_and_pdf_without_paper(self):
         response = self.client.get(f"/profile/{self.user.username}/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'value="paper"')
-        self.assertContains(response, "download_entries_paper")
+        self.assertContains(response, 'value="docx"')
+        self.assertContains(response, 'value="pdf"')
+        self.assertNotContains(response, 'value="paper"')
+        self.assertNotContains(response, "download_entries_paper")

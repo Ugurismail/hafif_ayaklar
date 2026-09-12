@@ -116,6 +116,14 @@ class MarkdownRenderingTests(SimpleTestCase):
         self.assertIn('class="answer-outline-item answer-outline-level-4"', rendered)
         self.assertIn('<span class="answer-outline-marker">1.1.1.1.</span>', rendered)
 
+    def test_deep_numbered_outline_keeps_all_levels_and_escapes_content(self):
+        text = '\n'.join(f'{"1." * level} Seviye {level} <script>bad</script>' for level in range(1, 25))
+        rendered = str(safe_markdownify(text))
+        self.assertEqual(rendered.count('class="answer-outline-marker"'), 24)
+        self.assertIn('data-outline-level="24"', rendered)
+        self.assertIn('1.' * 24, rendered)
+        self.assertNotIn('<script>', rendered)
+
     def test_math_text_is_not_rewritten_by_bkz_filter(self):
         rendered = str(bkz_link(safe_markdownify(r"$\text{(bkz: test)} + x$")))
 

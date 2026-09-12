@@ -1,11 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_GET, require_POST
 
+from ..content_targets import owned_collections, public_content_target
 from ..models import Answer, Question, SavedCollection, SavedCollectionItem, SavedItem
 
 
@@ -26,6 +30,8 @@ def _serialize_collections(user):
     ]
 
 
+@require_GET
+@never_cache
 def saved_item_collection_options(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Kaydetmek için üye olmalısınız.'}, status=403)
@@ -37,14 +43,10 @@ def saved_item_collection_options(request):
         return JsonResponse({'error': 'Missing content_type or object_id'}, status=400)
 
     try:
-        object_id = int(object_id)
-    except (TypeError, ValueError):
-        return JsonResponse({'error': 'Invalid object_id'}, status=400)
-
-    try:
-        content_type_obj = ContentType.objects.get(model=content_type)
-    except ContentType.DoesNotExist:
-        return JsonResponse({'error': 'Invalid content_type'}, status=400)
+        model, content_type_obj, object_id = public_content_target(content_type, object_id)
+    except ValueError as exc:
+        return JsonResponse({'error': str(exc)}, status=400)
+    get_object_or_404(model, pk=object_id)
 
     saved_item = (
         SavedItem.objects.filter(
@@ -180,20 +182,15 @@ def delete_saved_collection(request, collection_id):
 
 
 @login_required
+@require_POST
+@transaction.atomic
 def update_saved_item_collections(request, saved_item_id):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
-
-    saved_item = get_object_or_404(SavedItem, id=saved_item_id, user=request.user)
+    saved_item = get_object_or_404(SavedItem.objects.select_for_update(), id=saved_item_id, user=request.user)
     raw_ids = request.POST.getlist('collection_ids[]') or request.POST.getlist('collection_ids')
-    valid_ids = []
-    for value in raw_ids:
-        try:
-            valid_ids.append(int(value))
-        except (TypeError, ValueError):
-            continue
-
-    allowed_collections = list(SavedCollection.objects.filter(user=request.user, id__in=valid_ids))
+    try:
+        allowed_collections = owned_collections(request.user, raw_ids)
+    except ValueError as exc:
+        return JsonResponse({'error': str(exc)}, status=400)
     allowed_ids = {collection.id for collection in allowed_collections}
 
     SavedCollectionItem.objects.filter(saved_item=saved_item).exclude(collection_id__in=allowed_ids).delete()

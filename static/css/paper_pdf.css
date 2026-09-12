@@ -1,0 +1,56 @@
+@font-face {
+    font-family: 'Paper Garamond';
+    src: url('https://paper.invalid/EBGaramond-Variable.ttf');
+    font-weight: 400;
+}
+@font-face {
+    font-family: 'Paper Garamond';
+    src: url('https://paper.invalid/EBGaramond-Italic-Variable.ttf');
+    font-weight: 400;
+    font-style: italic;
+}
+@font-face {
+    font-family: 'Paper Garamond';
+    src: url('https://paper.invalid/EBGaramond-Variable.ttf');
+    font-weight: 700;
+}
+@font-face {
+    font-family: 'Paper Garamond';
+    src: url('https://paper.invalid/EBGaramond-Italic-Variable.ttf');
+    font-weight: 700;
+    font-style: italic;
+}
+@font-face {
+    font-family: 'Paper Symbols';
+    src: url('https://paper.invalid/DejaVuSans.ttf');
+}
+@page {
+    size: A4;
+    margin: 25.4mm;
+    @bottom-center {
+        content: counter(page);
+        font: 10pt 'Paper Garamond';
+    }
+    @footnote {
+        border-top: 0.5pt solid #777;
+    }
+}
+html { font: 12pt/1.15 'Paper Garamond', 'Paper Symbols', serif; color: #000; }
+body { margin: 0; }
+p { margin: 0 0 6pt; orphans: 2; widows: 2; overflow-wrap: anywhere; }
+h1, h2, h3, h4, h5, h6 { text-align: left !important; overflow-wrap: anywhere; }
+.toc-heading { font-weight: bold; font-size: 18pt; text-align: left; }
+.toc-entry { text-align: left; }
+.toc-entry a { color: #000; text-decoration: none; }
+.page-break { break-before: page; }
+.numbered { display: flex; gap: 6pt; text-indent: 0 !important; margin-left: 0 !important; }
+.numbered .marker { flex: 0 0 auto; max-width: 45%; overflow-wrap: anywhere; }
+.numbered > span:last-child { min-width: 0; }
+.quote { white-space: pre-line; }
+.caption { color: #000; }
+img { max-width: 100%; object-fit: contain; vertical-align: middle; }
+a { color: #0563c1; text-decoration: underline; overflow-wrap: anywhere; }
+hr { border: 0; border-top: 0.5pt solid #b7b7b7; margin: 4pt 0 8pt; }
+.footnote { float: footnote; footnote-policy: line; font: 9pt/1.15 'Paper Garamond', 'Paper Symbols', serif; text-indent: 0; text-align: left; }
+.footnote::footnote-call { content: attr(data-note-mark); font-size: 8pt; vertical-align: super; line-height: 0; }
+.footnote::footnote-marker { content: attr(data-note-mark) ' '; }

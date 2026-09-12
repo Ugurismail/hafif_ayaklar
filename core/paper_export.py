@@ -7,6 +7,7 @@ import zipfile
 from collections import deque
 from io import BytesIO
 from pathlib import PurePosixPath
+from uuid import uuid4
 from urllib.parse import unquote, urlparse
 
 from django.conf import settings
@@ -21,6 +22,8 @@ from lxml import etree
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 from .models import Definition, QuestionRelationship, Reference
+from .diagram_markup import DIAGRAM_MARKER_PATTERN, decode_diagram_payload
+from .diagram_export import diagram_document_data, diagram_png
 
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -60,7 +63,7 @@ IMAGE_RE = re.compile(
     r"^\s*!\[(?P<alt>[^\]]*)\]\((?P<url>[^)]+)\)\s*$"
 )
 NUMBERED_ITEM_RE = re.compile(
-    r"^\s*(?P<marker>(?:\d+\.){1,4})\s+(?P<content>.+?)\s*$"
+    r"^\s*(?P<marker>(?:\d+\.)+)\s+(?P<content>.+?)\s*$"
 )
 CUSTOM_HEADING_OFFSETS = {
     "==": 1,
@@ -607,6 +610,34 @@ def _add_paper_image(document, image_url, alt_text):
     )
 
 
+def _add_paper_diagram(document, encoded, renderer):
+    data = diagram_document_data(encoded)
+    if data is None:
+        document.add_paragraph('Diyagram verisi okunamadı.', style='Paper Body')
+        return
+    payload, svg, notes = data
+    renderer.diagram_count += 1
+    caption = document.add_paragraph(style='Caption')
+    run = caption.add_run(f'Diyagram {renderer.diagram_count}. {payload["title"]}')
+    _set_run_font(run, bold=True)
+    run.font.color.rgb = RGBColor(0, 0, 0)
+    caption.paragraph_format.keep_with_next = True
+    image_bytes = diagram_png(svg)
+    with Image.open(BytesIO(image_bytes)) as image:
+        width, height = image.size
+    scale = min(MAX_PAPER_IMAGE_WIDTH_CM / width, MAX_PAPER_IMAGE_HEIGHT_CM / height)
+    paragraph = document.add_paragraph()
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    shape = paragraph.add_run().add_picture(BytesIO(image_bytes), width=Cm(width * scale))
+    shape._inline.docPr.set('descr', payload['title'])
+    for title, body in notes:
+        paragraph = document.add_paragraph(style='Paper Body')
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        paragraph.paragraph_format.first_line_indent = Cm(0)
+        _set_run_font(paragraph.add_run(title + ': '), bold=True)
+        _add_inline_text(paragraph, renderer.prepare_text(body))
+
+
 def _answer_heading(line, question_level):
     custom_match = CUSTOM_HEADING_RE.fullmatch(line)
     if custom_match:
@@ -630,12 +661,18 @@ def _answer_blocks(text, question_level):
             blocks.append(("paragraph", list(paragraph_lines)))
             paragraph_lines.clear()
 
-    for line in str(text or "").splitlines():
+    separated = re.sub(DIAGRAM_MARKER_PATTERN, lambda m: '\n' + m.group(0) + '\n', str(text or ''))
+    for line in separated.splitlines():
         heading = _answer_heading(line, question_level)
         image = IMAGE_RE.fullmatch(line)
         numbered_item = NUMBERED_ITEM_RE.fullmatch(line)
         stripped = line.strip()
-        if heading:
+        diagram = re.fullmatch(DIAGRAM_MARKER_PATTERN, stripped)
+        if diagram:
+            flush_paragraph()
+            active_numbered_item = None
+            blocks.append(('diagram', diagram.group(1)))
+        elif heading:
             flush_paragraph()
             active_numbered_item = None
             blocks.append(("heading", heading))
@@ -697,12 +734,23 @@ def _add_answer_body(
     question_level,
     heading_outline=None,
 ):
-    prepared = renderer.prepare_text(text)
+    diagrams = {}
+    def protect_diagram(match):
+        token = f'PAPERDIAGRAM{uuid4().hex}END'
+        diagrams[token] = match.group(0)
+        return token
+    protected = re.sub(DIAGRAM_MARKER_PATTERN, protect_diagram, str(text or ''))
+    prepared = renderer.prepare_text(protected)
+    for token, marker in diagrams.items():
+        prepared = prepared.replace(token, marker)
     if not prepared.strip():
         return
 
     heading_index = 0
     for kind, value in _answer_blocks(prepared, question_level):
+        if kind == 'diagram':
+            _add_paper_diagram(document, value, renderer)
+            continue
         if kind == "rule":
             _add_horizontal_rule(document)
             continue
@@ -726,8 +774,8 @@ def _add_answer_body(
 
         if kind == "numbered":
             paragraph = document.add_paragraph(style="Paper Numbered Item")
-            marker_width = Cm(1.1)
-            item_start = Cm((value["level"] - 1) * 0.75)
+            marker_width = Cm(1.1 if value['level'] <= 4 else min(6, len(value['marker']) * 0.18 + 0.35))
+            item_start = Cm(min((value["level"] - 1) * 0.75, 3))
             content_start = item_start + marker_width
             paragraph.paragraph_format.left_indent = content_start
             paragraph.paragraph_format.first_line_indent = -marker_width
@@ -959,6 +1007,14 @@ def _question_levels(answers, target_user, root_question_id=None):
 class PaperTextRenderer:
     def __init__(self, answers):
         all_text = "\n".join(answer.answer_text or "" for answer in answers)
+        diagram_texts = []
+        for match in re.finditer(DIAGRAM_MARKER_PATTERN, all_text):
+            payload = decode_diagram_payload(match.group(1))
+            if payload:
+                diagram_texts.extend(node['label'] for node in payload['nodes'])
+                diagram_texts.extend(edge['description'] for edge in payload['edges'] + payload['arrows'])
+        all_text += '\n' + '\n'.join(diagram_texts)
+        self.diagram_count = 0
         definition_ids = {
             int(match.group("definition_id"))
             for match in DEFINITION_RE.finditer(all_text)
@@ -1117,7 +1173,7 @@ def build_paper_docx(answers, target_user, root_question_id=None):
             "paper_bibliography",
         )
 
-    document.core_properties.title = "Paper"
+    document.core_properties.title = f"{target_user.username} - Entryler"
     document.core_properties.author = target_user.username
     _insert_toc(document, outline)
 

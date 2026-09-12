@@ -3,7 +3,7 @@
     {% if node.user %}
       <a href="{% url 'user_profile' node.user.username %}">{{ node.user.username }}</a>
     {% else %}
-      <span class="text-muted">Davet Kodu: {{ node.code }}</span>
+      <span class="text-muted">Davet Kodu:</span> {% include 'core/_invitation_code.html' with code=node.code %}
     {% endif %}
     {% if node.children %}
       <ul>
@@ -13,4 +13,3 @@
       </ul>
     {% endif %}
   </li>
-  

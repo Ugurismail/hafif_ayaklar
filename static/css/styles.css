@@ -959,35 +959,95 @@ mark{
 
 .answer-outline-item {
     display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
+    grid-template-columns: fit-content(45%) minmax(0, 1fr);
     column-gap: 0.45rem;
     align-items: start;
     line-height: 1.45;
     margin: 0.18rem 0;
-}
-
-.answer-outline-level-1 {
-    margin-left: 1.4rem;
-}
-
-.answer-outline-level-2 {
-    margin-left: 3.2rem;
-}
-
-.answer-outline-level-3 {
-    margin-left: 5rem;
-}
-
-.answer-outline-level-4 {
-    margin-left: 6.8rem;
+    margin-left: min(calc(1.4rem + var(--outline-depth, 0) * 1.8rem), 20%);
 }
 
 .answer-outline-marker {
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 }
 
 .answer-outline-content {
     min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.invitation-code {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    vertical-align: middle;
+}
+.invitation-code-value {
+    color: var(--text-color);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important;
+    font-size: 13px !important;
+    line-height: 1.5;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+    user-select: all;
+}
+.invitation-copy-button {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 16px;
+    opacity: .65;
+}
+.invitation-copy-button:hover, .invitation-copy-button:focus-visible {
+    background: var(--hover-background-color, #e5e7eb);
+    opacity: 1;
+}
+.invitation-copy-button:focus-visible { outline: 2px solid var(--link-color); }
+.invitation-table-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+}
+.invitation-table-scroll:focus-visible { outline: 2px solid var(--link-color); }
+.invitation-table {
+    min-width: 780px;
+    font: 14px/1.5 Arial, sans-serif;
+}
+.invitation-table .invitation-code {
+    display: inline-grid;
+    grid-template-columns: 282px 32px;
+    width: 322px;
+}
+.invitation-table .invitation-code-value { white-space: nowrap; }
+.invitation-table th, .invitation-table td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    color: var(--text-color);
+    background: transparent;
+    border-color: color-mix(in srgb, var(--text-color) 16%, transparent);
+}
+.invitation-table thead th {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    border-bottom-width: 1px;
+}
+.invitation-table td:nth-child(2) { white-space: nowrap; }
+@media (max-width: 600px) {
+    .invitation-table .invitation-code {
+        grid-template-columns: 212px 32px;
+        width: 252px;
+    }
+    .invitation-table .invitation-code-value { white-space: normal; }
 }
 
 .answer-revision-badge {

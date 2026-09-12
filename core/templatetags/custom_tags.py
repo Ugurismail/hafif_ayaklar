@@ -518,10 +518,10 @@ def safe_markdownify(text, arg='default'):
         placeholder = f"OUTLINE_{uuid.uuid4().hex[:10]}_END"
         items = []
         for marker, content in lines:
-            level = min(4, marker.rstrip('.').count('.') + 1)
+            level = marker.rstrip('.').count('.') + 1
             items.append(
                 '<div class="answer-outline-item '
-                f'answer-outline-level-{level}">'
+                f'answer-outline-level-{level}" style="--outline-depth:{min(level - 1, 12)}" data-outline-level="{level}">'
                 f'<span class="answer-outline-marker">{escape(marker)}</span>'
                 f'<span class="answer-outline-content">{escape(content.strip())}</span>'
                 '</div>'
@@ -539,7 +539,7 @@ def safe_markdownify(text, arg='default'):
         return f"\n\n{placeholder}\n\n"
 
     def _replace_numbered_outline_blocks(raw_text):
-        line_pattern = re.compile(r'^\s*((?:\d+\.){1,4})\s+(.+)$')
+        line_pattern = re.compile(r'^\s*((?:\d+\.)+)\s+(.+)$')
         lines = raw_text.splitlines()
         transformed = []
         index = 0
