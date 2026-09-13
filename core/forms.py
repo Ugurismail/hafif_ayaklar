@@ -9,6 +9,7 @@ import datetime
 from django.core.exceptions import ValidationError
 
 from .content_limits import EDITOR_CONTENT_MAX_LENGTH
+from .invitations import MAX_INVITATION_GRANT
 
 
 # Kullanıcı adında boşluklar ve Türkçe karakterlere izin veren validator
@@ -74,7 +75,9 @@ class LoginForm(AuthenticationForm):
     )
 
 class InvitationForm(forms.ModelForm):
-    quota_granted = forms.IntegerField(label='Davet Hakkı Sayısı', min_value=1)
+    quota_granted = forms.IntegerField(
+        label='Davet Hakkı Sayısı', min_value=1, max_value=MAX_INVITATION_GRANT,
+    )
 
     class Meta:
         model = Invitation

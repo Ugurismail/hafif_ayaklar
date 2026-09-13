@@ -36,7 +36,23 @@ from ..models import (
     AnswerRevision,
 )
 from ..forms import ProfilePhotoForm
+from ..invitations import issue_invitation
 from ..utils import build_reference_usage_counts
+
+
+PROFILE_APPEARANCE_FIELDS = (
+    'background_color', 'text_color', 'header_background_color', 'header_text_color',
+    'link_color', 'link_hover_color', 'button_background_color',
+    'button_hover_background_color', 'button_text_color', 'hover_background_color',
+    'icon_color', 'icon_hover_color', 'answer_background_color',
+    'content_background_color', 'tab_background_color', 'tab_text_color',
+    'tab_active_background_color', 'tab_active_text_color', 'dropdown_text_color',
+    'dropdown_hover_background_color', 'dropdown_hover_text_color',
+    'nav_link_hover_color', 'nav_link_hover_bg', 'message_bubble_color',
+    'tbas_color', 'font_size', 'pagination_background_color', 'pagination_text_color',
+    'yanit_card', 'secondary_button_background_color', 'secondary_button_text_color',
+    'secondary_button_hover_background_color', 'font_family',
+)
 
 
 def _redirect_profile_login(request):
@@ -111,22 +127,13 @@ def user_profile(request, username):
 
     # Handle invitation creation POST request
     if request.method == 'POST' and is_own_profile and active_tab == 'davetler':
-        from django.db import transaction
         from ..forms import InvitationForm
 
         form = InvitationForm(request.POST)
         if form.is_valid():
             quota_granted = form.cleaned_data.get('quota_granted', 0)
-            if user_profile.invitation_quota >= quota_granted:
-                with transaction.atomic():
-                    invitation = form.save(commit=False)
-                    invitation.sender = request.user
-                    invitation.quota_granted = quota_granted
-                    invitation.save()
-
-                    user_profile.invitation_quota -= quota_granted
-                    user_profile.save()
-
+            invitation = issue_invitation(request.user, quota_granted)
+            if invitation is not None:
                 messages.success(request, f'Davetiye kodu oluşturuldu: {invitation.code}')
             else:
                 messages.error(request, 'Yetersiz davet hakkı.')
@@ -383,7 +390,7 @@ def user_profile(request, username):
         # Profilde güncelle (sadece kendi profili ise)
         if is_own_profile and (new_exclude_words or exclude_word or include_word):
             user_profile.excluded_words = ', '.join(sorted(exclude_words_set))
-            user_profile.save()
+            user_profile.save(update_fields=['excluded_words'])
 
         exclude_words_list = sorted(list(exclude_words_set))
         exclude_words_str = ', '.join(exclude_words_list)
@@ -453,7 +460,7 @@ def user_profile(request, username):
         invitations = Invitation.objects.filter(sender=request.user).order_by('-created_at')
         total_invitations = invitations.count()
         used_invitations = invitations.filter(is_used=True).count()
-        remaining_invitations = user_profile.invitation_quota - total_invitations
+        remaining_invitations = user_profile.invitation_quota
         context.update({
             'invitations': invitations,
             'total_invitations': total_invitations,
@@ -502,13 +509,12 @@ def user_settings(request):
             profile.font_size = '18'
             profile.pagination_background_color = '#FFF9F0'
             profile.pagination_text_color = '#22312B'
-            profile.cemil = '#FFF9F0'
             profile.yanit_card = '#FFF9F0'
             profile.secondary_button_background_color = '#2E3A2F'
             profile.secondary_button_text_color = '#F7F2E8'
             profile.secondary_button_hover_background_color = '#243028'
             profile.font_family = 'Crimson+Text'
-            profile.save()
+            profile.save(update_fields=PROFILE_APPEARANCE_FIELDS)
             messages.success(request, 'Renk ayarlarınız varsayılan değerlere döndürüldü.')
             return redirect('user_settings')
         else:
@@ -553,7 +559,7 @@ def user_settings(request):
             profile.yanit_card= request.POST.get('yanit_card','#FFF9F0')
             profile.font_family = request.POST.get('font_family', 'Crimson+Text')
             # Diğer renk alanlarını da kaydedin
-            profile.save()
+            profile.save(update_fields=PROFILE_APPEARANCE_FIELDS)
             messages.success(request, 'Renk ayarlarınız güncellendi.')
             return redirect('user_settings')
     return render(request, 'core/user_settings.html', {'user_profile': profile})
@@ -627,12 +633,12 @@ def update_profile_photo(request):
             if user_profile.photo:
                 user_profile.photo.delete(save=False)
             user_profile.photo = None
-            user_profile.save()
+            user_profile.save(update_fields=['photo'])
             messages.success(request, 'Fotoğrafınız kaldırıldı.')
             return redirect('user_profile', username=profile_user.username)
 
         if form.is_valid():
-            form.save()
+            form.save(commit=False).save(update_fields=['photo'])
             messages.success(request, 'Profil fotoğrafınız güncellendi.')
             return redirect('user_profile', username=profile_user.username)
         else:

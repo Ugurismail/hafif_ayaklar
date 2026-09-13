@@ -198,3 +198,26 @@ paketinin tamami main'e alinmadi; tamamlandi sanilmamali.
 - Bir sonraki aday SEC-07: davet kotasinin eszamanli isteklerle asilmasini
   onleme. Giris hiz siniri icin paylasimli cache/CDN kosullari ayrica
   dogrulanmali; LocMemCache'i cok worker'li koruma gibi kabul etmeyecegiz.
+
+## SEC-07 Davet Kotasi: 2026-09-13
+
+- Kullaniciya main d13dc0b icin pull, Web virtualenv, requirements, WeasyPrint
+  native kontrolu, collectstatic/check ve Reload adimlari verildi. Canli
+  sonuc henuz gelmedi. Excel/davet degisiklikleri bu pull'a dahil degil.
+- SEC-09 yerel 438b20b commit'inde korundu; pushlanmadi.
+- codex/davet-guvenligi bu commit uzerinde ilerliyor. Ayrintilar
+  invitation_security.md. Eski codex/genel_inceleme topluca birlestirilmedi.
+- Iki davet olusturma yolunda kosullu atomik kota dusumu + kod olusturma,
+  insert basarisizliginda rollback ve dogru kalan kota gosterimi tamamlandi.
+- Tema, fotograf ve kelime tercihi kayitlari eski kotayi geri yazamasin diye
+  yalniz degisen alanlari kaydediyor. Bu kapsam yeni regresyonlarla dogrulandi.
+- Kayit anindaki mevcut tek kullanim kilidi korundu ve ayni kodla iki paralel
+  kayit denemesinden yalniz birinin hesap olusturdugu MySQL'de dogrulandi.
+- 662 test: 657 gecti, SQLite'ta 5 concurrency testi atlandi (17.876s).
+  MySQL 8.0.46'da ilgili 44 testin tamami gecti (1.965s), atlanan test yok.
+  Migration/bagimlilik degisikligi yok. Uretim verisine dokunulmadi.
+- SEC-07 KISMEN dogrulandi; giris denemesi/hiz siniri halen acik. Bu paketi
+  tam hesap guvenligi veya bagimsiz sizma testi olarak yorumlamiyoruz.
+- Siradaki is: giris/kayit/davet kotasindan ayri istek-hizi korumasi icin
+  mevcut CDN ve cok worker'li depolama kosullarini dogrulayip dar plan cikarmak.
+  Destek disi Django ve diger rapor maddeleri halen acik.

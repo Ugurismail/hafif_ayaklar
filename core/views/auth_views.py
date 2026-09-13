@@ -16,6 +16,7 @@ from django.shortcuts import render, redirect
 
 from ..models import Invitation, UserProfile
 from ..forms import SignupForm, LoginForm, InvitationForm
+from ..invitations import issue_invitation
 
 
 def signup(request):
@@ -116,18 +117,9 @@ def send_invitation(request):
         form = InvitationForm(request.POST)
         if form.is_valid():
             quota_granted = form.cleaned_data['quota_granted']
-            if user_profile.invitation_quota >= quota_granted:
-                with transaction.atomic():
-                    # Davet kodunu oluştur
-                    invitation = form.save(commit=False)
-                    invitation.sender = request.user
-                    invitation.quota_granted = quota_granted
-                    invitation.save()
-
-                    # Kullanıcının davet hakkını düşür
-                    user_profile.invitation_quota -= quota_granted
-                    user_profile.save()
-
+            invitation = issue_invitation(request.user, quota_granted)
+            user_profile.refresh_from_db(fields=['invitation_quota'])
+            if invitation is not None:
                 # Oluşturulan kodu ve güncel davet hakkını şablona aktar
                 return render(request, 'core/send_invitation.html', {
                     'form': InvitationForm(),  # Yeni davetler için boş form
