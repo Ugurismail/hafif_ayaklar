@@ -176,3 +176,25 @@ paketinin tamami main'e alinmadi; tamamlandi sanilmamali.
   DEBUG/anahtar rotasyonu kullanici tarafindan daha once dogrulandi. Diger
   yukleme, giris/davet kotasi, API, veri kaybi ve performans maddeleri acik.
 
+## Yayin Dogrulamasi ve SEC-09: 2026-09-12
+
+- Onaylanan icerik/export/etkilesim paketi d13dc0b main'e pushlandi.
+  `git ls-remote origin refs/heads/main` ile uzak commit dogrulandi.
+  PythonAnywhere pull/kurulum/Reload henuz teyit edilmedi; push deploy degildir.
+- Siradaki is icin bu commit'ten codex/xlsx-guvenligi branch'i acildi.
+- SEC-09 once regresyonla tekrarlandi: XLSX XML'inde kullanici metninden
+  formul dugumleri olusuyordu; #N/A metni hata turune donusuyordu.
+- Soru, entry ve kaynak metinleri artik acik string hucre turunde yaziliyor.
+  Gorunen metne apostrof eklenmiyor; yil/kaynak numarasi sayisal kaliyor.
+  Siralama, secim, sahiplik ve Word/PDF kodu korunuyor.
+- Bes yeni test: gruplanmis ve ozel sirali cikti, kaynaklar, formul benzeri
+  onekler/hata metni/Turkce/satir sonlari, yetki. Kaydedilen XLSX yeniden
+  acilarak deger/tur dogrulandi; XML'de formul ve externalLinks yok.
+- Tam suite: 648 test, 646 basarili, iki MySQL kilit testi SQLite'ta atlandi
+  (16.560 saniye). git diff --check temiz. Yeni migration/bagimlilik yok.
+- Excel/LibreOffice arayuzunde bu yama icin dosya acma denenmedi. Dosya turu
+  ve serilestirme dogrulamasi yapildi; canli istismar veya uretim DB yazimi yok.
+- SEC-09 yerelde dogrulandi, henuz commit/push/deploy edilmedi.
+- Bir sonraki aday SEC-07: davet kotasinin eszamanli isteklerle asilmasini
+  onleme. Giris hiz siniri icin paylasimli cache/CDN kosullari ayrica
+  dogrulanmali; LocMemCache'i cok worker'li koruma gibi kabul etmeyecegiz.

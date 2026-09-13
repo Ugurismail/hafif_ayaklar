@@ -217,6 +217,13 @@ def download_entries_json(request, username):
     return response
 
 
+def _write_xlsx_text(sheet, row, column, value):
+    cell = sheet.cell(row=row, column=column, value=value)
+    # Override formula/error inference without changing the exported text.
+    cell.data_type = 's'
+    return cell
+
+
 @login_required
 def download_entries_xlsx(request, username):
     from openpyxl import Workbook
@@ -237,9 +244,9 @@ def download_entries_xlsx(request, username):
         ws.cell(row=1, column=2, value='Tarih')
         ws.cell(row=1, column=3, value='Entry')
         for i, ans in enumerate(user_answers, start=2):
-            ws.cell(row=i, column=1, value=ans.question.question_text)
+            _write_xlsx_text(ws, i, 1, ans.question.question_text)
             ws.cell(row=i, column=2, value=ans.created_at.strftime('%Y-%m-%d %H:%M'))
-            ws.cell(row=i, column=3, value=ans.answer_text)
+            _write_xlsx_text(ws, i, 3, ans.answer_text)
     else:
         questions_dict = {}
         for ans in user_answers:
@@ -253,12 +260,12 @@ def download_entries_xlsx(request, username):
             question = q_data['question']
             q_answers = q_data['answers']
 
-            ws.cell(row=row_idx, column=1, value=question.question_text)
+            _write_xlsx_text(ws, row_idx, 1, question.question_text)
 
             answer_start_row = row_idx
             for j, ans in enumerate(q_answers):
                 current_row = answer_start_row + j
-                ws.cell(row=current_row, column=2, value=ans.answer_text)
+                _write_xlsx_text(ws, current_row, 2, ans.answer_text)
 
             row_idx = answer_start_row + max(len(q_answers), 1)
             row_idx += 1
@@ -277,11 +284,11 @@ def download_entries_xlsx(request, username):
             if bib_item.get('reference'):
                 ref = bib_item['reference']
                 ws_refs.cell(row=idx, column=1, value=bib_item['number'])
-                ws_refs.cell(row=idx, column=2, value=bib_item['formatted_authors'])
+                _write_xlsx_text(ws_refs, idx, 2, bib_item['formatted_authors'])
                 ws_refs.cell(row=idx, column=3, value=ref.year)
-                ws_refs.cell(row=idx, column=4, value=ref.metin_ismi or '')
-                ws_refs.cell(row=idx, column=5, value=ref.rest)
-                ws_refs.cell(row=idx, column=6, value=', '.join(bib_item['pages']) if bib_item['pages'] else '')
+                _write_xlsx_text(ws_refs, idx, 4, ref.metin_ismi or '')
+                _write_xlsx_text(ws_refs, idx, 5, ref.rest)
+                _write_xlsx_text(ws_refs, idx, 6, ', '.join(bib_item['pages']) if bib_item['pages'] else '')
             else:
                 ws_refs.cell(row=idx, column=1, value=bib_item['number'])
                 ws_refs.cell(row=idx, column=2, value='Kaynak bulunamadı')
