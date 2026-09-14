@@ -11,6 +11,7 @@ from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
+from django.utils.http import content_disposition_header
 
 from ..answer_git import attach_answer_revision_metadata
 from ..models import Answer, Question, QuestionRelationship, Reference, SavedItem, Vote
@@ -395,7 +396,9 @@ def _download_document(request, username, output_format):
         content_type = 'application/pdf'
 
     response = HttpResponse(document_bytes, content_type=content_type)
-    response['Content-Disposition'] = f'attachment; filename="{target_user.username}_entries.{output_format}"'
+    response['Content-Disposition'] = content_disposition_header(
+        True, f'{target_user.username}_entries.{output_format}',
+    )
     response['Cache-Control'] = 'private, no-store'
     return response
 

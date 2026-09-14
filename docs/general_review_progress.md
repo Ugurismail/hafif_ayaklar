@@ -221,3 +221,22 @@ paketinin tamami main'e alinmadi; tamamlandi sanilmamali.
 - Siradaki is: giris/kayit/davet kotasindan ayri istek-hizi korumasi icin
   mevcut CDN ve cok worker'li depolama kosullarini dogrulayip dar plan cikarmak.
   Destek disi Django ve diger rapor maddeleri halen acik.
+
+## Export Bekleme ve Buyuk PDF: 2026-09-14
+
+- Davet paketi yerel a8b712d commit'inde korundu; Excel 438b20b ile birlikte
+  henuz pushlanmadi. Main son onayli yayin d13dc0b.
+- Kullanici d13dc0b pull, requirements, WeasyPrint/Pango ve Django check
+  basarili ciktilarini paylasti. Ayni secim Word olarak (~20 MB) iniyor;
+  PDF canlida 60 saniye sinirina takiliyor. Bu canli sorun acik tutuluyor.
+- Araya alinan is: indirme bekleme bildirimi, sayfadan ayrilmadan hata/iptal,
+  secimi koruma ve tekrarli istegi onleme. Ayrintilar download_progress.md.
+- Tekrarlanan PDF bicim cozumlemesi ve gereksiz dipnot yerlesim gecisi
+  azaltildi. Sure/guvenlik limitleri veya cikti anlami gevsetilmedi.
+- 666 Django testi: 661 basarili, 5 SQLite concurrency atlamasi. Ilgili MySQL
+  senaryolari onceki 44 testte gecti. Ek 8 JavaScript testi ve desktop/mobile
+  Chrome bekleme/503/iptal/yeniden-deneme kontrolleri basarili.
+- Sentetik hiz olcumleri sadece yerel kanit. Gercek buyuk secim yeniden
+  denenmeden timeout maddesi kapatilmayacak. Arkaplan export altyapisi yok.
+- Kullanici onayi olmadan yeni paket push/deploy edilmeyecek. Guvenlik
+  raporundaki istek-hizi korumasi ve desteklenen Django gecisi halen acik.

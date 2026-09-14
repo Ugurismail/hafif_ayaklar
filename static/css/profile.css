@@ -1450,6 +1450,38 @@ h4, h5, h6 {
     font-size: 0.82rem;
 }
 
+.entry-download-footer .entry-download-status {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.8rem;
+    border: 1px solid var(--button-background-color);
+    border-radius: 6px;
+    background: var(--content-background-color);
+    color: var(--text-color);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.entry-download-status .spinner-border {
+    flex: 0 0 auto;
+}
+
+.entry-download-status.is-error {
+    border-left-width: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .entry-download-status .spinner-border {
+        animation: none;
+    }
+}
+
 .entry-download-footer-actions {
     display: flex;
     flex: 0 0 auto;

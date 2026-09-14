@@ -93,6 +93,7 @@ class _WordProjection:
         self.assets = {}
         self.notes = {}
         self.note_marks = {}
+        self._paragraph_css_cache = {}
         with zipfile.ZipFile(BytesIO(document_bytes)) as archive:
             if 'word/footnotes.xml' in archive.namelist():
                 root = etree.fromstring(archive.read('word/footnotes.xml'),
@@ -100,6 +101,15 @@ class _WordProjection:
                 for note in root.findall('w:footnote', NS):
                     if int(note.get(qn('w:id'))) > 0:
                         self.notes[note.get(qn('w:id'))] = ''.join(note.itertext()).strip()
+        self.note_marks = {note_id: '*' for note_id in self.notes}
+
+    def paragraph_css(self, paragraph):
+        properties = paragraph._p.pPr
+        key = (paragraph.style.style_id,
+               etree.tostring(properties) if properties is not None else b'')
+        if key not in self._paragraph_css_cache:
+            self._paragraph_css_cache[key] = _paragraph_css(paragraph)
+        return self._paragraph_css_cache[key]
 
     def fetch_asset(self, url, *args, **kwargs):
         # Never delegate to a network/file fetcher, including for nested SVG/CSS.
@@ -205,7 +215,7 @@ class _WordProjection:
                 marker, separator, remainder = content.partition('<span class="tab">&#160;</span>')
                 if separator:
                     content = f'<span class="marker">{marker}</span><span>{remainder}</span>'
-            css = _paragraph_css(paragraph)
+            css = self.paragraph_css(paragraph)
             if name == 'Paper Numbered Item':
                 left = _inherited(paragraph, 'paragraph_format', 'left_indent')
                 hanging = _inherited(paragraph, 'paragraph_format', 'first_line_indent')

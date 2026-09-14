@@ -143,3 +143,54 @@ class UnifiedDocumentExportTests(TestCase):
         with patch('core.paper_pdf.subprocess.run', return_value=subprocess.CompletedProcess([], 0, b'not a pdf')):
             with self.assertRaises(PDFExportError):
                 paper_docx_to_pdf(b'test')
+
+    def test_projection_reuses_styles_without_losing_direct_formatting(self):
+        from docx.shared import Pt
+        from core.paper_pdf import _paragraph_css
+        document = Document()
+        _configure_document(document)
+        for _ in range(30):
+            document.add_paragraph('Ayni bicim', style='Paper Body')
+        paragraph = document.add_paragraph('Farkli girinti', style='Paper Body')
+        paragraph.paragraph_format.left_indent = Pt(30)
+        source = BytesIO()
+        document.save(source)
+        projection = _WordProjection(source.getvalue())
+        with patch('core.paper_pdf._paragraph_css', wraps=_paragraph_css) as css:
+            first = projection.html()
+            self.assertEqual(projection.html(), first)
+        self.assertEqual(css.call_count, 2)
+        self.assertIn('margin-left:30pt', first)
+
+    def test_single_note_pages_only_need_one_layout_pass(self):
+        from weasyprint import HTML
+        from core.paper_pdf import _render_pdf
+        document = Document()
+        _configure_document(document)
+        document.add_paragraph('Sav [[PAPER_FOOTNOTE_1]]', style='Paper Body')
+        source = BytesIO()
+        document.save(source)
+        data = _patch_footnotes(source.getvalue(), [
+            {'id': 1, 'marker': '[[PAPER_FOOTNOTE_1]]', 'text': 'Not govdesi.'},
+        ])
+        original = HTML.render
+        with patch.object(HTML, 'render', autospec=True, side_effect=original) as render:
+            pdf = _render_pdf(data)
+        self.assertEqual(render.call_count, 1)
+        self.assertIn('Not govdesi.', PdfReader(BytesIO(pdf)).pages[0].extract_text())
+
+    def test_download_interface_has_progress_and_safe_reversed_urls(self):
+        response = self.client.get(f'/profile/{self.user.username}/')
+        self.assertContains(response, 'id="entryDownloadStatus"')
+        self.assertContains(response, 'id="downloadCancelButton"')
+        self.assertContains(response, 'js/entry_download.js')
+        self.assertContains(response, f'data-download-url="/profile/{self.user.username}/download_entries_pdf/"')
+
+    def test_unicode_download_filename_uses_encoded_disposition(self):
+        from urllib.parse import quote
+        self.user.username = 'Uğur İsmail'
+        self.user.save(update_fields=['username'])
+        response = self.download('docx')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("filename*=utf-8''" + quote('Uğur İsmail_entries.docx'),
+                      response['Content-Disposition'])

@@ -52,7 +52,7 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/profile.css' %}?v={{ STATIC_ASSET_VERSION }}-entrybooks2">
+<link rel="stylesheet" href="{% static 'css/profile.css' %}?v={{ STATIC_ASSET_VERSION }}-download3">
 {% endblock %}
 
 {% block content %}
@@ -964,22 +964,22 @@
             <fieldset class="entry-download-format">
               <legend>Dosya biçimi</legend>
               <div class="entry-format-options" role="radiogroup" aria-label="Dosya biçimi">
-                <input type="radio" class="btn-check" name="format" id="formatPDF" value="pdf" checked>
+                <input type="radio" class="btn-check" name="format" id="formatPDF" value="pdf" data-download-url="{% url 'download_entries_pdf' profile_user.username %}" checked>
                 <label class="entry-format-option" for="formatPDF">
                   <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i><span>PDF</span>
                 </label>
 
-                <input type="radio" class="btn-check" name="format" id="formatWord" value="docx">
+                <input type="radio" class="btn-check" name="format" id="formatWord" value="docx" data-download-url="{% url 'download_entries_docx' profile_user.username %}">
                 <label class="entry-format-option" for="formatWord">
                   <i class="bi bi-file-earmark-word" aria-hidden="true"></i><span>Word</span>
                 </label>
 
-                <input type="radio" class="btn-check" name="format" id="formatExcel" value="xlsx">
+                <input type="radio" class="btn-check" name="format" id="formatExcel" value="xlsx" data-download-url="{% url 'download_entries_xlsx' profile_user.username %}">
                 <label class="entry-format-option" for="formatExcel">
                   <i class="bi bi-file-earmark-spreadsheet" aria-hidden="true"></i><span>Excel</span>
                 </label>
 
-                <input type="radio" class="btn-check" name="format" id="formatJSON" value="json">
+                <input type="radio" class="btn-check" name="format" id="formatJSON" value="json" data-download-url="{% url 'download_entries_json' profile_user.username %}">
                 <label class="entry-format-option" for="formatJSON">
                   <i class="bi bi-braces" aria-hidden="true"></i><span>JSON</span>
                 </label>
@@ -1135,11 +1135,15 @@
       </div>
 
       <div class="modal-footer entry-download-footer">
+        <div id="entryDownloadStatus" class="entry-download-status" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden>
+          <span class="spinner-border spinner-border-sm" id="entryDownloadSpinner" aria-hidden="true"></span>
+          <span id="entryDownloadStatusText"></span>
+        </div>
         <div class="entry-download-summary" id="downloadScopeSummary">
           İndirmek için en az bir entry seç.
         </div>
         <div class="entry-download-footer-actions">
-          <button type="button" class="btn btn-outline-theme-secondary" data-bs-dismiss="modal">Vazgeç</button>
+          <button type="button" class="btn btn-outline-theme-secondary" id="downloadCancelButton">Vazgeç</button>
           <button type="button" class="btn btn-theme-primary" id="downloadButton">
             <i class="bi bi-download" aria-hidden="true"></i>
             <span id="downloadButtonLabel">İndir</span>
@@ -1171,6 +1175,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="{% static 'js/vote_save.js' %}"></script>
 <script src="{% static 'js/reference_usage_modal.js' %}?v={{ STATIC_ASSET_VERSION }}"></script>
 <script src="{% static 'js/invitation_copy.js' %}?v={{ STATIC_ASSET_VERSION }}-copy2" defer></script>
+<script src="{% static 'js/entry_download.js' %}?v={{ STATIC_ASSET_VERSION }}-download1"></script>
 
 <script>
   // 1. Ortak debounce fonksiyonu (çalışma sıklığını azaltmak için)
@@ -1603,6 +1608,37 @@ function debounce(func, delay) {
 
   // ========== ENTRY İNDİRME MODAL ==========
   const downloadModal = document.getElementById('downloadEntriesModal');
+  const downloadForm = document.getElementById('downloadEntriesForm');
+  const downloadButton = document.getElementById('downloadButton');
+  const downloadCancelButton = document.getElementById('downloadCancelButton');
+  const downloadStatus = document.getElementById('entryDownloadStatus');
+  const downloadStatusText = document.getElementById('entryDownloadStatusText');
+  const downloadSpinner = document.getElementById('entryDownloadSpinner');
+  let downloadController = null;
+
+  function setDownloadBusy(busy) {
+    downloadForm.inert = busy;
+    downloadForm.setAttribute('aria-busy', String(busy));
+    downloadButton.disabled = busy;
+    downloadModal.querySelector('.btn-close').disabled = busy;
+    downloadCancelButton.textContent = busy ? 'Beklemeyi durdur' : 'Vazgeç';
+    downloadSpinner.hidden = !busy;
+  }
+
+  function showDownloadStatus(message, error = false) {
+    downloadStatus.hidden = false;
+    downloadStatus.classList.toggle('is-error', error);
+    downloadStatus.setAttribute('role', error ? 'alert' : 'status');
+    downloadStatusText.textContent = message;
+  }
+
+  downloadModal.addEventListener('hide.bs.modal', event => {
+    if (downloadController) event.preventDefault();
+  });
+  downloadCancelButton.addEventListener('click', () => {
+    if (downloadController) downloadController.abort();
+    else bootstrap.Modal.getInstance(downloadModal)?.hide();
+  });
   const downloadAllCheckbox = document.getElementById('downloadAllCheckbox');
   const entrySelectionSection = document.getElementById('entrySelectionSection');
   const downloadAllSummary = document.getElementById('downloadAllSummary');
@@ -2035,6 +2071,7 @@ function debounce(func, delay) {
 
   // Modal açıldığında
   downloadModal.addEventListener('show.bs.modal', function() {
+    downloadStatus.hidden = true;
     document.body.classList.add('entry-download-open');
     const modalBody = downloadModal.querySelector('.modal-body');
     if (modalBody) modalBody.scrollTop = 0;
@@ -2737,8 +2774,10 @@ function debounce(func, delay) {
   });
 
   // İndir butonu
-  document.getElementById('downloadButton').addEventListener('click', function() {
-    const format = downloadModal.querySelector('input[name="format"]:checked').value;
+  downloadButton.addEventListener('click', async function() {
+    if (downloadController) return;
+    const formatInput = downloadModal.querySelector('input[name="format"]:checked');
+    const format = formatInput.value;
     const order = document.getElementById('orderSelect').value;
     const downloadAll = downloadAllCheckbox.checked;
     const rootQuestionId = document.getElementById('rootQuestionSelect').value;
@@ -2759,70 +2798,60 @@ function debounce(func, delay) {
       return;
     }
 
-    // İndirme URL'ini oluştur
-    const username = '{{ profile_user.username }}';
-    let downloadUrl = '';
-
-    switch(format) {
-      case 'pdf':
-        downloadUrl = `/profile/${username}/download_entries_pdf/`;
-        break;
-      case 'docx':
-        downloadUrl = `/profile/${username}/download_entries_docx/`;
-        break;
-      case 'xlsx':
-        downloadUrl = `/profile/${username}/download_entries_xlsx/`;
-        break;
-      case 'json':
-        downloadUrl = `/profile/${username}/download_entries_json/`;
-        break;
-    }
+    const downloadUrl = formatInput.dataset.downloadUrl;
 
     if (!downloadUrl) {
       showSelectionNotice('Dosya biçimi belirlenemedi. Lütfen yeniden seç.');
       return;
     }
 
-    // POST ile indir (entry ID'leri ve sıralama bilgisi ile)
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = downloadUrl;
-
-    const csrfToken = document.querySelector('#downloadEntriesForm [name=csrfmiddlewaretoken]').value;
-    const csrfInput = document.createElement('input');
-    csrfInput.type = 'hidden';
-    csrfInput.name = 'csrfmiddlewaretoken';
-    csrfInput.value = csrfToken;
-    form.appendChild(csrfInput);
+    const body = new FormData();
+    body.set('csrfmiddlewaretoken', downloadForm.querySelector('[name=csrfmiddlewaretoken]').value);
 
     // Sadece "tümünü indir" SEÇİLİ DEĞİLSE entry_ids gönder
     if (!downloadAll && entryIds.length > 0) {
-      const idsInput = document.createElement('input');
-      idsInput.type = 'hidden';
-      idsInput.name = 'entry_ids';
-      idsInput.value = entryIds.join(',');
-      form.appendChild(idsInput);
+      body.set('entry_ids', entryIds.join(','));
     }
 
-    const orderInput = document.createElement('input');
-    orderInput.type = 'hidden';
-    orderInput.name = 'order';
-    orderInput.value = order === 'custom' && entryIds.length < 2 ? 'oldest' : order;
-    form.appendChild(orderInput);
+    body.set('order', order === 'custom' && entryIds.length < 2 ? 'oldest' : order);
 
     // Açık bir seçim varsa başlık yalnızca arama filtresidir; seçimleri daraltmaz.
     if (!downloadAll && entryIds.length === 0 && rootQuestionId) {
-      const rootQuestionInput = document.createElement('input');
-      rootQuestionInput.type = 'hidden';
-      rootQuestionInput.name = 'root_question_id';
-      rootQuestionInput.value = rootQuestionId;
-      form.appendChild(rootQuestionInput);
+      body.set('root_question_id', rootQuestionId);
     }
 
-    document.body.appendChild(form);
-    form.submit();
-
-    bootstrap.Modal.getInstance(downloadModal).hide();
+    downloadController = new AbortController();
+    setDownloadBusy(true);
+    showDownloadStatus('Entryleriniz indiriliyor… Dosyanız hazırlanıyor, lütfen bekleyin.');
+    downloadCancelButton.focus();
+    let started = false;
+    try {
+      const {blob, filename} = await window.requestEntryDownload({
+        url: downloadUrl, format, body, signal: downloadController.signal,
+      });
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      try {
+        link.click();
+        started = true;
+      } finally {
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+      }
+    } catch (error) {
+      const aborted = error.name === 'AbortError';
+      showDownloadStatus(aborted
+        ? 'İndirme beklemesi durduruldu. Seçimleriniz korundu.'
+        : (error instanceof TypeError ? 'Bağlantı kesildi. Seçimleriniz korundu; tekrar deneyebilirsiniz.' : error.message), !aborted);
+    } finally {
+      downloadController = null;
+      setDownloadBusy(false);
+      if (started) bootstrap.Modal.getInstance(downloadModal)?.hide();
+      else downloadStatus.focus();
+    }
   });
 </script>
 {% endblock extra_js %}
