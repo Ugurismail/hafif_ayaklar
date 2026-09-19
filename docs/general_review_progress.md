@@ -255,3 +255,22 @@ paketinin tamami main'e alinmadi; tamamlandi sanilmamali.
   tekrar uretim ve asama bazli sure olcumu yapilacak. Dosya boyutu tek basina
   neden belirlemek icin yeterli degil. Sure limitleri korundu; canli veriye
   erisim veya ucuncu taraf donusturucu kullanimi yapilmadi.
+
+## Yanit Eylemleri: 2026-09-19
+
+- ef1dfca main'e pushlandi ve uzak ref dogrulandi. Kullanici indirme sorununun
+  cozulmus gorundugunu bildirdi; tum buyuk belgeler icin garanti verilmiyor.
+- Araya alinan kullanici istegi: Guncelle/Kenarda Dursun dugmeleri uzun canli
+  onizlemenin altinda kalmasin. codex/yanit-eylemleri dalinda sekiz yanit/baslik/
+  duzeltme formunda mevcut eylemler metin alanindan sonra, onizlemeden once.
+- Alti taslakli formun dugmeleri mobilde sarilan tek bir eylem satirinda.
+  Mevcut ID, submit turu, CSRF, taslak ve yayinlama davranislari korundu;
+  sunucu kaydetme kodu veya yeni API/migration/bagimlilik degisikligi yok.
+- Uc regresyon testi: sekiz formun gercek HTML sirasi/form aidiyeti, uzun
+  duzenleme taslagini yayinlamadan kaydetme/geri acma, mevcut guncelleme POST'u.
+- Tam suite: 669 test, 664 basarili, 5 SQLite concurrency atlamasi (17.830s).
+  Chrome 1440px ve 390px: 6900px uzun onizlemede dugme kutunun hemen altinda;
+  gercek yerel taslak POST'u basarili, metin ve sayfa korunuyor. Ekran
+  goruntuleri incelendi. Canli veriye dokunulmadi; bu UI yamasi pushlanmadi.
+- Sonraki rapor isi halen SEC-07 istek-hizi korumasi ve desteklenen Django
+  gecisinin planlanmasi; eski guvenlik dali topluca alinmayacak.

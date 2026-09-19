@@ -79,6 +79,15 @@
                         </button>
                     </div>
                     {{ answer_form.answer_text }}
+                </div>
+
+                <!-- Hidden input for definition -->
+                <input type="hidden" name="definition_text" id="hiddenDefinitionText" value="">
+                <input type="hidden" id="search_query" value="{{ query }}">
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                    <button type="submit" class="btn btn-theme-primary">Yanıtı Gönder</button>
+                    <button type="button" class="btn btn-theme-secondary" id="kenarda-dursun-btn">Kenarda Dursun</button>
+                </div>
                     <div
                       id="answer-live-preview-root"
                       class="mt-3"
@@ -86,14 +95,6 @@
                       data-preview-question-text="{{ query }}"
                       data-preview-question-slug=""
                     ></div>
-                </div>
-
-                <!-- Hidden input for definition -->
-                <input type="hidden" name="definition_text" id="hiddenDefinitionText" value="">
-                <input type="hidden" id="search_query" value="{{ query }}">
-
-                <button type="submit" class="btn btn-theme-primary mt-2">Yanıtı Gönder</button>
-                <button type="button" class="btn btn-theme-secondary mt-2 ms-2" id="kenarda-dursun-btn">Kenarda Dursun</button>
             </form>
         </div>
 

@@ -111,14 +111,6 @@
       <div class="correction-field-error">{{ form.answer_text.errors }}</div>
       {% endif %}
 
-      <div
-        id="answer-live-preview-root"
-        class="correction-live-preview"
-        style="display:none;"
-        data-preview-question-text="{{ question.question_text }}"
-        data-preview-question-slug="{{ question.slug }}"
-      ></div>
-
       <div class="correction-compose-actions">
         <a href="{% url 'single_answer' question.slug answer.id %}" class="btn btn-outline-theme-secondary">
           Vazgeç
@@ -128,6 +120,13 @@
           Öneriyi gönder
         </button>
       </div>
+      <div
+        id="answer-live-preview-root"
+        class="correction-live-preview"
+        style="display:none;"
+        data-preview-question-text="{{ question.question_text }}"
+        data-preview-question-slug="{{ question.slug }}"
+      ></div>
     </section>
   </form>
 </main>

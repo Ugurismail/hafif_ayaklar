@@ -551,6 +551,11 @@
 	                    </button>
 	                  </div>
 	                  {{ form.answer_text }}
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                      <button type="submit" class="btn btn-theme-primary">Yanıtla</button>
+                      <button type="button" class="btn btn-theme-secondary" id="sabaha-birak-btn">Kenarda Dursun</button>
+                      <span id="sabahabirak-feedback" style="display:none;" class="text-theme-success">Taslak kaydedildi!</span>
+                    </div>
                     <div
                       id="answer-live-preview-root"
                       class="mt-3"
@@ -558,9 +563,6 @@
                       data-preview-question-text="{{ question.question_text }}"
                       data-preview-question-slug="{{ question.slug }}"
                     ></div>
-	                  <button type="submit" class="btn btn-theme-primary mt-2">Yanıtla</button>
-	                  <button type="button" class="btn btn-theme-secondary mt-2 ms-2" id="sabaha-birak-btn">Kenarda Dursun</button>
-	                  <span id="sabahabirak-feedback" style="display:none;" class="text-theme-success ms-2">Taslak kaydedildi!</span>
 	                </form>
 	              </div>
 	            </div>
