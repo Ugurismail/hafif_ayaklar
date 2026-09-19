@@ -240,3 +240,18 @@ paketinin tamami main'e alinmadi; tamamlandi sanilmamali.
   denenmeden timeout maddesi kapatilmayacak. Arkaplan export altyapisi yok.
 - Kullanici onayi olmadan yeni paket push/deploy edilmeyecek. Guvenlik
   raporundaki istek-hizi korumasi ve desteklenen Django gecisi halen acik.
+
+## Main Yayin Onayi: 2026-09-19
+
+- Kullanici 438b20b (XLSX), a8b712d (davet kotasi) ve 63cb0d3
+  (indirme bekleme/PDF optimizasyonu) paketlerinin main'e alinmasini onayladi.
+- Yayin oncesi sabitlenmis requirements ile izole test ortami yeniden kuruldu:
+  666 Django testi, 661 basarili, 5 SQLite concurrency atlamasi (19.401s).
+  Sekiz JavaScript testi gecti. Migration kontrolu ve git diff --check temiz.
+- Yeni bagimlilik veya migration yok. PythonAnywhere pull, collectstatic,
+  check ve Web Reload kullanici tarafindan yapilmali; push deploy degildir.
+- Buyuk PDF timeout maddesi ACIK. Deploy sonrasinda ayni secim denenmeli.
+  Devam ederse kullanicinin paylasmayi uygun gordugu Word ciktisiyle yerelde
+  tekrar uretim ve asama bazli sure olcumu yapilacak. Dosya boyutu tek basina
+  neden belirlemek icin yeterli degil. Sure limitleri korundu; canli veriye
+  erisim veya ucuncu taraf donusturucu kullanimi yapilmadi.
