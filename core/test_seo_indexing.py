@@ -242,6 +242,93 @@ class PublicAuthorSeoTests(TestCase):
         self.assertEqual(data['@id'], entry_url + '#entry')
         self.assertTrue(data['dateModified'])
 
+    def test_profile_pages_have_distinct_canonicals_and_one_author_identity(self):
+        from .models import Answer
+        from django.utils import timezone
+        from lxml import html
+
+        for i in range(12):
+            Answer.objects.create(user=self.author, question=self.question, answer_text=f'Entry {i}')
+        Answer.objects.filter(user=self.author).update(created_at=timezone.now())
+        url = reverse('user_profile', args=[self.author.username])
+        ids = []
+        for number in (1, 2):
+            response = self.client.get(url, {'answer_page': number, 'tab': 'girdiler', 'utm_source': 'test'})
+            tree = html.fromstring(response.content)
+            expected = 'http://testserver' + url + (f'?answer_page={number}' if number > 1 else '')
+            self.assertEqual(tree.xpath('//link[@rel="canonical"]/@href'), [expected])
+            data = json.loads(tree.xpath('//script[@type="application/ld+json"]/text()')[0])
+            self.assertEqual(data['url'], expected)
+            self.assertEqual(data['mainEntity']['url'], 'http://testserver' + self.url)
+            self.assertEqual(data['mainEntity']['@id'], 'http://testserver' + self.url + '#person')
+            ids.extend(entry.pk for entry in response.context['answers'])
+        self.assertEqual(len(ids), 13)
+        self.assertEqual(len(set(ids)), 13)
+        self.assertEqual(ids, sorted(ids, reverse=True))
+        response = self.client.get(url, {'answer_page': 'invalid'})
+        self.assertEqual(html.fromstring(response.content).xpath('//link[@rel="canonical"]/@href'), ['http://testserver' + url])
+
+    def test_author_sitemap_dates_follow_public_content_without_extra_queries(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from .models import Answer, Kenarda
+        from .sitemaps import AuthorSitemap
+
+        draft_author = User.objects.create_user(username='draft-only-author')
+        Kenarda.objects.create(user=draft_author, question=self.question, content='PRIVATE DRAFT')
+        inactive_author = User.objects.create_user(username='inactive-author', is_active=False)
+        Answer.objects.create(user=inactive_author, question=self.question, answer_text='Inactive')
+        newer = timezone.now() + timedelta(minutes=1)
+        Answer.objects.filter(pk=self.answer.pk).update(updated_at=newer)
+        sitemap = AuthorSitemap()
+        with self.assertNumQueries(1):
+            authors = list(sitemap.items())
+            self.assertEqual([author.pk for author in authors], [self.author.pk])
+            self.assertEqual(sitemap.lastmod(authors[0]), newer)
+            self.assertEqual(sitemap.location(authors[0]), self.url)
+        newest = newer + timedelta(minutes=1)
+        Question.objects.filter(pk=self.question.pk).update(updated_at=newest)
+        self.assertEqual(sitemap.lastmod(sitemap.items().get(pk=self.author.pk)), newest)
+
+    def test_public_entry_cards_link_to_stable_author_but_members_keep_profile(self):
+        from django.template.loader import render_to_string
+        from django.contrib.auth.models import AnonymousUser
+        from lxml import html
+
+        for user, expected in [(AnonymousUser(), self.url), (self.author, reverse('user_profile', args=[self.author.username]))]:
+            content = render_to_string('core/_answers_list.html', {
+                'answers': [self.answer], 'user': user, 'search_keyword': '',
+                'answer_save_dict': {}, 'saved_answer_ids': [],
+                'question': self.question,
+            })
+            self.assertIn(expected, html.fromstring(content).xpath('//a[@rel="author"]/@href'))
+
+    def test_homepage_author_links_use_public_identity_for_guests(self):
+        from django.core.cache import cache
+        from lxml import html
+
+        cache.clear()
+        self.addCleanup(cache.clear)
+        response = self.client.get(reverse('user_homepage'))
+        self.assertIn(self.url, html.fromstring(response.content).xpath('//a[@rel="author"]/@href'))
+        self.client.force_login(self.author)
+        response = self.client.get(reverse('user_homepage'))
+        self.assertIn(reverse('user_profile', args=[self.author.username]),
+                      html.fromstring(response.content).xpath('//a[@rel="author"]/@href'))
+
+    def test_author_schema_excerpt_is_bounded_and_escaped(self):
+        from lxml import html
+
+        self.answer.answer_text = '</script><script>alert("x")</script> ' + 'word ' * 150
+        self.answer.save()
+        response = self.client.get(self.url)
+        self.assertNotContains(response, '<script>alert("x")</script>')
+        tree = html.fromstring(response.content)
+        data = json.loads(tree.xpath('//script[@type="application/ld+json"]/text()')[0])
+        excerpt = data['hasPart'][0]['text']
+        self.assertLessEqual(len(excerpt.split()), 61)
+        self.assertIn(excerpt, tree.text_content())
+
     def test_author_schema_references_only_visible_entries_with_matching_identity(self):
         from .models import Answer
         for i in range(20):
@@ -254,6 +341,10 @@ class PublicAuthorSeoTests(TestCase):
             self.assertEqual(len(data['hasPart']), expected_count)
             for posting, entry in zip(data['hasPart'], response.context['entries_page']):
                 self.assertEqual(posting['author']['@id'], data['mainEntity']['@id'])
+                self.assertEqual(posting['author']['name'], self.author.username)
+                self.assertEqual(posting['author']['url'], data['mainEntity']['url'])
+                self.assertEqual(posting['text'], entry.answer_text)
+                self.assertTrue(posting['dateModified'])
                 self.assertEqual(posting['url'], 'http://testserver' + reverse(
                     'single_answer', args=[entry.question.slug, entry.pk],
                 ))

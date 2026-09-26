@@ -32,6 +32,7 @@ from ..models import (
     Vote,
 )
 from ..querysets import get_active_left_frame_pin_q, get_today_questions_queryset
+from ..left_frame import left_frame_context
 
 UNICODE_ESCAPE_RE = re.compile(r'\\u([0-9a-fA-F]{4})')
 HEX_ESCAPE_RE = re.compile(r'\\x([0-9a-fA-F]{2})')
@@ -64,26 +65,7 @@ def _normalize_answer_text(value: str) -> str:
 
 
 def question_detail(request, slug):
-    followed_param = request.GET.get('followed', '0')
-    show_followed_only = followed_param == '1'
-
-    all_questions = get_today_questions_queryset()
-
-    if show_followed_only and request.user.is_authenticated:
-        try:
-            user_profile = request.user.userprofile
-            followed_user_ids = user_profile.following.values_list('user_id', flat=True)
-            all_questions = all_questions.filter(
-                get_active_left_frame_pin_q()
-                | Q(user_id__in=followed_user_ids)
-                | Q(answers__user_id__in=followed_user_ids)
-            ).distinct()
-        except UserProfile.DoesNotExist:
-            all_questions = Question.objects.none()
-
-    q_page_number = request.GET.get('q_page', 1)
-    q_paginator = Paginator(all_questions, 20)
-    all_questions_page = q_paginator.get_page(q_page_number)
+    left_context = left_frame_context(request, 'q_page')
 
     question = get_object_or_404(Question.objects.select_related('user'), slug=slug)
 
@@ -227,7 +209,7 @@ def question_detail(request, slug):
     context = {
         'question': question,
         'form': form,
-        'all_questions_page': all_questions_page,
+        **left_context,
         'answers_page': answers_page,
         'user_has_saved_question': user_has_saved_question,
         'question_save_count': question_save_count,
@@ -238,7 +220,6 @@ def question_detail(request, slug):
         'filter_username': username,
         'filter_keyword': keyword,
         'is_on_map': is_on_map,
-        'show_followed_only': show_followed_only,
         'user_is_following_question': user_is_following_question,
         'followed_answer_ids': followed_answer_ids,
         'subquestions_list': subquestions_list,

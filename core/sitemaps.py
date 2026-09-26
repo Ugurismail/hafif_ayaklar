@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import OuterRef, Q, Subquery
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
@@ -74,9 +74,19 @@ class AuthorSitemap(Sitemap):
     priority = 0.6
 
     def items(self):
-        return User.objects.filter(is_active=True).filter(
-            Q(answers__isnull=False) | Q(questions__isnull=False)
-        ).distinct().order_by('pk')
+        # Independent subqueries avoid multiplying every entry by every topic.
+        return (
+            User.objects.filter(is_active=True).annotate(
+                latest_entry=Subquery(Answer.objects.filter(user_id=OuterRef('pk'))
+                                     .order_by('-updated_at').values('updated_at')[:1]),
+                latest_question=Subquery(Question.objects.filter(user_id=OuterRef('pk'))
+                                        .order_by('-updated_at').values('updated_at')[:1]),
+            ).filter(Q(latest_entry__isnull=False) | Q(latest_question__isnull=False))
+            .only('pk', 'username').order_by('pk')
+        )
+
+    def lastmod(self, obj):
+        return max(value for value in (obj.latest_entry, obj.latest_question) if value is not None)
 
     def location(self, obj):
         return reverse('public_author', args=[obj.pk])

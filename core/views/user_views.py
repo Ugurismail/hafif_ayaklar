@@ -36,6 +36,7 @@ from ..models import (
     AnswerRevision,
 )
 from ..forms import ProfilePhotoForm
+from ..font_catalog import additional_font_options
 from ..invitations import issue_invitation
 from ..utils import build_reference_usage_counts
 
@@ -197,13 +198,15 @@ def user_profile(request, username):
 
     # Sadece ilgili sekmenin contextini doldur
     if active_tab == 'girdiler':
-        answers_list = Answer.objects.filter(user=profile_user).select_related('question', 'user').order_by('-created_at')
+        answers_list = Answer.objects.filter(user=profile_user).select_related('question', 'user').order_by('-created_at', '-pk')
         answer_paginator = Paginator(answers_list, 10)
         answer_page = request.GET.get('answer_page', 1)
         try:
             context['answers'] = answer_paginator.page(answer_page)
         except (PageNotAnInteger, EmptyPage):
             context['answers'] = answer_paginator.page(1)
+        if context['answers'].number > 1:
+            context['profile_canonical_url'] += f"?answer_page={context['answers'].number}"
 
     elif active_tab == 'revizyonlar':
         revision_qs = AnswerRevision.objects.filter(
@@ -562,7 +565,9 @@ def user_settings(request):
             profile.save(update_fields=PROFILE_APPEARANCE_FIELDS)
             messages.success(request, 'Renk ayarlarınız güncellendi.')
             return redirect('user_settings')
-    return render(request, 'core/user_settings.html', {'user_profile': profile})
+    return render(request, 'core/user_settings.html', {
+        'user_profile': profile, 'additional_fonts': additional_font_options(),
+    })
 
 
 def user_list(request):

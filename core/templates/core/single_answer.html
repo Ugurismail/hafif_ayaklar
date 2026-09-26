@@ -32,24 +32,10 @@
 	            </div>
               {% include 'core/_left_quick_actions.html' %}
             <div style="flex:1 1 0; overflow-y:auto; min-height:0;">
-                <ul class="list-unstyled" id="questions-list">
-                    {% for question in all_questions_page %}
-                    <li class="tbas-color d-flex justify-content-between align-items-center mt-2 baslik">
-                        <a href="{% url 'question_detail' question.slug %}" class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
-                            <span>
-                                {% if question.left_frame_pin_active %}
-                                    <i class="bi bi-pin-angle-fill me-1" title="Sabit başlık"></i>
-                                {% endif %}
-                                {{ question.question_text }}
-                            </span>
-                            <small class="text-muted ms-2" style="min-width: 20px; text-align: right;">{{ question.answers_count }}</small>
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
+                {% include 'core/_left_question_list.html' %}
             </div>
 
-            {% include 'core/pagination.html' with page_obj=all_questions_page page_param='q_page' %}
+            <div data-left-pagination>{% include 'core/pagination.html' with page_obj=all_questions_page page_param='q_page' %}</div>
         </div>
 
         <!-- Orta Sütun: Soru Detayı ve Yanıtlar -->

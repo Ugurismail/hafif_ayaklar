@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container mt-5">
     <h2>Renk Ayarları</h2>
-    <form method="post">
+    <form method="post" class="pb-5 mb-5">
         {% csrf_token %}
 
         <div class="mb-3">
@@ -14,6 +14,7 @@
 	            <select id="theme_select" class="form-select">
 	                <option value="">-- Tema Seçin --</option>
 	                <option value="default">Old Money (Varsayılan)</option>
+                    <option value="astra">Astra</option>
 	                <option value="gpt56">gpt5.6 (Editoryal Seladon)</option>
                 <option value="classic_garamond">Klasik Garamond</option>
 	                <option value="gece">Gece Modu</option>
@@ -226,7 +227,7 @@
         </div>
 
         <div class="row">
-            <div class="col-4 mb-3">
+            <div class="col-12 col-md-6 mb-3">
                 <label for="font_family" class="form-label">Yazı Tipi:</label>
                 <select name="font_family" id="font_family" class="form-select">
                     <!-- Serif Fontlar (Klasik, okunabilir) - Türkçe karakter desteği olan -->
@@ -248,6 +249,7 @@
                         <option value="Spectral"        {% if user_profile.font_family == "Spectral" %}selected{% endif %}>Spectral</option>
                         <option value="Cardo"           {% if user_profile.font_family == "Cardo" %}selected{% endif %}>Cardo</option>
                         <option value="Vollkorn"        {% if user_profile.font_family == "Vollkorn" %}selected{% endif %}>Vollkorn</option>
+                        {% include 'core/_font_options.html' with fonts=additional_fonts.serif %}
                     </optgroup>
 
                     <!-- El Yazısı / Script Fontlar -->
@@ -266,6 +268,7 @@
                         <option value="Great+Vibes"     {% if user_profile.font_family == "Great+Vibes" %}selected{% endif %}>Great Vibes</option>
                         <option value="Satisfy"         {% if user_profile.font_family == "Satisfy" %}selected{% endif %}>Satisfy</option>
                         <option value="Handlee"         {% if user_profile.font_family == "Handlee" %}selected{% endif %}>Handlee</option>
+                        {% include 'core/_font_options.html' with fonts=additional_fonts.handwriting %}
                     </optgroup>
 
                     <!-- Sans-serif Fontlar (Modern, temiz) -->
@@ -284,6 +287,7 @@
                         <option value="Quicksand"       {% if user_profile.font_family == "Quicksand" %}selected{% endif %}>Quicksand</option>
                         <option value="Karla"           {% if user_profile.font_family == "Karla" %}selected{% endif %}>Karla</option>
                         <option value="Lato"            {% if user_profile.font_family == "Lato" %}selected{% endif %}>Lato</option>
+                        {% include 'core/_font_options.html' with fonts=additional_fonts.sans %}
                     </optgroup>
 
                     <!-- Display/Dekoratif Fontlar -->
@@ -294,6 +298,7 @@
                         <option value="Bebas+Neue"      {% if user_profile.font_family == "Bebas+Neue" %}selected{% endif %}>Bebas Neue</option>
                         <option value="Archivo+Black"   {% if user_profile.font_family == "Archivo+Black" %}selected{% endif %}>Archivo Black</option>
                         <option value="Righteous"       {% if user_profile.font_family == "Righteous" %}selected{% endif %}>Righteous</option>
+                        {% include 'core/_font_options.html' with fonts=additional_fonts.display %}
                     </optgroup>
 
                     <!-- Monospace Fontlar (Kod için) -->
@@ -302,11 +307,12 @@
                         <option value="JetBrains+Mono"  {% if user_profile.font_family == "JetBrains+Mono" %}selected{% endif %}>JetBrains Mono</option>
                         <option value="Source+Code+Pro" {% if user_profile.font_family == "Source+Code+Pro" %}selected{% endif %}>Source Code Pro</option>
                         <option value="Courier+New"     {% if user_profile.font_family == "Courier+New" %}selected{% endif %}>Courier New</option>
+                        {% include 'core/_font_options.html' with fonts=additional_fonts.mono %}
                     </optgroup>
                 </select>
             </div>
-            <div class="col-2 mb-3">
-                <label for="font_family" class="form-label">Yazı Boyutu:</label>
+            <div class="col-6 col-md-3 mb-3">
+                <label for="font_size" class="form-label">Yazı Boyutu:</label>
                 <input type="number" name="font_size" min="16" max="100" id="font_size" class="form-control form-control-color" value="{{ user_profile.font_size }}">
             </div>
         </div>
@@ -379,8 +385,6 @@
 
 	    document.addEventListener('DOMContentLoaded', function() {
 	        const previewInputs = document.querySelectorAll('input[type="color"], input[type="number"], select[name="font_family"]');
-	        const fontSelect = document.querySelector('select[name="font_family"]');
-	        if (fontSelect) ensurePreviewFontLoaded(fontSelect.value);
 
 	        previewInputs.forEach(function(input) {
 	            input.addEventListener('input', function() {
@@ -394,8 +398,44 @@
 	    });
 </script>
 <script>
-    // TEMALAR BURADA TANIMLI (Sadece 6 kaliteli tema)
+    // Hazır temalar mevcut profil alanlarına uygulanır.
     const THEMES = {
+        "astra": {
+            "background_color": "#F4F6F7",
+            "text_color": "#20262C",
+            "header_background_color": "#24292F",
+            "header_text_color": "#FFFFFF",
+            "link_color": "#14666B",
+            "link_hover_color": "#0D484D",
+            "button_background_color": "#14666B",
+            "button_hover_background_color": "#0D484D",
+            "button_text_color": "#FFFFFF",
+            "secondary_button_background_color": "#82445D",
+            "secondary_button_hover_background_color": "#643148",
+            "secondary_button_text_color": "#FFFFFF",
+            "message_bubble_color": "#E3EDEF",
+            "tbas_color": "#303C44",
+            "yanit_card": "#FFFFFF",
+            "font_size": "18",
+            "hover_background_color": "#E4EAED",
+            "hover_text_color": "#20262C",
+            "icon_color": "#42535D",
+            "icon_hover_color": "#82445D",
+            "answer_background_color": "#F4F6F7",
+            "content_background_color": "#FFFFFF",
+            "tab_background_color": "#E9EEF0",
+            "tab_text_color": "#42535D",
+            "tab_active_background_color": "#FFFFFF",
+            "tab_active_text_color": "#14666B",
+            "dropdown_text_color": "#20262C",
+            "dropdown_hover_background_color": "#E3EDEF",
+            "dropdown_hover_text_color": "#0D484D",
+            "nav_link_hover_color": "#FFFFFF",
+            "nav_link_hover_bg": "#3B434C",
+            "pagination_background_color": "#FFFFFF",
+            "pagination_text_color": "#14666B",
+            "font_family": "Georgia"
+        },
         "default": {
             "background_color": "#F5F0E6",
             "text_color": "#1F1A14",

@@ -135,7 +135,7 @@
         <!-- Kullanıcı ve tarih -->
         <div class="text-end">
           <small class="text-muted me-2">
-            <a href="{% url 'user_profile' answer.user.username %}">
+            <a href="{% if user.is_authenticated %}{% url 'user_profile' answer.user.username %}{% else %}{% url 'public_author' answer.user_id %}{% endif %}" rel="author">
               {{ answer.user.username }}
             </a> |
             {{ answer.created_at|date:"Y-m-d H:i" }}

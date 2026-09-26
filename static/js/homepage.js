@@ -72,19 +72,18 @@
         const fragment = document.createDocumentFragment();
         questions.forEach(function(question) {
             const li = document.createElement('li');
-            li.className = 'tbas-color baslik d-flex justify-content-between align-items-center mt-2';
+            li.className = 'tbas-color baslik left-question-row';
 
             const link = document.createElement('a');
             link.href = `/${encodeURIComponent(question.slug)}/`;
-            link.className = 'tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100';
+            link.className = 'tbas-color text-decoration-none left-question-link';
 
             const title = document.createElement('span');
+            title.className = 'left-question-title';
             title.textContent = question.text;
 
             const count = document.createElement('small');
-            count.className = 'text-muted ms-2';
-            count.style.minWidth = '20px';
-            count.style.textAlign = 'right';
+            count.className = 'left-question-count';
             count.textContent = String(question.answers_count);
 
             link.appendChild(title);
@@ -114,30 +113,47 @@
         const questionsList = document.getElementById('questions-list');
         const latestQuestionsMarkup = questionsList ? questionsList.innerHTML : '';
         const latestQuestionsBtn = document.getElementById('latest-questions-btn');
+        const toolbar = document.querySelector('.left-navigation');
+        if (!toolbar || !questionsList) return;
+        const dayActive = toolbar.dataset.dayActive === 'true';
+        const params = new URL(window.location.href).searchParams;
+        const pagination = document.querySelector('[data-left-pagination]');
+        const filtered = dayActive || params.has('followed');
 
         function setShuffledMode(active) {
             if (!latestQuestionsBtn) {
                 return;
             }
             latestQuestionsBtn.hidden = !active;
-            latestQuestionsBtn.classList.toggle('d-none', !active);
+            if (randomQuestionBtn) randomQuestionBtn.setAttribute('aria-pressed', String(active));
+            if (pagination) pagination.hidden = active;
         }
 
+        if (filtered || params.has('page') || params.has('q_page')) clearStoredQuestions();
+        const randomQuestionBtn = document.getElementById('random-question-btn');
         const storedQuestions = readStoredQuestions();
         if (storedQuestions.length > 0) {
             setShuffledMode(renderQuestions(storedQuestions));
         }
 
-        const randomQuestionBtn = document.getElementById('random-question-btn');
         if (randomQuestionBtn) {
             randomQuestionBtn.addEventListener('click', function(event) {
                 event.preventDefault();
+                if (randomQuestionBtn.disabled) return;
+                randomQuestionBtn.disabled = true;
                 randomQuestionBtn.setAttribute('aria-busy', 'true');
 
                 fetchQuestions()
                     .then(function(questions) {
                         if (questions.length === 0) {
                             notify('Gösterilecek başlık bulunamadı', 'warning');
+                            return;
+                        }
+                        if (filtered) {
+                            storeQuestions(questions);
+                            const url = new URL(window.location.href);
+                            ['day', 'followed', 'page', 'q_page'].forEach(key => url.searchParams.delete(key));
+                            window.location.assign(url.toString());
                             return;
                         }
                         if (!renderQuestions(questions)) {
@@ -153,20 +169,47 @@
                     })
                     .finally(function() {
                         randomQuestionBtn.removeAttribute('aria-busy');
+                        randomQuestionBtn.disabled = false;
                     });
             });
         }
 
         if (latestQuestionsBtn) {
             latestQuestionsBtn.addEventListener('click', function(event) {
-                event.preventDefault();
                 clearStoredQuestions();
+                if (dayActive) return;
+                event.preventDefault();
                 if (questionsList) {
                     questionsList.innerHTML = latestQuestionsMarkup;
                 }
                 setShuffledMode(false);
             });
         }
+
+        const dateForm = toolbar.querySelector('.left-date-form');
+        const dateToggle = document.getElementById('left-date-toggle');
+        if (dateForm && dateToggle) {
+            dateToggle.addEventListener('click', function() {
+                dateForm.hidden = !dateForm.hidden;
+                dateToggle.setAttribute('aria-expanded', String(!dateForm.hidden));
+                if (!dateForm.hidden) document.getElementById('left-day-input').focus();
+            });
+            dateForm.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    dateForm.hidden = true;
+                    dateToggle.setAttribute('aria-expanded', 'false');
+                    dateToggle.focus();
+                }
+            });
+        }
+        if (dateForm) dateForm.addEventListener('submit', clearStoredQuestions);
+        const followForm = document.getElementById('left-follow-form');
+        if (followForm) followForm.addEventListener('change', function() {
+            clearStoredQuestions();
+            followForm.requestSubmit();
+        });
+        const allLink = toolbar.querySelector('[data-left-all]');
+        if (allLink) allLink.addEventListener('click', clearStoredQuestions);
 
         const shuffleBtn = document.getElementById('shuffle-btn');
         if (shuffleBtn) {

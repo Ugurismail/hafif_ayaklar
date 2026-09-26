@@ -35,6 +35,7 @@ from ..models import (
     Vote,
 )
 from ..querysets import get_active_left_frame_pin_q, get_today_questions_queryset
+from ..left_frame import left_frame_context
 from ..services import VoteSaveService
 from ..utils import paginate_queryset
 
@@ -198,24 +199,7 @@ def delete_answer(request, answer_id):
 def single_answer(request, slug, answer_id):
     question = get_object_or_404(Question.objects.select_related('user'), slug=slug)
 
-    followed_param = request.GET.get('followed', '0')
-    show_followed_only = followed_param == '1'
-
-    all_questions_qs = get_today_questions_queryset()
-
-    if show_followed_only and request.user.is_authenticated:
-        try:
-            user_profile = request.user.userprofile
-            followed_user_ids = user_profile.following.values_list('user_id', flat=True)
-            all_questions_qs = all_questions_qs.filter(
-                get_active_left_frame_pin_q()
-                | Q(user_id__in=followed_user_ids)
-                | Q(answers__user_id__in=followed_user_ids)
-            ).distinct()
-        except UserProfile.DoesNotExist:
-            all_questions_qs = Question.objects.none()
-
-    all_questions_page = paginate_queryset(all_questions_qs, request, 'q_page', 20)
+    left_context = left_frame_context(request, 'q_page')
 
     all_answers = list(
         Answer.objects.filter(question=question).select_related('user', 'question', 'question__user')
@@ -331,8 +315,7 @@ def single_answer(request, slug, answer_id):
         'saved_answer_ids': saved_answer_ids,
         'answer_save_dict': answer_save_dict,
         'form': form,
-        'all_questions_page': all_questions_page,
-        'show_followed_only': show_followed_only,
+        **left_context,
         'is_on_map': is_on_map,
         'user_has_saved_question': user_has_saved_question,
         'question_save_count': question_save_count,

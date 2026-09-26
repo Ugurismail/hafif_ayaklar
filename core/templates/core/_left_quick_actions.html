@@ -1,37 +1,40 @@
-<div class="left-quick-actions{% if not user.is_authenticated %} left-quick-actions-anon{% endif %}">
-    <a href="#"
-       id="random-question-btn"
-       title="Rastgele Başlıkla Doldur"
-       aria-label="Rastgele Başlıkla Doldur"
-       class="left-quick-action">
-        <i class="bi bi-shuffle"></i>
-        <span class="left-quick-action-label">Doldur</span>
-    </a>
-    <a href="#"
-       id="latest-questions-btn"
-       title="Güncel Başlıklara Dön"
-       aria-label="Güncel Başlıklara Dön"
-       class="left-quick-action d-none"
-       hidden>
-        <i class="bi bi-clock-history"></i>
-        <span class="left-quick-action-label">Güncel</span>
-    </a>
-    <a href="#"
-       id="shuffle-btn"
-       title="Rastgele Başlığa Git"
-       aria-label="Rastgele Başlığa Git"
-       class="left-quick-action">
-        <i class="bi bi-asterisk"></i>
-        <span class="left-quick-action-label">Git</span>
-    </a>
-    {% if user.is_authenticated %}
-    <a href="?followed={% if show_followed_only %}0{% else %}1{% endif %}"
-       id="followed-filter-btn"
-       title="{% if show_followed_only %}Tümünü Göster{% else %}Sadece Takip Ettiklerim{% endif %}"
-       aria-label="{% if show_followed_only %}Tümünü Göster{% else %}Sadece Takip Ettiklerim{% endif %}"
-       class="left-quick-action {% if show_followed_only %}active-filter{% endif %}">
-        <i class="bi bi-people-fill"></i>
-        <span class="left-quick-action-label">{% if show_followed_only %}Tümü{% else %}Takip{% endif %}</span>
-    </a>
-    {% endif %}
-</div>
+<section class="left-navigation" aria-label="Başlık araçları" data-day-active="{{ left_day_active|yesno:'true,false' }}">
+    <div class="left-toolbar" role="group" aria-label="Başlık işlemleri">
+        {% if user.is_authenticated %}
+        <form method="get" id="left-follow-form" class="left-follow-form">
+            {% for key, value in left_form_query %}{% if key != 'followed' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+            {% if left_day %}<input type="hidden" name="day" value="{{ left_day|date:'Y-m-d' }}">{% endif %}
+            <label for="followed-filter-btn" class="visually-hidden">Başlık görünümü</label>
+            <select name="followed" id="followed-filter-btn" class="left-mode-select">
+                <option value="0"{% if not show_followed_only %} selected{% endif %}>Tümü</option>
+                <option value="1"{% if show_followed_only %} selected{% endif %}>Takip</option>
+            </select>
+            <noscript><button type="submit">Uygula</button></noscript>
+        </form>
+        {% else %}<a href="{{ left_current_url }}" class="left-mode-current" data-left-all>Tümü</a>{% endif %}
+        <div class="left-actions">
+            <a href="{{ left_current_url }}" id="latest-questions-btn" class="left-tool left-reset" data-bs-toggle="tooltip" title="Güncel listeye dön" aria-label="Güncel listeye dön" hidden><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></a>
+            <button type="button" id="random-question-btn" class="left-tool" data-bs-toggle="tooltip" title="Doldur" aria-label="Doldur: rastgele başlıkları listele"><i class="bi bi-shuffle" aria-hidden="true"></i></button>
+            <button type="button" id="shuffle-btn" class="left-tool" data-bs-toggle="tooltip" title="Git" aria-label="Git: rastgele bir başlık aç"><i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
+            <button type="button" id="left-date-toggle" class="left-tool" data-bs-toggle="tooltip" aria-label="Tarih: güne git" aria-controls="left-date-form" aria-expanded="{{ left_day_error|yesno:'true,false' }}" title="Tarih"><i class="bi bi-calendar3" aria-hidden="true"></i></button>
+        </div>
+    </div>
+    <form method="get" id="left-date-form" class="left-date-form"{% if not left_day_error %} hidden{% endif %}>
+        {% for key, value in left_form_query %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
+        <label for="left-day-input" class="visually-hidden">Tarih</label>
+        <div class="left-date-input-row">
+            <input type="date" id="left-day-input" name="day" value="{{ left_date_value }}" min="1970-01-01" max="{{ left_today|date:'Y-m-d' }}" required>
+            <button type="submit" class="left-icon-button" title="Seçilen güne git" aria-label="Seçilen güne git"><i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+        </div>
+    </form>
+    <noscript><style>#left-date-form[hidden] { display: block; } #left-date-toggle { display: none; }</style></noscript>
+    <nav class="left-context-bar{% if not left_day_active %} d-none{% endif %}" aria-label="Liste filtresi"{% if not left_day_active %} hidden{% endif %}>
+        {% if left_day %}
+        {% if left_prev_day_url %}<a href="{{ left_prev_day_url }}" class="left-icon-button" title="Önceki gün" aria-label="Önceki gün"><i class="bi bi-chevron-left" aria-hidden="true"></i></a>{% else %}<span></span>{% endif %}
+        <time datetime="{{ left_day|date:'Y-m-d' }}">{{ left_day|date:'d M Y' }}</time>
+        {% if left_next_day_url %}<a href="{{ left_next_day_url }}" class="left-icon-button" title="Sonraki gün" aria-label="Sonraki gün"><i class="bi bi-chevron-right" aria-hidden="true"></i></a>{% else %}<button type="button" class="left-icon-button" disabled aria-label="Sonraki gün"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>{% endif %}
+        {% endif %}
+        <a href="{{ left_current_url }}" class="left-icon-button" title="Tarih filtresini kaldır" aria-label="Tarih filtresini kaldır"><i class="bi bi-x" aria-hidden="true"></i></a>
+    </nav>
+    {% if left_day_error %}<p class="left-date-error" role="alert">{{ left_day_error }}</p>{% endif %}
+</section>

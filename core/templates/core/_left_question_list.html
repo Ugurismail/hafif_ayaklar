@@ -1,0 +1,16 @@
+<ul class="list-unstyled left-question-list" id="questions-list" aria-label="Başlıklar">
+    {% for item in all_questions_page %}
+    <li class="tbas-color baslik left-question-row">
+        <a href="{% url 'question_detail' item.slug %}{% if left_nav_query %}?{{ left_nav_query }}{% endif %}" class="tbas-color text-decoration-none left-question-link">
+            <span class="left-question-title">
+                {% if item.left_frame_pin_active %}<i class="bi bi-pin-angle-fill" title="Sabit başlık" aria-label="Sabit başlık"></i>{% endif %}
+                {{ item.question_text }}
+                {% if left_day %}<time class="left-question-time" datetime="{{ item.first_day_entry|date:'c' }}">{{ item.first_day_entry|date:'H:i' }}</time>{% endif %}
+            </span>
+            <span class="left-question-count" title="{% if left_day %}Bu günün entry sayısı{% else %}Entry sayısı{% endif %}">{{ item.answers_count }}</span>
+        </a>
+    </li>
+    {% empty %}
+    <li class="left-list-empty">{% if left_day_error %}Tarihi kontrol edin.{% elif left_day %}Bu gün için başlık bulunamadı.{% else %}Gösterilecek başlık yok.{% endif %}</li>
+    {% endfor %}
+</ul>

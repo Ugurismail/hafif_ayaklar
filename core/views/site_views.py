@@ -21,6 +21,7 @@ from ..answer_git import attach_answer_revision_metadata, render_answer_content_
 from ..content_link_preload import preload_content_links
 from ..models import Answer, DailyVisitor, Question, QuestionRelationship, Reference, StartingQuestion, UserProfile, VisitSession, Vote
 from ..querysets import get_active_left_frame_pin_q, get_today_questions_queryset
+from ..left_frame import left_frame_context
 from ..services import VoteSaveService
 from ..templatetags.custom_tags import truncate_math_safe
 from ..utils import build_reference_usage_counts, paginate_queryset
@@ -78,24 +79,7 @@ def _attach_homepage_answer_content(answers):
 
 
 def user_homepage(request):
-    followed_param = request.GET.get('followed', '0')
-    show_followed_only = followed_param == '1'
-
-    all_questions_qs = get_today_questions_queryset().select_related('user')
-
-    if show_followed_only and request.user.is_authenticated:
-        try:
-            user_profile = request.user.userprofile
-            followed_user_ids = user_profile.following.values_list('user_id', flat=True)
-            all_questions_qs = all_questions_qs.filter(
-                get_active_left_frame_pin_q()
-                | Q(user_id__in=followed_user_ids)
-                | Q(answers__user_id__in=followed_user_ids)
-            ).distinct()
-        except UserProfile.DoesNotExist:
-            all_questions_qs = Question.objects.none()
-
-    all_questions = paginate_queryset(all_questions_qs, request, 'page', 20)
+    left_context = left_frame_context(request, 'page')
 
     candidate_answer_ids = cache.get(RECENT_ANSWER_IDS_CACHE_KEY)
     if candidate_answer_ids is None:
@@ -160,9 +144,8 @@ def user_homepage(request):
         'random_items': random_items,
         'saved_answer_ids': saved_answer_ids,
         'answer_save_dict': answer_save_dict,
-        'all_questions': all_questions,
         'starting_questions': starting_questions,
-        'show_followed_only': show_followed_only,
+        **left_context,
     }
     return render(request, 'core/user_homepage.html', context)
 

@@ -1,0 +1,3 @@
+{% for value, label in fonts %}
+<option value="{{ value }}"{% if user_profile.font_family == value %} selected{% endif %}>{{ label }}</option>
+{% endfor %}

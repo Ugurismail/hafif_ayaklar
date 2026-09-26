@@ -1,5 +1,5 @@
 {% extends 'core/base.html' %}
-{% block title %}{{ author.username }} — Yazıları ve Entryleri | Hafif Ayaklar{% endblock %}
+{% block title %}{{ author.username }} — Yazıları ve Entryleri{% if entries_page.number > 1 %} — Sayfa {{ entries_page.number }}{% endif %} | Hafif Ayaklar{% endblock %}
 {% block meta_description %}{{ author.username }} adlı yazarın Hafif Ayaklar'daki yazıları, entryleri ve açtığı başlıklar.{% endblock %}
 {% block canonical_url %}{{ canonical_url }}{% endblock %}
 {% block og_title %}{{ author.username }} | Hafif Ayaklar{% endblock %}
@@ -12,7 +12,7 @@
 {% block ai_structured_data %}
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"ProfilePage","url":"{{ canonical_url|escapejs }}","mainEntity":{"@type":"Person","@id":"{{ author_url|escapejs }}#person","identifier":"{{ author.pk }}","name":"{{ author.username|escapejs }}","url":"{{ author_url|escapejs }}"},"hasPart":[{% for entry in entries_page %}{% url 'single_answer' entry.question.slug entry.pk as entry_path %}
-{"@type":"DiscussionForumPosting","@id":"{{ request.scheme }}://{{ request.get_host }}{{ entry_path|escapejs }}#entry","url":"{{ request.scheme }}://{{ request.get_host }}{{ entry_path|escapejs }}","headline":"{{ entry.question.question_text|escapejs }}","datePublished":"{{ entry.created_at|date:'c' }}","author":{"@id":"{{ author_url|escapejs }}#person"}}{% if not forloop.last %},{% endif %}{% endfor %}]}
+{"@type":"DiscussionForumPosting","@id":"{{ request.scheme }}://{{ request.get_host }}{{ entry_path|escapejs }}#entry","url":"{{ request.scheme }}://{{ request.get_host }}{{ entry_path|escapejs }}","headline":"{{ entry.question.question_text|escapejs }}","text":"{{ entry.answer_text|striptags|truncatewords:60|escapejs }}","datePublished":"{{ entry.created_at|date:'c' }}","dateModified":"{{ entry.updated_at|date:'c' }}","author":{"@id":"{{ author_url|escapejs }}#person","@type":"Person","name":"{{ author.username|escapejs }}","url":"{{ author_url|escapejs }}"}}{% if not forloop.last %},{% endif %}{% endfor %}]}
 </script>
 {% endblock %}
 {% block content %}

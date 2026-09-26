@@ -274,3 +274,151 @@ paketinin tamami main'e alinmadi; tamamlandi sanilmamali.
   goruntuleri incelendi. Canli veriye dokunulmadi; bu UI yamasi pushlanmadi.
 - Sonraki rapor isi halen SEC-07 istek-hizi korumasi ve desteklenen Django
   gecisinin planlanmasi; eski guvenlik dali topluca alinmayacak.
+
+## Gune Git: 2026-09-20
+
+- Yanit eylemleri 48a9566 ile main'e yayinlandi. Kullanici istegiyle yeni
+  codex/gune-git dali bu main commit'inden acildi; canliya push yapilmadi.
+- Secilen gunde entry girilen basliklar solda birer kez listeleniyor.
+  Siralama o gunun ilk entry saatine gore eskiden yeniye; esitlikte baslik ID.
+  Saat ve o gunku entry sayisi gorunuyor. Merkez akis degistirilmedi.
+- Gun sinirlari Europe/Istanbul saatine gore hesaplanir. Sorgu tarih araligi
+  kullanir, created_at uzerine tarih donusumu uygulamaz. 20 basliklik sayfalama,
+  onceki/sonraki gun ve Guncel'e donus var. Gecersiz/gelecek tarih bos sonuc
+  ve acik hata verir; sessizce baska gunun basliklarini gostermez.
+- Takip filtresi secilen tarihi korur. Basligin sahibi veya o gun entry yazan
+  kisi takip ediliyorsa baslik dahil edilir. Eski bir takipli entry yeterli
+  degildir. Tarih/paginasyon secimi eski rastgele listeyi gecersiz kilar.
+- Doldur/Git aciklamali simgelere, tarih acilir alana donustu. Ana sayfanin
+  mobil baslik sutunundaki sabit yukseklik boslugu azaltildi; detay sayfasinin
+  mevcut mobil acilir paneli korundu.
+- 10 yeni test; tam suite 679 test: 674 basarili, 5 SQLite concurrency
+  atlamasi (17.692s). Yeni gun listesinde sayim ve sayfa 2 sorgu, N+1 yok.
+  Migration kontrolu ve git diff --check temiz. Yeni bagimlilik yok.
+- Chrome 1440/390px: tarih formu, konu linkinde tarihi koruma, onceki gun,
+  Doldur/Guncel, eski sessionStorage listesinin temizlenmesi, girisli Takip
+  ac/kapat dogrulandi. Ekran goruntuleri incelendi; panel tasmasi giderildi.
+- 127.0.0.1:8000 yerel SQLite kopyasiyla acik. Kaynak veritabani, canli veri
+  ve kullanici sifreleri degistirilmedi. Yerel kopyada bulunmayan eski medya
+  dosyalari ayrica 404 verebilir; bu paket medya tasimasi yapmiyor.
+- Oturum guvenligi calismasi codex/oturum-guvenligi dalinda 5b4fad9 olarak
+  ayri tutuluyor; bu dal/main paketine dahil degil. Siradaki guvenlik isi
+  yayin onayi ve SEC-07 hiz siniri/Django surum gecisi; genel rapor devam ediyor.
+
+### Sol Arac Cubugu Gorsel Revizyonu
+
+- Kullanici ilk tasarimi reddetti: tarih fazla merkezi, Doldur/Git belirsiz,
+  baslik ve siralama aciklamalari gereksizdi. Onceki gorunum yerine iki sutunlu,
+  esit agirlikli Doldur/Git/Takip/Tarih araclari kullanildi; gorunur bolum
+  basligi, toplam sayisi ve siralama aciklamasi kaldirildi.
+- Tarih formu sadece istenince acilir; Escape kapatir ve odagi dugmeye verir.
+  Secili gun varsa kucuk tarih/onceki/sonraki/sifirla satiri gorunur. Rastgele
+  mod dugmenin secili durumuyla belirtilir. Liste ismi erisilebilirlik etiketi
+  olarak korunur; veri sorgulari ve kronolojik siralama degistirilmedi.
+- 11 ilgili Django testi gecti. Chrome 1440/1024/390px: tasma yok; tarih,
+  klavye odagi, Takip, Doldur ve sifirlama akislari gecti, JS hatasi yok.
+  Ekran goruntuleri incelendi. CSS/JS onbellek anahtari day2 olarak yenilendi.
+- Main/push yapilmadi; codex/gune-git dalinda yerel onay bekliyor.
+
+### Astra ve Kompakt Sifirlama
+
+- Kullanicinin ek geri bildirimiyle rastgele listeyi sifirlama simgesi ayri
+  satirdan Doldur/Git satirina alindi. Secili tarihin kaldirma dugmesi tarih
+  satirinda kalir. Rastgele modda arac alani masaustunde 86px; eski 124px
+  bosluk kullanilmiyor. Dar ekranlarda metin/ikon tasmasi test edildi.
+- Astra, mevcut Hazir Tema secicisine eklendi: acik gri/beyaz yuzeyler,
+  grafit navbar, petrol yesili birincil ve murdum ikincil vurgu, Georgia 18px.
+  Var olan profil renk/font alanlarini kullanir; yeni migration, bagimlilik,
+  varsayilan tema degisikligi veya diger kullanicilara otomatik uygulama yok.
+- Uc yeni tema testi: secim/sistem fontu, tum kalici alanlarin kaydi ve
+  varsayilana donus, diger hesap/kota korunmasi, ana renk ciftlerinde en az
+  4.5 kontrast. Testteki ana sayfa onbellegi temizlenerek suite izolasyonu
+  saglandi; uretim onbellek davranisi degistirilmedi.
+- Tam suite 683 test: 678 basarili, 5 SQLite concurrency atlamasi (17.984s).
+  Chrome 1440/1024/390px: ayarlardan gercek tema kaydi, yeni sayfada kalicilik,
+  tarih, Doldur ve kompakt sifirlama; JS hatasi veya yatay tasma yok.
+  Ekran goruntuleri incelendi. Yalniz ayri yerel test hesabi kullanildi.
+- CSS/JS day3 onbellek anahtariyla yenilendi. Main'e alinmadi/pushlanmadi.
+
+### Tema Incelemesi ve Font Katalogu: 2026-09-21
+
+- Kullanici genel tema yorumu ve daha fazla yazi tipi istedi. 28 presetin
+  temel renk ciftleri incelendi; ayrintilar theme_typography_review.md.
+  Old Money/The Philosopher ve diger paletler degistirilmedi. Zayif kontrast,
+  eksik preset alanlari ve okuma/arayuz fontunun ayrilmasi sonraki adimlar.
+- Bes mevcut gruba 40 font eklendi, toplam 95. Google Fonts CSS cevabi ve
+  font cmap tablosuyla her eklenen ailenin Turkce harfleri kontrol edildi.
+  Eksik harfli Assistant ve eski Atkinson Hyperlegible alinmadi; Next alindi.
+- Yeni fontlar topluca yuklenmez. Ayarlarda kayitli font icin yinelenen
+  dinamik istek kaldirildi; secim degisiminde tek dinamik stylesheet kalir.
+  Font secimi mobilde tam genislikte; boyut etiketi dogru inputa baglandi.
+  Alt form boslugu sabit sohbet/yardim kontrollerine yer birakir.
+- 685 Django testi: 680 basarili, 5 SQLite concurrency atlamasi (18.122s).
+  40 fontun her biri POST/yeniden acmada secili olarak dogrulandi. Chrome'da
+  Literata, Atkinson Hyperlegible Next, IBM Plex Mono ve Space Grotesk gercek
+  font yuklemesi/kalicilik testi gecti; 95 font icin toplu istek yok.
+  1440/390px ekran goruntuleri incelendi. Yeni migration/bagimlilik yok.
+- codex/gune-git dalinda; main/push yok. Yerel site 8000 portunda acik.
+
+### Sol Alan: Gorunum ve Islem Ayrimi
+
+- Kullanici dort parcali arac duzenini tekrar uygun bulmadi. Iki sutunlu
+  Doldur/Git/Takip/Tarih izgarasi kaldirildi. Ustte Tumu/Takip gorunum secimi,
+  altta tek satir Doldur/Git/Tarih araclari var. Baslik veya sayac aciklamasi
+  eklenmedi. Geri donus simgesi secim satirinin saginda kalir.
+- Takip checkbox'i ayni GET degerlerini kullanan erisilebilir radio grubuna
+  donustu. Tumu=0 ve Takip=1, secilen gunu korur. Gorunumler arasi gecis
+  eski rastgele listeyi temizler. Dar sutunda islem isimleri korunur,
+  sadece dekoratif ikonlar gizlenir; mobilde dokunma yuksekligi 40px.
+- 19 ilgili Django testi gecti. Chrome 1440/1024/390px: Tumu/Takip,
+  tarih, Doldur ve sifirlama dogrulandi; yatay tasma/JS hatasi yok.
+  Ekran goruntuleri incelendi. CSS/JS day4; main/push yok.
+
+### Onaylanan A Tasarimi ve Yazar SEO Kontrolu: 2026-09-26
+
+- Kullanici iki taslaktan A'yi secti. Sol alan tek satira indirildi:
+  Tumu/Takip native select ve Doldur/Git/Tarih simgeleri. Tooltip ve
+  erisilebilir isimler var; gun, takip, rastgele liste ve sifirlama korunur.
+  Dar sutunda araclar ikinci satira gecer; dokunmatik hedefler 44px.
+  CSS anahtari day5. Chrome 1440/1024/390px ve dokunmatik mobil kontrolu:
+  tasma ve JS hatasi yok; tarih/takip/rastgele/sifirlama akislari gecti.
+- Canli arama taramasinda Ugur Ismail Aygun'un profil, yazar ve entry
+  sayfalari bulundu. Bu, Google'daki sira veya Google tarafindan secilen
+  canonical icin kanit degildir; Search Console URL denetimi bekleniyor.
+- Profil entry sayfalari hep ilk sayfaya canonical veriyordu. Artik
+  answer_page>1 kendi temiz adresini kullanir; gecersiz sayfa ilk sayfaya
+  doner. Tarih esitliginde pk siralamasi sayfa sinirlarini sabit tutar.
+- Profil ve entry schema'larindaki Person ayni sabit yazar adresini kullanir.
+  Yazar schema'sindaki entry'lere gorunur ozet, yazar adi ve dateModified
+  eklendi. Ana sayfa ve ortak entry kartlarinda misafir yazar baglantilari
+  ayni kimlik adresine gider; oturum acanlar normal profile gider.
+- AuthorSitemap'in entry x baslik JOIN carpimi bagimsiz alt sorgulara
+  donusturuldu; gercek acik icerik guncellemesinden lastmod eklenir.
+  Taslaklar/aktif olmayan yazarlar dahil degil. Profilde istenmeyen ek
+  yazar sayfasi baglantisi geri eklenmedi. URL tasinmadi; migration yok.
+- 43 ilgili test ve check gecti. Genel suite bu ortamda Word/diyagram
+  aktarimindaki reportlab.graphics.svgpath importunda ilerlemedi ve
+  durduruldu; tam suite basarili kabul edilmemeli. Bu moduller degistirilmedi.
+- Dal codex/gune-git. Main/push yapilmadi; yerel onay bekleniyor.
+
+SEO kaynaklari:
+- https://developers.google.com/search/docs/appearance/structured-data/profile-page
+- https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls
+
+### Genel Test Engelinin Kapatilmasi: 2026-09-26
+
+- Onceki Word/diyagram test takilmasi temiz ortamda yeniden incelendi.
+  Eski Desktop venv'inde ReportLab shapes.py `compressed,dataless` idi;
+  paket metadata kontrolu de ilerlemedi. Sinirli tekil import daha sonra
+  basarili oldu. Yerel dosya/ortam sorunu bulgusu var; uygulamada
+  deterministik kilitlenme kaniti yok.
+- Mevcut requirements.txt ile /private/tmp/hafif-validation-20260926
+  ortaminda sifirdan kurulum yapildi. Eski ortam, paket surumleri ve
+  calisan/canli veritabani degistirilmedi. Uygulama koduna bypass eklenmedi.
+- Gercek Word/PDF ve diyagram uretimi: 17/17 test, 3.516s.
+- Genel suite: 690 test, 685 basarili, 5 SQLite satir kilidi atlamasi;
+  hata yok, 17.992s. Onceki "genel suite tamamlanamadi" durumu kapandi.
+- Indirme JavaScript testleri 8/8; pip check temiz; migration farki yok.
+- Atlanan iki oy ve uc davet eszamanlilik testi ayri MySQL/PostgreSQL test
+  veritabaninda calistirilmali; canli DB'de degil. Uretim garantisi verilmedi.
+- Tekrarlanabilir ortam/komutlar: local_validation.md. Main/push yok.

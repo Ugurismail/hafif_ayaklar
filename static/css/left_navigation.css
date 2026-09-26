@@ -1,0 +1,54 @@
+.left-navigation {
+    flex: 0 0 auto;
+    padding-bottom: 6px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid color-mix(in srgb, var(--text-color) 16%, transparent);
+    color: var(--text-color);
+    font: 13px/1.4 system-ui, sans-serif;
+    letter-spacing: 0;
+    container-type: inline-size;
+}
+.left-mode-select, .left-mode-current { display: block; width: 72px; max-width: 100%; min-height: 36px; padding: 7px 2px; border: 0; background: transparent; color: inherit; font: 500 13px/1.4 system-ui, sans-serif; text-decoration: none; cursor: pointer; }
+.left-mode-select option { color: var(--text-color); background: var(--content-background-color); }
+.left-mode-select:focus-visible { outline: 2px solid var(--link-color); outline-offset: 1px; }
+.left-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+.left-actions { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+.left-tool[hidden], .left-icon-button[hidden] { display: none; }
+.left-tool { display: flex; align-items: center; justify-content: center; width: 32px; flex: 0 0 32px; height: 36px; margin: 0; padding: 0; border: 0; border-radius: 4px; background: transparent; color: inherit; font: 16px/1 system-ui, sans-serif; cursor: pointer; text-decoration: none; }
+.left-tool .bi { width: 17px; flex: 0 0 17px; font-size: 17px; text-align: center; }
+.left-tool:hover, .left-tool[aria-expanded="true"], .left-tool[aria-pressed="true"], .left-tool:has(input:checked) { background: color-mix(in srgb, var(--text-color) 7%, transparent); }
+.left-tool:focus-visible, .left-icon-button:focus-visible { outline: 2px solid var(--link-color); outline-offset: 1px; }
+.left-follow-form { margin: 0; min-width: 0; }
+.left-icon-button { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 28px; width: 28px; height: 32px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: inherit; text-decoration: none; }
+.left-icon-button:hover { color: var(--link-color); background: color-mix(in srgb, var(--text-color) 7%, transparent); }
+.left-icon-button:disabled, .left-tool:disabled { opacity: .4; }
+.left-date-form { margin: 8px 0 2px; }
+.left-date-input-row { display: grid; grid-template-columns: minmax(0, 1fr) 28px; gap: 4px; }
+.left-date-input-row input { width: 100%; min-width: 0; height: 34px; padding: 3px 6px; font: inherit; color: inherit; background: var(--content-background-color); border: 1px solid color-mix(in srgb, var(--text-color) 25%, transparent); border-radius: 4px; }
+.left-context-bar { display: flex; align-items: center; gap: 2px; margin-top: 6px; }
+.left-context-bar time { flex: 1; min-width: 0; font-size: 12px; text-align: center; font-variant-numeric: tabular-nums; }
+.left-date-error { margin: 8px 0 0; font-size: 12px; }
+.left-question-list .left-question-row { padding: 0; border-bottom: 1px solid color-mix(in srgb, var(--text-color) 9%, transparent); }
+.left-question-link { display: flex; align-items: baseline; gap: 8px; width: 100%; padding: 10px 2px; }
+.left-question-title { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.left-question-count { flex: 0 0 auto; min-width: 18px; text-align: right; opacity: .7; font: 12px system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+.left-question-time { display: block; margin-top: 4px; opacity: .65; font: 11px system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+.left-list-empty { padding: 16px 2px; font-size: 13px; color: var(--text-color); opacity: .8; }
+@container (max-width: 190px) {
+    .left-toolbar { flex-wrap: wrap; }
+    .left-follow-form, .left-mode-current { flex-basis: 100%; }
+    .left-actions { width: 100%; justify-content: space-between; }
+    .left-context-bar { flex-wrap: wrap; }
+}
+@media (pointer: coarse) {
+    .left-tool, .left-icon-button { min-width: 44px; height: 44px; }
+    .left-tool { flex-basis: 44px; }
+    .left-toolbar, .left-actions { flex-wrap: wrap; }
+    .left-mode-select, .left-mode-current { min-height: 44px; }
+    .left-date-input-row input { font-size: 16px; }
+    .left-date-input-row { grid-template-columns: minmax(0, 1fr) 44px; }
+}
+@media (max-width: 767px) {
+    .left-home-sidebar { height: auto !important; max-height: 65vh; margin-bottom: 20px; border-right: 0 !important; }
+    .left-home-sidebar > div[style*="overflow-y:auto"] { flex: 1 1 auto !important; }
+}

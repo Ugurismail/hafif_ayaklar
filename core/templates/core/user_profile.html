@@ -4,7 +4,7 @@
 {% load custom_tags %}
 {% load markdownify %}
 
-{% block title %}{{ profile_user.username }} - Kullanıcı Profili - Hafif Ayaklar{% endblock %}
+{% block title %}{{ profile_user.username }} - Kullanıcı Profili{% if answers.number > 1 %} - Sayfa {{ answers.number }}{% endif %} - Hafif Ayaklar{% endblock %}
 
 {% block meta_description %}{{ profile_user.username }} kullanıcısının Hafif Ayaklar profili. {{ follower_count }} takipçi, {{ following_count }} takip. {% if user_profile.bio %}{{ user_profile.bio|striptags|truncatewords:30 }}{% endif %}{% endblock %}
 
@@ -31,12 +31,13 @@
 {
   "@context": "https://schema.org",
   "@type": "ProfilePage",
+  "url": "{{ profile_canonical_url|escapejs }}",
   "mainEntity": {
     "@type": "Person",
     "@id": "{{ author_identity_url|escapejs }}#person",
     "identifier": "{{ profile_user.pk }}",
     "name": "{{ profile_user.username|escapejs }}",
-    "url": "{{ profile_canonical_url|escapejs }}",
+    "url": "{{ author_identity_url|escapejs }}",
     {% if has_profile_photo %}"image": "{{ request.scheme }}://{{ request.get_host }}{{ profile_photo_url }}",{% endif %}
     {% if user_profile.bio %}"description": "{{ user_profile.bio|striptags|escapejs }}",{% endif %}
     "interactionStatistic": [
