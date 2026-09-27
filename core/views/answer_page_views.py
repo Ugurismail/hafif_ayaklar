@@ -10,9 +10,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db.models import Count, F, Max, Q
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_safe
 
 from ..answer_git import (
     attach_answer_revision_metadata,
@@ -41,7 +41,21 @@ from ..utils import paginate_queryset
 
 
 EXPANDED_ANSWER_CACHE_SECONDS = 600
-EXPANDED_ANSWER_CACHE_VERSION = '1'
+EXPANDED_ANSWER_CACHE_VERSION = '2'
+
+
+@require_safe
+def entry_permalink(request, answer_id):
+    from ..entry_references import MAX_ENTRY_ID
+
+    if not 0 < answer_id <= MAX_ENTRY_ID:
+        raise Http404
+    answer = get_object_or_404(
+        Answer.objects.select_related('question').only('id', 'question__slug'),
+        id=answer_id, user__is_active=True,
+    )
+    # A temporary redirect follows future title/slug changes without stale caches.
+    return redirect('single_answer', slug=answer.question.slug, answer_id=answer.id)
 
 
 @require_GET

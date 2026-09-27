@@ -28,7 +28,7 @@ from ..utils import build_reference_usage_counts, paginate_queryset
 
 WORD_PATTERN = re.compile(r'\b\w+\b', re.UNICODE)
 HOMEPAGE_ANSWER_CACHE_SECONDS = 120
-HOMEPAGE_ANSWER_CACHE_VERSION = '3'
+HOMEPAGE_ANSWER_CACHE_VERSION = '4'
 RECENT_ANSWER_IDS_CACHE_KEY = 'homepage:recent-answer-ids:v1'
 RECENT_ANSWER_IDS_CACHE_SECONDS = 30
 

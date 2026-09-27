@@ -67,6 +67,8 @@ def _apply_outside_math(text, transform):
 
 
 def _build_hashtag_link(hashtag_name):
+    if hashtag_name.isascii() and hashtag_name.isdigit():
+        return f'#{hashtag_name}'
     url = reverse('hashtag_view', args=[hashtag_name.lower()])
     return f'<a href="{url}" class="hashtag-link">#{hashtag_name}</a>'
 
@@ -436,6 +438,7 @@ def safe_markdownify(text, arg='default'):
     """
     import uuid
     from markdownify.templatetags.markdownify import markdownify as original_markdownify
+    from core.entry_references import link_entry_references, transform_markdown_prose
 
     if not text:
         return ""
@@ -447,6 +450,12 @@ def safe_markdownify(text, arg='default'):
     indent_map = {}
     outline_map = {}
     diagram_map = {}
+    escaped_entry_map = {}
+
+    def _store_escaped_entry(match):
+        placeholder = f"LITERALENTRY{uuid.uuid4().hex}END"
+        escaped_entry_map[placeholder] = match.group(0)[1:]
+        return placeholder
 
     # Protect TeX blocks so Markdown doesn't eat backslashes like `\\` (align/matrix).
     # We restore as HTML-escaped text so BLEACH safety is preserved.
@@ -614,6 +623,10 @@ def safe_markdownify(text, arg='default'):
     )
     text_with_placeholders = display_math_re.sub(_replace_display, text_with_placeholders)
     text_with_placeholders = inline_math_re.sub(_replace_inline, text_with_placeholders)
+    text_with_placeholders = transform_markdown_prose(
+        text_with_placeholders,
+        lambda part: re.sub(r'\\#[0-9]+', _store_escaped_entry, part),
+    )
     # Protect plain-text hashtags before markdown so `#etiket` line starts
     # are not interpreted as markdown headings.
     text_with_placeholders = HASHTAG_PATTERN.sub(_store_hashtag, text_with_placeholders)
@@ -697,6 +710,9 @@ def safe_markdownify(text, arg='default'):
         markdown_result = markdown_result.replace(placeholder, hashtag_html)
 
     # Restore math blocks last (still HTML-escaped so it stays safe).
+    markdown_result = link_entry_references(markdown_result)
+    for placeholder, literal in escaped_entry_map.items():
+        markdown_result = markdown_result.replace(placeholder, literal)
     for placeholder, math_html in math_map.items():
         markdown_result = markdown_result.replace(placeholder, math_html)
 

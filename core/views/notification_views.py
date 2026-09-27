@@ -17,12 +17,6 @@ def notification_list(request):
     """
     Display list of notifications for the logged-in user
     """
-    # Mark all unread notifications as read when user visits the page
-    Notification.objects.filter(
-        recipient=request.user,
-        is_read=False
-    ).update(is_read=True)
-
     # Get all notifications for the current user
     notifications = Notification.objects.filter(
         recipient=request.user
@@ -48,8 +42,7 @@ def notification_list(request):
     # Paginate
     notifications_page = paginate_queryset(notifications, request, 'page', 20)
 
-    # Get unread count (will be 0 after marking all as read)
-    unread_count = 0
+    unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
 
     context = {
         'notifications': notifications_page,

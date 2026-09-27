@@ -27,6 +27,7 @@
                             <select class="form-select" id="type-filter">
                                 <option value="">Tüm Tipler</option>
                                 <option value="mention" {% if current_type == 'mention' %}selected{% endif %}>Bahsedenler</option>
+                                <option value="entry_reference" {% if current_type == 'entry_reference' %}selected{% endif %}>Entry Referansları</option>
                                 <option value="new_answer" {% if current_type == 'new_answer' %}selected{% endif %}>Yeni Yanıtlar</option>
                                 <option value="answer_update" {% if current_type == 'answer_update' %}selected{% endif %}>Yanıt Güncellemeleri</option>
                                 <option value="question_update" {% if current_type == 'question_update' %}selected{% endif %}>Başlık Güncellemeleri</option>
@@ -68,6 +69,8 @@
                                 <span class="me-2">
                                     {% if notification.notification_type == 'mention' %}
                                         <i class="bi bi-at text-primary"></i>
+                                    {% elif notification.notification_type == 'entry_reference' %}
+                                        <i class="bi bi-hash text-primary" aria-hidden="true"></i>
                                     {% elif notification.notification_type == 'new_answer' %}
                                         <i class="bi bi-chat-left-text text-theme-success"></i>
                                     {% elif notification.notification_type == 'answer_update' %}
@@ -115,7 +118,7 @@
                             <!-- Bağlantılar -->
                             <div class="ms-3">
                                 {% if notification.related_answer or notification.related_question or notification.related_habit %}
-                                    <a href="{{ notification.get_target_url }}" class="btn btn-sm btn-outline-theme-primary">
+                                    <a href="{{ notification.get_target_url }}" class="btn btn-sm btn-outline-theme-primary" {% if not notification.is_read %}data-open-notification="{{ notification.id }}"{% endif %}>
                                         {% if notification.notification_type == 'answer_suggestion' %}
                                             <i class="bi bi-eye"></i> İncele
                                         {% elif notification.notification_type == 'suggestion_result' %}
@@ -131,7 +134,7 @@
                                 {% endif %}
 
                                 {% if not notification.is_read %}
-                                <button class="btn btn-sm btn-theme-primary mark-read-btn" data-id="{{ notification.id }}">
+                                <button type="button" class="btn btn-sm btn-theme-primary mark-read-btn" data-id="{{ notification.id }}" title="Okundu işaretle" aria-label="Okundu işaretle">
                                     <i class="bi bi-check"></i>
                                 </button>
                                 {% endif %}
@@ -155,6 +158,23 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = document.querySelector('[name=csrf-token]').content;
+
+    document.querySelectorAll('[data-open-notification]').forEach(link => {
+        link.addEventListener('click', async function(event) {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            try {
+                await fetch(`/notifications/${this.dataset.openNotification}/mark-read/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                });
+            } catch (error) {
+                // The destination remains usable if marking as read fails.
+            } finally {
+                window.location.assign(this.href);
+            }
+        });
+    });
 
     // Filtre değişikliklerinde sayfa yenile
     document.getElementById('type-filter').addEventListener('change', function() {

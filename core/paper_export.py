@@ -24,6 +24,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from .models import Definition, QuestionRelationship, Reference
 from .diagram_markup import DIAGRAM_MARKER_PATTERN, decode_diagram_payload
 from .diagram_export import diagram_document_data, diagram_png
+from .entry_references import available_entry_ids, entry_references_for_export, referenced_entry_ids
 
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -415,7 +416,7 @@ def _set_run_font(run, *, size=None, bold=None, italic=None):
         run.italic = italic
 
 
-def _add_hyperlink(paragraph, text, url):
+def _add_hyperlink(paragraph, text, url, bold=False, italic=False):
     relationship_id = paragraph.part.relate_to(
         url,
         "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
@@ -425,6 +426,10 @@ def _add_hyperlink(paragraph, text, url):
     hyperlink.set(qn("r:id"), relationship_id)
     run = OxmlElement("w:r")
     run_properties = OxmlElement("w:rPr")
+    if bold:
+        run_properties.append(OxmlElement("w:b"))
+    if italic:
+        run_properties.append(OxmlElement("w:i"))
     color = OxmlElement("w:color")
     color.set(qn("w:val"), "0563C1")
     underline = OxmlElement("w:u")
@@ -477,32 +482,29 @@ def _add_bookmark(paragraph, bookmark_id, bookmark_name):
     paragraph._p.append(end)
 
 
-def _add_inline_text(paragraph, text):
+def _add_inline_text(paragraph, text, bold=None, italic=None):
     position = 0
     for match in INLINE_RE.finditer(text):
         if match.start() > position:
             run = paragraph.add_run(text[position:match.start()])
-            _set_run_font(run)
+            _set_run_font(run, bold=bold, italic=italic)
 
         if match.group("footnote"):
             run = paragraph.add_run(match.group("footnote"))
             _set_run_font(run)
         elif match.group("link"):
-            _add_hyperlink(paragraph, match.group("link_text"), match.group("link_url"))
+            _add_hyperlink(paragraph, match.group("link_text"), match.group("link_url"), bold, italic)
         elif match.group("bold_italic"):
-            run = paragraph.add_run(match.group("bold_italic_text"))
-            _set_run_font(run, bold=True, italic=True)
+            _add_inline_text(paragraph, match.group("bold_italic_text"), bold=True, italic=True)
         elif match.group("bold"):
-            run = paragraph.add_run(match.group("bold_text"))
-            _set_run_font(run, bold=True)
+            _add_inline_text(paragraph, match.group("bold_text"), bold=True, italic=italic)
         elif match.group("italic"):
-            run = paragraph.add_run(match.group("italic_text"))
-            _set_run_font(run, italic=True)
+            _add_inline_text(paragraph, match.group("italic_text"), bold=bold, italic=True)
         position = match.end()
 
     if position < len(text):
         run = paragraph.add_run(text[position:])
-        _set_run_font(run)
+        _set_run_font(run, bold=bold, italic=italic)
 
 
 def _add_horizontal_rule(document):
@@ -1024,6 +1026,7 @@ class PaperTextRenderer:
             definition.definition_text or ""
             for definition in self.definitions.values()
         )
+        self.entry_ids = available_entry_ids(referenced_entry_ids(f"{all_text}\n{definition_text}"))
         reference_ids = {
             int(match.group("reference_id"))
             for match in CITATION_RE.finditer(f"{all_text}\n{definition_text}")
@@ -1059,6 +1062,7 @@ class PaperTextRenderer:
 
     def _clean_footnote_text(self, text):
         text = CITATION_RE.sub(self._replace_citation, text or "")
+        text = entry_references_for_export(text, self.entry_ids)
         text = re.sub(r"\[([^\]]+)\]\((https?://[^)]+)\)", r"\1 (\2)", text)
         text = re.sub(r"\*\*\*(.+?)\*\*\*", r"\1", text, flags=re.DOTALL)
         text = re.sub(r"\*\*(.+?)\*\*", r"\1", text, flags=re.DOTALL)
@@ -1089,7 +1093,9 @@ class PaperTextRenderer:
             "\u00a0",
             prepared,
         )
-        return CITATION_RE.sub(self._replace_citation, prepared)
+        return entry_references_for_export(
+            CITATION_RE.sub(self._replace_citation, prepared), self.entry_ids,
+        )
 
     def bibliography(self):
         found = [

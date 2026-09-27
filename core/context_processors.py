@@ -1,6 +1,23 @@
 # core/context_processors.py
 
 from django.conf import settings
+from django.utils.functional import SimpleLazyObject
+
+
+def navbar_unread_counts(request):
+    if not request.user.is_authenticated:
+        return {}
+    from .models import Message, Notification
+
+    # Preview templates do not use the navbar; query only when a badge is rendered.
+    return {
+        'unread_notification_count': SimpleLazyObject(
+            lambda: Notification.objects.filter(recipient=request.user, is_read=False).count()
+        ),
+        'unread_message_count': SimpleLazyObject(
+            lambda: Message.objects.filter(recipient=request.user, is_read=False).count()
+        ),
+    }
 
 def static_asset_version(request):
     return {'STATIC_ASSET_VERSION': getattr(settings, 'STATIC_ASSET_VERSION', '1')}

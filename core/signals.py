@@ -1,8 +1,36 @@
 from django.contrib.auth import get_user_model
 User = get_user_model()
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
 from .models import UserProfile, Answer, Question, QuestionRelationship
+
+
+@receiver(pre_save, sender=Answer)
+def collect_new_entry_references(sender, instance, raw=False, using='default', update_fields=None, **kwargs):
+    from .entry_references import published_entry_reference_ids, referenced_entry_ids
+
+    instance._new_entry_reference_ids = set()
+    if raw or (update_fields is not None and 'answer_text' not in update_fields):
+        return
+    text = instance.__dict__.get('answer_text', '')
+    if not referenced_entry_ids(text):
+        return
+    old_text = ''
+    if instance.pk:
+        old_text = sender.objects.using(using).filter(pk=instance.pk).values_list('answer_text', flat=True).first() or ''
+    if text != old_text:
+        instance._new_entry_reference_ids = (
+            published_entry_reference_ids(text) - published_entry_reference_ids(old_text)
+        )
+
+
+@receiver(post_save, sender=Answer)
+def send_new_entry_reference_notifications(sender, instance, raw=False, using='default', **kwargs):
+    from .entry_references import notify_entry_references
+
+    target_ids = instance.__dict__.pop('_new_entry_reference_ids', set())
+    if not raw and target_ids:
+        notify_entry_references(instance, target_ids, using=using)
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

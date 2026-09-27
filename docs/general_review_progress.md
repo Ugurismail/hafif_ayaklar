@@ -422,3 +422,43 @@ SEO kaynaklari:
 - Atlanan iki oy ve uc davet eszamanlilik testi ayri MySQL/PostgreSQL test
   veritabaninda calistirilmali; canli DB'de degil. Uretim garantisi verilmedi.
 - Tekrarlanabilir ortam/komutlar: local_validation.md. Main/push yok.
+
+### Entry Referanslari ve Bildirimleri: 2026-09-27
+
+- `codex/entry-references`: #numara referansi, kalici /entry/numara/ adresi,
+  entry menusunden referans/link kopyalama ve Word/PDF baglantilari eklendi.
+- Referans verilen entry sahibine yayinlama ve yeni referans eklenen duzenleme
+  sirasinda bildirim gider. Kendi entrysi, gecersiz hedef, taslak, onizleme,
+  kod/formul ve tekrarlanan kayit bildirim uretmez.
+- Kaynak/hedef bazli benzersiz bildirim gecmisi, kaldirip yeniden ekleme veya
+  bildirimi silme sonrasi tekrari engeller. Ayni kayitta ayni yazara ait birden
+  cok referans tek bildirimde birlesir. Bildirim kaynak entryyi acar.
+- 38 odakli test gecti. Genel suite: 728 test, 723 basarili, 5 mevcut SQLite
+  satir kilidi atlamasi. Chrome iki hesapla yayinlama/bildirim/baglanti akisi ve
+  mobil referans kopyalama dogrulandi. Gecici QA hesaplari temizlendi.
+- 0064 migration yerelde uygulandi; canli yayin icin migrate gerekecek.
+  Main/push yapilmadi. Davranis ve sinirlar: entry_references.md.
+
+### Bildirim Zili Sayaci: 2026-09-27
+
+- Ilk HTML yanitinda eksik olan okunmamis bildirim/mesaj sayilari lazy context
+  processor ile saglandi. Arama formuna bagimli JS sayac baslatma ayrildi.
+- Gorunur sayfalarda 15 saniyede bir ve pencereye donuste yenileme yapilir;
+  gizli sekmeler sorgulamaz. Eszamanli istekler engellenir, ag hatalarinda mevcut
+  sayac korunur. Bildirim sayisi navbar onbelleginden degil canli sorgudan gelir.
+- Bildirim listesini acmak artik tum bildirimleri okundu yapmaz. Hedefi acma,
+  tekil okundu ve tumunu okundu islemleri CSRF korumali POST kullanir.
+- 7 yeni Django ve 6 JavaScript testi gecti. Genel suite: 735 test,
+  730 basarili, 5 mevcut SQLite satir kilidi atlamasi; hata yok.
+- Yerel tarayicida ilk sayac, yenilemeden yeni bildirim, liste ziyareti ve
+  tekil/tumunu okundu sayac davranislari dogrulandi. Gecici QA verisi temizlendi.
+- Ek migration yok; ayni codex/entry-references dalinda, main/push yapilmadi.
+
+### Entry Referanslari Yayin Onayi: 2026-09-27
+
+- Kullanici referans sistemi ve bildirim zili duzeltmelerinin birlikte main'e
+  alinip pushlanmasini onayladi. Oturum guvenligi dali bu yayina dahil degil.
+- Yayin adimlari: git pull --ff-only origin main, migrate,
+  collectstatic --noinput, check ve PythonAnywhere Web Reload.
+- 0064 migration yeni bildirim gecmisini olusturur; eski entryler icin geriye
+  donuk bildirim gonderilmez. Uzak canli uygulama testleri yayin sonrasi yapilir.

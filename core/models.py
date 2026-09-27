@@ -351,6 +351,19 @@ class Answer(models.Model):
         return self.git_suggestions.filter(status='open').count()
 
 
+class EntryReferenceNotice(models.Model):
+    """Delivery history; removing a reference does not allow repeated alerts."""
+
+    source = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='reference_notices_sent')
+    target = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='reference_notices_received')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['source', 'target'], name='unique_entry_reference_notice'),
+        ]
+
+
 class EntryBook(models.Model):
     user = models.ForeignKey(
         User,
@@ -1105,6 +1118,7 @@ class Notification(models.Model):
     """Unified notification system for all user notifications"""
     NOTIFICATION_TYPES = (
         ('mention', 'Mention'),                    # @username mention
+        ('entry_reference', 'Entry Reference'),    # #entry_id reference
         ('new_answer', 'New Answer'),              # New answer to followed question
         ('answer_update', 'Answer Update'),        # Update to followed answer
         ('question_update', 'Question Update'),    # Update to followed question
@@ -1361,6 +1375,8 @@ class Notification(models.Model):
             return reverse('answer_git_history', args=[self.related_answer_id])
         if self.notification_type == 'habit_reminder':
             return reverse('habit_tracker')
+        if self.notification_type == 'entry_reference' and self.related_answer_id:
+            return reverse('entry_permalink', args=[self.related_answer_id])
         if self.related_question_id:
             target = reverse('question_detail', args=[self.related_question.slug])
             if self.related_answer_id:

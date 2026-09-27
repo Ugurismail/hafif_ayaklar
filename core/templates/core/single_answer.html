@@ -293,13 +293,14 @@
                                     </li>
                                     {% endif %}
                                     <li>
-                                        <button class="dropdown-item copy-link-btn" data-url="{% url 'single_answer' question.slug focused_answer.id %}">
+                                        <button class="dropdown-item copy-link-btn" data-url="{% url 'entry_permalink' focused_answer.id %}">
                                             <i class="bi bi-link-45deg"></i> Linki Kopyala
                                         </button>
                                     </li>
                                     <li>
                                         <a class="dropdown-item share-link" href="#" data-answer-id="{{ focused_answer.id }}"><i class="bi bi-share"></i> Paylaş</a>
                                     </li>
+                                    {% include 'core/_entry_reference_action.html' with entry_id=focused_answer.id only %}
                                     {% if request.user.is_authenticated and request.user == focused_answer.user %}
                                     <li>
                                         <form action="{% url 'pin_entry' answer_id=focused_answer.id %}" method="post">
@@ -420,8 +421,9 @@
                                             &#8226;&#8226;&#8226;
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu{{ answer.id }}">
+                                            {% include 'core/_entry_reference_action.html' with entry_id=answer.id only %}
                                             <li>
-                                        <button class="dropdown-item copy-link-btn" data-url="{% url 'single_answer' question.slug answer.id %}">
+                                        <button class="dropdown-item copy-link-btn" data-url="{% url 'entry_permalink' answer.id %}">
                                             <i class="bi bi-link-45deg"></i> Linki Kopyala
                                         </button>
                                     </li>

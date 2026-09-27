@@ -124,6 +124,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             'core.context_processors.static_asset_version',
             'core.context_processors.google_analytics',
+            'core.context_processors.navbar_unread_counts',
             ],
         },
     },

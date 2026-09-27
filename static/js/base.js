@@ -387,69 +387,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Keep all navbar counters in one request so a single-worker deployment
-     * does not queue three simultaneous polling requests.
-     */
-    let navbarStatusRequestInFlight = false;
-
-    function updateBadge(id, count) {
-        const badge = document.getElementById(id);
-        if (!badge) return;
-
-        const numericCount = Number(count || 0);
-        if (numericCount > 0) {
-            badge.textContent = numericCount > 99 ? '99+' : String(numericCount);
-            badge.style.display = 'inline-block';
-        } else {
-            badge.style.display = 'none';
-        }
-    }
-
-    function updateNavbarStatus() {
-        if (document.hidden || navbarStatusRequestInFlight) {
-            return;
-        }
-
-        navbarStatusRequestInFlight = true;
-        fetch('/navbar/status/', {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-            .then(response => {
-                const contentType = response.headers.get('content-type') || '';
-                if (!response.ok || !contentType.includes('application/json')) {
-                    return null;
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (!data) return;
-
-                updateBadge('notification-badge', data.notification_count);
-                updateBadge('message-badge', data.message_count);
-                if (typeof window.hafifAyaklarSetOnlineChatUnreadCount === 'function') {
-                    window.hafifAyaklarSetOnlineChatUnreadCount(data.online_chat_count);
-                }
-            })
-            .catch(function() {
-                // Navbar counters are non-critical; retry on the next cycle.
-            })
-            .finally(() => {
-                navbarStatusRequestInFlight = false;
-            });
-    }
-
-    if (document.getElementById('notification-badge') || document.getElementById('message-badge')) {
-        setTimeout(updateNavbarStatus, 5000);
-        setInterval(updateNavbarStatus, 90000);
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                updateNavbarStatus();
-            }
-        });
-    }
 });
 
 // Mobile side panels (questions list / subquestions) for 3-panel pages

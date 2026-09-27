@@ -84,7 +84,7 @@ def extract_hashtags(text):
     # Explicitly include Turkish characters for better compatibility
     pattern = r'(?:^|[^A-Za-z0-9_ğüşöçıİĞÜŞÖÇ])#([A-Za-z0-9_ğüşöçıİĞÜŞÖÇ]+)'
     hashtags = re.findall(pattern, text)
-    return list(set([h.lower() for h in hashtags]))  # Lowercase and remove duplicates
+    return list({h.lower() for h in hashtags if not (h.isascii() and h.isdigit())})
 
 
 def send_mention_notifications(answer, mentioned_usernames):

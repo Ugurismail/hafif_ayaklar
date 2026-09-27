@@ -5,6 +5,7 @@ from django.core.cache import cache
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
+from django.views.decorators.cache import never_cache
 
 from ..habit_reminders import materialize_due_habit_reminders
 from ..models import Message, Notification, UserProfile
@@ -16,11 +17,13 @@ HABIT_REMINDER_CHECK_SECONDS = 45
 
 @login_required
 @require_GET
+@never_cache
 def navbar_status(request):
     cache_key = f'navbar-status:{request.user.id}'
     cached_status = cache.get(cache_key)
     if cached_status is not None:
-        return JsonResponse(cached_status)
+        notification_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+        return JsonResponse({**cached_status, 'notification_count': notification_count})
 
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     now = timezone.now()

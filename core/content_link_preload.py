@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 
 from .models import Definition, Question, Reference
+from .entry_references import available_entry_ids, preloaded_entry_ids, referenced_entry_ids
 
 
 DEFINITION_RE = re.compile(r"\((?:tanim|t):[^:]+:(\d+)\)", re.IGNORECASE)
@@ -98,6 +99,9 @@ def preload_content_links(texts):
         user_map = {item.username.casefold(): item for item in users}
 
     tokens = (
+        (preloaded_entry_ids, preloaded_entry_ids.set(available_entry_ids(
+            {entry_id for text in texts for entry_id in referenced_entry_ids(text)}
+        ))),
         (_definitions, _definitions.set(definition_map)),
         (_references, _references.set(reference_map)),
         (_questions, _questions.set(question_map)),

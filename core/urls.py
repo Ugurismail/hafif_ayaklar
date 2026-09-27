@@ -1,7 +1,7 @@
 from django.urls import path, re_path
 from django.contrib.auth import views as auth_views
 from django.conf import settings
-from .views.answer_page_views import add_answer, delete_answer, edit_answer, expanded_answer_content, single_answer
+from .views.answer_page_views import add_answer, delete_answer, edit_answer, entry_permalink, expanded_answer_content, single_answer
 from .views.answer_profile_views import get_root_questions, get_user_answers
 from .views.answer_revision_views import answer_git_history, answer_live_preview, answer_revision_approve, answer_revision_reject, answer_suggest_edit, answer_suggestion_accept, answer_suggestion_detail, answer_suggestion_reject, correction_inbox
 from .views.attendance_views import attendance_day_state, attendance_leave_range, attendance_save_state, attendance_sheet_tool
@@ -38,6 +38,7 @@ from .views.vote_save_views import get_saved_items, pin_entry, save_item, unpin_
 from .views.retired_views import retired_feature
 
 urlpatterns = [
+    path('entry/<int:answer_id>/', entry_permalink, name='entry_permalink'),
     re_path(r'^(?:radio|cikis_testleri|cikis_testi|cikis-testleri|cikis-test)(?:/.*)?$', retired_feature),
     # Ana Sayfa
     path('', user_homepage, name='user_homepage'),
