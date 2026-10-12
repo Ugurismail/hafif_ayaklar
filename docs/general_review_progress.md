@@ -591,3 +591,31 @@ SEO kaynaklari:
   hiz siniri ayrildiktan sonra MySQL suite yeniden calistirilmadi.
 - Canli yayin kullanicinin pull, migrate, collectstatic, check ve Web Reload
   adimlarini yapmasini gerektirir. Genel site incelemesi tamamlanmis degildir.
+
+## Mesaj Baglantilari: 2026-10-13
+
+- codex/mesaj-baglantilari dalinda gelen/gonderilen mesajlarin HTTP(S)
+  baglantilari yeni sekmede acilir. Sohbet ve diger navigasyon degismedi.
+- Plain-text mesaj once escape edilir; mevcut Bleach kutuphanesiyle link
+  uretilir. target=_blank ve rel=nofollow noopener noreferrer uygulanir.
+  Kullanici HTML'i calistirilmaz; e-posta baglantilari korunur.
+- 5 yeni link regresyon testi ve 13 bildirim testi gecti; diff kontrolu temiz.
+  Migration veya yeni paket yok. Henuz main/push/canli yayin yapilmadi.
+
+## Murekkep Temasi ve Mesaj Baglantilari Yayin Paketi: 2026-10-13
+
+- Kullanici iki degisikligin main'e alinip pushlanmasini istedi.
+- Renk Ayarlari'na Murekkep (Siyah & Beyaz) eklendi: notr beyaz/gri
+  yuzeyler, siyah navbar, koyu metin ve sistem Georgia fontu. Tum mevcut
+  temalar korundu; varsayilanlar veya baska kullanicilarin ayarlari degismez.
+- Tum preset alanlari, profil kaydi/reset, kisisellik ve normal/hover
+  renk eslesmelerinde en az 4.5:1 kontrast regresyon testleri eklendi.
+- Mobil kontrolde koyu navbar'da kaybolan Bootstrap menu simgesi goruldu;
+  mevcut Bootstrap Icons simgesi ve header-text-color ile duzeltildi.
+  Gercek tarayicida tema secme/kaydetme, masaustu ve 390px mobil gorunum,
+  menusunun acilmasi ve yatay tasma olmamasi dogrulandi. Sentetik DB kullanildi.
+- Mesaj linkleri ve tema birlikte yayinlanir. Yeni migration/paket yok.
+  PythonAnywhere: pull, collectstatic, check ve Web Reload gerekli.
+- Son yayin agacinda 783 Django testi: 774 basarili, 9 SQLite kilitleme
+  atlamasi (21.137s). 27 Node testi gecti. makemigrations --check --dry-run
+  ve git diff --check temiz.

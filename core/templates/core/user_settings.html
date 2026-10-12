@@ -15,6 +15,7 @@
 	                <option value="">-- Tema Seçin --</option>
 	                <option value="default">Old Money (Varsayılan)</option>
                     <option value="astra">Astra</option>
+                    <option value="ink">Mürekkep (Siyah &amp; Beyaz)</option>
 	                <option value="gpt56">gpt5.6 (Editoryal Seladon)</option>
                 <option value="classic_garamond">Klasik Garamond</option>
 	                <option value="gece">Gece Modu</option>
@@ -400,6 +401,42 @@
 <script>
     // Hazır temalar mevcut profil alanlarına uygulanır.
     const THEMES = {
+        "ink": {
+            "background_color": "#FAFAFA",
+            "text_color": "#202020",
+            "header_background_color": "#151515",
+            "header_text_color": "#FFFFFF",
+            "link_color": "#303030",
+            "link_hover_color": "#000000",
+            "button_background_color": "#202020",
+            "button_hover_background_color": "#000000",
+            "button_text_color": "#FFFFFF",
+            "secondary_button_background_color": "#484848",
+            "secondary_button_hover_background_color": "#303030",
+            "secondary_button_text_color": "#FFFFFF",
+            "message_bubble_color": "#EEEEEE",
+            "tbas_color": "#202020",
+            "yanit_card": "#FFFFFF",
+            "font_size": "18",
+            "hover_background_color": "#EAEAEA",
+            "hover_text_color": "#151515",
+            "icon_color": "#484848",
+            "icon_hover_color": "#000000",
+            "answer_background_color": "#FAFAFA",
+            "content_background_color": "#FFFFFF",
+            "tab_background_color": "#EEEEEE",
+            "tab_text_color": "#484848",
+            "tab_active_background_color": "#FFFFFF",
+            "tab_active_text_color": "#151515",
+            "dropdown_text_color": "#202020",
+            "dropdown_hover_background_color": "#EAEAEA",
+            "dropdown_hover_text_color": "#000000",
+            "nav_link_hover_color": "#FFFFFF",
+            "nav_link_hover_bg": "#383838",
+            "pagination_background_color": "#FFFFFF",
+            "pagination_text_color": "#202020",
+            "font_family": "Georgia"
+        },
         "astra": {
             "background_color": "#F4F6F7",
             "text_color": "#20262C",

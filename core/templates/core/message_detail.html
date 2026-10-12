@@ -1,5 +1,5 @@
 {% extends 'core/base.html' %}
-{% load static %}
+{% load static message_tags %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/messages.css' %}?v={{ STATIC_ASSET_VERSION }}-1">{% endblock %}
 
 {% block content %}
@@ -26,12 +26,12 @@
                             {% endif %}
                             {% if message.sender == request.user %}
                                 <div class="sent-message">
-                                    <p class="mb-0">{{ message.body|urlize }}</p>
+                                    <p class="mb-0">{{ message.body|message_links }}</p>
                                     <small>{{ message.timestamp|date:"d M Y H:i" }}</small>
                                 </div>
                             {% else %}
                                 <div class="received-message">
-                                    <p class="mb-1">{{ message.body|urlize }}</p>
+                                    <p class="mb-1">{{ message.body|message_links }}</p>
                                     <small>{{ message.timestamp|date:"d M Y H:i" }}</small>
                                 </div>
                             {% endif %}
