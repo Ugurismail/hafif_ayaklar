@@ -14,16 +14,6 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-4m3!p5t!fy=$22
 
 IS_HOSTED = os.environ.get('HOME', '').startswith('/home/')
 
-# Production proxy settings must be verified before enabling this release.
-LOGIN_CLIENT_IP_SOURCE = os.environ.get(
-    'LOGIN_CLIENT_IP_SOURCE', 'pythonanywhere' if IS_HOSTED else 'remote_addr',
-)
-LOGIN_TRUST_CLOUDFLARE = os.environ.get('LOGIN_TRUST_CLOUDFLARE', '').lower() == 'true'
-LOGIN_RATE_LIMIT_PROXY_VERIFIED = os.environ.get('LOGIN_RATE_LIMIT_PROXY_VERIFIED', '').lower() == 'true'
-LOGIN_RATE_LIMIT_WINDOW_SECONDS = 300
-LOGIN_RATE_LIMIT_PER_IP = 60
-LOGIN_RATE_LIMIT_PER_ACCOUNT_IP = 10
-
 # Default DEBUG to False everywhere (so error pages render locally too).
 # To enable debug explicitly, set `DJANGO_DEBUG=True` (or `DEBUG=True` for backwards-compat).
 _debug_env = os.environ.get('DJANGO_DEBUG', os.environ.get('DEBUG'))
@@ -112,7 +102,6 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'core.login_rate_limit.LoginRateLimitMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'core.middleware.LastSeenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',

@@ -1047,13 +1047,6 @@ class HashtagUsage(models.Model):
 
 # ========== SIGNALS FOR MENTIONS AND HASHTAGS ==========
 
-class LoginRateLimitBucket(models.Model):
-    # HMAC identities, never raw IPs, usernames or passwords.
-    key = models.CharField(max_length=64, primary_key=True)
-    attempts = models.PositiveIntegerField(default=0)
-    expires_at = models.DateTimeField(db_index=True)
-
-
 @receiver(post_save, sender=Answer)
 def process_answer_mentions_and_hashtags(sender, instance, created, raw=False, **kwargs):
     """

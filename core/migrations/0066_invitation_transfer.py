@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('core', '0065_login_rate_limit_bucket'),
+        ('core', '0064_entry_reference_notifications'),
     ]
 
     operations = [

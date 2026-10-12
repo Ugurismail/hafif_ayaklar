@@ -573,3 +573,21 @@ SEO kaynaklari:
   dogrulandi. Mevcut yayinlanmis entry degismedi (yalniz sentetik test DB).
 - 6 yeni regresyon testi dahil 27 Node testi ve 7 odakli Django taslak/eylem
   testi gecti. git diff --check temiz. Main/push/canli yayin yok.
+
+## Topluluk Yayin Paketi: 2026-10-12
+
+- Kullanici main'e birlestirme ve push onayi verdi. Yayin dali:
+  codex/topluluk-yayin. Oturum guvenligi, mesajlasma, bildirim, davet hakki
+  aktarimi ve Kenarda Dursun ilk tiklama duzeltmesi bu pakette.
+- Dogrulanmamis proxy ayariyla girisleri engellememek icin giris hiz siniri
+  runtime/model/test/0065 migration bu yayindan cikarildi. Tam calisma
+  codex/oturum-guvenligi-guncel dalinda 149757b commit'inde korunuyor.
+  SEC-07 halen acik; sonraki entegrasyonda migration 0066 sonrasina alinmali.
+- 0066_invitation_transfer dogrudan 0064_entry_reference_notifications'a
+  bagli. Numara atlamasi kasitli; deploy sirasinda migrate gerekli.
+- Son yayin agaci: 774 Django testi, 765 basarili, 9 SQLite kilitleme
+  atlamasi; 27 Node testi basarili. makemigrations --check --dry-run ve
+  git diff --check temiz. Onceki MySQL 67 test sonucu yukarida kayitli;
+  hiz siniri ayrildiktan sonra MySQL suite yeniden calistirilmadi.
+- Canli yayin kullanicinin pull, migrate, collectstatic, check ve Web Reload
+  adimlarini yapmasini gerektirir. Genel site incelemesi tamamlanmis degildir.

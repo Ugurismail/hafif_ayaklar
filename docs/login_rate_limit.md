@@ -1,5 +1,14 @@
 # Login rate limiting
 
+## Release exclusion: 2026-10-12
+
+This is a design and test record, not deployed functionality. Runtime code,
+tests and migration 0065 are preserved on codex/oturum-guvenligi-guncel at
+149757b and excluded from the community release. The session-security fixes
+are included independently. Before a later release, verify production proxy
+settings and rebase the limiter migration after 0066_invitation_transfer
+with a new migration number. Do not run the commands below on this release.
+
 Date: 2026-10-07. Branch: codex/oturum-guvenligi-guncel, based on main b30a8ae.
 Status: locally tested; NOT merged, pushed, configured or deployed in production.
 This builds on the pending session-security patch in auth_session_security.md.
