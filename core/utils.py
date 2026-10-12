@@ -64,8 +64,10 @@ def extract_mentions(text):
             username = ' '.join(words[:i])
             try:
                 # Check if user exists in database
-                User.objects.get(username__iexact=username)
-                found_usernames.append(username)
+                user = User.objects.filter(username__iexact=username, is_active=True).order_by('pk').first()
+                if user is None:
+                    continue
+                found_usernames.append(user.username)
                 break  # Found valid username, stop checking shorter versions
             except User.DoesNotExist:
                 continue
@@ -96,7 +98,7 @@ def send_mention_notifications(answer, mentioned_usernames):
 
     for username in mentioned_usernames:
         try:
-            mentioned_user = User.objects.get(username=username)
+            mentioned_user = User.objects.get(username=username, is_active=True)
 
             # Don't send notification if user mentions themselves
             if mentioned_user == author:

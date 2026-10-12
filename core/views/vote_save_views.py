@@ -59,13 +59,11 @@ def vote(request):
         # Do not overwrite entry edits or advance the content's edit timestamp.
         model.objects.filter(pk=object_id).update(**totals)
 
-    try:
+        # Commit the interaction and its notification together.
         if model is Answer and value and obj.user_id != request.user.id:
             Notification.create_answer_vote_notification(
                 recipient=obj.user, sender=request.user, answer=obj, value=value,
             )
-    except Exception:
-        pass
 
     return JsonResponse({**totals, 'user_vote_value': value})
 
@@ -131,13 +129,10 @@ def save_item(request):
             content_type=content_type, object_id=object_id,
         ).count()
 
-    try:
         if created_now and model is Answer and obj.user_id != request.user.id:
             Notification.create_answer_save_notification(
                 recipient=obj.user, sender=request.user, answer=obj,
             )
-    except Exception:
-        pass
     return JsonResponse(result)
 
 

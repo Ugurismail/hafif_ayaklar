@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/invitation_transfer.css' %}?v={{ STATIC_ASSET_VERSION }}-1">{% endblock %}
+{% block content %}
+<main class="container quota-page">
+  <header class="quota-heading">
+    <a href="{% url 'user_profile' request.user.username %}?tab=davetler" title="Davetlerim" aria-label="Davetlerime dön"><i class="bi bi-arrow-left" aria-hidden="true"></i></a>
+    <h1>Davet hakkı aktar</h1>
+    <span class="quota-balance">Kalan hakkın <strong>{{ invitation_quota }}</strong></span>
+  </header>
+  <form method="post" class="quota-form">
+    {% csrf_token %}{{ form.token }}
+    {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form.visible_fields %}
+    <div class="quota-field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% for error in field.errors %}<p class="text-danger" role="alert">{{ error }}</p>{% endfor %}
+    </div>
+    {% endfor %}
+    <p class="quota-note">Aktarılan haklar kendi bakiyenden düşer. İşlem geri alınamaz.</p>
+    <button type="submit" class="btn btn-theme-primary"><i class="bi bi-arrow-right" aria-hidden="true"></i> Aktar</button>
+  </form>
+  <section class="quota-history" aria-labelledby="quota-history-title">
+    <h2 id="quota-history-title">Son aktarımlar</h2>
+    <ul>
+      {% for transfer in transfers %}
+      <li>
+        <span>{% if transfer.sender_id == request.user.pk %}<i class="bi bi-arrow-up-right" aria-hidden="true"></i> {{ transfer.recipient.username }} <small>Gönderilen</small>{% else %}<i class="bi bi-arrow-down-left" aria-hidden="true"></i> {{ transfer.sender.username }} <small>Gelen</small>{% endif %}</span>
+        <time>{{ transfer.created_at|date:"d.m.Y H:i" }}</time>
+        <strong>{% if transfer.sender_id == request.user.pk %}−{% else %}+{% endif %}{{ transfer.amount }}</strong>
+      </li>
+      {% empty %}<li>Henüz aktarım yok.</li>{% endfor %}
+    </ul>
+  </section>
+</main>
+{% endblock %}

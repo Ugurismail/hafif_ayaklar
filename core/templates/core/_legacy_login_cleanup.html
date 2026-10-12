@@ -1,0 +1,11 @@
+<script>
+(function () {
+    // Remove obsolete plaintext credentials without reading or transmitting them.
+    try {
+        window.localStorage.removeItem('savedPassword');
+        window.localStorage.removeItem('savedUsername');
+    } catch (error) {
+        // Storage can be disabled; login must still work.
+    }
+})();
+</script>

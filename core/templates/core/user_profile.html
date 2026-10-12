@@ -222,6 +222,7 @@
             <p>Gönderilen Davetiye Sayısı: {{ total_invitations }}</p>
             <p>Kullanılan Davetiye Sayısı: {{ used_invitations }}</p>
             <p>Kalan Davetiye Sayısı: {{ remaining_invitations }}</p>
+            <p><a href="{% url 'invitation_transfer' %}" class="btn btn-theme-secondary btn-sm"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Davet hakkı aktar</a></p>
             {% if remaining_invitations > 0 %}
               <form action="?tab=davetler" method="post" class="mb-3">
                 {% csrf_token %}

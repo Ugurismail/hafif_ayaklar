@@ -280,11 +280,9 @@
 
         textarea.addEventListener('focus', function() {
             let base = parseInt(this.dataset.initialHeight) || 40;
-            this.style.height = (base * 3) + "px";  // İstediğin oranı burada değiştir
-        });
-        textarea.addEventListener('blur', function() {
-            this.style.height = this.dataset.initialHeight + "px";
-        });
+            this.style.height = Math.max(this.offsetHeight, base * 3) + "px";
+        }, { once: true });
+        // Keep the editor stable while focus moves to save/preview controls.
     });
 });
 

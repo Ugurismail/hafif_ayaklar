@@ -12,7 +12,7 @@ Message-related views
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.db.models import Q, Count
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -21,7 +21,7 @@ from django.views.decorators.cache import cache_control
 
 from ..models import Message, Answer
 from ..forms import MessageForm
-from ..querysets import get_today_questions_queryset
+from ..left_frame import left_frame_context
 
 
 @login_required
@@ -42,7 +42,7 @@ def message_list(request):
         messages_with_user = messages.filter(
             Q(sender=other_user, recipient=request.user) |
             Q(sender=request.user, recipient=other_user)
-        ).order_by('-timestamp')
+        ).order_by('-timestamp', '-pk')
 
         unread_count = messages_with_user.filter(
             sender=other_user,
@@ -69,40 +69,24 @@ def message_list(request):
     page_number = request.GET.get('message_page', 1)
     page_obj = paginator.get_page(page_number)
 
-    all_questions = get_today_questions_queryset().annotate(
-        answers_count=Count('answers')
-    )
-
-    # Get show_followed_only parameter for the filter icon
-    show_followed_only = request.GET.get('followed', '0') == '1'
-
     context = {
         'page_obj': page_obj,
-        'all_questions': all_questions,
-        'show_followed_only': show_followed_only,
+        **left_frame_context(request, 'page'),
     }
     return render(request, 'core/message_list.html', context)
 
 
 @login_required
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def message_detail(request, username):
-    from ..models import Notification
-
     other_user = get_object_or_404(User, username=username)
     Message.objects.filter(sender=other_user, recipient=request.user, is_read=False).update(is_read=True)
-
-    # Mark message notifications from this user as read
-    Notification.objects.filter(
-        recipient=request.user,
-        sender=other_user,
-        is_read=False
-    ).update(is_read=True)
 
     # Mesajları doğru şekilde sıralayın: en eski önce, en yeni sonra
     conversation_messages = Message.objects.filter(
         Q(sender=request.user, recipient=other_user) |
         Q(sender=other_user, recipient=request.user)
-    ).order_by('timestamp')  # 'timestamp' alanına göre artan sırada
+    ).order_by('timestamp', 'pk')
 
     if request.method == 'POST':
         body = request.POST.get('body', '').strip()
@@ -141,16 +125,10 @@ def message_detail(request, username):
         # Diğer kullanıcının mesajlarını okunmuş olarak işaretlemek isteğe bağlıdır
         Message.objects.filter(sender=other_user, recipient=request.user).update(is_read=True)
         return redirect('message_detail', username=username)
-    all_questions = get_today_questions_queryset()
-
-    # Get show_followed_only parameter for the filter icon
-    show_followed_only = request.GET.get('followed', '0') == '1'
-
     context = {
         'other_user': other_user,
         'conversation_messages': conversation_messages,
-        'all_questions': all_questions,
-        'show_followed_only': show_followed_only,
+        **left_frame_context(request, 'page'),
     }
     return render(request, 'core/message_detail.html', context)
 

@@ -5,6 +5,7 @@
 {% block content %}
 <h2>Davet Et</h2>
 <p>Mevcut Davet Hakkı: {{ invitation_quota }}</p>
+<p><a href="{% url 'invitation_transfer' %}">Davet hakkı aktar</a></p>
 
 {% if invitation_code %}
     <p><strong>Davet kodunuz:</strong> {% include 'core/_invitation_code.html' with code=invitation_code %}</p>

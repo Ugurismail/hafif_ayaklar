@@ -33,6 +33,21 @@ class Invitation(models.Model):
     def __str__(self):
         return f"Invitation from {self.sender.username if self.sender else 'System'}"
 
+
+class InvitationTransfer(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invitation_transfers_sent')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invitation_transfers_received')
+    amount = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at', '-id']
+        constraints = [
+            models.CheckConstraint(check=models.Q(amount__gte=1), name='invitation_transfer_positive'),
+            models.CheckConstraint(check=~models.Q(sender=models.F('recipient')), name='invitation_transfer_other_user'),
+        ]
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     invitation_quota = models.PositiveIntegerField(default=0)
@@ -1032,18 +1047,21 @@ class HashtagUsage(models.Model):
 
 # ========== SIGNALS FOR MENTIONS AND HASHTAGS ==========
 
+class LoginRateLimitBucket(models.Model):
+    # HMAC identities, never raw IPs, usernames or passwords.
+    key = models.CharField(max_length=64, primary_key=True)
+    attempts = models.PositiveIntegerField(default=0)
+    expires_at = models.DateTimeField(db_index=True)
+
+
 @receiver(post_save, sender=Answer)
-def process_answer_mentions_and_hashtags(sender, instance, created, **kwargs):
+def process_answer_mentions_and_hashtags(sender, instance, created, raw=False, **kwargs):
     """
     Process mentions and hashtags when an answer is created or updated
     """
-    from .utils import extract_mentions, send_mention_notifications, process_hashtags
-
-    if created:
-        # Extract and send mention notifications
-        mentioned_usernames = extract_mentions(instance.answer_text)
-        if mentioned_usernames:
-            send_mention_notifications(instance, mentioned_usernames)
+    from .utils import process_hashtags
+    if raw:
+        return
 
     # Process hashtags (both create and update)
     process_hashtags(answer=instance)
@@ -1240,12 +1258,13 @@ class Notification(models.Model):
         )
 
     @classmethod
-    def create_new_subquestion_notification(cls, recipient, subquestion, parent_question):
+    def create_new_subquestion_notification(cls, recipient, subquestion, parent_question, actor=None):
         """Create notification for new subquestion to followed question"""
-        message = f"{subquestion.user.username} takip ettiğin başlığa alt soru ekledi: {subquestion.question_text}"
+        actor = actor or subquestion.user
+        message = f"{actor.username} takip ettiğin başlığa alt soru ekledi: {subquestion.question_text}"
         return cls.objects.create(
             recipient=recipient,
-            sender=subquestion.user,
+            sender=actor,
             notification_type='new_subquestion',
             message=message,
             related_question=subquestion
@@ -1404,8 +1423,10 @@ class Notification(models.Model):
 # ========== SIGNALS FOR FOLLOW NOTIFICATIONS ==========
 
 @receiver(post_save, sender=Answer)
-def notify_question_followers_on_new_answer(sender, instance, created, **kwargs):
+def notify_question_followers_on_new_answer(sender, instance, created, raw=False, **kwargs):
     """Notify followers when a new answer is added to a question they follow"""
+    if raw:
+        return
     if created:
         # Get all users following this question
         followers = QuestionFollow.objects.filter(
@@ -1418,7 +1439,7 @@ def notify_question_followers_on_new_answer(sender, instance, created, **kwargs)
                 recipient=follow.user,
                 answer=instance
             )
-    else:
+    elif getattr(instance, '_notification_content_changed', False):
         # Answer was updated - notify answer followers
         followers = AnswerFollow.objects.filter(
             answer=instance
@@ -1432,9 +1453,9 @@ def notify_question_followers_on_new_answer(sender, instance, created, **kwargs)
 
 
 @receiver(post_save, sender=Question)
-def notify_question_followers_on_update(sender, instance, created, **kwargs):
+def notify_question_followers_on_update(sender, instance, created, raw=False, **kwargs):
     """Notify followers when a question is updated"""
-    if not created:
+    if not raw and not created and getattr(instance, '_notification_content_changed', False):
         # Question was updated
         followers = QuestionFollow.objects.filter(
             question=instance

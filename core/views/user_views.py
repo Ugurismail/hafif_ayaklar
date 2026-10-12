@@ -24,11 +24,13 @@ from django.contrib.auth.models import User
 from django.contrib.auth.views import redirect_to_login
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db import transaction
 from django.db.models import Q, Count, Sum
 from django.db.models.functions import Lower
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 
 from ..models import (
     Invitation, UserProfile, Question, Answer,
@@ -599,24 +601,29 @@ def user_list(request):
 
 
 @login_required
+@require_POST
 def follow_user(request, username):
     from ..models import Notification
 
-    target_user = get_object_or_404(User, username=username)
+    target_user = get_object_or_404(User, username=username, is_active=True)
+    if target_user.pk == request.user.pk:
+        return HttpResponseForbidden()
     user_profile = request.user.userprofile
     target_profile = target_user.userprofile
-    user_profile.following.add(target_profile)
-
-    # Create notification for the followed user
-    Notification.create_new_follower_notification(
-        recipient=target_user,
-        follower=request.user
-    )
+    with transaction.atomic():
+        _, created = UserProfile.following.through.objects.get_or_create(
+            from_userprofile_id=user_profile.pk, to_userprofile_id=target_profile.pk,
+        )
+        if created:
+            Notification.create_new_follower_notification(
+                recipient=target_user, follower=request.user,
+            )
 
     return redirect('user_profile', username=username)
 
 
 @login_required
+@require_POST
 def unfollow_user(request, username):
     target_user = get_object_or_404(User, username=username)
     user_profile = request.user.userprofile

@@ -6,6 +6,7 @@ from .views.answer_profile_views import get_root_questions, get_user_answers
 from .views.answer_revision_views import answer_git_history, answer_live_preview, answer_revision_approve, answer_revision_reject, answer_suggest_edit, answer_suggestion_accept, answer_suggestion_detail, answer_suggestion_reject, correction_inbox
 from .views.attendance_views import attendance_day_state, attendance_leave_range, attendance_save_state, attendance_sheet_tool
 from .views.auth_views import create_invitation, send_invitation, signup, user_login, user_logout
+from .views.invitation_transfer_views import invitation_transfer
 from .views.collection_views import create_saved_collection, delete_saved_collection, saved_collections_home, saved_item_collection_options, update_saved_item_collections
 from .views.definition_reference_views import create_definition, create_reference, delete_definition, delete_reference, edit_definition, edit_reference, get_all_definitions, get_references, get_user_definitions, reference_usage_data
 from .views.delphoi_views import delphoi_home, delphoi_result
@@ -162,6 +163,7 @@ urlpatterns = [
     path('users/', user_list, name='user_list'),
     path('create_invitation/', create_invitation, name='create_invitation'),
     path('send-invitation/', send_invitation, name='send_invitation'),
+    path('invitations/transfer/', invitation_transfer, name='invitation_transfer'),
 
     path('password_change/', auth_views.PasswordChangeView.as_view(template_name='core/password_change.html'), name='password_change'),
     path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(template_name='core/password_change_done.html'), name='password_change_done'),

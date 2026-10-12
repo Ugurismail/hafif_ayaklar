@@ -9,10 +9,16 @@ Authentication and invitation views
 
 import uuid
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.cache import never_cache
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.decorators.http import require_http_methods, require_POST
 
 from ..models import Invitation, UserProfile
 from ..forms import SignupForm, LoginForm, InvitationForm
@@ -80,14 +86,20 @@ def signup(request):
     return render(request, 'core/signup.html', {'form': form})
 
 
+@sensitive_post_parameters('password')
+@never_cache
+@require_http_methods(['GET', 'POST'])
 def user_login(request):
+    next_url = request.POST.get('next', request.GET.get('next', '')).strip()
+    if not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
+    ):
+        next_url = reverse('user_homepage')
+    remember_me = bool(request.POST.get('remember_me'))
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
-
-            # "Beni hatırla" checkbox'ını kontrol et
-            remember_me = request.POST.get('remember_me')
 
             login(request, user)
 
@@ -97,14 +109,18 @@ def user_login(request):
             else:
                 request.session.set_expiry(1209600)  # 2 hafta (14 gün)
 
-            return redirect('user_homepage')
+            return HttpResponseRedirect(next_url)
         else:
             messages.error(request, "Kullanıcı adı veya şifre hatalı.")
     else:
-        form = LoginForm()
-    return render(request, 'core/login.html', {'form': form})
+        form = LoginForm(request)
+    return render(request, 'core/login.html', {
+        'form': form, 'next': next_url, 'remember_me': remember_me,
+    })
 
 
+@never_cache
+@require_POST
 def user_logout(request):
     logout(request)
     return redirect('user_homepage')

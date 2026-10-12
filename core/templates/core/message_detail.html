@@ -1,27 +1,17 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/messages.css' %}?v={{ STATIC_ASSET_VERSION }}-1">{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-2">
-            {% include 'core/_left_quick_actions.html' %}
-            <ul class="list-unstyled" id="questions-list">
-                {% for question in all_questions %}
-                <li class="tbas-color d-flex justify-content-between align-items-center mt-2 baslik">
-                    <a href="{% url 'question_detail' question.slug %}"
-                      class="tbas-color text-decoration-none d-flex justify-content-between align-items-center w-100">
-                        <span>{{ question.question_text }}</span>
-                        <small class="text-muted ms-2" style="min-width: 20px; text-align: right;">{{ question.answers_count }}</small>
-                    </a>
-                </li>
-                {% endfor %}
-            </ul>
-            {% include 'core/pagination.html' with page_obj=all_questions page_param='page' %}
-        </div>
-        <div class="col-md-10">
-            <h2>{{ other_user.username }} ile Mesajlaşma</h2>
-            <div class="card mt-3" style="height: 70vh; display: flex; flex-direction: column; border: none;">
+<div class="container message-page">
+    <div class="message-layout">
+        {% include 'core/_message_sidebar.html' %}
+        <main class="message-main">
+            <header class="message-heading">
+                <a href="{% url 'message_list' %}" class="message-back" title="Mesajlara dön" aria-label="Mesajlara dön"><i class="bi bi-arrow-left" aria-hidden="true"></i></a>
+                <h2>{{ other_user.username }}</h2>
+            </header>
+            <div class="message-conversation">
         
                 <!-- Mesajlar Alanı -->
                 <div class="chat-messages flex-grow-1" id="chat-container">
@@ -54,16 +44,16 @@
         
                 <!-- Mesaj Gönderme Formu -->
                 <div class="">
-                    <form method="post" class="m-0">
+                    <form method="post" class="m-0 message-compose">
                         {% csrf_token %}
                         <div class="input-group">
-                            <textarea name="body" class="form-control message-input" placeholder="Mesajınızı yazın... Tab'a bastıktan sonra Enter tuşuna basarak da mesajınızı gönderebilirsiniz." rows="1" required></textarea>
+                            <textarea name="body" class="form-control message-input" placeholder="Mesajınızı yazın…" aria-label="Mesajınız" maxlength="5000" rows="2" required></textarea>
                             <button type="submit" class="btn btn-theme-primary ">Gönder</button>
                         </div>
                     </form>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
 </div>
@@ -72,9 +62,7 @@
 {% block extra_js %}
 <script>
     window.addEventListener('load', function() {
-        console.log('Scrolling...');
         var chatContainer = document.getElementById('chat-container');
-        console.log('scrollHeight:', chatContainer ? chatContainer.scrollHeight : 'No container');
         if (chatContainer) {
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }

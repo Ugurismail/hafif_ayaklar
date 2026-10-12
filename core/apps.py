@@ -17,3 +17,4 @@ class CoreConfig(AppConfig):
         # Varsayılan username alanındaki tüm doğrulayıcıları bu doğrulayıcı ile değiştiriyoruz.
         User._meta.get_field('username').validators = [custom_validator]
         import core.signals
+        import core.login_rate_limit  # Register deployment checks.

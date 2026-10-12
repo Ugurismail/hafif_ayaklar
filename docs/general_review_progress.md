@@ -462,3 +462,114 @@ SEO kaynaklari:
   collectstatic --noinput, check ve PythonAnywhere Web Reload.
 - 0064 migration yeni bildirim gecmisini olusturur; eski entryler icin geriye
   donuk bildirim gonderilmez. Uzak canli uygulama testleri yayin sonrasi yapilir.
+
+## Oturum Guvenligi: 2026-09-20
+
+- Yanit eylemleri 48a9566 main'e pushlandi; uzak ref dogrulandi. Kullaniciya
+  pull/collectstatic/check/Web Reload komutlari verildi. Canli deploy teyidi
+  henuz alinmadi. Bu not onceki bolumun yerel/pushlanmadi durumunu gunceller.
+- codex/oturum-guvenligi main 48a9566 uzerinden acildi. SEC-07 incelemesinde
+  daha acil yeni SEC-10 bulundu: login.html remember-me ile parolayi acik
+  localStorage'a yaziyordu. Bu riskin kod kaniti var; sizinti kaniti yok.
+- Parola saklama kaldirildi, eski iki anahtar paylasilan sayfalarda okunmadan
+  siliniyor. Oturum suresi korunuyor. SEC-08 icin POST+CSRF cikis, guvenli
+  next donusu, no-store ve hassas parola alani isaretlemesi tamamlandi.
+- 680 Django testi: 675 basarili, 5 SQLite concurrency atlamasi (18.652s).
+  11 Node testi ve Chrome 1440/390px gercek yerel giris/cikis kontrolleri gecti.
+  Migration ve bagimlilik degisikligi yok. Ayrintilar auth_session_security.md.
+- Oturum paketi henuz main'e alinmadi/pushlanmadi. SEC-07 hiz siniri ve SEC-02
+  Django gecisi acik. Paylasimli sayac ve guvenilir istemci IP siniri
+  dogrulanmadan LocMemCache tabanli koruma tamamlandi diye sunulmayacak.
+
+## Oturum Guvenliginin Guncel Main'e Uyarlanmasi: 2026-09-28
+
+- b30a8ae main uzerinden codex/oturum-guvenligi-guncel acildi. Eski 5b4fad9
+  yamasi tek tek incelenip uygulandi; sonraki tema, tarih ve bildirim
+  degisiklikleri korundu. Rapor catismasinda iki donemin kayitlari da tutuldu.
+- Duz metin sifre saklama kaldirildi; eski iki localStorage anahtari okunmadan
+  silinir. Beni hatirla oturum suresini belirlemeye devam eder. Cikis POST+CSRF,
+  giris donusu guvenli ayni-host URL, giris/cikis yanitlari no-store.
+- 15 odakli Django ve 13 Node testi gecti. Genel suite: 750 test,
+  745 basarili, 5 mevcut SQLite satir kilidi atlamasi, 19.461 saniye.
+- Izole yerel DB ve sentetik hesapla tarayicida giris/donus/cikis/korumali
+  sayfa kontrolu gecti. Migration/paket/uretim ayari degisikligi yok.
+- Durum: yerelde dogrulandi, main/push/canli yayin YOK. SEC-08 ve SEC-10
+  canlida kapanmis sayilmaz; yayin onayi ve deploy sonrasi kontrol gerekiyor.
+- Sonraki is SEC-07: WSGI worker'lari arasinda paylasilan hiz siniri ve
+  guvenilir istemci IP tespiti. SEC-02 Django gecisi ayrica acik.
+
+## Giris Hiz Siniri: 2026-10-07
+
+- Ayni codex/oturum-guvenligi-guncel dalinda normal/admin girislerine ortak,
+  MySQL satir kilitli deneme sayaci eklendi. IP/subnet basina 60, hesap+IP
+  basina 10 deneme/5 dakika. Genel hesap kilidi yok; reddedilen istekler sureyi
+  uzatmaz. 429/Retry-After, hata halinde 503 ve Turkce bekleme ekrani var.
+- CSRF kontrolunden sonra, sifre dogrulamadan once calisir. Raw sifre/kullanici
+  adi/IP saklanmaz; HMAC anahtar kullanilir. 0065 migration ve suresi dolmus
+  sayaclari temizleyen komut eklendi. Uretim bagimliliklari degismedi.
+- PythonAnywhere X-Real-IP ve dogrulanmis Cloudflare IP aglari desteklenir;
+  istemcinin X-Forwarded-For basligina guvenilmez. Cloudflare proxy ayari icin
+  kullanicidan yanit bekleniyor. Dogrulama olmadan deploy yapilmayacak.
+- Ilk MySQL paralel testinde sayac olusturma kilit cakismasi yakalandi ve
+  duzeltildi. MySQL 8.0.46/PyMySQL test ortaminda 37 test, sifir atlama;
+  yeni/mevcut/suresi dolmus sayacta 8 baglantidan yalniz izinli 3'u geciyor.
+- Genel SQLite suite: 772 test, 766 basarili, 6 row-lock atlamasi; 22.628 s.
+  Tarayicida gercek form POST'u ile 429 mesaji/donus akisi kontrol edildi.
+- Yerel uygulama DB'sine veya canliya migration uygulanmadi. Main/push yok.
+  SEC-07 uretimde tamamlandi sayilmaz. Devreye alma/temizlik ve sinirlar:
+  login_rate_limit.md. Siradaki kapilar: Cloudflare teyidi ve yayin onayi.
+
+## Mesajlasma, Bildirim ve Davet Aktarimi: 2026-10-12
+
+- Kullanici talebi: mesaj ekraninin sol paneli, eksik bildirimlerin kontrolu
+  ve kullanicilarin kendi davet haklarini birbirine aktarabilmesi.
+- Mesaj listesi/detayi artik ortak left_frame_context ve ortak baslik listesi
+  kullaniyor. Eksik CSS, tarih/takip baglantilari ve sinirsiz sol liste
+  giderildi. Mobilde sohbet once, baslik paneli sonra; uzun adlar sariliyor.
+- Sohbet acmak ayni kisinin diger bildirimlerini de okundu yapiyordu; artik
+  yalniz ilgili mesajlar okunur. Navbar cache hit durumunda mesaj sayaci da
+  veritabanindan tazelenir; bildirim sayaci ile birbirine karistirilmaz.
+- Bahsetmeler save akisinda merkezilestirildi. Kullanici adi harf farkindan
+  kaynakli eksik bildirim, form+signal cift bildirimi ve revizyon yollarinda
+  eksik bahsetme giderildi. Degismeyen bahsetme yeniden gonderilmez.
+- Yeni QuestionRelationship olusturulunca ust basligi takip edenlere alt
+  baslik bildirimi gider; gonderen baglantiyi ekleyen kisidir. Baslik/entry
+  guncellemesi yalniz icerik degisince bildirilir, oy/sabitleme metadata'si
+  yanlis guncelleme bildirimi uretmez. Kullanici takip/birakma POST+CSRF;
+  tekrar takip ayni bildirimi cogaltmaz, kendini takip engellendi.
+- Oy/kaydet bildirimlerinde sessiz except/pass kaldirildi. Bildirim ve
+  eylem ayni transaction'da: bildirim yazilamazsa eylem de geri alinir.
+- Davetler sekmesinde aktarim baglantisi, alici+adet formu ve taraflara ozel
+  son 30 aktarim gecmisi eklendi. 0066 yeni ledger tablosu. Atomik borclandirma
+  ve alacaklandirma, sabit sirali profil kilitleri, imzali kullaniciya bagli
+  1 saatlik islem kimligi, tekrar gonderime karsi koruma, pozitif miktar ve
+  tavan kontrolu var. Kendine/pasif hesaba/eksik bakiyeyle aktarim reddedilir.
+  Aliciya site ici bildirim gider. Yeni hak uretilmez; aktarim geri alinamaz.
+- Test: 796 Django testi, 786 basarili, SQLite'a ozgu 10 atlama (24.386s).
+  Gecici MySQL 8.0.46/PyMySQL ortaminda 67 odakli testin tamami gecti
+  (4.689s, atlama yok): paralel aktarim, tekrar token, ters yonlu aktarim,
+  davetiye olusturmayla yarisan bakiye ve giris sayaclari dahil.
+  Bilinen mysql.W003 slug uzunlugu uyarisi ayri inceleme konusu olarak suruyor.
+- Referans, duzeltme onerisi/sonucu ve aliskanlik hatirlatma testleri genel
+  suite icinde gecti. Bu kontrol site ici bildirimler icindir; e-posta/push
+  teslim garantisi veya gecmis kayip bildirimleri yeniden gonderme yoktur.
+- Tarayici: izole sentetik DB ile 1280px ve 390px mesaj/davet ekranlari,
+  sohbet acinca zilin korunmasi ve gercek CSRF'li aktarim POST'u dogrulandi.
+  Mobil yatay tasma yok. makemigrations --check ve git diff --check temiz.
+- Dal: codex/oturum-guvenligi-guncel. Main/push/canli yayin YOK.
+  Bu not onceki oturum ve hiz siniri paketlerinin yayin engellerini kaldirmaz:
+  Cloudflare/IP teyidi halen bekleniyor. Canli DB/hesaplar degistirilmedi.
+
+## Kenarda Dursun Ilk Tiklama: 2026-10-12
+
+- single_answer ve edit_answer sablonlarinda textarea blur olunca baslangic
+  yuksekligine donuyordu. Bu, fare dugmeye basarken form eylemlerini kaydirip
+  ilk tiklamanin kaybolmasina neden olabiliyordu.
+- Blur'da kucultme kaldirildi. Ilk focus'ta buyume bir kez uygulanir; zaten
+  buyuk alan kucultulmez, sonraki focus elle ayarlanan boyutu bozmaz.
+  Taslak endpoint'i ve yayinlama davranisi degistirilmedi.
+- Gercek tarayicida her iki ekranda uzun metin ve tek Kenarda Dursun
+  tiklamasi: basari bildirimi, kayitli taslak ve 324px -> 324px alan boyutu
+  dogrulandi. Mevcut yayinlanmis entry degismedi (yalniz sentetik test DB).
+- 6 yeni regresyon testi dahil 27 Node testi ve 7 odakli Django taslak/eylem
+  testi gecti. git diff --check temiz. Main/push/canli yayin yok.

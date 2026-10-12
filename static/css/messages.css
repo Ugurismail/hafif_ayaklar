@@ -1,0 +1,31 @@
+.message-page { margin-top: 28px; margin-bottom: 32px; }
+.message-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 28px; align-items: start; }
+.message-sidebar { display: flex; flex-direction: column; min-width: 0; max-height: calc(100dvh - 150px); padding-right: 20px; border-right: 1px solid color-mix(in srgb, var(--text-color) 16%, transparent); position: sticky; top: 20px; }
+.message-sidebar-list { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.message-sidebar .left-question-link { font-size: 16px; line-height: 1.45; }
+.message-main { min-width: 0; }
+.message-main h2 { font-size: 26px; line-height: 1.3; margin: 0 0 20px; overflow-wrap: anywhere; }
+.message-heading { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+.message-heading h2 { margin: 0; }
+.message-back { display: inline-flex; width: 44px; height: 44px; flex: 0 0 44px; align-items: center; justify-content: center; color: var(--link-color); border-radius: 4px; }
+.message-back:hover { background: var(--hover-background-color); }
+.message-back:focus-visible { outline: 2px solid var(--link-color); }
+.message-conversation { height: min(70dvh, 800px); min-height: 320px; display: flex; flex-direction: column; }
+.message-conversation .chat-messages { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px; }
+.message-conversation .sent-message, .message-conversation .received-message { min-width: 0; overflow-wrap: anywhere; }
+.message-conversation .message-item p { white-space: pre-wrap; }
+.message-compose { padding-top: 12px; border-top: 1px solid color-mix(in srgb, var(--text-color) 16%, transparent); }
+.message-compose textarea { min-height: 60px; max-height: 180px; resize: vertical; }
+.message-main .message-thread-item { gap: 16px; padding: 16px; border-radius: 0; }
+.message-main .message-thread-item > div:first-child, .message-main .message-thread-item > div:first-child > div { min-width: 0; }
+.message-main .message-thread-item img { flex: 0 0 50px; object-fit: cover; }
+.message-main .message-thread-title, .message-main .message-thread-preview { overflow-wrap: anywhere; }
+.message-main .message-thread-timestamp { white-space: nowrap; }
+@media (max-width: 767px) {
+    .message-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    .message-main { order: 0; }
+    .message-sidebar { order: 1; position: static; max-height: 320px; padding: 16px 0 0; border-right: 0; border-top: 1px solid color-mix(in srgb, var(--text-color) 16%, transparent); }
+    .message-main .message-thread-item { flex-wrap: wrap; gap: 8px; }
+    .message-main .message-thread-item > .text-end { width: 100%; display: flex; justify-content: space-between; align-items: center; padding-left: 66px; }
+    .message-conversation { height: 65dvh; }
+}

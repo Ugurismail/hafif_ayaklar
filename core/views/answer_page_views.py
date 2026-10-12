@@ -82,7 +82,6 @@ def expanded_answer_content(request, answer_id):
 def add_answer(request, slug):
     from django.db import transaction
     from ..models import Definition
-    from ..utils import extract_mentions, send_mention_notifications
 
     question = get_object_or_404(Question, slug=slug)
 
@@ -106,10 +105,6 @@ def add_answer(request, slug):
                         answer=None
                     )
 
-            mentioned_usernames = extract_mentions(answer.answer_text)
-            if mentioned_usernames:
-                send_mention_notifications(answer, mentioned_usernames)
-
             Kenarda.objects.filter(user=request.user, question=question, is_sent=False).delete()
             return redirect('single_answer', slug=question.slug, answer_id=answer.id)
     else:
@@ -123,8 +118,6 @@ def add_answer(request, slug):
 
 @login_required
 def edit_answer(request, answer_id):
-    from ..utils import extract_mentions, send_mention_notifications
-
     all_questions = get_today_questions_queryset()
     answer = get_object_or_404(Answer, id=answer_id, user=request.user)
     user_child_ids = QuestionRelationship.objects.filter(
@@ -162,10 +155,6 @@ def edit_answer(request, answer_id):
             )
             if created:
                 updated_answer = revision.answer
-
-            mentioned_usernames = extract_mentions(updated_answer.answer_text)
-            if mentioned_usernames:
-                send_mention_notifications(updated_answer, mentioned_usernames)
 
             if draft_id:
                 try:

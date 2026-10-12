@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.views.decorators.cache import never_cache
 from django.db.models import Q
 
 from ..models import Notification, QuestionFollow, AnswerFollow, Question, Answer
@@ -13,6 +14,7 @@ from ..utils import paginate_queryset
 
 
 @login_required
+@never_cache
 def notification_list(request):
     """
     Display list of notifications for the logged-in user
@@ -25,7 +27,8 @@ def notification_list(request):
         'related_question',
         'related_answer',
         'related_suggestion',
-    )
+        'related_habit',
+    ).order_by('-created_at', '-pk')
 
     # Filter by type if specified
     notification_type = request.GET.get('type', '')
@@ -84,6 +87,7 @@ def mark_all_notifications_read(request):
 
 
 @login_required
+@never_cache
 def get_unread_notification_count(request):
     """
     AJAX endpoint to get unread notification count

@@ -6,6 +6,47 @@ from .models import UserProfile, Answer, Question, QuestionRelationship
 
 
 @receiver(pre_save, sender=Answer)
+@receiver(pre_save, sender=Question)
+def collect_notification_content_changes(sender, instance, raw=False, using='default', update_fields=None, **kwargs):
+    from .utils import extract_mentions
+
+    field = 'answer_text' if sender is Answer else 'question_text'
+    instance._notification_content_changed = False
+    instance._new_mention_usernames = set()
+    if raw or field not in instance.__dict__ or (update_fields is not None and field not in update_fields):
+        return
+    text = instance.__dict__[field]
+    previous = ''
+    if instance.pk:
+        previous = sender.objects.using(using).filter(pk=instance.pk).values_list(field, flat=True).first() or ''
+    instance._notification_content_changed = text != previous
+    if sender is Answer and text != previous:
+        instance._new_mention_usernames = set(extract_mentions(text)) - set(extract_mentions(previous))
+
+
+@receiver(post_save, sender=Answer)
+def send_new_mentions(sender, instance, raw=False, **kwargs):
+    from .utils import send_mention_notifications
+
+    usernames = instance.__dict__.pop('_new_mention_usernames', set())
+    if not raw and usernames:
+        send_mention_notifications(instance, usernames)
+
+
+@receiver(post_save, sender=QuestionRelationship)
+def notify_new_subquestion(sender, instance, created, raw=False, **kwargs):
+    from .models import Notification, QuestionFollow
+
+    if not created or raw:
+        return
+    followers = QuestionFollow.objects.filter(question_id=instance.parent_id).exclude(user_id=instance.user_id).select_related('user')
+    for follow in followers:
+        Notification.create_new_subquestion_notification(
+            follow.user, instance.child, instance.parent, actor=instance.user,
+        )
+
+
+@receiver(pre_save, sender=Answer)
 def collect_new_entry_references(sender, instance, raw=False, using='default', update_fields=None, **kwargs):
     from .entry_references import published_entry_reference_ids, referenced_entry_ids
 

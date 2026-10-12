@@ -67,11 +67,11 @@ class LoginForm(AuthenticationForm):
         max_length=254,
         required=True,
         label='Kullanıcı Adı',
-        widget=forms.TextInput(attrs={'class': 'form-control'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'username'})
     )
     password = forms.CharField(
         label='Şifre',
-        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'autocomplete': 'current-password'})
     )
 
 class InvitationForm(forms.ModelForm):

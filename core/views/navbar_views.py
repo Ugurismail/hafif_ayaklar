@@ -23,7 +23,8 @@ def navbar_status(request):
     cached_status = cache.get(cache_key)
     if cached_status is not None:
         notification_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
-        return JsonResponse({**cached_status, 'notification_count': notification_count})
+        message_count = Message.objects.filter(recipient=request.user, is_read=False).count()
+        return JsonResponse({**cached_status, 'notification_count': notification_count, 'message_count': message_count})
 
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     now = timezone.now()

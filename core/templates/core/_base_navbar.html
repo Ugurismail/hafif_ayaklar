@@ -133,9 +133,12 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'logout' %}" title="Çıkış">
-                                    <i class="bi bi-box-arrow-right"></i> Çıkış Yap
-                                </a>
+                                <form method="post" action="{% url 'logout' %}" class="m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item" title="Çıkış">
+                                        <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                                    </button>
+                                </form>
                             </li>
                         </ul>
                     </li>
@@ -154,10 +157,13 @@
                                 <i class="bi bi-gear"></i>
                                 <span class="ms-1">Renk Ayarları</span>
                             </a>
-                            <a class="nav-link mobile-logout-link" href="{% url 'logout' %}" title="Çıkış Yap">
-                                <i class="bi bi-box-arrow-right"></i>
-                                <span class="ms-1">Çıkış Yap</span>
-                            </a>
+                            <form method="post" action="{% url 'logout' %}" class="m-0">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link mobile-logout-link w-100" title="Çıkış Yap">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    <span class="ms-1">Çıkış Yap</span>
+                                </button>
+                            </form>
                         </div>
                     </li>
                     <li class="nav-item d-lg-none mobile-accordion-item">

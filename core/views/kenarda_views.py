@@ -252,12 +252,6 @@ def kenarda_gonder(request, pk):
                 user=request.user
             )
 
-        # Mention bildirimleri gönder
-        from ..utils import extract_mentions, send_mention_notifications
-        mentioned_usernames = extract_mentions(answer.answer_text)
-        if mentioned_usernames:
-            send_mention_notifications(answer, mentioned_usernames)
-
         question_slug = taslak.question.slug
         answer_id = answer.id
         taslak.delete()
