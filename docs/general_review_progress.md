@@ -674,3 +674,16 @@ SEO kaynaklari:
   testi atlandi (21.178s). Migration model uyumu ve diff kontrolu temiz.
 - Yeni migration veya paket yok. Canli yayin icin pull, collectstatic,
   check ve Web Reload yeterli (0067 onceki surumde uygulanmis olmali).
+
+## Yayin ve Bekleyen Is Envanteri: 2026-10-13
+
+- Davet listesi/toplam hak duzeltmesi `719eac7` ile main'e pushlandi;
+  uzak ref dogrulandi. Canli PythonAnywhere deploy'u bu turda yapilmadi.
+- Iki ayri Git deposunun dallari, dort mevcut calisma alani ve tarihsel rapor
+  karsilastirildi. Ayrintili guncel envanter: `pending_work_2026-10-13.md`.
+- Eski arama yamasi esdeger; eski oturum yamasi uyarlanarak zaten main'de.
+  Giris siniri ise bilerek geri alinmis durumda. Git ancestor/merge bilgisi
+  tek basina ozelligin etkin oldugunu kanitlamiyor.
+- Diyagram/harita/guvenlik alanlarindaki commit edilmemis calismalara
+  dokunulmadi. Mantik ek incelemesi ve iki deneysel insanlar/degerlendirme
+  dali korunuyor. Toplu merge, branch silme veya worktree prune yapilmadi.
