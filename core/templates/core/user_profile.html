@@ -240,7 +240,7 @@
                 <tr>
                   <th>Kod</th>
                   <th>Gönderildiği Tarih</th>
-                  <th>Verilen Kota</th>
+                  <th>Verilen toplam</th>
                   <th>Durum</th>
                   <th>Kullanan Kullanıcı</th>
                 </tr>
@@ -250,7 +250,7 @@
                   <tr>
                     <td>{% if invite.cancelled_at %}<span class="invitation-code-value">{{ invite.code }}</span>{% else %}{% include 'core/_invitation_code.html' with code=invite.code %}{% endif %}</td>
                     <td>{{ invite.created_at|date:"d M Y H:i" }}</td>
-                    <td>{{ invite.quota_granted }}</td>
+                    <td title="İlk davet: {{ invite.quota_granted }} · Ek hak: {{ invite.extra_quota_granted }}">{{ invite.total_quota_granted }}</td>
                     <td>
                       {% if invite.cancelled_at %}İptal edildi
                       {% elif invite.is_used %}Kullanıldı
@@ -266,7 +266,7 @@
                     {% else %}-{% endif %}</td>
                   </tr>
                 {% empty %}
-                  <tr><td colspan="5">Henüz davetiye gönderilmedi.</td></tr>
+                  <tr><td colspan="5">Gösterilecek davetiye yok.</td></tr>
                 {% endfor %}
               </tbody>
             </table>

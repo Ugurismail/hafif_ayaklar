@@ -109,11 +109,29 @@ class InvitationCancelTests(TestCase):
         self.assertEqual(len(page.xpath('//a[@title="Daveti iptal et"]')), 1)
         cancel_invitation(self.owner, self.invitation.code)
         response = self.client.get(self.profile_url)
-        self.assertContains(response, 'İptal edildi')
+        self.assertNotContains(response, str(self.invitation.code))
+        self.assertNotContains(response, 'İptal edildi')
+        self.assertEqual(response.context['total_invitations'], 1)
+        self.assertEqual(response.context['used_invitations'], 1)
         self.assertNotContains(response, 'title="Daveti iptal et"')
         self.other.is_active = False
         self.other.save(update_fields=['is_active'])
         self.assertNotContains(self.client.get(self.profile_url), 'title="Ek davet"')
+
+    def test_cancelled_invitation_disappears_but_audit_record_is_preserved(self):
+        response = self.client.post(self.url, follow=True)
+        self.assertNotContains(response, str(self.invitation.code))
+        self.assertContains(response, 'Gösterilecek davetiye yok.')
+        self.assertEqual(list(response.context['invitations']), [])
+        self.assertEqual(response.context['total_invitations'], 0)
+        self.assertEqual(response.context['remaining_invitations'], 5)
+        self.invitation.refresh_from_db()
+        self.assertIsNotNone(self.invitation.cancelled_at)
+        pending = issue_invitation(self.owner, 1)
+        response = self.client.get(self.profile_url)
+        self.assertContains(response, str(pending.code))
+        self.assertNotContains(response, str(self.invitation.code))
+        self.assertEqual(response.context['total_invitations'], 1)
 
 
 class ConcurrentInvitationCancelTests(TransactionTestCase):

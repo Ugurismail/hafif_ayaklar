@@ -33,7 +33,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from ..models import (
-    Invitation, UserProfile, Question, Answer,
+    Invitation, InvitationTransfer, UserProfile, Question, Answer,
     SavedItem, PinnedEntry, Definition, Reference,
     AnswerRevision,
 )
@@ -458,9 +458,18 @@ def user_profile(request, username):
         })
 
     if active_tab == 'davetler' and is_own_profile:
-        invitations = Invitation.objects.filter(sender=request.user).select_related('used_by').order_by('-created_at', '-pk')
-        total_invitations = invitations.count()
-        used_invitations = invitations.filter(is_used=True).count()
+        invitations = list(Invitation.objects.filter(
+            sender=request.user, cancelled_at__isnull=True,
+        ).select_related('used_by').order_by('-created_at', '-pk'))
+        recipient_ids = {invite.used_by_id for invite in invitations if invite.is_used and invite.used_by_id}
+        extra_grants = dict(InvitationTransfer.objects.filter(
+            sender=request.user, recipient_id__in=recipient_ids,
+        ).order_by().values('recipient_id').annotate(total=Sum('amount')).values_list('recipient_id', 'total'))
+        for invite in invitations:
+            invite.extra_quota_granted = extra_grants.get(invite.used_by_id, 0) if invite.is_used else 0
+            invite.total_quota_granted = invite.quota_granted + invite.extra_quota_granted
+        total_invitations = len(invitations)
+        used_invitations = sum(invite.is_used for invite in invitations)
         remaining_invitations = user_profile.invitation_quota
         context.update({
             'invitations': invitations,

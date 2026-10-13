@@ -655,3 +655,22 @@ SEO kaynaklari:
 - PythonAnywhere: git pull --ff-only origin main, dogru virtualenv ile
   manage.py migrate, collectstatic --noinput, check ve Web Reload.
   Yeni paket kurulumu gerekmiyor.
+
+## Davet Listesi ve Toplam Hak: 2026-10-13
+
+- Dal: codex/iptal-davetleri-gizle. Kullanici main'e birlestirme ve push
+  onayi verdi. Canli yayin ayrica PythonAnywhere adimlarini gerektirir.
+- Iptal edilmis davetler profil listesinden ve sayaclarindan cikarilir;
+  denetim kaydi, kullanilamaz kod ve tek seferlik hak iadesi korunur.
+- Verilen toplam sutunu ilk davet kotasina ayni gonderenin ayni aliciya
+  yaptigi ek aktarimlari ekler. Ilk kota degistirilmez; iade/kayit mantigi
+  etkilenmez. Onceki aktarimlar da mevcut islem kayitlarindan hesaplanir.
+- Toplam, alicinin kalan bakiyesi degildir. Baska gonderenlerden gelen,
+  baska alicilara giden veya ters yondeki aktarimlar dahil edilmez.
+  Kullanici adi degisimi hesabi bozmaz. Tekrar POST ve basarisiz aktarim
+  toplami artirmaz. Bekleyen davetlere ek aktarim eklenmez.
+- Aktarimlar tek toplu sorguyla hesaplanir; davet basina sorgu yok.
+- Kontrol: 804 Django testi, 792 basarili; SQLite nedeniyle 12 kilitleme
+  testi atlandi (21.178s). Migration model uyumu ve diff kontrolu temiz.
+- Yeni migration veya paket yok. Canli yayin icin pull, collectstatic,
+  check ve Web Reload yeterli (0067 onceki surumde uygulanmis olmali).

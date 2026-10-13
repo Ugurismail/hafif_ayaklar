@@ -7,8 +7,9 @@ from django.contrib.auth.models import User
 from django.db import close_old_connections, connections
 from django.test import Client, TestCase, TransactionTestCase, skipUnlessDBFeature
 from django.urls import reverse
+from lxml import html
 
-from core.invitations import MAX_INVITATION_GRANT, issue_invitation, transfer_invitation_quota
+from core.invitations import MAX_INVITATION_GRANT, cancel_invitation, issue_invitation, transfer_invitation_quota
 from core.models import Invitation, InvitationTransfer, Notification, UserProfile
 
 
@@ -43,6 +44,59 @@ class InvitationTransferTests(TestCase):
         response = self.client.post(self.url, {**data, 'amount': 1})
         self.assertContains(response, 'farklı bilgilerle')
         self.assertEqual(self.balances(), (3, 2))
+
+    def test_profile_total_includes_transfers_once_without_changing_original_grant(self):
+        invitation = Invitation.objects.create(
+            sender=self.sender, used_by=self.recipient, is_used=True, quota_granted=3,
+        )
+        profile_url = reverse('user_profile', args=[self.sender.username]) + '?tab=davetler'
+        self.assertEqual(self.client.get(profile_url).context['invitations'][0].total_quota_granted, 3)
+        data = self.payload()
+        for _ in range(2):
+            self.assertRedirects(self.client.post(self.url, data), self.url)
+        self.client.post(self.url, self.payload(amount=1))
+        response = self.client.get(profile_url)
+        displayed = response.context['invitations'][0]
+        self.assertEqual((displayed.quota_granted, displayed.extra_quota_granted, displayed.total_quota_granted), (3, 3, 6))
+        row = html.fromstring(response.content).xpath('//table[contains(@class,"invitation-table")]/tbody/tr')[0]
+        self.assertEqual(row.xpath('./td')[2].text_content().strip(), '6')
+        self.assertEqual(row.xpath('./td')[2].get('title'), 'İlk davet: 3 · Ek hak: 3')
+        self.assertEqual(response.context['remaining_invitations'], 2)
+        self.assertEqual(self.balances(), (2, 3))
+        invitation.refresh_from_db()
+        self.assertEqual(invitation.quota_granted, 3)
+
+    def test_profile_total_is_sender_scoped_and_not_recipient_balance(self):
+        Invitation.objects.create(sender=self.sender, used_by=self.recipient, is_used=True, quota_granted=3)
+        third = User.objects.create_user(username='another-grant-sender')
+        UserProfile.objects.filter(user=third).update(invitation_quota=10)
+        transfer_invitation_quota(self.sender, self.recipient, 2, uuid4())
+        transfer_invitation_quota(third, self.recipient, 7, uuid4())
+        transfer_invitation_quota(self.sender, third, 1, uuid4())
+        transfer_invitation_quota(self.recipient, self.sender, 1, uuid4())
+        issue_invitation(self.recipient, 4)
+        self.recipient.username = 'renamed-recipient'
+        self.recipient.save(update_fields=['username'])
+        profile_url = reverse('user_profile', args=[self.sender.username]) + '?tab=davetler'
+        displayed = self.client.get(profile_url).context['invitations'][0]
+        self.assertEqual(displayed.total_quota_granted, 5)
+        self.assertEqual(self.balances(), (3, 4))
+
+    def test_pending_refund_and_failed_transfer_do_not_inflate_displayed_total(self):
+        used = Invitation.objects.create(sender=self.sender, used_by=self.recipient, is_used=True, quota_granted=3)
+        pending = issue_invitation(self.sender, 2)
+        self.client.post(self.url, self.payload(amount=4))
+        self.assertFalse(InvitationTransfer.objects.exists())
+        transfer_invitation_quota(self.sender, self.recipient, 1, uuid4())
+        profile_url = reverse('user_profile', args=[self.sender.username]) + '?tab=davetler'
+        rows = {invite.pk: invite for invite in self.client.get(profile_url).context['invitations']}
+        self.assertEqual(rows[used.pk].total_quota_granted, 4)
+        self.assertEqual(rows[pending.pk].total_quota_granted, 2)
+        cancel_invitation(self.sender, pending.code)
+        response = self.client.get(profile_url)
+        self.assertEqual([invite.pk for invite in response.context['invitations']], [used.pk])
+        self.assertEqual(response.context['invitations'][0].total_quota_granted, 4)
+        self.assertEqual(response.context['remaining_invitations'], 4)
 
     def test_invalid_amount_self_unknown_and_inactive_recipient(self):
         for amount in ['0', '-1', '1.5', '6', str(MAX_INVITATION_GRANT + 1), '']:
