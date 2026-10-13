@@ -25,6 +25,7 @@ class Invitation(models.Model):
     )
     quota_granted = models.PositiveIntegerField(default=0)  # Eklendi
     is_used = models.BooleanField(default=False)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     used_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, related_name='used_invitations', null=True, blank=True

@@ -5,7 +5,7 @@
 <main class="container quota-page">
   <header class="quota-heading">
     <a href="{% url 'user_profile' request.user.username %}?tab=davetler" title="Davetlerim" aria-label="Davetlerime dön"><i class="bi bi-arrow-left" aria-hidden="true"></i></a>
-    <h1>Davet hakkı aktar</h1>
+    <h1>Ek davet</h1>
     <span class="quota-balance">Kalan hakkın <strong>{{ invitation_quota }}</strong></span>
   </header>
   <form method="post" class="quota-form">

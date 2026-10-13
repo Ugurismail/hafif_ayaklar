@@ -46,7 +46,7 @@ def signup(request):
                     invitation = (
                         Invitation.objects
                         .select_for_update()
-                        .get(code=code_uuid, is_used=False)
+                        .get(code=code_uuid, is_used=False, cancelled_at__isnull=True)
                     )
 
                     user = form.save()
@@ -63,7 +63,7 @@ def signup(request):
                     invitation.used_by = user
                     invitation.save(update_fields=['is_used', 'used_by'])
             except Invitation.DoesNotExist:
-                messages.error(request, 'Bu davetiye kodu bu sırada kullanıldı. Lütfen farklı bir davetiye kodu deneyin.')
+                messages.error(request, 'Bu davetiye kodu geçersiz, kullanılmış veya iptal edilmiş. Lütfen farklı bir davetiye kodu deneyin.')
                 return render(request, 'core/signup.html', {'form': form})
 
             login(request, user)

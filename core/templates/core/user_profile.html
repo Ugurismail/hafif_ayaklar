@@ -54,6 +54,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/profile.css' %}?v={{ STATIC_ASSET_VERSION }}-download3">
+<link rel="stylesheet" href="{% static 'css/invitation_transfer.css' %}?v={{ STATIC_ASSET_VERSION }}-2">
 {% endblock %}
 
 {% block content %}
@@ -222,7 +223,6 @@
             <p>Gönderilen Davetiye Sayısı: {{ total_invitations }}</p>
             <p>Kullanılan Davetiye Sayısı: {{ used_invitations }}</p>
             <p>Kalan Davetiye Sayısı: {{ remaining_invitations }}</p>
-            <p><a href="{% url 'invitation_transfer' %}" class="btn btn-theme-secondary btn-sm"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Davet hakkı aktar</a></p>
             {% if remaining_invitations > 0 %}
               <form action="?tab=davetler" method="post" class="mb-3">
                 {% csrf_token %}
@@ -241,18 +241,29 @@
                   <th>Kod</th>
                   <th>Gönderildiği Tarih</th>
                   <th>Verilen Kota</th>
-                  <th>Kullanıldı mı?</th>
+                  <th>Durum</th>
                   <th>Kullanan Kullanıcı</th>
                 </tr>
               </thead>
               <tbody>
                 {% for invite in invitations %}
                   <tr>
-                    <td>{% include 'core/_invitation_code.html' with code=invite.code %}</td>
+                    <td>{% if invite.cancelled_at %}<span class="invitation-code-value">{{ invite.code }}</span>{% else %}{% include 'core/_invitation_code.html' with code=invite.code %}{% endif %}</td>
                     <td>{{ invite.created_at|date:"d M Y H:i" }}</td>
                     <td>{{ invite.quota_granted }}</td>
-                    <td>{% if invite.is_used %}Evet{% else %}Hayır{% endif %}</td>
-                    <td>{% if invite.used_by %}{{ invite.used_by.username }}{% else %}-{% endif %}</td>
+                    <td>
+                      {% if invite.cancelled_at %}İptal edildi
+                      {% elif invite.is_used %}Kullanıldı
+                      {% else %}<span class="invitation-recipient">Bekliyor <a href="{% url 'invitation_cancel' invite.code %}" class="invitation-action" title="Daveti iptal et" aria-label="Daveti iptal et"><i class="bi bi-x-lg" aria-hidden="true"></i></a></span>{% endif %}
+                    </td>
+                    <td>{% if invite.used_by %}
+                      <span class="invitation-recipient">
+                        <span>{{ invite.used_by.username }}</span>
+                        {% if invite.is_used and invite.used_by.is_active %}
+                        <a href="{% url 'invitation_transfer' %}?recipient={{ invite.used_by.username|urlencode }}" class="invitation-action" title="Ek davet" aria-label="{{ invite.used_by.username }} için ek davet"><i class="bi bi-plus-lg" aria-hidden="true"></i></a>
+                        {% endif %}
+                      </span>
+                    {% else %}-{% endif %}</td>
                   </tr>
                 {% empty %}
                   <tr><td colspan="5">Henüz davetiye gönderilmedi.</td></tr>
@@ -440,7 +451,6 @@
                 <h5 class="mb-3">Kelime Arama</h5>
                 <form method="get" action="">
                   <input type="hidden" name="tab" value="kelimeler">
-                  <input type="hidden" name="exclude_words" value="{{ exclude_words }}">
                   <div class="input-group mb-3">
                     <input type="text" name="search_word" class="form-control" placeholder="Aramak istediğiniz kelimeyi girin..." value="{{ search_word }}">
                     <button class="btn btn-theme-primary" type="submit">
@@ -457,6 +467,7 @@
                 <h5 class="mb-3 mt-4">Kelime Çıkar</h5>
                 <form method="get" action="">
                   <input type="hidden" name="tab" value="kelimeler">
+                  <input type="hidden" name="search_word" value="{{ search_word }}">
                   <div class="input-group mb-3">
                     <input type="text" name="exclude_words" class="form-control" placeholder="Virgülle ayırarak birden fazla kelime çıkarabilirsiniz (örn: ve, ama, için)">
                     <button class="btn btn-theme-secondary" type="submit">
@@ -475,7 +486,7 @@
                     {% for word in exclude_words_list %}
                       <span class="badge rounded-pill excluded-word-badge">
                         {{ word }}
-                        <a href="?tab=kelimeler&include_word={{ word }}"
+                        <a href="?tab=kelimeler&include_word={{ word|urlencode }}&search_word={{ search_word|urlencode }}"
                            class="text-decoration-none ms-1"
                            title="Geri Al">
                           <i class="bi bi-x-circle"></i>

@@ -24,3 +24,19 @@
   .quota-history li { flex-wrap: wrap; }
   .quota-history time { order: 3; width: 100%; }
 }
+.invitation-table { width: 100%; min-width: 640px; table-layout: fixed; }
+.invitation-table th { white-space: normal; }
+.invitation-table th:nth-child(1) { width: 32%; }
+.invitation-table th:nth-child(2) { width: 18%; }
+.invitation-table th:nth-child(3) { width: 10%; }
+.invitation-table th:nth-child(4) { width: 16%; }
+.invitation-table th:nth-child(5) { width: 24%; }
+.invitation-table td:nth-child(2) { white-space: normal; }
+.invitation-table .invitation-code { width: 100%; grid-template-columns: minmax(0, 1fr) 32px; }
+.invitation-table .invitation-code-value { white-space: normal; }
+.invitation-recipient { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; }
+.invitation-recipient > span { min-width: 0; overflow-wrap: anywhere; }
+.invitation-action { display: inline-grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color); background: transparent; font-size: 14px; text-decoration: none; }
+.invitation-action:hover, .invitation-action:focus-visible { background: var(--hover-background-color); color: var(--text-color); }
+.invitation-action:focus-visible { outline: 2px solid var(--link-color); outline-offset: 2px; }
+.quota-cancel-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }

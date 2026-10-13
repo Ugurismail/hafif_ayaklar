@@ -619,3 +619,39 @@ SEO kaynaklari:
 - Son yayin agacinda 783 Django testi: 774 basarili, 9 SQLite kilitleme
   atlamasi (21.137s). 27 Node testi gecti. makemigrations --check --dry-run
   ve git diff --check temiz.
+
+## Davet Iptali ve Kelime Analizi: 2026-10-13
+
+- Dal: codex/davet-iptal-kelime-analizi. Kullanici main'e birlestirme ve
+  push icin onay verdi. Canli yayin PythonAnywhere adimlariyla yapilacak.
+- Kullanilmamis davetlerde iptal onayi eklendi. Kayit silinmez;
+  0067_invitation_cancelled_at iptal zamanini saklar. Signup iptal edilen
+  kodlari reddeder. Yalniz daveti olusturan kullanici POST+CSRF ile iptal
+  edebilir; ayirdigi kota bir kez geri verilir. Kullanilmis davetler,
+  tutarsiz used_by kayitlari ve kota tasmasi reddedilir.
+- Signup ile ayni Invitation satir kilidi kullanilir. Paralel iki iptal,
+  iptal/kayit yarisi ve iptal/hak aktarimi test edildi. Basarisiz iptal
+  kaydinda kota iadesi de transaction ile geri alinir.
+- Buyuk aktarim baglantisi kaldirildi. Kullanilan davetin alici adinin
+  yaninda title='Ek davet' ve erisilebilir etiketli + simgesi var;
+  aktarim formu alici adiyla acilir. Mevcut kisisel aktarim gecmisi korunur.
+  Kullanilmamis kodun durum alaninda iptal simgesi; iptal edilen kodda
+  tekrar iptal/kopyala kontrolu yok. Tablo sutunlari daraltildi.
+- Istatistik bulgusu: entry tumden elenmiyordu; haric tutulan kelimenin
+  aramasi hem site hem profil ekraninda 0 donuyordu. Sik kelime listesi
+  filtresi ve tam veri uzerindeki arama sayaci ayrildi. Diger kelimeler,
+  entry/kelime/karakter toplamlari ve ortalamalar haric tutmadan etkilenmez.
+  Turkce I/i ve I-noktali normalizasyonu ortaklastirildi; bosluklu filtreler
+  duzeltildi. Profilde cikarma/geri alma sirasinda arama korunur.
+- Test: 800 Django testi, 788 basarili, 12 SQLite kilitleme atlamasi
+  (21.808s). Izole MySQL 8.0.46/PyMySQL'de 42 davet/kelime testi, atlamasiz
+  basarili (2.696s). Bilinen Question.slug mysql.W003 uyarisi devam ediyor.
+  Migration model uyumu ve diff kontrolu temiz.
+- Tarayici: sentetik DB'de ek davet formu/gercek POST ve onayli iptal/
+  hak iadesi dogrulandi. 390px mobil form ve sayfada yatay tasma yok;
+  davet tablosu kendi yatay kaydirma alaninda kalir. Canli veriler degismedi.
+- Yayinlandiginda migrate gerekli. Bekleyen SEC-07 hiz siniri migration'i
+  artik 0067 sonrasina (0068 veya siradaki uygun numara) alinmali.
+- PythonAnywhere: git pull --ff-only origin main, dogru virtualenv ile
+  manage.py migrate, collectstatic --noinput, check ve Web Reload.
+  Yeni paket kurulumu gerekmiyor.

@@ -40,6 +40,7 @@ from ..models import (
 from ..forms import ProfilePhotoForm
 from ..font_catalog import additional_font_options
 from ..invitations import issue_invitation
+from ..word_statistics import excluded_word_set, normalize_word, word_tokens
 from ..utils import build_reference_usage_counts
 
 
@@ -356,29 +357,25 @@ def user_profile(request, username):
         cleaned_answer_texts = [clean_text_for_word_count(a) for a in answer_texts if a]
         all_entries = cleaned_question_texts + cleaned_answer_texts
 
-        total_words = sum(len(re.findall(r'\b\w+\b', entry)) for entry in all_entries)
+        all_word_counts = Counter(word for entry in all_entries for word in word_tokens(entry))
+        total_words = sum(all_word_counts.values())
         total_chars = sum(len(entry.replace(" ", "")) for entry in all_entries)
         # Entry = Answer (yanıt). Sorular sadece başlık, ayrı entry değil.
         total_entries = len(cleaned_answer_texts)
         avg_words_per_entry = total_words / total_entries if total_entries else 0
-        all_texts_joined = (' '.join(cleaned_question_texts) + ' ' + ' '.join(cleaned_answer_texts)).lower()
-        words = re.findall(r'\b\w+\b', all_texts_joined)
 
         # Profildeki çıkarılmış kelimeleri yükle (kalıcı)
         profile_excluded_words = user_profile.excluded_words if user_profile.excluded_words else ''
-        exclude_words_set = set(word.lower().strip() for word in profile_excluded_words.split(',') if word.strip())
+        exclude_words_set = excluded_word_set(profile_excluded_words)
 
         # Eğer kullanıcı yeni kelimeler ekliyorsa (virgülle ayrılmış toplu ekleme)
         new_exclude_words = request.GET.get('exclude_words', '').strip()
         if new_exclude_words:
             # Virgülle ayır ve ekle
-            new_words = re.split(r',\s*', new_exclude_words)
-            for word in new_words:
-                if word.strip():
-                    exclude_words_set.add(word.lower().strip())
+            exclude_words_set.update(excluded_word_set(new_exclude_words))
 
         # Tek kelime ekleme (eski mantık)
-        exclude_word = request.GET.get('exclude_word', '').strip().lower()
+        exclude_word = normalize_word(request.GET.get('exclude_word', ''))
 
         total_upvotes = ((questions_list.aggregate(total=Sum('upvotes'))['total'] or 0) +
                  (answers_list.aggregate(total=Sum('upvotes'))['total'] or 0))
@@ -388,7 +385,7 @@ def user_profile(request, username):
             exclude_words_set.add(exclude_word)
 
         # Kelime geri alma
-        include_word = request.GET.get('include_word', '').strip().lower()
+        include_word = normalize_word(request.GET.get('include_word', ''))
         if include_word and include_word in exclude_words_set:
             exclude_words_set.remove(include_word)
 
@@ -399,13 +396,12 @@ def user_profile(request, username):
 
         exclude_words_list = sorted(list(exclude_words_set))
         exclude_words_str = ', '.join(exclude_words_list)
-        filtered_words = [word for word in words if word not in exclude_words_set]
-        word_counts = Counter(filtered_words)
+        word_counts = Counter({word: count for word, count in all_word_counts.items() if word not in exclude_words_set})
         top_words = word_counts.most_common(20)
-        search_word = request.GET.get('search_word', '').strip().lower()
+        search_word = normalize_word(request.GET.get('search_word', ''))
         search_word_count = None
         if search_word:
-            search_word_count = word_counts.get(search_word, 0)
+            search_word_count = all_word_counts.get(search_word, 0)
 
         content_type_question = ContentType.objects.get_for_model(Question)
         content_type_answer = ContentType.objects.get_for_model(Answer)
@@ -462,7 +458,7 @@ def user_profile(request, username):
         })
 
     if active_tab == 'davetler' and is_own_profile:
-        invitations = Invitation.objects.filter(sender=request.user).order_by('-created_at')
+        invitations = Invitation.objects.filter(sender=request.user).select_related('used_by').order_by('-created_at', '-pk')
         total_invitations = invitations.count()
         used_invitations = invitations.filter(is_used=True).count()
         remaining_invitations = user_profile.invitation_quota

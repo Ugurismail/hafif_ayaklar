@@ -2,11 +2,31 @@
 
 from django.db import transaction
 from django.db.models import F
+from django.utils import timezone
 
 from .models import Invitation, InvitationTransfer, Notification, UserProfile
 
 
 MAX_INVITATION_GRANT = 2147483647
+
+
+def cancel_invitation(sender, code):
+    with transaction.atomic():
+        # Registration locks this same row, so redemption and refund cannot both win.
+        invitation = Invitation.objects.select_for_update().get(code=code, sender=sender)
+        if invitation.cancelled_at is not None:
+            return invitation, False
+        if invitation.is_used or invitation.used_by_id is not None:
+            raise ValueError('Kullanılmış bir davet iptal edilemez.')
+        refunded = UserProfile.objects.filter(
+            user_id=sender.pk,
+            invitation_quota__lte=MAX_INVITATION_GRANT - invitation.quota_granted,
+        ).update(invitation_quota=F('invitation_quota') + invitation.quota_granted)
+        if not refunded:
+            raise ValueError('Davet hakkı bakiyesi iade için uygun değil. Davet iptal edilmedi.')
+        invitation.cancelled_at = timezone.now()
+        invitation.save(update_fields=['cancelled_at'])
+        return invitation, True
 
 
 def issue_invitation(sender, quota_granted):

@@ -1,7 +1,6 @@
 """Site/home related views."""
 
 import random
-import re
 from collections import Counter
 from datetime import timedelta
 from itertools import chain
@@ -25,8 +24,8 @@ from ..left_frame import left_frame_context
 from ..services import VoteSaveService
 from ..templatetags.custom_tags import truncate_math_safe
 from ..utils import build_reference_usage_counts, paginate_queryset
+from ..word_statistics import excluded_word_set, normalize_word, word_tokens
 
-WORD_PATTERN = re.compile(r'\b\w+\b', re.UNICODE)
 HOMEPAGE_ANSWER_CACHE_SECONDS = 120
 HOMEPAGE_ANSWER_CACHE_VERSION = '4'
 RECENT_ANSWER_IDS_CACHE_KEY = 'homepage:recent-answer-ids:v1'
@@ -253,29 +252,22 @@ def site_statistics(request):
         if not text:
             continue
         total_characters += len(text)
-        words = WORD_PATTERN.findall(text.lower())
+        words = word_tokens(text)
         total_words += len(words)
         word_counts.update(words)
 
     reference_usage_counts = build_reference_usage_counts(answer_texts=answer_texts, use_cache=False)
 
     exclude_words_input = request.GET.get('exclude_words', '')
-    if exclude_words_input:
-        exclude_words_list = re.split(r',\s*', exclude_words_input.strip())
-        exclude_words = set(word.lower() for word in exclude_words_list if word.strip())
-    else:
-        exclude_words = set()
+    exclude_words = excluded_word_set(exclude_words_input)
 
     filtered_word_counts = Counter({word: count for word, count in word_counts.items() if word not in exclude_words})
     top_words = filtered_word_counts.most_common(10)
 
-    search_word = request.GET.get('search_word', '').strip().lower()
+    search_word = normalize_word(request.GET.get('search_word', ''))
     search_word_count = None
     if search_word:
-        if search_word in exclude_words:
-            search_word_count = 0
-        else:
-            search_word_count = word_counts.get(search_word, 0)
+        search_word_count = word_counts.get(search_word, 0)
 
     all_references = list(Reference.objects.all())
     for ref in all_references:
