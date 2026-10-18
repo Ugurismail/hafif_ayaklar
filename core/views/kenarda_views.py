@@ -10,6 +10,7 @@ Kenarda (draft) views
 import json
 import re
 
+from django.db import transaction
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -46,13 +47,62 @@ def _content_too_long_response():
     )
 
 
+def _save_subquestion_draft(request, data):
+    title = data.get('title', '')
+    content = data.get('content', '')
+    if not isinstance(title, str) or not isinstance(content, str):
+        return JsonResponse({'status': 'fail', 'error': 'Başlık ve içerik metin olmalıdır.'}, status=400)
+    title = _decode_legacy_js_escapes(title.strip())
+    if len(content) > EDITOR_CONTENT_MAX_LENGTH:
+        return _content_too_long_response()
+    if len(title) > 200 or (not title and not content.strip()) or data.get('answer_id'):
+        return JsonResponse({'status': 'fail', 'error': 'Geçerli bir alt başlık veya içerik girin (başlık en fazla 200 karakter).'}, status=400)
+    ids = {}
+    for name in ('question_id', 'draft_id'):
+        value = data.get(name)
+        if name == 'draft_id' and value in (None, ''):
+            ids[name] = None
+            continue
+        if (not isinstance(value, (int, str)) or isinstance(value, bool)
+                or len(str(value)) > 19 or not str(value).isascii()
+                or not str(value).isdecimal() or not 0 < int(value) <= 9223372036854775807):
+            return JsonResponse({'status': 'fail', 'error': 'Geçersiz taslak bağlamı.'}, status=400)
+        ids[name] = int(value)
+    parent = Question.objects.filter(pk=ids['question_id']).first()
+    if not parent:
+        return JsonResponse({'status': 'fail', 'error': 'Üst başlık bulunamadı.'}, status=404)
+    with transaction.atomic():
+        if ids['draft_id'] is not None:
+            draft = Kenarda.objects.select_for_update().filter(
+                pk=ids['draft_id'], user=request.user, question=parent,
+                draft_source='subquestion', answer__isnull=True, is_sent=False,
+            ).first()
+            if not draft:
+                return JsonResponse({'status': 'fail', 'error': 'Taslak bulunamadı veya bu alt başlığa ait değil.'}, status=404)
+            draft.title = title
+            draft.content = content
+            draft.save(update_fields=['title', 'content', 'updated_at'])
+        else:
+            # New child drafts never replace a sibling, even when titles match.
+            draft = Kenarda.objects.create(
+                user=request.user, question=parent, title=title, content=content,
+                draft_source='subquestion',
+            )
+    return JsonResponse({'status': 'ok', 'draft_id': draft.pk})
+
+
 @login_required
 def kenarda_save(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, UnicodeDecodeError):
             return JsonResponse({"status": "fail", "error": "Geçersiz JSON formatı"}, status=400)
+
+        if not isinstance(data, dict):
+            return JsonResponse({'status': 'fail', 'error': 'Geçersiz taslak verisi.'}, status=400)
+        if data.get('draft_source') == 'subquestion':
+            return _save_subquestion_draft(request, data)
 
         question_id = data.get("question_id")
         answer_id = data.get("answer_id")  # Var olan yanıt düzenleme taslağı için
@@ -228,6 +278,11 @@ def kenarda_sil(request, pk):
 def kenarda_gonder(request, pk):
     try:
         taslak = Kenarda.objects.get(pk=pk, user=request.user)
+
+        if taslak.draft_source == 'subquestion':
+            return JsonResponse({
+                'status': 'fail', 'error': 'Alt başlık taslağını düzenleme ekranından yayımlayın.',
+            }, status=400)
 
         # Taslak bir soruya bağlı mı kontrol et
         if taslak.question is None:

@@ -31,12 +31,16 @@
               <div class="card-body">
                   <form method="post">
                       {% csrf_token %}
+                      <input type="hidden" id="subquestionDraftId" name="draft_id" value="{{ draft_id|default_if_none:'' }}">
+                      {{ form.non_field_errors }}
                       <div class="form-group">
                           {{ form.question_text.label_tag }}
                           {{ form.question_text }}
+                          {{ form.question_text.errors }}
                       </div>
                       <div class="form-group mt-3">
                           {{ form.answer_text.label_tag }}
+                          {{ form.answer_text.errors }}
                           <div id="kenarda-preview-root" class="mb-2" style="display:none;"></div>
                         
                           <!-- Araç Çubuğu -->
@@ -368,6 +372,9 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
     const questionText = document.querySelector('input[name="question_text"], #id_question_text')?.value?.trim() || '';
     const answerTextarea = document.getElementById('id_answer_text') || document.querySelector('textarea[name="answer_text"]');
     const answerText = answerTextarea?.value?.trim() || '';
+    const draftInput = document.getElementById('subquestionDraftId');
+    const saveButton = e.currentTarget;
+    if (saveButton.disabled) return;
 
     if (!questionText && !answerText) {
         if (typeof showToast === 'function') {
@@ -378,6 +385,9 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
         return;
     }
 
+    const submitButton = saveButton.form.querySelector('button[type="submit"]');
+    saveButton.disabled = true;
+    if (submitButton) submitButton.disabled = true;
     fetch("{% url 'kenarda_save' %}", {
         method: "POST",
         headers: {
@@ -388,12 +398,17 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
             title: questionText,
             content: answerText,
             question_id: {{ parent_question.id }},
-            draft_source: 'subquestion'
+            draft_source: 'subquestion',
+            draft_id: draftInput.value || null
         })
     })
     .then(r => r.json())
     .then(data => {
         if (data.status === "ok") {
+            draftInput.value = data.draft_id;
+            const draftUrl = new URL(window.location.href);
+            draftUrl.searchParams.set('draft_id', data.draft_id);
+            window.history.replaceState(window.history.state, '', draftUrl);
             if (typeof showToast === 'function') {
                 showToast('Taslak başarıyla kaydedildi!', 'success', 1500);
             } else {
@@ -423,6 +438,10 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
         } else {
             alert('Bir hata oluştu!');
         }
+    })
+    .finally(() => {
+        saveButton.disabled = false;
+        if (submitButton) submitButton.disabled = false;
     });
 });
 </script>

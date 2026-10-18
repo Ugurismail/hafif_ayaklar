@@ -687,3 +687,79 @@ SEO kaynaklari:
 - Diyagram/harita/guvenlik alanlarindaki commit edilmemis calismalara
   dokunulmadi. Mantik ek incelemesi ve iki deneysel insanlar/degerlendirme
   dali korunuyor. Toplu merge, branch silme veya worktree prune yapilmadi.
+
+## Profil, Mesaj ve Taslak Tespiti: 2026-10-18
+
+- Taban: guncel origin/main `90a22fe`; yeni dal `codex/profil-mesaj-kontrolleri`.
+  Main calisma alani temizdi. Eski diyagram, harita ve genel guvenlik
+  alanlarindaki commit edilmemis degisiklikler korunuyor.
+- Kullanici alt baslik taslaginda once tespit istedi; uretim koduna
+  dokunulmadi. Izole Django test DB'sinde X ustune Y alt baslik taslagi:
+  title=Y, question=X olarak kaydoluyor, yayinlanmis Answer olusmuyor.
+  Taslak karti title yerine question.question_text kullandigi icin X
+  gosteriyor. Yeniden duzenleme formu Y basligini/metnini dogru yukluyor.
+- Daha ciddi ek bulgu: ayni X altina Z taslagi kaydi, mevcut Y taslaginin
+  uzerine yaziyor. kenarda_save parent+source ile eslestiriyor; ayri alt
+  baslik taslak kimligi yok. Yeniden uretim betigi gecici test alaninda;
+  bu bozuk davranisi kalici basarili regresyon testi olarak sabitlemedik.
+  Sonraki duzeltme: taslak kimligi, alt baslik gosterimi, ayni ustte birden
+  fazla taslak ve yayinlama/dogrudan gonderme sinirlarini birlikte ele al.
+- Rapor akisi incelendi: yalniz question/answer hedefleri; ContentReport
+  kaydi Django admin'de ContentReportAdmin ile listeleniyor. Reason/details
+  saklanir, status=open. Ayni raporlayan ayni icerigi yeniden raporlarsa
+  kayit guncellenir/yeniden acilir, onceki inceleme alanlari temizlenir.
+  Admin listesi filtre/arama ve manuel durum/karar alanlari sunuyor;
+  otomatik yonetici bildirimi/e-posta, otomatik silme/yasaklama veya karar
+  bildirimi yok. Bu tur raporlama davranisi degistirilmedi.
+- Profil girdilerinin altina Sayfa N / Toplam eklendi. Tek sayfada 1/1,
+  bos listede sayac yok; mevcut sayfa secicisi, onceki/sonraki ve sekme
+  davranisi korundu. Seciciye erisilebilir etiket eklendi.
+- Yalniz bire bir mesaj formunda Enter=requestSubmit, Shift+Enter=satir.
+  IME/composition, degistirici tuslar, event.repeat, bos/bosluk mesaji ve
+  bekleyen formun tekrar gonderimi kontrol ediliyor. Geri/ileri onbelleginde
+  form yeniden etkinlesiyor. POST/CSRF ve mevcut backend degismedi.
+- Eski gecici venv OS tarafindan kismen temizlenmisti. Mevcut requirements
+  ile /private/tmp/hafif-validation-20261018 yeniden kuruldu; repo paket
+  surumleri veya canli ortam degistirilmedi.
+- Test: 808 Django testi, 796 basarili, 12 SQLite kilitleme atlamasi
+  (23.254s); 33 Node testi gecti. Ayrica taslak teshisi+profil/mesaj/icerik
+  guvenligi kosusu 30 test: 28 basarili, 2 kilitleme atlamasi.
+  makemigrations --check --dry-run ve git diff --check temiz.
+- Gercek Chrome/Playwright: 1280x900 profil 2/3 -> 3/3, 390x844 profil
+  ve mesaj formu kontrol edildi. Shift+Enter yeni satir, Enter bir CSRF'li
+  POST, bosluk mesaji reddi; JS hatasi ve mobil yatay tasma yok.
+  Tamamen sentetik DB; mevcut 8000 sunucusuna dokunulmadi. Onizleme 8031.
+- Yeni migration/paket yok. Main'e birlestirme, commit veya push yapilmadi.
+
+## Alt Baslik Taslak Duzeltmesi: 2026-10-18
+
+- Kullanici tespiti onaylayarak duzeltme ve main'e push istedi. Yukaridaki
+  profil sayfalama ve mesaj klavye kontrolleri de bu surume dahil.
+- Alt baslik taslaklari artik acik draft_id ile guncelleniyor. Yeni form
+  ayni ust baslikta, hatta ayni baslik metninde ayri kayit acar. Yeniden
+  adlandirma mevcut taslagi gunceller; kardes taslagi ezmez. Kimlik hem
+  hidden input hem URL'de korunur; yenileme taslagi geri yukler. Bekleyen
+  kayit sirasinda kaydet/yayinla butonlari ikinci istegi engeller.
+- Liste alt baslik adini ve ikincil olarak ust basligi gosterir.
+  Yayinlama taslak sahibini, ust basligi ve kaynak turunu dogrular;
+  transaction icinde alt baslik/iliski/entry olusturur ve yalniz ilgili
+  taslagi siler. Hatada geri alinir. Silinmis taslakla tekrar yayinlama
+  reddedilir. Dogrudan taslak gonder endpoint'i alt basligi ust basliga
+  entry olarak gonderemez. Form dogrulama hatalari gorunur.
+- Ust basliga normal entry yazmanin iki endpoint'i de alt baslik
+  taslaklarini korur. Normal yanit editorleri alt baslik taslagini yuklemez.
+- Gecmis kayitlarin title/content bilgileri korunur; daha once uzerine
+  yazilarak kaybedilmis taslak metinleri bu yama ile geri gelmez.
+  Ayni taslagi iki sekmede duzenleme icin surum/cakisma denetimi ve ilk
+  kaydin yaniti kayboldugunda idempotent yeniden deneme bu kapsamda degil.
+- Dogrulama: 819 Django testi, 807 basarili, SQLite kilit destegi nedeniyle
+  12 atlama (21.072s); 33 Node testi basarili. Yeni 11 taslak testi; sahiplik,
+  CSRF, kimlik/veri dogrulama, kardes kayit, yayinlama ve rollback kapsami.
+  makemigrations --check --dry-run ve git diff --check temiz.
+- Gercek Chrome/Playwright, sentetik DB: kaydet/yenile/yeniden adlandir,
+  ikinci taslak, birini yayinla ve digerini koru senaryolari gecti.
+  1280x900 ve 390x844 gorunumleri kontrol edildi; JS hatasi/yatay tasma yok.
+- Raporlar Django admin Content reports listesindedir. Superuser veya
+  gerekli model yetkisine sahip staff gorebilir. Otomatik zil/e-posta yok.
+- Yeni migration/paket yok; yayin icin pull, collectstatic, check ve
+  PythonAnywhere Web Reload yeterli. Diger worktree'ler degistirilmedi.

@@ -25,6 +25,12 @@
                         <span class="badge bg-warning text-dark me-1">Düzenleme</span>
                         {{ t.answer.question.question_text|truncatechars:40 }}
                       </a>
+                    {% elif t.draft_source == 'subquestion' and t.question %}
+                      <a href="{% url 'add_subquestion' t.question.slug %}?draft_id={{ t.id }}" class="text-decoration-none text-dark">
+                        <i class="bi bi-diagram-2 me-1" aria-hidden="true"></i>
+                        {{ t.title|default:"Adsız alt başlık"|truncatechars:50 }}
+                      </a>
+                      <small class="d-block text-muted mt-1">Üst başlık: {{ t.question.question_text|truncatechars:50 }}</small>
                     {% elif t.question %}
                       <a href="{% url 'question_detail' t.question.slug %}" class="text-decoration-none text-dark">
                         <i class="bi bi-chat-square-text-fill text-primary me-1"></i>

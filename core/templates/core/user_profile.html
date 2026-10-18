@@ -334,8 +334,11 @@
                 <p>Henüz girdiniz yok.</p>
               {% endfor %}
             </div>
+            {% if answers %}
+              <p id="answerPageSummary" class="text-center text-muted mb-2">Sayfa {{ answers.number }} / {{ answers.paginator.num_pages }}</p>
+            {% endif %}
             {% if answers and answers.paginator.num_pages > 1 %}
-              <nav aria-label="Girdiler Sayfaları">
+              <nav aria-label="Girdiler Sayfaları" aria-describedby="answerPageSummary">
                 <ul class="pagination custom-pagination">
                   {% if answers.has_previous %}
                     <li class="page-item">
@@ -345,7 +348,7 @@
                     <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
                   {% endif %}
                   <li class="page-item">
-                    <select class="form-select" id="answerPageSelect" style="width: auto; display: inline-block; margin-left: 5px;">
+                    <select class="form-select" id="answerPageSelect" aria-label="Girdi sayfası" style="width: auto; display: inline-block; margin-left: 5px;">
                       {% for num in answers.paginator.page_range %}
                         <option value="{{ num }}" {% if answers.number == num %} selected {% endif %}>{{ num }}</option>
                       {% endfor %}

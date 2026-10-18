@@ -105,7 +105,7 @@ def add_answer(request, slug):
                         answer=None
                     )
 
-            Kenarda.objects.filter(user=request.user, question=question, is_sent=False).delete()
+            Kenarda.objects.filter(user=request.user, question=question, is_sent=False).exclude(draft_source='subquestion').delete()
             return redirect('single_answer', slug=question.slug, answer_id=answer.id)
     else:
         form = AnswerForm()
@@ -306,7 +306,7 @@ def single_answer(request, slug, answer_id):
         draft_id = request.GET.get('draft_id')
         if draft_id:
             try:
-                taslak = Kenarda.objects.get(pk=draft_id, user=request.user, question=question)
+                taslak = Kenarda.objects.exclude(draft_source='subquestion').get(pk=draft_id, user=request.user, question=question)
                 draft_content = taslak.content
             except Kenarda.DoesNotExist:
                 pass

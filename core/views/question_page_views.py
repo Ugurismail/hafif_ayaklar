@@ -11,7 +11,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q, Count
-from django.http import HttpResponseForbidden
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -101,7 +101,7 @@ def question_detail(request, slug):
             new_answer.user = request.user
             new_answer.question = question
             new_answer.save()
-            Kenarda.objects.filter(user=request.user, question=question, is_sent=False).delete()
+            Kenarda.objects.filter(user=request.user, question=question, is_sent=False).exclude(draft_source='subquestion').delete()
             return redirect('single_answer', slug=question.slug, answer_id=new_answer.id)
     else:
         form = AnswerForm()
@@ -201,7 +201,7 @@ def question_detail(request, slug):
         draft_id = request.GET.get('draft_id')
         if draft_id:
             try:
-                taslak = Kenarda.objects.get(pk=draft_id, user=request.user, question=question)
+                taslak = Kenarda.objects.exclude(draft_source='subquestion').get(pk=draft_id, user=request.user, question=question)
                 draft_content = taslak.content
             except Kenarda.DoesNotExist:
                 pass
@@ -273,27 +273,27 @@ def add_question(request):
 
 
 @login_required
+@transaction.atomic
 def add_subquestion(request, slug):
     parent_question = get_object_or_404(Question, slug=slug)
     all_questions = get_today_questions_queryset()
     draft_title = None
     draft_content = None
 
-    draft_id = request.GET.get('draft_id')
+    taslak = None
+    draft_id = request.POST.get('draft_id') or request.GET.get('draft_id')
     if draft_id:
-        try:
-            taslak = Kenarda.objects.get(
-                pk=draft_id,
-                user=request.user,
-                question=parent_question,
-                answer__isnull=True,
-                is_sent=False,
-                draft_source='subquestion',
-            )
-            draft_title = taslak.title
-            draft_content = taslak.content
-        except Kenarda.DoesNotExist:
-            pass
+        if len(draft_id) > 19 or not draft_id.isascii() or not draft_id.isdecimal() or not 0 < int(draft_id) <= 9223372036854775807:
+            raise Http404
+        drafts = Kenarda.objects.all()
+        if request.method == 'POST':
+            drafts = drafts.select_for_update()
+        taslak = get_object_or_404(
+            drafts, pk=int(draft_id), user=request.user, question=parent_question,
+            answer__isnull=True, is_sent=False, draft_source='subquestion',
+        )
+        draft_title = taslak.title
+        draft_content = taslak.content
 
     if request.method == 'POST':
         form = QuestionForm(request.POST)
@@ -327,6 +327,8 @@ def add_subquestion(request, slug):
                     answer=answer
                 )
 
+            if taslak:
+                taslak.delete()
             messages.success(request, 'Alt soru başarıyla eklendi.')
             return redirect('question_detail', slug=subquestion.slug)
     else:
@@ -344,6 +346,7 @@ def add_subquestion(request, slug):
         'user_definitions': user_definitions,
         'draft_title': draft_title,
         'draft_content': draft_content,
+        'draft_id': taslak.pk if taslak else None,
     }
     return render(request, 'core/add_subquestion.html', context)
 
