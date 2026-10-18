@@ -1145,6 +1145,7 @@ class Notification(models.Model):
         ('revision_review', 'Revision Review'),    # Contributor review request for a new revision
         ('habit_reminder', 'Habit Reminder'),      # Due habit reminder
         ('system', 'System'),                      # System notifications
+        ('content_report', 'İçerik Raporu'),
     )
 
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
@@ -1168,6 +1169,10 @@ class Notification(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        related_name='notifications',
+    )
+    related_report = models.ForeignKey(
+        ContentReport, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='notifications',
     )
 
@@ -1372,6 +1377,10 @@ class Notification(models.Model):
     def get_target_url(self):
         from django.urls import reverse
 
+        if self.notification_type == 'content_report':
+            if self.related_report_id:
+                return reverse('report_review', args=[self.related_report_id])
+            return reverse('report_inbox')
         if self.related_suggestion_id and self.notification_type in {
             'answer_suggestion',
             'suggestion_result',

@@ -38,6 +38,7 @@
                                 <option value="revision_review" {% if current_type == 'revision_review' %}selected{% endif %}>Katkı Onayları</option>
                                 <option value="habit_reminder" {% if current_type == 'habit_reminder' %}selected{% endif %}>Alışkanlık Hatırlatmaları</option>
                                 <option value="system" {% if current_type == 'system' %}selected{% endif %}>Sistem</option>
+                                {% if user.is_staff or user.is_superuser %}<option value="content_report" {% if current_type == 'content_report' %}selected{% endif %}>İçerik Raporları</option>{% endif %}
                             </select>
                         </div>
                         <div class="col-md-4">
@@ -91,6 +92,8 @@
                                         <i class="bi bi-alarm text-theme-success"></i>
                                     {% elif notification.notification_type == 'system' %}
                                         <i class="bi bi-info-circle text-info"></i>
+                                    {% elif notification.notification_type == 'content_report' %}
+                                        <i class="bi bi-flag text-theme-warning"></i>
                                     {% endif %}
                                 </span>
 
@@ -117,7 +120,7 @@
 
                             <!-- Bağlantılar -->
                             <div class="ms-3">
-                                {% if notification.related_answer or notification.related_question or notification.related_habit %}
+                                {% if notification.related_answer or notification.related_question or notification.related_habit or notification.notification_type == 'content_report' %}
                                     <a href="{{ notification.get_target_url }}" class="btn btn-sm btn-outline-theme-primary" {% if not notification.is_read %}data-open-notification="{{ notification.id }}"{% endif %}>
                                         {% if notification.notification_type == 'answer_suggestion' %}
                                             <i class="bi bi-eye"></i> İncele

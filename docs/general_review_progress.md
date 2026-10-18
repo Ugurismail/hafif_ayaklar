@@ -763,3 +763,38 @@ SEO kaynaklari:
   gerekli model yetkisine sahip staff gorebilir. Otomatik zil/e-posta yok.
 - Yeni migration/paket yok; yayin icin pull, collectstatic, check ve
   PythonAnywhere Web Reload yeterli. Diger worktree'ler degistirilmedi.
+
+## Site Ici Rapor Yonetimi: 2026-10-19
+
+- Taban `a30a34c`; dal `codex/rapor-yonetimi`. Kullanici raporlari ayri
+  sayfada yonetmek ve admin/superuser hesaplarina zil bildirimi istedi.
+- `/yonetim/raporlar/`: durum filtreleri, sayaclar ve 25 kayitlik sayfalama.
+  `/yonetim/raporlar/<id>/`: raporlayan, gerekce/aciklama, icerik baglantisi,
+  duz metin onizlemesi, durum ve yonetici inceleme notu. Masaustu/mobil
+  Muteferrik > Araclar menusune Raporlar eklendi. Django admin korunuyor.
+- Erisim politikasi: aktif is_staff VEYA is_superuser. Normal kullanici
+  dogrudan URL/POST ile erisemez; CSRF zorunlu. noindex ve no-store basliklari.
+  Icerik/aciklama HTML olarak calistirilmaz; silinmis icerik guvenle gosterilir.
+- Ortak rapor kayit servisi iki mevcut raporlama endpoint'ini kapsar.
+  Yeni/yeniden acilan rapor icin tum aktif yoneticilere birer okunmamis
+  content_report bildirimi. Ayni acik raporun tekrari/guncellenmesi ek
+  bildirim uretmez. Bildirim rapor detayina gider; ozel aciklama metnini
+  tasimaz. Eski raporlar listede gorunur, gecmise toplu bildirim yok.
+- Kayit ve bildirim ayni transaction'da; rapor uzerinde satir kilidi.
+  Inceleme formu updated_at surum kontroluyle eski ekrandan yeni rapor veya
+  diger yonetici kararinin ezilmesini 409 ile engeller. Inceleyen ve zaman
+  kaydedilir; yalniz inceleyen yoneticinin ilgili bildirimleri okunur olur.
+- Durum kaydi icerigi otomatik silmez, hesabi yasaklamaz veya raporlayana
+  mesaj gondermez. E-posta/push degil mevcut site ici zil sistemi kullanilir.
+- Migration `0068_report_management_notifications`: nullable related_report
+  FK (SET_NULL) ve bildirim turu. Paket degisikligi yok. Canlida pull ardindan
+  migrate, collectstatic, check ve Web Reload gerekli.
+- Test: 831 Django testi, 819 basarili, 12 SQLite kilit testi atlamasi
+  (21.448s). 12 yeni rapor testi: yetki/CSRF, iki gonderim yolu, tekrar,
+  yeniden acma, rollback, zil/baglanti, eski form cakismasi, silinmis hedef,
+  escaping ve filtre/sayfalama. Migration uyumu ve diff kontrolu temiz.
+- Sentetik DB'de 0068 uygulandi. Gercek Chrome 1280x900 ve 390x844:
+  zil 1 -> inceleme -> 0, durum filtresi ve not kaydi dogrulandi; JS
+  hatasi/yatay tasma yok. Yalniz bu sayfalarda sabit yardim/sohbet dugmeleri
+  not alanini ortmemesi icin normal sayfa akisina alindi. Onizleme 8031;
+  kullanicinin 8000 sunucusuna ve diger worktree'lere dokunulmadi.

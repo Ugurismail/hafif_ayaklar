@@ -1,0 +1,33 @@
+.report-management { max-width: 1120px; overflow-wrap: anywhere; }
+/* This stylesheet is loaded only on report management pages. */
+body .floating-tools { position: static; justify-content: flex-end; margin: 24px; }
+.report-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; padding: 16px 0 24px; }
+.report-heading h1 { margin: 0; font-size: 30px; }
+.report-management h2 { font-size: 21px; margin: 0 0 8px; }
+.report-tabs { display: flex; flex-wrap: wrap; gap: 4px 24px; border-bottom: 1px solid var(--border-color, #aaa); }
+.report-tabs a { padding: 12px 0; color: inherit; text-decoration: none; border-bottom: 3px solid transparent; }
+.report-tabs a[aria-current] { border-color: currentColor; font-weight: bold; }
+.report-tabs span { margin-left: 6px; font-size: 14px; }
+.report-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px; padding: 22px 8px; border-bottom: 1px solid var(--border-color, #aaa); text-decoration: none; color: inherit; }
+.report-row:hover, .report-row:focus-visible { background: var(--hover-background-color, #e8eceb); color: var(--hover-text-color, inherit); }
+.report-id { display: block; font-size: 14px; margin-bottom: 8px; }
+.report-row-meta { display: flex; align-items: center; gap: 16px; font-size: 14px; }
+.report-state { font-size: 14px; font-weight: 600; }
+.report-empty { padding: 40px 0; }
+.report-pagination { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 24px; }
+.report-back { display: inline-flex; gap: 8px; align-items: center; }
+.report-review-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr); gap: 40px; border-top: 1px solid var(--border-color, #aaa); padding-top: 28px; }
+.report-review { border-left: 1px solid var(--border-color, #aaa); padding-left: 28px; }
+.report-review label { display: block; margin-bottom: 8px; }
+.report-text { line-height: 1.6; }
+.report-content { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color, #aaa); }
+.report-target { display: inline-block; margin: 4px 0 16px; }
+.report-excerpt { max-height: 450px; overflow-y: auto; }
+@media (max-width: 767px) {
+  .report-review-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .report-review { border-left: 0; border-top: 1px solid var(--border-color, #aaa); padding: 24px 0 0; }
+  .report-row { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .report-row-meta { flex-wrap: wrap; gap: 8px 16px; }
+  .report-row-meta .bi { margin-left: auto; }
+  .report-tabs { gap: 4px 16px; }
+}

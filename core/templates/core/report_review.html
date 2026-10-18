@@ -1,0 +1,36 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Rapor #{{ report.pk }} - Hafif Ayaklar{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/report_management.css' %}">{% endblock %}
+{% block content %}
+<main class="container report-management my-4">
+  <a class="report-back" href="{% url 'report_inbox' %}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Raporlar</a>
+  <header class="report-heading"><h1>Rapor #{{ report.pk }}</h1><span class="report-state">{{ report.get_status_display }}</span></header>
+  <div class="report-review-grid">
+    <section class="report-body" aria-labelledby="report-reason">
+      <h2 id="report-reason">{{ report.get_reason_display }}</h2>
+      <p class="report-id">{{ report.reporter.username }} · {{ report.created_at|date:"d.m.Y H:i" }}</p>
+      <div class="report-text">{{ report.details|default:"Açıklama eklenmemiş."|linebreaksbr }}</div>
+      <section class="report-content" aria-labelledby="reported-content-title">
+        <h2 id="reported-content-title">Raporlanan içerik</h2>
+        {% if target_url %}
+        <a href="{{ target_url }}" target="_blank" rel="noopener noreferrer" class="report-target">{{ content_title }} <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a>
+        {% if content_excerpt %}<div class="report-text report-excerpt">{{ content_excerpt|linebreaksbr }}</div>{% endif %}
+        {% else %}<p>İçerik artık mevcut değil.</p>{% endif %}
+      </section>
+    </section>
+    <section class="report-review" aria-labelledby="review-title">
+      <h2 id="review-title">İnceleme</h2>
+      <form method="post">
+        {% csrf_token %}{{ form.version }}
+        {{ form.non_field_errors }}{{ form.version.errors }}
+        <div class="mb-3">{{ form.status.label_tag }}{{ form.status }}{{ form.status.errors }}</div>
+        <div class="mb-3">{{ form.resolution_note.label_tag }}{{ form.resolution_note }}{{ form.resolution_note.errors }}</div>
+        <button class="btn btn-theme-primary" type="submit"><i class="bi bi-check2" aria-hidden="true"></i> Kaydet</button>
+      </form>
+      {% if report.reviewed_at %}<p class="report-id mt-3">{{ report.reviewed_by.username|default:"Eski yönetici" }} · {{ report.reviewed_at|date:"d.m.Y H:i" }}</p>{% endif %}
+    </section>
+  </div>
+</main>
+{% endblock %}

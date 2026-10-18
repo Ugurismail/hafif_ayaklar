@@ -1,12 +1,21 @@
+from functools import wraps
+
+from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.contenttypes.models import ContentType
-from django.http import JsonResponse
+from django.core.paginator import Paginator
+from django.db import transaction
+from django.db.models import Count
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.http import urlencode, url_has_allowed_host_and_scheme
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_http_methods
 
-from ..models import Answer, ContentReport, Question
+from ..content_reports import can_manage_reports, save_content_report
+from ..models import Answer, ContentReport, Notification, Question
 
 
 @login_required
@@ -39,24 +48,8 @@ def report_content(request):
                 'content_type': content_type, 'object_id': object_id, 'next': next_url,
             }))
 
-        content_type_obj = ContentType.objects.get_for_model(model)
-        report, created = ContentReport.objects.get_or_create(
-            reporter=request.user,
-            content_type=content_type_obj,
-            object_id=obj.id,
-            defaults={
-                'reason': reason,
-                'details': details[:2000],
-            },
-        )
+        report, created = save_content_report(request.user, obj, reason, details)
         if not created:
-            report.reason = reason
-            report.details = details[:2000]
-            report.status = 'open'
-            report.reviewed_by = None
-            report.reviewed_at = None
-            report.resolution_note = ''
-            report.save(update_fields=['reason', 'details', 'status', 'reviewed_by', 'reviewed_at', 'resolution_note', 'updated_at'])
             messages.success(request, 'Rapor güncellendi.')
         else:
             messages.success(request, 'Rapor gönderildi.')
@@ -91,20 +84,88 @@ def report_content_ajax(request):
     if getattr(obj, 'user_id', None) == request.user.id:
         return JsonResponse({'error': 'Kendi içeriğini raporlayamazsın.'}, status=400)
 
-    content_type_obj = ContentType.objects.get_for_model(model)
-    report, created = ContentReport.objects.get_or_create(
-        reporter=request.user,
-        content_type=content_type_obj,
-        object_id=obj.id,
-        defaults={'reason': reason, 'details': details[:2000]},
-    )
-    if not created:
-        report.reason = reason
-        report.details = details[:2000]
-        report.status = 'open'
-        report.reviewed_by = None
-        report.reviewed_at = None
-        report.resolution_note = ''
-        report.save(update_fields=['reason', 'details', 'status', 'reviewed_by', 'reviewed_at', 'resolution_note', 'updated_at'])
-
+    save_content_report(request.user, obj, reason, details)
     return JsonResponse({'status': 'ok', 'message': 'Rapor kaydedildi.'})
+
+
+def report_manager_required(view):
+    @login_required
+    @never_cache
+    @wraps(view)
+    def wrapped(request, *args, **kwargs):
+        if not can_manage_reports(request.user):
+            response = HttpResponseForbidden('Bu sayfaya erişim yetkiniz yok.')
+        else:
+            response = view(request, *args, **kwargs)
+        response['X-Robots-Tag'] = 'noindex, nofollow'
+        return response
+    return wrapped
+
+
+class ReportReviewForm(forms.Form):
+    status = forms.ChoiceField(label='Durum', choices=ContentReport.STATUS_CHOICES,
+                               widget=forms.Select(attrs={'class': 'form-select'}))
+    resolution_note = forms.CharField(label='İnceleme notu', required=False, max_length=2000,
+                                     widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5}))
+    version = forms.CharField(widget=forms.HiddenInput)
+
+
+@report_manager_required
+@require_http_methods(['GET'])
+def report_inbox(request):
+    status = request.GET.get('status', 'open')
+    if status not in dict(ContentReport.STATUS_CHOICES) and status != 'all':
+        status = 'open'
+    reports = ContentReport.objects.select_related('reporter', 'reviewed_by', 'content_type')
+    counts = dict(ContentReport.objects.values('status').annotate(total=Count('pk')).values_list('status', 'total'))
+    if status != 'all':
+        reports = reports.filter(status=status)
+    page = Paginator(reports.order_by('-updated_at', '-pk'), 25).get_page(request.GET.get('page'))
+    return render(request, 'core/report_inbox.html', {
+        'reports': page, 'current_status': status,
+        'status_tabs': [(key, label, counts.get(key, 0)) for key, label in ContentReport.STATUS_CHOICES]
+                       + [('all', 'Tümü', sum(counts.values()))],
+    })
+
+
+@report_manager_required
+@require_http_methods(['GET', 'POST'])
+def report_review(request, pk):
+    report = get_object_or_404(ContentReport.objects.select_related('reporter', 'reviewed_by', 'content_type'), pk=pk)
+    form = ReportReviewForm(request.POST if request.method == 'POST' else None, initial={
+        'status': report.status, 'resolution_note': report.resolution_note, 'version': report.updated_at.isoformat(),
+    })
+    response_status = 200
+    if request.method == 'POST':
+        if form.is_valid():
+            with transaction.atomic():
+                report = get_object_or_404(ContentReport.objects.select_for_update(), pk=pk)
+                if form.cleaned_data['version'] != report.updated_at.isoformat():
+                    form.add_error(None, 'Rapor bu sırada değişti. Sayfayı yenileyip güncel kaydı inceleyin.')
+                    response_status = 409
+                else:
+                    report.status = form.cleaned_data['status']
+                    report.resolution_note = form.cleaned_data['resolution_note']
+                    report.reviewed_by = request.user
+                    report.reviewed_at = timezone.now()
+                    report.save(update_fields=['status', 'resolution_note', 'reviewed_by', 'reviewed_at', 'updated_at'])
+                    Notification.objects.filter(recipient=request.user, related_report=report, is_read=False).update(is_read=True)
+                    messages.success(request, 'İnceleme kaydedildi.')
+                    return redirect('report_review', pk=report.pk)
+        else:
+            response_status = 400
+    obj = report.content_object
+    target_url = None
+    title = None
+    excerpt = None
+    if isinstance(obj, Answer):
+        title = obj.question.question_text
+        excerpt = obj.answer_text[:4000]
+        target_url = reverse('entry_permalink', args=[obj.pk])
+    elif isinstance(obj, Question):
+        title = obj.question_text
+        target_url = reverse('question_detail', args=[obj.slug])
+    return render(request, 'core/report_review.html', {
+        'report': report, 'form': form, 'target_url': target_url,
+        'content_title': title, 'content_excerpt': excerpt,
+    }, status=response_status)

@@ -30,7 +30,7 @@ from .views.question_map_views import map_data_view, question_map, question_sche
 from .views.question_link_views import add_existing_subquestion, admin_merge_question, search_questions_for_linking, search_questions_for_merging, unlink_from_parent
 from .views.question_page_views import add_question, add_question_from_search, add_starting_question, add_subquestion, bkz_view, delete_question, question_detail
 from .views.random_sentence_views import add_random_sentence, get_random_sentence, ignore_random_sentence, vote_random_sentence
-from .views.report_views import report_content, report_content_ajax
+from .views.report_views import report_content, report_content_ajax, report_inbox, report_review
 from .views.search_views import load_more_questions, load_more_search_results, reference_search, search, search_suggestions, user_search
 from .views.site_views import about, random_question_id, shuffle_questions, site_statistics, user_homepage
 from .views.user_views import public_author, follow_user, get_user_questions, profile, unfollow_user, update_profile_photo, user_list, user_profile, user_settings
@@ -219,6 +219,8 @@ urlpatterns = [
     path('collections/saved-item/<int:saved_item_id>/update/', update_saved_item_collections, name='update_saved_item_collections'),
     path('report-content/', report_content, name='report_content'),
     path('report-content/ajax/', report_content_ajax, name='report_content_ajax'),
+    path('yonetim/raporlar/', report_inbox, name='report_inbox'),
+    path('yonetim/raporlar/<int:pk>/', report_review, name='report_review'),
 
     path('iat/', iat_start, name='iat_start'),
     path('iat/test/', iat_test, name='iat_test'),
