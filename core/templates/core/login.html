@@ -1,12 +1,14 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/password_visibility.css' %}">{% endblock %}
+{% block extra_js %}<script defer src="{% static 'js/password_visibility.js' %}"></script>{% endblock %}
 
 {% block content %}
 <div class="container mt-5 d-flex justify-content-center">
     <div class="card shadow-sm" style="max-width: 400px; width: 100%;">
         <div class="card-body">
             <h2 class="card-title text-center mb-4">Giriş Yap</h2>
-            <form method="post" id="login-form">
+            <form method="post" id="login-form" data-password-controls>
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ next }}">
                 <div class="mb-3">
