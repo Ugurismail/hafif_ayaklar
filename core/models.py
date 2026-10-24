@@ -859,6 +859,29 @@ class Reference(models.Model):
         return count
 
 
+class ReferenceUsage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reference_history')
+    event_id = models.UUIDField()
+    context_id = models.UUIDField(db_index=True)
+    reference = models.ForeignKey(Reference, null=True, on_delete=models.SET_NULL)
+    reference_number = models.PositiveIntegerField()
+    citation = models.TextField()
+    page = models.CharField(max_length=100, blank=True)
+    title = models.CharField(max_length=200, blank=True)
+    draft = models.ForeignKey('Kenarda', null=True, blank=True, on_delete=models.SET_NULL)
+    answer = models.ForeignKey('Answer', null=True, blank=True, on_delete=models.SET_NULL)
+    status = models.CharField(max_length=12, default='writing', choices=[
+        ('writing', 'Yazılıyor'), ('draft', 'Taslak'), ('published', 'Yayımlandı'),
+    ])
+    created_at = models.DateTimeField(auto_now_add=True)
+    removed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at', '-pk']
+        constraints = [models.UniqueConstraint(fields=['user', 'event_id'], name='reference_usage_event_unique')]
+        indexes = [models.Index(fields=['user', '-created_at'], name='reference_history_user_time')]
+
+
 class LibraryFile(models.Model):
     title = models.CharField(max_length=200, verbose_name="Baslik")
     description = models.TextField(blank=True, verbose_name="Aciklama")

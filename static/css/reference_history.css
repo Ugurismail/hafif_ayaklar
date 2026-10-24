@@ -1,0 +1,26 @@
+.reference-history { max-width: 1120px; margin: 24px auto; padding: 0 16px; }
+.reference-history-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.reference-history h1 { font-size: 28px; margin: 0; letter-spacing: 0; }
+.reference-history-filters { display: grid; grid-template-columns: minmax(180px, 2fr) repeat(3, minmax(140px, 1fr)) 42px 42px; gap: 12px; align-items: end; padding-bottom: 24px; }
+.reference-history-filters label { display: grid; gap: 6px; font: 13px system-ui, sans-serif; min-width: 0; }
+.reference-history-filters .btn { height: 40px; display: grid; place-items: center; padding: 0; }
+.reference-history-filters input, .reference-history-filters select { min-width: 0; font: 14px system-ui, sans-serif; min-height: 40px; }
+.reference-history-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 140px; gap: 24px; padding: 20px 0; border-top: 1px solid var(--input-border-color, #aaa); }
+.reference-history-row time, .reference-history-state { font: 13px/1.6 system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+.reference-history-row span { display: block; }
+.reference-history-row time span, .reference-history-state span { opacity: .75; }
+.reference-history-citation { display: grid; gap: 5px; overflow-wrap: anywhere; }
+.reference-history-citation strong { font-weight: 600; }
+.reference-history-citation span, .reference-history-citation a { font-size: 15px; }
+.reference-history-pagination { display: flex; justify-content: center; align-items: center; gap: 24px; padding: 24px; font: 14px system-ui, sans-serif; }
+.reference-history-pagination a { padding: 10px; }
+.reference-history-empty { padding: 32px 0; border-top: 1px solid var(--input-border-color, #aaa); }
+@media (max-width: 900px) { .reference-history-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+ .reference-history-heading { align-items: start; flex-wrap: wrap; }
+ .reference-history h1 { font-size: 25px; }
+ .reference-history-row { grid-template-columns: 1fr auto; gap: 12px; }
+ .reference-history-citation { grid-column: 1 / -1; grid-row: 2; }
+ .reference-history-row time span { display: inline; margin-left: 8px; }
+ .reference-history-state { text-align: right; }
+}

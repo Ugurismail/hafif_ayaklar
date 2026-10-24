@@ -1,4 +1,5 @@
 from django.urls import path, re_path
+from .views.reference_history_views import reference_history, record_reference_usage
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from .views.answer_page_views import add_answer, delete_answer, edit_answer, entry_permalink, expanded_answer_content, single_answer
@@ -39,6 +40,8 @@ from .views.vote_save_views import get_saved_items, pin_entry, save_item, unpin_
 from .views.retired_views import retired_feature
 
 urlpatterns = [
+    path('kaynak-gecmisim/', reference_history, name='reference_history'),
+    path('kaynak-gecmisim/ekle/', record_reference_usage, name='record_reference_usage'),
     path('entry/<int:answer_id>/', entry_permalink, name='entry_permalink'),
     re_path(r'^(?:radio|cikis_testleri|cikis_testi|cikis-testleri|cikis-test)(?:/.*)?$', retired_feature),
     # Ana Sayfa

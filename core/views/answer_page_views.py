@@ -3,6 +3,7 @@ Answer page/create/edit/delete views.
 """
 
 from collections import defaultdict
+from ..reference_history import bind_saved_answer
 from urllib.parse import unquote
 
 from django.contrib import messages
@@ -95,6 +96,7 @@ def add_answer(request, slug):
                 answer.question = question
                 answer.user = request.user
                 answer.save()
+                bind_saved_answer(request, answer)
 
                 definition_text = request.POST.get('definition_text', '').strip()
                 if definition_text:
@@ -155,6 +157,7 @@ def edit_answer(request, answer_id):
             )
             if created:
                 updated_answer = revision.answer
+            bind_saved_answer(request, updated_answer)
 
             if draft_id:
                 try:
@@ -236,6 +239,7 @@ def single_answer(request, slug, answer_id):
             new_answer.question = question
             new_answer.user = request.user
             new_answer.save()
+            bind_saved_answer(request, new_answer)
             return redirect('single_answer', slug=question.slug, answer_id=new_answer.id)
     else:
         form = AnswerForm() if request.user.is_authenticated else None

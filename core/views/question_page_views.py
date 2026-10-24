@@ -3,6 +3,7 @@ Question page/create/delete views.
 """
 
 import re
+from ..reference_history import bind_saved_answer
 from collections import defaultdict
 
 from django.contrib import messages
@@ -101,6 +102,7 @@ def question_detail(request, slug):
             new_answer.user = request.user
             new_answer.question = question
             new_answer.save()
+            bind_saved_answer(request, new_answer)
             Kenarda.objects.filter(user=request.user, question=question, is_sent=False).exclude(draft_source='subquestion').delete()
             return redirect('single_answer', slug=question.slug, answer_id=new_answer.id)
     else:
@@ -251,6 +253,7 @@ def add_question(request):
                 user=request.user,
                 answer_text=answer_text
             )
+            bind_saved_answer(request, answer)
 
             if definition_text:
                 Definition.objects.create(
@@ -318,6 +321,7 @@ def add_subquestion(request, slug):
                 user=request.user,
                 answer_text=answer_text
             )
+            bind_saved_answer(request, answer)
 
             if definition_text:
                 Definition.objects.create(
@@ -415,6 +419,7 @@ def add_question_from_search(request):
             answer.question = question
             answer.answer_text = answer_text
             answer.save()
+            bind_saved_answer(request, answer)
 
             if definition_text:
                 Definition.objects.create(
@@ -468,11 +473,12 @@ def add_starting_question(request):
             definition_text = request.POST.get('definition_text', '').strip()
             answer_text = _normalize_answer_text(form.cleaned_data['answer_text'])
 
-            Answer.objects.create(
+            answer = Answer.objects.create(
                 question=question,
                 user=request.user,
                 answer_text=answer_text
             )
+            bind_saved_answer(request, answer)
 
             if definition_text:
                 Definition.objects.create(

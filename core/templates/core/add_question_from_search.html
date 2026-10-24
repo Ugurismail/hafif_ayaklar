@@ -362,6 +362,7 @@ document.getElementById('kenarda-dursun-btn')?.addEventListener('click', functio
             "X-CSRFToken": "{{ csrf_token }}"
         },
         body: JSON.stringify({
+            reference_context: document.querySelector('[name="reference_context"]')?.value || '',
             title: questionText,
             content: answerText,
             question_id: null,  // Yeni başlık için question_id yok

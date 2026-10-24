@@ -798,3 +798,22 @@ SEO kaynaklari:
   hatasi/yatay tasma yok. Yalniz bu sayfalarda sabit yardim/sohbet dugmeleri
   not alanini ortmemesi icin normal sayfa akisina alindi. Onizleme 8031;
   kullanicinin 8000 sunucusuna ve diger worktree'lere dokunulmadi.
+
+## Ozel Kaynak Kullanim Gecmisi: 2026-10-24
+
+- Taban `c575eba`; dal `codex/kaynak-gecmisi`. Oyun worktree'sinden bagimsiz.
+- Kaynak secip metne ekleme aninda sunucu zamanli, kullaniciya ozel olay
+  kaydi; taslak/yayin zorunlu degil. Kaynak, sayfa ve baslik bilgisi tutulur.
+- Taslak kaydi/yayinlama ilk tarihi korur. Silinen kaynak/taslak/entry
+  gecmisi silmez. Ozel gecmis, filtreler ve CSV profil Kaynaklarim bolumunde.
+- Yetki/CSRF, idempotent tekrar, alan limitleri, saatlik kota ve CSV formula
+  korumasi var. Eski veya elle yazilan atiflara tarih uydurulmaz.
+- Migration `0069_reference_usage_history`; yeni paket yok. Canlida migrate,
+  collectstatic, check ve Web Reload gerekli. Ayrintilar: reference_history.md.
+- 848 Django testi: 836 basarili, SQLite kilit davranisindan 12 atlama;
+  39 Node testi basarili. Yeni kapsama 15 Django ve 3 JS testi eklendi.
+- Chrome/Playwright, ayri sentetik DB: kaydetmeden kayit, taslak baglama,
+  yayinlamada ilk tarihin korunmasi ve gercek CSV indirme dogrulandi.
+  1440x1000 / 390x844 gorunumleri incelendi; JS hatasi ve yatay tasma yok.
+- Onizleme 8032. Oyun degisiklikleri aktarilmadi; guvenlik incelemesi siradaki
+  ayri calisma. MySQL satir kilidi canliya esdeger ortamda ayrica dogrulanmali.

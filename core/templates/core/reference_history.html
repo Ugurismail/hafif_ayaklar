@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Kaynak geçmişim - HafifAyaklar{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/reference_history.css' %}">{% endblock %}
+{% block content %}
+<section class="reference-history">
+  <header class="reference-history-heading">
+    <h1>Kaynak geçmişim</h1>
+    <a class="btn btn-outline-theme-secondary" href="?{{ filters }}&amp;format=csv"><i class="bi bi-download" aria-hidden="true"></i> CSV indir</a>
+  </header>
+  <form method="get" class="reference-history-filters">
+    <label>Kaynak / başlık<input class="form-control" name="q" value="{{ request.GET.q }}" maxlength="200" type="search"></label>
+    <label>Başlangıç<input class="form-control" type="date" name="from" value="{{ request.GET.from }}"></label>
+    <label>Bitiş<input class="form-control" type="date" name="to" value="{{ request.GET.to }}"></label>
+    <label>Durum<select class="form-select" name="status"><option value="">Tümü</option><option value="writing" {% if request.GET.status == 'writing' %}selected{% endif %}>Yazılıyor</option><option value="draft" {% if request.GET.status == 'draft' %}selected{% endif %}>Taslak</option><option value="published" {% if request.GET.status == 'published' %}selected{% endif %}>Yayımlandı</option></select></label>
+    <button class="btn btn-theme-primary" title="Filtrele" aria-label="Filtrele"><i class="bi bi-search" aria-hidden="true"></i></button>
+    <a class="btn btn-outline-theme-secondary" href="{% url 'reference_history' %}" title="Filtreleri temizle" aria-label="Filtreleri temizle"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></a>
+  </form>
+  <div class="reference-history-rows">
+    {% for item in page_obj %}
+    <article class="reference-history-row">
+      <time datetime="{{ item.created_at|date:'c' }}">{{ item.created_at|date:'d.m.Y' }}<span>{{ item.created_at|date:'H:i:s' }}</span></time>
+      <div class="reference-history-citation"><strong>{{ item.citation }}</strong>{% if item.page %}<span>Sayfa {{ item.page }}</span>{% endif %}
+        {% if item.answer and item.status == 'published' %}<a href="{% url 'single_answer' item.answer.question.slug item.answer_id %}">{{ item.title|default:'Başlıksız' }}</a>{% else %}<span>{{ item.title|default:'Başlıksız yazı' }}</span>{% endif %}
+      </div>
+      <div class="reference-history-state">{{ item.get_status_display }}{% if item.removed_at %}<span>Metinden kaldırıldı</span>{% endif %}{% if item.status == 'draft' and not item.draft %}<span>Taslak silindi</span>{% endif %}{% if item.status == 'published' and not item.answer %}<span>Entry silindi</span>{% endif %}</div>
+    </article>
+    {% empty %}<p class="reference-history-empty">Henüz kaynak kullanımı kaydedilmedi.</p>{% endfor %}
+  </div>
+  <nav class="reference-history-pagination" aria-label="Geçmiş sayfaları">
+    {% if page_obj.has_previous %}<a href="?{{ filters }}&amp;page={{ page_obj.previous_page_number }}" aria-label="Önceki sayfa"><i class="bi bi-chevron-left"></i></a>{% endif %}
+    <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?{{ filters }}&amp;page={{ page_obj.next_page_number }}" aria-label="Sonraki sayfa"><i class="bi bi-chevron-right"></i></a>{% endif %}
+  </nav>
+</section>
+{% endblock %}

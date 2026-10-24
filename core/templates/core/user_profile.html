@@ -653,6 +653,7 @@
           <div class="tab-pane fade {% if active_tab == 'kaynaklarim' %}show active{% endif %}" id="kaynaklarim" role="tabpanel" aria-labelledby="kaynaklarim-tab">
             <div class="mt-3">
               <h5>Kaynaklarım</h5>
+              {% if request.user == profile_user %}<a href="{% url 'reference_history' %}" class="btn btn-outline-theme-secondary mb-3"><i class="bi bi-clock-history" aria-hidden="true"></i> Kullanım geçmişim</a>{% endif %}
               <!-- Arama Formu -->
               <form method="get" action="" id="referencesSearchForm">
                 <input type="hidden" name="tab" value="kaynaklarim">

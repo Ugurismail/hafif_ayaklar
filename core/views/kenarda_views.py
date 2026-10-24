@@ -8,6 +8,7 @@ Kenarda (draft) views
 """
 
 import json
+from ..reference_history import bind_reference_history
 import re
 
 from django.db import transaction
@@ -88,6 +89,7 @@ def _save_subquestion_draft(request, data):
                 user=request.user, question=parent, title=title, content=content,
                 draft_source='subquestion',
             )
+        bind_reference_history(request.user, data, draft=draft)
     return JsonResponse({'status': 'ok', 'draft_id': draft.pk})
 
 
@@ -180,7 +182,7 @@ def kenarda_save(request):
             existing.updated_at = timezone.now()
             existing.save()
         else:
-            Kenarda.objects.create(
+            existing = Kenarda.objects.create(
                 user=request.user,
                 question=question,
                 answer=answer,
@@ -189,7 +191,8 @@ def kenarda_save(request):
                 draft_source=draft_source,
                 is_sent=False
             )
-        return JsonResponse({"status": "ok"})
+        bind_reference_history(request.user, data, draft=existing)
+        return JsonResponse({"status": "ok", "draft_id": existing.pk})
     return JsonResponse({"status": "fail", "error": "Yetkisiz veya geçersiz istek"})
 
 
@@ -307,6 +310,8 @@ def kenarda_gonder(request, pk):
                 user=request.user
             )
 
+        answer.refresh_from_db()
+        bind_reference_history(request.user, {}, answer=answer, prior_draft=taslak)
         question_slug = taslak.question.slug
         answer_id = answer.id
         taslak.delete()

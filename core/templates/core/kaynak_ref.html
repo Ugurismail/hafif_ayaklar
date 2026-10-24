@@ -1,11 +1,14 @@
 <!-- core/kaynak_ref.html -->
-<div class="modal fade" id="kaynakRefModal" tabindex="-1" aria-labelledby="kaynakRefModalLabel" aria-hidden="true">
+{% load static %}
+<script src="{% static 'js/reference_history.js' %}?v=1"></script>
+<div class="modal fade" id="kaynakRefModal" tabindex="-1" aria-labelledby="kaynakRefModalLabel" aria-hidden="true" data-history-url="{% url 'record_reference_usage' %}" data-reference-context="{{ request.POST.reference_context }}" data-reference-title="{% if question %}{{ question.question_text }}{% elif query %}{{ query }}{% elif draft_title %}{{ draft_title }}{% endif %}">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
 
       <!-- Modal Başlık -->
       <div class="modal-header">
         <h5 class="modal-title" id="kaynakRefModalLabel">Kaynak İşlemleri</h5>
+        <a href="{% url 'reference_history' %}" class="ms-auto me-3" target="_blank" rel="noopener" title="Kullanım geçmişim" aria-label="Kullanım geçmişim"><i class="bi bi-clock-history" aria-hidden="true"></i></a>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
       </div>
 
@@ -528,7 +531,7 @@
         const newBtn = oldBtn.cloneNode(true);
         oldBtn.parentNode.replaceChild(newBtn, oldBtn);
 
-        newBtn.addEventListener('click', function() {
+        newBtn.addEventListener('click', async function() {
             // Double click kontrolü
             if (isAddingReference) {
                 console.log('Kaynak zaten ekleniyor, tekrar tıklama engellendi');
@@ -553,6 +556,16 @@
             newBtn.disabled = true;
             const originalText = newBtn.textContent;
             newBtn.textContent = 'Ekleniyor...';
+
+            try {
+                await window.ReferenceHistory.record(answerTextArea, refId, sayfaStr);
+            } catch (error) {
+                showToast(error.message, 'error');
+                isAddingReference = false;
+                newBtn.disabled = false;
+                newBtn.textContent = originalText;
+                return;
+            }
 
             let ekMetin = sayfaStr ? ` (k:${refId} s:${sayfaStr}) ` : ` (k:${refId}) `;
             // İmleçte ekle (seçim varsa seçilen kısmı değiştir)
